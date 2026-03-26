@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <title>Habit Tracker - Manifest Mode</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #764ba2; --bg: #f4f7f6; --accent: #ff4d4d; --streak-orange: #ff6600; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .streak-badge { background: #fff0e6; padding: 8px 18px; border-radius: 30px; border: 1px solid #ff944d; display: flex; align-items: center; gap: 8px; }
+        .streak-count { font-weight: bold; color: var(--streak-orange); font-size: 1.1rem; }
+
+        
+        .tabs { display: flex; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; }
+        .tab-btn { padding: 12px 20px; cursor: pointer; border: none; background: none; font-weight: bold; color: #666; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+        
+        .ai-coach { background: #fff; border-left: 5px solid var(--primary); padding: 15px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .banner { background: var(--primary); color: white; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; margin-bottom: 25px; }
+        
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; border-bottom: 1px solid #f0f0f0; text-align: center; }
+        .box { width: 32px; height: 32px; border: 2px solid var(--primary); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; margin: auto; }
+        .checked { background: var(--primary); color: white; }
+        .locked { border-color: #ccc !important; background: #f9f9f9 !important; cursor: not-allowed !important; opacity: 0.5; }
+        .btn-remove { color: var(--accent); cursor: pointer; font-size: 0.7rem; background: none; border: none; font-weight: bold; }
+        
+        
+        .manifest-card, .history-container { background: #fdf2ff; padding: 25px; border-radius: 15px; border: 1px dashed var(--primary); }
+        .suggestion-item, .history-card { background: white; padding: 15px; border-radius: 10px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .history-date { font-weight: bold; color: var(--primary); }
+        .history-pts { background: var(--primary); color: white; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; }
+        
+        .add-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .finish-btn { width: 100%; background: #222; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-flex">
+            <h1 style="margin:0;">BLANKIT</h1>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div class="streak-badge">
+                    <span></span> 
+                    <span class="streak-count">{{ streak }} Day Streak</span>
+                </div>
+                <a href="/logout" style="color:var(--accent); text-decoration:none; font-weight:bold;">Logout</a>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button onclick="showTab('tracker')" class="tab-btn active" id="tab-tracker">Tracker</button>
+            <button onclick="showTab('manifest')" class="tab-btn" id="tab-manifest">Manifest</button>
+            <button onclick="showTab('history')" class="tab-btn" id="tab-history">History</button>
+        </div>
+
+        <div id="section-tracker">
+            <div class="ai-coach">
+                <div style="font-size: 0.7rem; font-weight: bold; color: var(--primary);">AI COACH ADVICE</div>
+                <p id="ai-coach-text" style="margin: 5px 0 0 0; font-style: italic; color: #555;">Thinking... don't be a flop...</p>
+            </div>
+
+            <div style="height: 200px; margin-bottom: 20px;"><canvas id="habitChart"></canvas></div>
+            
+            <form action="/finish_day" method="POST">
+                <button type="submit" class="add-btn finish-btn">Lock In Today's Progress</button>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Habit Name</th>
+                        {% for d in ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] %} <th>{{ d }}</th> {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in habits %}
+                    <tr>
+                        <td style="text-align: left;">
+                            <strong>{{ h.habit_name }}</strong>
+                            <form action="/remove_habit" method="POST" style="display:inline;">
+                                <input type="hidden" name="habit_name" value="{{ h.habit_name }}">
+                                <button type="submit" class="btn-remove">Remove</button>
+                            </form>
+                        </td>
+                        {% for d in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] %}
+                        <td>
+                            <div class="box {{ 'checked' if h[d]|int == 1 else '' }}" 
+                                 data-day="{{ d }}" onclick="sync('{{ h.habit_name }}', '{{ d }}')">
+                                 {{ '✓' if h[d]|int == 1 else '' }}
+                            </div>
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <form action="/add_habit" method="POST" style="margin-top: 25px; display: flex; gap: 10px;">
+                <input type="text" name="habit_name" placeholder="E.g., Slaying the gym..." required style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                <button type="submit" class="add-btn">Add Habit</button>
+            </form>
+        </div>
+
+        <div id="section-manifest" style="display:none;">
+            <div class="manifest-card">
+                <h2 style="margin-top:0;">Just Set It</h2>
+                <p>Type your big goal (e.g. "Coding God") and let the AI build your routine.</p>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="goal-input" placeholder="What's the vibe?" style="flex:1; padding:12px; border-radius:8px; border:1px solid #ddd;">
+                    <button onclick="generateHabits()" class="add-btn" style="background:black;">Generate Blueprint</button>
+                </div>
+            </div>
+            <div id="suggestion-box" style="margin-top:25px; display:none;">
+                <div id="suggestion-list"></div>
+            </div>
+        </div>
+
+        <div id="section-history" style="display:none;">
+            <div class="history-container">
+                <h2 style="margin-top:0;">The Lore</h2>
+                <div id="history-content">
+                    <p>Fetching your archives...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tab) {
+            ['tracker', 'manifest', 'history'].forEach(s => {
+                document.getElementById(`section-${s}`).style.display = (s === tab) ? 'block' : 'none';
+                document.getElementById(`tab-${s}`).classList.toggle('active', s === tab);
+            });
+            if (tab === 'history') loadHistory();
+        }
+
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const todayStr = dayNames[new Date().getDay()];
+
+        document.querySelectorAll('.box').forEach(box => {
+            if (box.dataset.day !== todayStr) { box.classList.add('locked'); }
+        });
+
+        fetch('/get_ai_coach').then(r => r.json()).then(data => { document.getElementById('ai-coach-text').innerText = data.message; });
+
+        function sync(name, day) {
+            if (day !== todayStr) {
+                alert("Bestie, you can't change the past. Only today matters.");
+                return;
+            }
+            fetch('/update_habit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `habit_name=${encodeURIComponent(name)}&day=${day}`
+            }).then(r => r.ok ? location.reload() : alert("Update failed."));
+        }
+
+        function loadHistory() {
+            fetch('/history').then(r => r.text()).then(html => {
+                document.getElementById('history-content').innerHTML = html;
+            });
+        }
+
+        function generateHabits() {
+            const goal = document.getElementById('goal-input').value;
+            const container = document.getElementById('suggestion-list');
+            container.innerHTML = "<p>Manifesting...</p>";
+            document.getElementById('suggestion-box').style.display = 'block';
+
+            fetch('/manifest_habits', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `goal=${encodeURIComponent(goal)}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                container.innerHTML = "";
+                data.habits.forEach(h => {
+                    const div = document.createElement('div');
+                    div.className = "suggestion-item";
+                    div.innerHTML = `<span><strong>${h}</strong></span> <button onclick="quickAdd('${h}')" class="add-btn" style="padding: 8px 15px;">Add</button>`;
+                    container.appendChild(div);
+                });
+            });
+        }
+
+        function quickAdd(name) {
+            fetch('/add_habit', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: `habit_name=${encodeURIComponent(name)}`
+            }).then(() => { showTab('tracker'); location.reload(); });
+        }
+
+        (function() {
+            const raw = '{{ habits | tojson | safe }}';
+            const habitData = JSON.parse(raw || '[]');
+            const ctx = document.getElementById('habitChart').getContext('2d');
+            const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+            const stats = labels.map(d => habitData.length ? (habitData.filter(h => h[d] == 1).length / habitData.length) * 100 : 0);
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels: labels, datasets: [{ label: 'Success %', data: stats, borderColor: '#764ba2', fill: true, backgroundColor: 'rgba(118,75,162,0.1)', tension: 0.3 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+        })();
+        
+const originalSync = window.sync;
+window.sync = function(name, day) {
+    const box = event.currentTarget;
+    if (day === todayStr) {
+        box.style.transform = "scale(0.8)";
+        setTimeout(() => {
+            box.style.transform = "scale(1.1)";
+            box.style.transition = "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+        }, 50);
+    }
+    originalSync(name, day);
+};
+
+
+document.querySelectorAll('tbody tr').forEach((row, index) => {
+    row.style.opacity = "0";
+    row.style.transform = "translateY(10px)";
+    setTimeout(() => {
+        row.style.transition = "all 0.4s ease-out";
+        row.style.opacity = "1";
+        row.style.transform = "translateY(0)";
+    }, 100 + (index * 50));
+});
+
+
+const cards = document.querySelectorAll('.ai-coach, .manifest-card, .history-container');
+cards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = "translateY(-4px)";
+        card.style.boxShadow = "0 12px 20px rgba(118, 75, 162, 0.15)";
+        card.style.transition = "all 0.3s ease";
+    });
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = "translateY(0)";
+        card.style.boxShadow = "0 4px 15px rgba(0,0,0,0.05)";
+    });
+});
+
+
+const originalShowTab = window.showTab;
+window.showTab = function(tab) {
+    const activeSection = document.querySelector('div[id^="section-"]:not([style*="display:none"])');
+    if (activeSection) {
+        activeSection.style.opacity = "0";
+        activeSection.style.transition = "opacity 0.2s ease";
+    }
+    
+    setTimeout(() => {
+        originalShowTab(tab);
+        const newSection = document.getElementById(`section-${tab}`);
+        newSection.style.opacity = "0";
+        newSection.style.display = "block";
+        setTimeout(() => {
+            newSection.style.opacity = "1";
+            newSection.style.transition = "opacity 0.3s ease";
+        }, 10);
+    }, 200);
+};
+
+
+document.querySelectorAll('.add-btn, .finish-btn').forEach(btn => {
+    btn.addEventListener('mousedown', () => btn.style.transform = "scale(0.95)");
+    btn.addEventListener('mouseup', () => btn.style.transform = "scale(1)");
+});
+    </script>
+</body>
+</html>
