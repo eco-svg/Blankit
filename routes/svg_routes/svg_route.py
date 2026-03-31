@@ -18,6 +18,17 @@ def settings():
 def manifestation():
     return render_template("svg_templates/manifestation.html", username="ecosvg")
 
+@app.route("/history")
+def history():
+    return render_template("svg_templates/history.html", username="ecosvg")
+
+@app.route("/achievements")
+def achievements():
+    return render_template("svg_templates/achievements.html", username="ecosvg")
+
+@app.route("/achievements/top")
+def top_achievements():
+    return render_template("svg_templates/achievements",username="ecosvg")
 
 if __name__ == "__main__":
     app.run(debug=True)

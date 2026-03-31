@@ -6,6 +6,13 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ══════════════════════════════
+   RESTORE ANIMATION PREFERENCE
+   ══════════════════════════════ */
+if (localStorage.getItem('ecosvg-no-anim') === 'true') {
+  document.body.classList.add('no-anim');
+}
+
+  /* ══════════════════════════════
      THEME SWITCHER
      ══════════════════════════════ */
   const themeSwitcher = document.getElementById('themeSwitcher');
@@ -18,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       localStorage.setItem('ecosvg-theme', theme);
+      if (localStorage.getItem('ecosvg-no-anim') === 'true') {
+        document.body.classList.add('no-anim');
+      }
     });
   }
 
@@ -34,14 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
      GREETING + DATE
      ══════════════════════════════ */
   function updateGreeting() {
-    const now    = new Date();
-    const hour   = now.getHours();
-    const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const now = new Date();
+    const hour = now.getHours();
+    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     let greeting = 'Good morning';
     if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
-    else if (hour >= 17)         greeting = 'Good evening';
+    else if (hour >= 17) greeting = 'Good evening';
 
     const heroDate = document.getElementById('heroDate');
     const heroGreeting = document.getElementById('heroGreeting');
@@ -55,19 +65,19 @@ document.addEventListener('DOMContentLoaded', () => {
      HABIT TOGGLE + PROGRESS RING
      ══════════════════════════════ */
   function updateRing() {
-    const items     = document.querySelectorAll('.habit-item');
-    const done      = document.querySelectorAll('.habit-item.done').length;
-    const total     = items.length;
-    const pct       = total === 0 ? 0 : Math.round((done / total) * 100);
-    const circum    = 314;
-    const offset    = circum - (circum * pct / 100);
+    const items = document.querySelectorAll('.habit-item');
+    const done = document.querySelectorAll('.habit-item.done').length;
+    const total = items.length;
+    const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+    const circum = 314;
+    const offset = circum - (circum * pct / 100);
 
-    const ringFill  = document.getElementById('ringFill');
-    const ringPct   = document.getElementById('ringPct');
-    const heroSub   = document.getElementById('heroSub');
+    const ringFill = document.getElementById('ringFill');
+    const ringPct = document.getElementById('ringPct');
+    const heroSub = document.getElementById('heroSub');
 
     if (ringFill) ringFill.style.strokeDashoffset = offset;
-    if (ringPct)  ringPct.textContent = pct + '%';
+    if (ringPct) ringPct.textContent = pct + '%';
 
     const remaining = total - done;
     if (heroSub) heroSub.textContent =
@@ -121,12 +131,12 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ══════════════════════════════
      CAMERA AI MODAL
      ══════════════════════════════ */
-  const camOverlay  = document.getElementById('camOverlay');
-  const camClose    = document.getElementById('camClose');
+  const camOverlay = document.getElementById('camOverlay');
+  const camClose = document.getElementById('camClose');
   const camStartBtn = document.getElementById('camStartBtn');
-  const camCounter  = document.getElementById('camCounter');
+  const camCounter = document.getElementById('camCounter');
 
-  let counting   = false;
+  let counting = false;
   let countValue = 0;
   let countTimer = null;
 
@@ -134,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!camOverlay) return;
     camOverlay.classList.remove('hidden');
     countValue = 0;
-    if (camCounter)  camCounter.textContent = '0';
+    if (camCounter) camCounter.textContent = '0';
     if (camStartBtn) camStartBtn.textContent = 'Start counting';
     counting = false;
   }
@@ -177,11 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ══════════════════════════════
      ADD HABIT MODAL
      ══════════════════════════════ */
-  const addModal      = document.getElementById('addModal');
-  const addClose      = document.getElementById('addClose');
-  const addHabitBtn   = document.getElementById('addHabitBtn');
-  const addConfirm    = document.getElementById('addConfirm');
-  const newHabitName  = document.getElementById('newHabitName');
+  const addModal = document.getElementById('addModal');
+  const addClose = document.getElementById('addClose');
+  const addHabitBtn = document.getElementById('addHabitBtn');
+  const addConfirm = document.getElementById('addConfirm');
+  const newHabitName = document.getElementById('newHabitName');
   const newHabitTrack = document.getElementById('newHabitTrack');
 
   if (addHabitBtn) {
@@ -195,14 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   if (addConfirm) {
     addConfirm.addEventListener('click', () => {
-      const name  = newHabitName.value.trim();
+      const name = newHabitName.value.trim();
       const track = newHabitTrack.value;
       if (!name) return;
       const trackLabels = {
         manual: 'manual',
-        gps:    '📍 GPS auto-tracked',
+        gps: '📍 GPS auto-tracked',
         camera: '📷 Camera AI',
-        mic:    '🎙 Mic detected',
+        mic: '🎙 Mic detected',
       };
       const li = document.createElement('li');
       li.className = 'habit-item';
@@ -248,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
   let insightIdx = 0;
 
-  const acceptBtn  = document.querySelector('.ai-btn.accept');
+  const acceptBtn = document.querySelector('.ai-btn.accept');
   const dismissBtn = document.querySelector('.ai-btn.dismiss');
   if (acceptBtn) {
     acceptBtn.addEventListener('click', () => {
@@ -266,9 +276,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ══════════════════════════════
      SIDEBAR
      ══════════════════════════════ */
-  const sidebar         = document.getElementById('sidebar');
-  const sidebarToggle   = document.getElementById('sidebarToggle');
-  const sidebarClose    = document.getElementById('sidebarClose');
+  const sidebar = document.getElementById('sidebar');
+  const sidebarToggle = document.getElementById('sidebarToggle');
+  const sidebarClose = document.getElementById('sidebarClose');
   const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
   if (sidebarToggle) {
@@ -291,3 +301,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 }); 
+
+/* ══════════════════════════════
+   ANIMATION TOGGLE (settings page)
+   ══════════════════════════════ */
+const animToggle = document.getElementById('animToggle');
+if (animToggle) {
+  const noAnim = localStorage.getItem('ecosvg-no-anim') === 'true';
+  animToggle.setAttribute('aria-pressed', noAnim ? 'false' : 'true');
+
+  animToggle.addEventListener('click', () => {
+    const isOn = animToggle.getAttribute('aria-pressed') === 'true';
+    animToggle.setAttribute('aria-pressed', isOn ? 'false' : 'true');
+    document.body.classList.toggle('no-anim', isOn);
+    localStorage.setItem('ecosvg-no-anim', isOn ? 'true' : 'false');
+  });
+}

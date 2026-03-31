@@ -18,7 +18,7 @@
     <div class="sidebar-header">
       <span class="brand">
         <span class="brand-icon">◈</span>
-        <span class="brand-name">ecosvg</span>
+        <span class="brand-name">{{ username }}</span>
       </span>
       <button class="sidebar-close" id="sidebarClose">✕</button>
     </div>
@@ -27,19 +27,26 @@
       <a class="sidebar-nav-item active" href="/">
         <span class="sidebar-nav-icon">⬡</span> Home
       </a>
-      <a class="sidebar-nav-item" href="/settings">
-        <span class="sidebar-nav-icon">⚙</span> Settings
-      </a>
+
       <a class="sidebar-nav-item" href="/manifestation">
         <span class="sidebar-nav-icon">✦</span> Manifestation
+      </a>
+      <a class="sidebar-nav-item" href="/history">
+        <span class="sidebar-nav-icon">◷</span> History
+      </a>
+      <a class="sidebar-nav-item" href="/achievements">
+        <span class="sidebar-nav-icon">◎</span> Achievements
+      </a>
+      <a class="sidebar-nav-item" href="/settings">
+        <span class="sidebar-nav-icon">⚙</span> Settings
       </a>
     </nav>
 
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
-        <div class="avatar">ES</div>
+        <div class="avatar">{{ username[:2].upper() }}</div>
         <div class="sidebar-profile-info">
-          <span class="sidebar-username">eco-svg</span>
+          <span class="sidebar-username">{{ username }}</span>
           <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
         </div>
       </div>
@@ -58,11 +65,15 @@
       <span class="brand-icon">◈</span>
       <span class="brand-name">{{ username }}</span>
     </a>
-
-    </nav>
+    <div class="theme-switcher" id="themeSwitcher">
+      <button class="theme-btn active" data-theme="forest">Forest</button>
+      <button class="theme-btn" data-theme="cyber">Cyber</button>
+      <button class="theme-btn" data-theme="ember">Ember</button>
+      <button class="theme-btn" data-theme="void">◻ Void</button>
+    </div>
     <div class="topbar-right">
       <span class="streak-badge" id="globalStreak">🔥 9 day streak</span>
-      <div class="avatar" id="avatar">ES</div>
+      <div class="avatar" id="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
 

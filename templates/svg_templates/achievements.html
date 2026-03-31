@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ecosvg — achievements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/achievements.css') }}" />
+</head>
+
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">{{ username }}</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">
+        <span class="sidebar-nav-icon">⬡</span> Home
+     
+      <a class="sidebar-nav-item" href="/manifestation">
+        <span class="sidebar-nav-icon">✦</span> Manifestation
+      </a>
+      <a class="sidebar-nav-item" href="/history">
+        <span class="sidebar-nav-icon">◷</span> History
+      </a>
+      <a class="sidebar-nav-item active" href="/achievements">
+        <span class="sidebar-nav-icon">◎</span> Achievements
+      </a>
+       </a>
+      <a class="sidebar-nav-item" href="/settings">
+        <span class="sidebar-nav-icon">⚙</span> Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">{{ username }}</span>
+          <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- ── RIGHT SLIDE PANEL ── -->
+  <div class="ach-panel" id="achPanel">
+    <div class="ach-panel-header">
+      <span class="ach-panel-title">Jump to</span>
+      <button class="ach-panel-close" id="achPanelClose">✕</button>
+    </div>
+    <nav class="ach-panel-nav">
+      <a class="ach-panel-link" href="#topAch">
+        <span class="ach-panel-link-icon">🏆</span>
+        <div>
+          <div class="ach-panel-link-name">Top Achievements</div>
+          <div class="ach-panel-link-desc">Your podium picks</div>
+        </div>
+      </a>
+      <a class="ach-panel-link" href="#myAch">
+        <span class="ach-panel-link-icon">◎</span>
+        <div>
+          <div class="ach-panel-link-name">My Achievements</div>
+          <div class="ach-panel-link-desc">All earned &amp; locked badges</div>
+        </div>
+      </a>
+    </nav>
+  </div>
+  <div class="ach-panel-backdrop hidden" id="achPanelBackdrop"></div>
+
+  <!-- ── TOPBAR ── -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="/" style="text-decoration:none">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">{{ username }}</span>
+    </a>
+    <div class="topbar-right">
+      <button class="ach-panel-trigger" id="achPanelTrigger" title="Sections">☰</button>
+      <span class="streak-badge">🔥 9 day streak</span>
+      <div class="avatar">{{ username[:2].upper() }}</div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="achievements-main">
+
+    <div class="achievements-page-header">
+      <h1 class="achievements-page-title">Achievements</h1>
+      <p class="achievements-page-sub">Your journey, milestones &amp; wins</p>
+    </div>
+
+    <!-- TOP ACHIEVEMENTS -->
+    <section class="ach-section" id="topAch">
+      <div class="ach-section-head">
+        <span class="ach-section-label">Top Achievements</span>
+        <span class="ach-section-hint">Click ⊕ on any badge below to place it here</span>
+      </div>
+
+      <div class="podium-wrap">
+        <!-- 2nd -->
+        <div class="podium-slot" data-rank="2">
+          <div class="podium-card rank-2" id="podium-2">
+            <div class="podium-rank-num">II</div>
+            <div class="podium-card-icon" id="podium-icon-2">—</div>
+            <div class="podium-card-name" id="podium-name-2">empty</div>
+          </div>
+          <div class="podium-base podium-base-2">2nd</div>
+        </div>
+        <!-- 1st -->
+        <div class="podium-slot" data-rank="1">
+          <div class="podium-card rank-1" id="podium-1">
+            <div class="podium-rank-num">I</div>
+            <div class="podium-card-icon" id="podium-icon-1">—</div>
+            <div class="podium-card-name" id="podium-name-1">empty</div>
+          </div>
+          <div class="podium-base podium-base-1">1st</div>
+        </div>
+        <!-- 3rd -->
+        <div class="podium-slot" data-rank="3">
+          <div class="podium-card rank-3" id="podium-3">
+            <div class="podium-rank-num">III</div>
+            <div class="podium-card-icon" id="podium-icon-3">—</div>
+            <div class="podium-card-name" id="podium-name-3">empty</div>
+          </div>
+          <div class="podium-base podium-base-3">3rd</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MY ACHIEVEMENTS -->
+    <section class="ach-section" id="myAch">
+      <div class="ach-section-head">
+        <span class="ach-section-label">My Achievements</span>
+        <span class="ach-section-hint">Earned badges can be pinned to the podium</span>
+      </div>
+
+      <div class="ach-badges-list">
+
+        <div class="ach-badge earned" data-id="iron" data-icon="🏆" data-name="Iron Discipline">
+          <div class="ach-badge-icon">🏆</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Iron Discipline</div>
+            <div class="ach-badge-desc">Completed all habits for 30 days straight</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-iron"></span>
+        </div>
+
+        <div class="ach-badge earned" data-id="riser" data-icon="⚡" data-name="Early Riser">
+          <div class="ach-badge-icon">⚡</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Early Riser</div>
+            <div class="ach-badge-desc">Morning habits before 7am, 20 days in a row</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-riser"></span>
+        </div>
+
+        <div class="ach-badge earned" data-id="seed" data-icon="🌱" data-name="First Seed">
+          <div class="ach-badge-icon">🌱</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">First Seed</div>
+            <div class="ach-badge-desc">Completed your very first 7 day streak</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-seed"></span>
+        </div>
+
+        <div class="ach-badge earned" data-id="fire" data-icon="🔥" data-name="On Fire">
+          <div class="ach-badge-icon">🔥</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">On Fire</div>
+            <div class="ach-badge-desc">7 day streak</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-fire"></span>
+        </div>
+
+        <div class="ach-badge earned" data-id="hydrated" data-icon="💧" data-name="Hydrated">
+          <div class="ach-badge-icon">💧</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Hydrated</div>
+            <div class="ach-badge-desc">Water habit 14 days</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-hydrated"></span>
+        </div>
+
+        <div class="ach-badge earned" data-id="book" data-icon="📚" data-name="Bookworm">
+          <div class="ach-badge-icon">📚</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Bookworm</div>
+            <div class="ach-badge-desc">Read 10 days straight</div>
+          </div>
+          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
+          <span class="ach-badge-rank-tag" id="tag-book"></span>
+        </div>
+
+        <!-- LOCKED -->
+        <div class="ach-badge locked">
+          <div class="ach-badge-icon">💎</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Diamond</div>
+            <div class="ach-badge-desc">100 day streak</div>
+          </div>
+          <span class="ach-badge-lock">🔒</span>
+        </div>
+
+        <div class="ach-badge locked">
+          <div class="ach-badge-icon">⚔️</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Warrior</div>
+            <div class="ach-badge-desc">50 day streak</div>
+          </div>
+          <span class="ach-badge-lock">🔒</span>
+        </div>
+
+        <div class="ach-badge locked">
+          <div class="ach-badge-icon">🎯</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Sharpshooter</div>
+            <div class="ach-badge-desc">100% completion for a week</div>
+          </div>
+          <span class="ach-badge-lock">🔒</span>
+        </div>
+
+        <div class="ach-badge locked">
+          <div class="ach-badge-icon">🌙</div>
+          <div class="ach-badge-body">
+            <div class="ach-badge-name">Night Owl</div>
+            <div class="ach-badge-desc">Log habits after 10pm, 7 days</div>
+          </div>
+          <span class="ach-badge-lock">🔒</span>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- RANK PICKER MODAL -->
+  <div class="rank-modal hidden" id="rankModal">
+    <div class="rank-modal-box">
+      <div class="rank-modal-title">Pin to Podium</div>
+      <div class="rank-modal-sub" id="rankModalSub">Choose a rank for this achievement</div>
+      <div class="rank-modal-options">
+        <button class="rank-option rank-opt-1" data-rank="1">
+          <span class="rank-opt-num">I</span>
+          <span class="rank-opt-label">1st Place</span>
+        </button>
+        <button class="rank-option rank-opt-2" data-rank="2">
+          <span class="rank-opt-num">II</span>
+          <span class="rank-opt-label">2nd Place</span>
+        </button>
+        <button class="rank-option rank-opt-3" data-rank="3">
+          <span class="rank-opt-num">III</span>
+          <span class="rank-opt-label">3rd Place</span>
+        </button>
+      </div>
+      <button class="rank-modal-cancel" id="rankModalCancel">Cancel</button>
+    </div>
+  </div>
+  <div class="rank-modal-backdrop hidden" id="rankModalBackdrop"></div>
+
+  <script src="{{ url_for('static', filename='svg_style/svg_animation.js') }}"></script>
+  <script src="{{ url_for('static', filename='svg_style/achievements.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('ecosvg-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      if (localStorage.getItem('ecosvg-no-anim') === 'true') document.body.classList.add('no-anim');
+    });
+  </script>
+
+</body>
+</html>
