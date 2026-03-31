@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ecosvg — settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">ecosvg</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">
+        <span class="sidebar-nav-icon">⬡</span> Home
+      </a>
+      <a class="sidebar-nav-item active" href="/settings">
+        <span class="sidebar-nav-icon">⚙</span> Settings
+      </a>
+      <a class="sidebar-nav-item disabled" href="#" title="Coming soon">
+        <span class="sidebar-nav-icon">✦</span> Manifestation
+        <span class="sidebar-soon-tag">soon</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">eco-svg</span>
+          <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- ── TOPBAR ── -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="/" style="text-decoration:none">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">ecosvg</span>
+    </a>
+    <div class="topbar-right">
+      <span class="streak-badge">🔥 9 day streak</span>
+      <div class="avatar">ES</div>
+    </div>
+  </header>
+
+  <!-- ── SETTINGS CONTENT ── -->
+  <main class="settings-main">
+    <div class="settings-page-header">
+      <h1 class="settings-page-title">Settings</h1>
+      <p class="settings-page-sub">Customize your ecosvg experience</p>
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- THEME SECTION -->
+      <section class="settings-section">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Theme</h2>
+          <p class="settings-section-desc">Choose the look and feel of your tracker</p>
+        </div>
+        <div class="theme-cards" id="themeCards">
+          <button class="theme-card active" data-theme="forest">
+            <div class="theme-card-preview theme-preview-forest">
+              <div class="preview-topbar"></div>
+              <div class="preview-hero"></div>
+              <div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Forest</span>
+            <span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="cyber">
+            <div class="theme-card-preview theme-preview-cyber">
+              <div class="preview-topbar"></div>
+              <div class="preview-hero"></div>
+              <div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Cyber</span>
+            <span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="ember">
+            <div class="theme-card-preview theme-preview-ember">
+              <div class="preview-topbar"></div>
+              <div class="preview-hero"></div>
+              <div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Ember</span>
+            <span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="void">
+            <div class="theme-card-preview theme-preview-void">
+              <div class="preview-topbar"></div>
+              <div class="preview-hero"></div>
+              <div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">◻ Void</span>
+            <span class="theme-card-check">✓</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- PLACEHOLDER SECTIONS (add more later) -->
+      <section class="settings-section settings-section--locked">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Notifications <span class="settings-soon-tag">soon</span></h2>
+          <p class="settings-section-desc">Reminders and habit nudges</p>
+        </div>
+      </section>
+
+      <section class="settings-section settings-section--locked">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Data & Privacy <span class="settings-soon-tag">soon</span></h2>
+          <p class="settings-section-desc">Export, reset, or delete your data</p>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="{{ url_for('static', filename='svg_style/svg_animation.js') }}"></script>
+  <script>
+    /* theme cards */
+    document.getElementById('themeCards').addEventListener('click', e => {
+      const card = e.target.closest('.theme-card');
+      if (!card) return;
+      const theme = card.dataset.theme;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      localStorage.setItem('ecosvg-theme', theme);
+    });
+    /* restore */
+    const saved = localStorage.getItem('ecosvg-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+      document.querySelectorAll('.theme-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.theme === saved);
+      });
+    }
+  </script>
+</body>
+</html>
