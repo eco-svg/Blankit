@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ecosvg — settings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
 </head>
+
 <body>
 
   <!-- ── SIDEBAR ── -->
@@ -26,9 +29,8 @@
       <a class="sidebar-nav-item active" href="/settings">
         <span class="sidebar-nav-icon">⚙</span> Settings
       </a>
-      <a class="sidebar-nav-item disabled" href="#" title="Coming soon">
+      <a class="sidebar-nav-item" href="/manifestation">
         <span class="sidebar-nav-icon">✦</span> Manifestation
-        <span class="sidebar-soon-tag">soon</span>
       </a>
     </nav>
     <div class="sidebar-footer">
@@ -154,4 +156,5 @@
     }
   </script>
 </body>
+
 </html>
