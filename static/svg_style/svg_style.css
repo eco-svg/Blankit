@@ -1043,3 +1043,36 @@ body,
 .theme-preview-void .preview-topbar { background: #141414; }
 .theme-preview-void .preview-hero   { background: #e0ddd5; opacity: 0.5; }
 .theme-preview-void .preview-card   { background: #1a1a1a; border: 1px solid #2c2c2a; }
+body.no-anim::before { display: none; }
+
+.settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.settings-toggle-info { display: flex; flex-direction: column; gap: 3px; }
+.settings-toggle-label { font-size: 0.82rem; color: var(--text); letter-spacing: 0.02em; }
+.settings-toggle-desc  { font-size: 0.68rem; color: var(--text3); letter-spacing: 0.03em; }
+
+.settings-toggle-btn {
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--accent);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.settings-toggle-btn[aria-pressed="false"] { background: var(--border); }
+.toggle-knob {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+}
+.settings-toggle-btn[aria-pressed="true"] .toggle-knob { transform: translateX(20px); }
