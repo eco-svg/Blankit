@@ -30,5 +30,9 @@ def achievements():
 def top_achievements():
     return render_template("svg_templates/achievements",username="ecosvg")
 
+@app.route("/calendar")
+def calendar():
+    return render_template("svg_templates/calendar.html", username="ecosvg")
+
 if __name__ == "__main__":
     app.run(debug=True)
