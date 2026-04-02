@@ -949,3 +949,120 @@ div.infinite-canvas video {
     cursor: pointer; transition: all 0.2s;
 }
 .send-ai-btn:hover { transform: scale(1.05); }
+
+/* --- Add these to the bottom of your kstyle.css --- */
+
+/* BuddyBot Main (The Strategic Hub) */
+.buddybot-main {
+    background: linear-gradient(140deg, #141b24, #101418) !important;
+    border-color: #1e2535 !important;
+}
+
+.buddybot-main:hover {
+    border-color: #4a7aaa !important;
+    box-shadow: 0 8px 32px rgba(74, 122, 170, 0.15) !important;
+}
+
+.buddybot-main .msg-ai {
+    background: linear-gradient(135deg, rgba(74, 122, 170, 0.1), rgba(74, 122, 170, 0.02)) !important;
+    border-color: rgba(74, 122, 170, 0.2) !important;
+    border-left: 3px solid #4a7aaa !important;
+}
+
+/* Knowledge Sidebar (The Quick Reference) */
+.ask-sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 400px !important; /* Sidebar needs fixed height to scroll chat */
+}
+
+.mini-chat {
+    font-size: 0.85rem !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+}
+
+.mini-pill {
+    padding: 4px 4px 4px 12px !important;
+}
+
+.mini-pill input {
+    font-size: 0.8rem !important;
+}
+
+/* Ensures chat windows don't break the layout */
+.chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.calender {
+    display: flex;
+    flex-direction: column;
+    padding: 15px !important;
+    min-height: 320px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+}
+
+.calendar-header button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 5px;
+}
+
+.calendar-header button:hover { color: var(--accent); }
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 1fr; /* Ensures days are equal height */
+    gap: 5px;
+    min-height: 180px; /* Prevents the "empty look" */
+}
+
+.calendar-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.calendar-day.today {
+    background: var(--accent-glow);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+}
+
+.calendar-day.has-event {
+    font-weight: bold;
+    color: #fff;
+    text-decoration: underline var(--accent);
+}
+
+.calendar-day:hover { background: var(--border); color: var(--text); }
+.calendar-day.today { border: 1px solid var(--accent); color: var(--accent); }
+.calendar-day.has-event { background: var(--accent-glow); color: var(--accent); font-weight: bold; }
+.calendar-day.empty { cursor: default; }

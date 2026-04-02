@@ -8,6 +8,7 @@ from .notes import Note
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import requests
+import re
 
 # --- DYNAMIC PATH FINDER ---
 current_dir = Path(__file__).resolve().parent 
@@ -41,28 +42,49 @@ def home():
 # ==========================================
 @pug_bp.route('/api/notes', methods=['GET', 'POST'])
 def handle_notes():
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
-
-    if request.method == 'GET':
-        notes = Note.query.filter_by(user_id=user_id, entry_type='note', is_deleted=False).order_by(Note.updated_at.desc()).all()
-        return jsonify([n.to_dict() for n in notes])
-
-    if request.method == 'POST':
-        data = request.get_json()
-        note_id = data.get('id')
+    user_id = session.get('user_id')
+    data = request.get_json()
+    title = data.get('title', '')
+    body = data.get('body', '')
+    
+    # 1. Standard Note Saving Logic
+    note_id = data.get('id')
+    if note_id:
+        note = Note.query.filter_by(id=note_id, user_id=user_id).first()
+        if note:
+            note.title = title
+            note.body = body
+    else:
+        note = Note(user_id=user_id, entry_type='note', title=title, body=body)
+        db.session.add(note)
+    
+    # --- 2. THE MAGIC PARSER ---
+    # Looks for pattern: [YYYY-MM-DD] : Event Name
+    pattern = r"\[(\d{4}-\d{2}-\d{2})\]\s*:\s*(.*)"
+    match = re.search(pattern, title) # Checks the title for the pattern
+    
+    if match:
+        extracted_date = match.group(1)
+        extracted_event = match.group(2)
         
-        if note_id:
-            note = Note.query.filter_by(id=note_id, user_id=user_id).first()
-            if note:
-                note.title = data.get('title', '')
-                note.body = data.get('body', '')
-        else:
-            note = Note(user_id=user_id, entry_type='note', title=data.get('title', ''), body=data.get('body', ''))
-            db.session.add(note)
-            
-        db.session.commit()
-        return jsonify({"status": "success", "id": note.id})
+        # Check if this event already exists to avoid duplicates
+        existing_event = Note.query.filter_by(
+            user_id=user_id, 
+            entry_type='event', 
+            title=extracted_event
+        ).first()
+        
+        if not existing_event:
+            new_event = Note(
+                user_id=user_id,
+                entry_type='event',
+                title=extracted_event,
+                start_datetime=datetime.fromisoformat(extracted_date)
+            )
+            db.session.add(new_event)
+
+    db.session.commit()
+    return jsonify({"status": "success", "id": note.id})
 
 @pug_bp.route('/api/notes/<int:note_id>', methods=['DELETE'])
 def soft_delete_note(note_id):
@@ -224,13 +246,13 @@ def ask_ai():
     headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
     
     payload = {
-        "model": "llama-3.1-70b-versatile", 
-        "messages": [
+            "model": "llama-3.3-70b-versatile",        
+            "messages": [
             {"role": "system", "content": "You are the AI brain embedded in a personal productivity dashboard called Blankit. You are concise, highly intelligent, and direct. Keep your answers relatively short unless asked to explain deeply, as you are displaying in a small web widget."},
             {"role": "user", "content": user_prompt}
         ],
         "temperature": 0.7,
-        "max_tokens": 1024
+        "max_tokens": 2048
     }
 
     try:
@@ -247,3 +269,25 @@ def ask_ai():
     except Exception as e:
         print(f"AI API Error: {e}")
         return jsonify({"reply": "System offline: Could not connect to Groq mainframe."}), 500
+
+@pug_bp.route('/api/events', methods=['GET', 'POST'])
+def handle_events():
+    user_id = session.get('user_id')
+    if not user_id: return jsonify({"error": "Unauthorized"}), 401
+
+    if request.method == 'GET':
+        # Fetch all entries where entry_type is 'event'
+        events = Note.query.filter_by(user_id=user_id, entry_type='event', is_deleted=False).all()
+        return jsonify([e.to_dict() for e in events])
+
+    if request.method == 'POST':
+        data = request.get_json()
+        new_event = Note(
+            user_id=user_id,
+            entry_type='event',
+            title=data.get('title'),
+            start_datetime=datetime.fromisoformat(data.get('date'))
+        )
+        db.session.add(new_event)
+        db.session.commit()
+        return jsonify({"status": "success"})

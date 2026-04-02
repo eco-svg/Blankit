@@ -3,53 +3,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiInput = document.getElementById('aiInput');
     const sendAiBtn = document.getElementById('sendAiBtn');
 
+    // Local session memory (Not in DB)
+    let knowledgeMemory = [
+        { role: "system", content: "You are the Knowledge Engine. Provide objective, high-detail facts. Keep it cold and data-driven." }
+    ];
+
     function appendMessage(text, sender) {
         const msgDiv = document.createElement('div');
         msgDiv.className = `chat-message ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
         msgDiv.textContent = text;
         chatWindow.appendChild(msgDiv);
-        chatWindow.scrollTop = chatWindow.scrollHeight; // Auto-scroll to bottom
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    function askAI() {
+    function askKnowledge() {
         const prompt = aiInput.value.trim();
         if (!prompt) return;
 
-        // 1. Show user message
         appendMessage(prompt, 'user');
-        aiInput.value = '';
-        
-        // Disable input while thinking
-        aiInput.disabled = true;
-        sendAiBtn.style.opacity = '0.5';
+        knowledgeMemory.push({ role: "user", content: prompt });
 
-        // 2. Fetch from our Python backend
+        // Maintain 10-prompt sliding window (Total 11 items including system prompt)
+        if (knowledgeMemory.length > 11) {
+            knowledgeMemory.splice(1, 1); 
+        }
+
+        aiInput.value = '';
+        aiInput.disabled = true;
+
         fetch('/api/ask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: prompt })
+            body: JSON.stringify({ messages: knowledgeMemory })
         })
         .then(res => res.json())
         .then(data => {
             if (data.reply) {
                 appendMessage(data.reply, 'ai');
-            } else {
-                appendMessage("Error: Could not reach the mainframe.", 'ai');
+                knowledgeMemory.push({ role: "assistant", content: data.reply });
             }
         })
-        .catch(err => {
-            appendMessage("Connection offline.", 'ai');
-        })
+        .catch(() => appendMessage("Knowledge stream interrupted.", "ai"))
         .finally(() => {
-            // Re-enable input
             aiInput.disabled = false;
-            sendAiBtn.style.opacity = '1';
             aiInput.focus();
         });
     }
 
-    sendAiBtn.addEventListener('click', askAI);
-    aiInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') askAI();
-    });
+    sendAiBtn.addEventListener('click', askKnowledge);
+    aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') askKnowledge(); });
 });

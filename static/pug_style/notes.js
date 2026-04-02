@@ -195,25 +195,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnConfirmDelete = document.getElementById('confirmDeleteBtn');
     const btnCancelDelete = document.getElementById('cancelDeleteBtn');
 
-    // 1. Show the modal when the trash can is clicked
     btnDeleteNote.addEventListener('click', () => {
         if (!currentNoteId) {
-            // If it's an unsaved blank note, just exit
             btnBack.click();
             return;
         }
         deleteModal.classList.remove('hidden');
     });
 
-    // 2. Hide the modal if they click Cancel
     btnCancelDelete.addEventListener('click', () => {
         deleteModal.classList.add('hidden');
     });
 
-    // 3. Execute the delete if they confirm
     btnConfirmDelete.addEventListener('click', () => {
-        
-        // Optional: Change button text to show it's working
         const originalText = btnConfirmDelete.textContent;
         btnConfirmDelete.textContent = "Deleting...";
         
@@ -223,19 +217,23 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
-                deleteModal.classList.add('hidden'); 
-                currentNoteId = null; 
-                btnBack.click();      
-                loadNotesList();      
+                console.log("Vault Updated");
+                deleteModal.classList.add('hidden'); // Hide the modal
+                
+                // INSTANT CALENDAR SYNC
+                if (window.refreshNexusCalendar) {
+                    window.refreshNexusCalendar();
+                }
+                
+                btnBack.click(); // Return to list view
             }
         })
         .catch(err => {
             console.error("Failed to delete:", err);
-            alert("Delete failed. Check connection.");
+            alert("Delete failed.");
         })
         .finally(() => {
-            // Reset button text no matter what
             btnConfirmDelete.textContent = originalText;
         });
     });
-});
+}); // <--- FINAL CLOSING FOR DOMContentLoaded

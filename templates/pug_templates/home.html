@@ -91,24 +91,24 @@
           </div>
       </div>
       
-      <div class="card ask" id="sec-ask" style="display: flex; flex-direction: column;">
-          <div class="card-top-bar">
-              <h2 class="card-title" style="color: var(--accent);">Ask</h2>
-          </div>
-          
-          <div class="chat-window" id="chatWindow">
-              <div class="chat-message msg-ai">
-                  System online. What do you need to know?
-              </div>
-          </div>
+      <div class="card buddybot-main" id="sec-buddybot" style="display: flex; flex-direction: column;">
+        <div class="card-top-bar">
+            <h2 class="card-title" style="color: #4a7aaa;">BuddyBot</h2>
+        </div>
+        
+        <div class="chat-window" id="buddyChatWindow">
+            <div class="chat-message msg-ai">
+                Ready to optimize. I'm monitoring your flows and active goals. What's the mission?
+            </div>
+        </div>
 
-          <div class="chat-input-pill">
-              <input type="text" id="aiInput" placeholder="Ask anything..." autocomplete="off">
-              <button class="send-ai-btn" id="sendAiBtn" title="Send">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
-          </div>
-      </div>
+        <div class="chat-input-pill">
+            <input type="text" id="buddyInput" placeholder="Strategize with BuddyBot..." autocomplete="off">
+            <button class="send-ai-btn" id="sendBuddyBtn" style="background: #4a7aaa;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+     </div>
       
       <div class="card goal" id="sec-goals" style="display: flex; flex-direction: column;">
           <span class="card-label" style="display: none;">Goal</span>
@@ -172,12 +172,33 @@
       <div class="r-card streak">
         <span class="card-label">Streak 🔥</span>
       </div>
-      <div class="r-card buddybot">
-        <span class="card-label">Buddy Bot</span>
-      </div>
-      <div class="r-card calender">
-        <span class="card-label">Calendar</span>
-      </div>
+      <div class="r-card ask-sidebar" id="sec-ask-sidebar">
+        <span class="card-label" style="position:static; margin-bottom:10px; display:block;">Knowledge Engine</span>
+        
+        <div class="chat-window mini-chat" id="chatWindow">
+            <div class="chat-message msg-ai" style="font-size: 0.8rem;">Fact-retrieval mode active. 10-prompt cache ready.</div>
+        </div>
+
+        <div class="chat-input-pill mini-pill">
+            <input type="text" id="aiInput" placeholder="Quick Knowledge Search..." autocomplete="off">
+            <button class="send-ai-btn" id="sendAiBtn" style="width:28px; height:28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+      <div class="r-card calender" id="calendarCard">
+    <div class="calendar-header">
+        <button id="prevMonth">&lt;</button>
+        <span id="monthDisplay">Month Year</span>
+        <button id="nextMonth">&gt;</button>
+    </div>
+    <div class="calendar-weekdays">
+        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+    </div>
+    <div class="calendar-days" id="calendarDays"></div>
+    
+    <span class="card-label">Silo Calendar</span>
+</div>
     </aside>
 
   </div>
@@ -223,6 +244,7 @@
   <script src="{{ url_for('pug.static', filename='clock.js') }}"></script> 
   <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script> 
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
 
 </body>
 </html>
