@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blankit | The Gateway</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='gateway.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="background-grid"></div>
+
+    <div class="gateway-wrapper">
+        <div class="gateway-header">
+            <h1>Blankit<span>.</span></h1>
+            <p>Select your operational route.</p>
+        </div>
+
+        <div class="cards-container">
+            <div class="route-card" data-theme="pug">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="route-icon">P</div>
+                    <h2>The Pug Route</h2>
+                    <p>The core dashboard. Master your flows and crush your goals.</p>
+                    
+                    <form class="auth-form" action="/auth" method="POST">
+                        <input type="hidden" name="requested_route" value="pug">
+                        <div class="input-group">
+                            <input type="text" name="username" required autocomplete="off" placeholder=" ">
+                            <label>Operator ID</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" name="password" required placeholder=" ">
+                            <label>Passcode</label>
+                        </div>
+                        <button type="submit" class="auth-btn">Initialize</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="route-card" data-theme="divyanshu">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="route-icon">D</div>
+                    <h2>Divyanshu Route</h2>
+                    <p>Secondary operational path. Enter at your own risk.</p>
+                    
+                    <form class="auth-form" action="/auth" method="POST">
+                        <input type="hidden" name="requested_route" value="divyanshu">
+                        <div class="input-group">
+                            <input type="text" name="username" required autocomplete="off" placeholder=" ">
+                            <label>Operator ID</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" name="password" required placeholder=" ">
+                            <label>Passcode</label>
+                        </div>
+                        <button type="submit" class="auth-btn">Initialize</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="route-card" data-theme="svg">
+                <div class="card-glow"></div>
+                <div class="card-content">
+                    <div class="route-icon">S</div>
+                    <h2>SVG Route</h2>
+                    <p>The final path. For advanced visual operators only.</p>
+                    
+                    <form class="auth-form" action="/auth" method="POST">
+                        <input type="hidden" name="requested_route" value="svg">
+                        <div class="input-group">
+                            <input type="text" name="username" required autocomplete="off" placeholder=" ">
+                            <label>Operator ID</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="password" name="password" required placeholder=" ">
+                            <label>Passcode</label>
+                        </div>
+                        <button type="submit" class="auth-btn">Initialize</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='gateway.js') }}"></script>
+</body>
+</html>
