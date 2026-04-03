@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 __pycache__/
 *.pyc
 venv/
 instance/
 .env
 *.db
+=======
+.env
+__pycache__/
+*.pyc
+venv/
+>>>>>>> b62fa36 (base modal 2.3)

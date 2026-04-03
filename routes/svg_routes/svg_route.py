@@ -1,38 +1,34 @@
-from flask import Flask, render_template
-import os
+from flask import Blueprint, render_template
 
-app = Flask(__name__, 
-            template_folder="/home/eco-svg/warehouse2/Blankit/templates",
-            static_folder="/home/eco-svg/warehouse2/Blankit/static")
+svg = Blueprint('svg', __name__)
 
-#routes
-@app.route("/")
-def test():
-    return render_template("svg_templates/home.html",username="eco-svg")
+USERNAME = 'eco-svg'   # hardcoded until login is added
 
-@app.route("/settings")
+@svg.route('/')
+def home():
+    return render_template('svg_templates/home.html', username=USERNAME)
+
+@svg.route('/settings')
 def settings():
-    return render_template("svg_templates/settings.html",username="eco-svg")
+    return render_template('svg_templates/settings.html', username=USERNAME)
 
-@app.route("/manifestation")
+@svg.route('/manifestation')
 def manifestation():
-    return render_template("svg_templates/manifestation.html", username="ecosvg")
+    return render_template('svg_templates/manifestation.html', username=USERNAME)
 
-@app.route("/history")
+@svg.route('/history')
 def history():
-    return render_template("svg_templates/history.html", username="ecosvg")
+    return render_template('svg_templates/history.html', username=USERNAME)
 
-@app.route("/achievements")
+@svg.route('/achievements')
 def achievements():
-    return render_template("svg_templates/achievements.html", username="ecosvg")
+    return render_template('svg_templates/achievements.html', username=USERNAME)
 
-@app.route("/achievements/top")
+@svg.route('/achievements/top')
 def top_achievements():
-    return render_template("svg_templates/achievements",username="ecosvg")
+    # same page, JS handles the section scroll
+    return render_template('svg_templates/achievements.html', username=USERNAME)
 
-@app.route("/calendar")
+@svg.route('/calendar')
 def calendar():
-    return render_template("svg_templates/calendar.html", username="ecosvg")
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return render_template('svg_templates/calendar.html', username=USERNAME)
