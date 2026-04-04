@@ -25,17 +25,28 @@ class Note(db.Model):
     is_finished = db.Column(db.Boolean, default=False)    
     
     @property
-    def title(self): return decrypt(self._title) if self._title else ''
+    def title(self):
+        return decrypt(self._title) if self._title else ''
     @title.setter
-    def title(self, v): self._title = encrypt(v) if v else ''
-    @property
-    def body(self): return decrypt(self._body) if self._body else ''
-    @body.setter
-    def body(self, v): self._body = encrypt(v) if v else ''
+    def title(self, value):
+        self._title = encrypt(value) if value else ''
 
+    @property
+    def body(self):
+        return decrypt(self._body) if self._body else ''
+    @body.setter
+    def body(self, value):
+        self._body = encrypt(value) if value else ''
+
+    # THIS IS THE FUNCTION IT WAS LOOKING FOR
     def to_dict(self):
         return {
-            'id': self.id, 'title': self.title, 'body': self.body, 
-            'entry_type': self.entry_type, 'is_finished': self.is_finished,   
-            'start_datetime': self.start_datetime.isoformat() if self.start_datetime else None
+            'id': self.id,
+            'title': self.title,
+            'body': self.body,
+            'entry_type': self.entry_type,     
+            'is_finished': self.is_finished,   
+            'start_datetime': self.start_datetime.isoformat() if self.start_datetime else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }

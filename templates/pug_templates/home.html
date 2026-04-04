@@ -9,10 +9,14 @@
 <body>
 
   <header class="main-header" id="mainHeader">
-    <div class="header-left">
-      <div class="logo">B<span>.</span></div>
-      <div class="greeting">Hey, <strong>User</strong></div>
-    </div>
+<div class="header-left">
+  <div class="logo">B<span>.</span></div>
+  <div class="greeting">
+    <span class="greeting-hey">Hey !</span>
+    <!-- {{ username }} is a Jinja2 template variable — Flask fills it in from session -->
+    <span class="greeting-name">{{ username }}</span>
+  </div>
+</div>
 
     <nav class="header-nav">
       <a href="#sec-notes"   class="nav-pill">Notes</a>
@@ -22,14 +26,29 @@
     </nav>
 
     <div class="header-right">
-      <div class="clock-widget">
-        <span class="cw-time"  id="cwTime">00:00</span>
-        <span class="cw-sep">|</span>
-        <span class="cw-date"  id="cwDate">Mon, Jan 1</span>
-        <span class="cw-sep">|</span>
-        <span class="cw-weather" id="cwWeather">☀️ --°</span>
-      </div>
+    <div class="clock-widget stats-integrated">
+        <div class="cw-info">
+            <div class="cw-row">
+                <span class="cw-time" id="cwTime">00:00</span>
+                <span class="cw-sep">|</span>
+                <span class="cw-weather" id="cwWeather">☀️ --°</span>
+            </div>
+            <div class="cw-row">
+                <span class="cw-date" id="cwDate">Jan 1</span>
+                <span class="cw-sep">|</span>
+                <span class="cw-day" id="cwDay">Monday</span>
+            </div>
+        </div>
+
+        <button id="statsBtn" class="stats-btn-inner">
+            <span class="stats-label">STATS</span>
+            <div class="stats-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            </div>
+        </button>
     </div>
+</div>
+
   </header>
 
   <div class="page-layout">
@@ -43,9 +62,7 @@
     <main class="playground">
       
       <div class="card notes" id="sec-notes">   
-          <div class="gap-bar span-row" id="dreamContainer">
-              </div>
-          
+<div class="gap-bar span-row dream-bar" id="dreamContainer"></div>          
           <div class="card-top-bar">
               <h2 class="card-title">Notes</h2>
           </div>
@@ -79,36 +96,39 @@
              <div id="noteBody" class="infinite-canvas" contenteditable="true" data-placeholder="Start your flow (Text, Image, Video)..."></div>
 
              <div class="editor-media-actions">
-                 <input type="file" id="imageInput" accept="image/*" style="display: none;">
-                 <input type="file" id="videoInput" accept="video/mp4,video/webm" style="display: none;">
-                 <button class="media-btn" id="btnInsertImage" title="Add Image">
+                 <input type="date" id="noteDateInput" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 4px; outline: none; font-family: var(--font-mono); font-size: 0.8rem; margin-right: 10px; cursor: pointer;">
+                 
+                 <label class="media-btn" title="Add Image" style="cursor: pointer; overflow: hidden; position: relative;">
                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                 </button>
-                 <button class="media-btn" id="btnInsertVideo" title="Add Video">
+                     <input type="file" id="imageInput" accept="image/*" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
+                 </label>
+
+                 <label class="media-btn" title="Add Video" style="cursor: pointer; overflow: hidden; position: relative;">
                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                 </button>
+                     <input type="file" id="videoInput" accept="video/mp4,video/webm" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
+                 </label>
              </div>
           </div>
       </div>
       
       <div class="card buddybot-main" id="sec-buddybot" style="display: flex; flex-direction: column;">
-        <div class="card-top-bar">
-            <h2 class="card-title" style="color: #4a7aaa;">BuddyBot</h2>
-        </div>
-        
-        <div class="chat-window" id="buddyChatWindow">
-            <div class="chat-message msg-ai">
-                Ready to optimize. I'm monitoring your flows and active goals. What's the mission?
-            </div>
-        </div>
+          <div class="card-top-bar">
+              <h2 class="card-title" style="color: #4a7aaa;">BuddyBot</h2>
+          </div>
+          
+          <div class="chat-window" id="buddyChatWindow">
+              <div class="chat-message msg-ai">
+                  Ready to optimize. I'm monitoring your flows and active goals. What's the mission?
+              </div>
+          </div>
 
-        <div class="chat-input-pill">
-            <input type="text" id="buddyInput" placeholder="Strategize with BuddyBot..." autocomplete="off">
-            <button class="send-ai-btn" id="sendBuddyBtn" style="background: #4a7aaa;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-     </div>
+          <div class="chat-input-pill">
+              <input type="text" id="buddyInput" placeholder="Strategize with BuddyBot..." autocomplete="off">
+              <button class="send-ai-btn" id="sendBuddyBtn" style="background: #4a7aaa;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+          </div>
+      </div>
       
       <div class="card goal" id="sec-goals" style="display: flex; flex-direction: column;">
           <span class="card-label" style="display: none;">Goal</span>
@@ -202,7 +222,36 @@
     </aside>
 
   </div>
-
+  <div id="statsModal" class="custom-modal hidden">
+    <div class="modal-content stats-sheet">
+        <div class="stats-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="logo">PUG<span>_OS</span> // STATS</h2>
+            <button class="icon-btn close-modal" style="border: none; font-size: 1.5rem; background: transparent; cursor: pointer; color: var(--text-dim);">&times;</button>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <label>Archive</label>
+                <div class="stat-value" id="stat-notes">--</div>
+                <div class="stat-sub">Flows Synced</div>
+            </div>
+            <div class="stat-card accent">
+                <label>The Grind</label>
+                <div class="stat-value" id="stat-streak">--</div>
+                <div class="stat-sub">Day Streak</div>
+            </div>
+            <div class="stat-card">
+                <label>Vault</label>
+                <div class="stat-value" id="stat-media">--</div>
+                <div class="stat-sub">Media Objects</div>
+            </div>
+            <div class="stat-card accent">
+                <label>Vessel</label>
+                <div class="stat-value">10km</div>
+                <div class="stat-sub">Target Goal</div>
+            </div>
+        </div>
+    </div>
+</div>
   <div id="deleteModal" class="custom-modal hidden">
       <div class="modal-content">
           <h3 style="margin-bottom: 10px; color: var(--text); font-weight: 600; font-size: 1.4rem;">Delete Flow?</h3>
@@ -245,6 +294,8 @@
   <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script> 
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}"></script>
 
 </body>
 </html>

@@ -1,55 +1,100 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const chatWindow = document.getElementById('chatWindow');
-    const aiInput = document.getElementById('aiInput');
-    const sendAiBtn = document.getElementById('sendAiBtn');
 
-    // Local session memory (Not in DB)
-    let knowledgeMemory = [
-        { role: "system", content: "You are the Knowledge Engine. Provide objective, high-detail facts. Keep it cold and data-driven." }
-    ];
+    const chatWindow  = document.getElementById('chatWindow');
+    const aiInput     = document.getElementById('aiInput');
+    const sendBtn     = document.getElementById('sendAiBtn');
 
-    function appendMessage(text, sender) {
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `chat-message ${sender === 'user' ? 'msg-user' : 'msg-ai'}`;
-        msgDiv.textContent = text;
-        chatWindow.appendChild(msgDiv);
+    // How many prompts the user has used this session
+    // This is the "10-prompt cache" mentioned in the UI
+    let promptCount = 0;
+    const MAX_PROMPTS = 10;
+
+    // ── Add a message bubble to the chat window ──
+    // role = 'user' or 'ai'
+    function addMessage(text, role) {
+        const msg = document.createElement('div');
+        msg.className = `chat-message msg-${role}`;
+
+        // marked.parse() converts markdown text → HTML
+        // e.g. **bold** becomes <strong>bold</strong>
+        // This is why marked.min.js is loaded in home.html
+        msg.innerHTML = (role === 'ai' && typeof marked !== 'undefined')
+            ? marked.parse(text)
+            : text;
+
+        chatWindow.appendChild(msg);
+
+        // Auto-scroll to the latest message
+        // scrollTop = scrollHeight pushes scroll position to the very bottom
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    function askKnowledge() {
-        const prompt = aiInput.value.trim();
-        if (!prompt) return;
+    // ── Show a typing indicator while waiting for response ──
+    function showTyping() {
+        const el = document.createElement('div');
+        el.className = 'chat-message msg-ai';
+        el.id = 'typingIndicator';
+        el.innerHTML = '<span style="opacity:0.5; font-style:italic;">Thinking...</span>';
+        chatWindow.appendChild(el);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
 
-        appendMessage(prompt, 'user');
-        knowledgeMemory.push({ role: "user", content: prompt });
+    function removeTyping() {
+        const el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+    }
 
-        // Maintain 10-prompt sliding window (Total 11 items including system prompt)
-        if (knowledgeMemory.length > 11) {
-            knowledgeMemory.splice(1, 1); 
+    // ── Main send function ──
+    async function sendMessage() {
+        const query = aiInput.value.trim();
+        if (!query) return;
+
+        // Enforce prompt limit
+        if (promptCount >= MAX_PROMPTS) {
+            addMessage('10-prompt cache limit reached for this session. Refresh to reset.', 'ai');
+            return;
         }
 
         aiInput.value = '';
-        aiInput.disabled = true;
+        promptCount++;
+        addMessage(query, 'user');
+        showTyping();
 
-        fetch('/api/ask', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: knowledgeMemory })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.reply) {
-                appendMessage(data.reply, 'ai');
-                knowledgeMemory.push({ role: "assistant", content: data.reply });
+        try {
+            // POST the query to our Flask backend
+            // Flask then calls the AI API and returns the response
+            // Keeping AI calls server-side means the API key is never exposed to the browser
+            const res = await fetch('/api/ask', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ query: query })
+            });
+
+            const data = await res.json();
+            removeTyping();
+
+            if (data.answer) {
+                addMessage(data.answer, 'ai');
+            } else if (data.error) {
+                addMessage(`Error: ${data.error}`, 'ai');
             }
-        })
-        .catch(() => appendMessage("Knowledge stream interrupted.", "ai"))
-        .finally(() => {
-            aiInput.disabled = false;
-            aiInput.focus();
-        });
+
+        } catch (err) {
+            removeTyping();
+            console.error('Ask error:', err);
+            addMessage('Connection failed. Check your network.', 'ai');
+        }
     }
 
-    sendAiBtn.addEventListener('click', askKnowledge);
-    aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') askKnowledge(); });
+    // ── Event listeners ──
+    sendBtn.addEventListener('click', sendMessage);
+
+    // Enter key sends, Shift+Enter adds a new line
+    aiInput.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
 });

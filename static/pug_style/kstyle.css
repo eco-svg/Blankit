@@ -84,12 +84,39 @@ body {
 .logo span { color: var(--accent); }
 
 .greeting {
-  font-size: 0.82rem;
-  font-weight: 300;
-  color: var(--text-muted);
-  white-space: nowrap;
+  display: flex;
+  flex-direction: column;   /* stack lines vertically */
+  gap: 1px;
+  line-height: 1.2;
 }
 .greeting strong { color: var(--text); font-weight: 500; }
+
+.greeting-hey {
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+ 
+.greeting-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  /* Shows ". . ." after the name using CSS content */
+  /* Remove the ::after if you don't want the dots */
+}
+ 
+.greeting-name::after {
+  content: ' . . .';
+  color: var(--accent);
+  font-weight: 300;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
 
 .header-nav {
   flex: 1;
@@ -120,36 +147,69 @@ body {
   background: var(--accent-glow);
 }
 
-.header-right { flex-shrink: 0; }
+.header-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
 
 .clock-widget {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;    /* two rows stacked */
+  gap: 3px;
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 5px 16px;
+  border-radius: var(--radius);
+  padding: 8px 16px;
+  /* Match r-bar width — var(--rbar-w) is 350px */
+  width: var(--rbar-w);
+  box-sizing: border-box;
 }
-
+ 
+/* Each row inside the clock widget */
+.cw-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
 .cw-time {
   font-family: var(--font-mono);
-  font-size: 0.88rem;
+  font-size: 1.1rem;         /* bigger for the main time */
   font-weight: 500;
   color: var(--accent);
   letter-spacing: 0.06em;
+  min-width: 60px;           /* prevents layout jump as time changes */
 }
-
-.cw-date, .cw-weather {
+ 
+.cw-weather {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
   letter-spacing: 0.03em;
+  flex: 1;                   /* takes remaining row space */
 }
-
+ 
+.cw-date {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  min-width: 60px;
+}
+ 
+.cw-day {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 0.04em;
+  flex: 1;
+}
+ 
 .cw-sep {
   color: var(--border);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  flex-shrink: 0;
 }
 
 .l-bar {
@@ -420,11 +480,36 @@ body {
     display: none !important;
 }
 
-.notes-view-list, .notes-view-editor {
+/* Find and replace the .notes-view-list, .notes-view-editor block */
+.notes-view-list{
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-height: 0; 
+    overflow: hidden; /* <--- THIS IS THE MAGIC LINE: Clips the image bleed */
+    border-radius: var(--radius);
     animation: fadeUp 0.3s ease forwards;
+    position: relative;
+}
+
+.notes-view-editor {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden; /* Keep the galaxy inside the card */
+    position: relative;
+}
+
+.note-items-container {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 0; /* Keeps the scrollbar strictly inside this box */
+    padding-bottom: 20px; /* Gives the last note some breathing room so it doesn't touch the floor */
 }
 
 /* --- Screen 1: List View --- */
@@ -524,15 +609,17 @@ body {
     background: transparent;
 }
 
+/* Find the .infinite-canvas block and update the padding */
 .infinite-canvas {
     flex-grow: 1;
     outline: none;
     overflow-y: auto;
+    overflow-x: hidden;
     font-family: var(--font-body);
-    font-size: 1.1rem; /* Increased from 0.95rem */
-    line-height: 1.7;  /* Slightly taller lines for readability */
+    font-size: 1.1rem;
+    line-height: 1.7;
     color: var(--text);
-    padding-bottom: 60px; 
+    padding-bottom: 90px; /* Room for the date/image/video buttons */
 }
 
 /* Placeholder logic for contenteditable */
@@ -572,17 +659,16 @@ body {
     color: var(--accent);
     background: var(--accent-glow);
 }
-/* This targets any image inside ANY div that has the canvas class */
+/* Find and replace the div.infinite-canvas img block */
 div.infinite-canvas img, 
 div.infinite-canvas video {
-    width: auto !important;
-    max-width: 220px !important; /* Shrunk from 300px */
-    height: auto !important;
-    max-height: 180px !important; /* Shrunk from 250px */
     display: block !important;
+    max-width: 200px ; /* Stretches to card width, but never past it */
+    height: 150px;     /* Keeps the stars from looking squashed */
     margin: 15px 0 !important;
     border-radius: 10px !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
 }
 
 /* --- NEW CARD HEADERS --- */
@@ -812,17 +898,18 @@ div.infinite-canvas video {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Find and replace the .gap-bar block */
 .gap-bar {
     position: absolute;
-    top: -70px; /* Sits perfectly in the 100px gap above the 700px card */
+    top: -90px;
     left: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    z-index: 10;
+    z-index: 100; /* Bumping this way up so it floats above everything */
+    pointer-events: none; /* Allows you to click the card through the gap bar space */
 }
-
 /* For cards that share a row, stretch the gap bar across both columns */
 .gap-bar.span-row {
     width: calc(200% + var(--gap)); 
@@ -833,34 +920,64 @@ div.infinite-canvas video {
     width: 100%;
 }
 
+.dream-bar {
+  display: flex !important;
+  justify-content: center;
+  align-items: start;
+  min-height: 80px; 
+  padding: 0 20px;
+  z-index: 100;
+}
+ 
+/* The text that gaps.js injects into dreamContainer */
+.dream-text {
+  font-family: var(--font-display) !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;       /* bold */
+  text-transform: uppercase !important;   /* all caps */
+  letter-spacing: 0.12em !important;
+  color: var(--blue) !important;
+  text-align: center;
+  line-height: 1.4;
+  text-shadow: 0 0 20px rgba(74, 122, 170, 0.35);
+  /* The glow effect — spreads 20px around the text */
+}
+ 
+/* The dream input (before it's locked) */
 .dream-input {
-    background: transparent;
-    border: 1px dashed rgba(74, 122, 170, 0.5); /* Blue dashed border */
-    color: var(--blue);
-    padding: 10px 20px;
-    border-radius: 8px;
-    width: 90%;
-    text-align: center;
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    outline: none;
-    transition: all 0.3s ease;
+  background: rgba(74, 122, 170, 0.03); /* Extremely subtle blue tint */
+  border: 1px dashed rgba(74, 122, 170, 0.3); /* Dashed "under construction" vibe */
+  color: var(--blue);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-style: italic; /* Dreamy serif look */
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: 12px 30px;
+  border-radius: 12px;
+  outline: none;
+  width: auto;
+  min-width: 350px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .dream-input:focus {
-    border-color: var(--blue);
-    background: rgba(74, 122, 170, 0.05);
+  background: rgba(74, 122, 170, 0.08);
+  border: 1px solid var(--blue);
+  box-shadow: 0 0 30px rgba(74, 122, 170, 0.25), 
+              inset 0 0 10px rgba(74, 122, 170, 0.1);
+  transform: scale(1.02);
+  letter-spacing: 0.2em; /* Expands slightly when you're typing your future */
 }
 
-.dream-text {
-    color: var(--blue);
-    font-family: var(--font-display);
-    font-size: 1.3rem;
-    font-style: italic;
-    letter-spacing: 1px;
-    text-shadow: 0 0 15px rgba(74, 122, 170, 0.3);
+.dream-input::placeholder {
+  color: var(--text-dim);
+  font-style: normal;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
 }
-
 .quote-text {
     color: var(--text-muted); /* Slightly brighter than text-dim */
     font-family: var(--font-display); /* Your premium Fraunces serif font */
@@ -1066,3 +1183,143 @@ div.infinite-canvas video {
 .calendar-day.today { border: 1px solid var(--accent); color: var(--accent); }
 .calendar-day.has-event { background: var(--accent-glow); color: var(--accent); font-weight: bold; }
 .calendar-day.empty { cursor: default; }
+
+/* --- AI Chat Markdown Formatting --- */
+.msg-ai p {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.msg-ai p:last-child {
+    margin-bottom: 0;
+}
+
+.msg-ai ul, .msg-ai ol {
+    margin-left: 18px;
+    margin-bottom: 8px;
+    padding-left: 0;
+}
+
+.msg-ai li {
+    margin-bottom: 4px;
+}
+
+/* Make bold text pop with your theme color */
+.msg-ai strong {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.stats-trigger {
+    background: var(--accent-glow);
+    border-color: var(--accent);
+    color: var(--accent);
+    cursor: pointer;
+}
+
+.stats-sheet {
+    max-width: 600px !important;
+    background: rgba(20, 18, 15, 0.95) !important;
+    border: 1px solid var(--accent) !important;
+    box-shadow: 0 0 40px rgba(232, 160, 32, 0.15);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: left;
+}
+
+.stat-card label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    display: block;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--text);
+}
+
+.stat-card.accent .stat-value { color: var(--accent); }
+
+.stat-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+
+
+.clock-widget.stats-integrated {
+    display: flex;
+    flex-direction: row; /* Side-by-side */
+    align-items: center;
+    justify-content: space-between;
+    padding: 0; /* Removing padding to let the button fill the height */
+    overflow: hidden;
+    width: var(--rbar-w);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    height: 54px; /* Fixed height for a sleek header look */
+}
+
+.cw-info {
+    padding: 8px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+/* The Button in the "Red Box" Area */
+.stats-btn-inner {
+    height: 100%;
+    width: 90px;
+    background: var(--accent-glow);
+    border: none;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    gap: 4px;
+}
+
+.stats-btn-inner:hover {
+    background: var(--accent);
+}
+
+.stats-label {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    transition: color 0.2s;
+}
+
+.stats-icon {
+    color: var(--accent);
+    transition: color 0.2s;
+}
+
+.stats-btn-inner:hover .stats-label,
+.stats-btn-inner:hover .stats-icon {
+    color: var(--bg);
+}

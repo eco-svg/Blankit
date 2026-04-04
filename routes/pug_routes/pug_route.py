@@ -1,22 +1,17 @@
+# routes/pug_routes/pug_route.py
+
 import os
-import time
-from pathlib import Path
-from werkzeug.utils import secure_filename
-from flask import Blueprint, render_template, request, jsonify, url_for, send_from_directory, session # Added session
-from .extensions import db
-from .notes import Note 
-from dotenv import load_dotenv
+import uuid
 from datetime import datetime, timedelta
-import requests
-import re
-
-# --- DYNAMIC PATH FINDER ---
-current_dir = Path(__file__).resolve().parent 
-root_dir = current_dir.parent.parent         
-dotenv_path = root_dir / '.env'
-load_dotenv(dotenv_path=dotenv_path)
-
-CUSTOM_MEDIA_FOLDER = os.environ.get('BLANKIT_MEDIA_PATH', '/mnt/storage/blank_data/user_media')
+from flask import (
+    Blueprint, render_template, request,
+    jsonify, session, redirect, url_for, current_app
+)
+from minio import Minio               # pip install minio
+from minio.error import S3Error
+from werkzeug.utils import secure_filename
+from .extensions import db
+from .notes import Note, User
 
 pug_bp = Blueprint(
     'pug',
@@ -26,268 +21,427 @@ pug_bp = Blueprint(
     static_url_path='/pug_style'
 )
 
-# --- HELPER: CHECK LOGIN ---
-def get_current_user():
-    return session.get('user_id')
+# ─────────────────────────────────────────
+# MINIO SETUP
+# ─────────────────────────────────────────
+# MinIO runs locally on port 9000.
+# Credentials are read from environment variables — never hardcode them.
+# Set these in your .env file:
+#   MINIO_ENDPOINT=localhost:9000
+#   MINIO_ACCESS_KEY=your_access_key
+#   MINIO_SECRET_KEY=your_secret_key
+#   MINIO_BUCKET=blankit-media
 
-# --- 0. HOME ROUTE ---
-@pug_bp.route('/pug') # Explicit route to avoid clashing with the root index
+MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
+MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
+MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
+MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'blankit-media')
+
+# Minio() creates the client connection.
+# secure=False means HTTP not HTTPS — fine for localhost.
+# Set secure=True when you move to a remote server with SSL.
+minio_client = Minio(
+    MINIO_ENDPOINT,
+    access_key = MINIO_ACCESS_KEY,
+    secret_key = MINIO_SECRET_KEY,
+    secure     = False
+)
+
+def ensure_bucket():
+    """Creates the MinIO bucket if it doesn't exist yet."""
+    try:
+        if not minio_client.bucket_exists(MINIO_BUCKET):
+            minio_client.make_bucket(MINIO_BUCKET)
+    except S3Error as e:
+        print(f"MinIO bucket error: {e}")
+
+# Allowed file types
+ALLOWED_IMAGE = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_VIDEO = {'mp4', 'webm'}
+
+
+# ─────────────────────────────────────────
+# HELPERS
+# ─────────────────────────────────────────
+
+def login_required_api():
+    """Returns a 401 error response if user is not logged in, else None."""
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    return None
+
+
+# ─────────────────────────────────────────
+# PAGE ROUTES
+# ─────────────────────────────────────────
+
+@pug_bp.route('/home')
 def home():
-    if not get_current_user():
-        return jsonify({"error": "Please log in from the main page."}), 401
-    return render_template('home.html')
+    if 'user_id' not in session:
+        return redirect(url_for('index'))
+    # Pass username to template — replaces hardcoded "User" in header
+    return render_template('home.html', username=session.get('username', 'User'))
 
-# ==========================================
-# --- 1. NOTES API ---
-# ==========================================
-@pug_bp.route('/api/notes', methods=['GET', 'POST'])
-def handle_notes():
-    user_id = session.get('user_id')
+
+# ─────────────────────────────────────────
+# API: NOTES
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/notes', methods=['GET'])
+def get_notes():
+    err = login_required_api()
+    if err: return err
+
+    notes = Note.query.filter_by(
+        user_id    = session['user_id'],
+        entry_type = 'note',
+        is_deleted = False
+    ).order_by(Note.updated_at.desc()).all()
+
+    return jsonify([n.to_dict() for n in notes])
+
+
+@pug_bp.route('/api/notes', methods=['POST'])
+def save_note():
+    err = login_required_api()
+    if err: return err
+
     data = request.get_json()
-    title = data.get('title', '')
-    body = data.get('body', '')
-    
-    # 1. Standard Note Saving Logic
-    note_id = data.get('id')
+    if not data:
+        return jsonify({'status': 'error'}), 400
+
+    note_id      = data.get('id')
+    title        = data.get('title', '')
+    body         = data.get('body',  '')
+    start_dt_str = data.get('start_datetime')
+
+    start_dt = None
+    if start_dt_str:
+        try:
+            start_dt = datetime.strptime(start_dt_str, '%Y-%m-%d')
+        except ValueError:
+            pass
+
     if note_id:
-        note = Note.query.filter_by(id=note_id, user_id=user_id).first()
-        if note:
-            note.title = title
-            note.body = body
-    else:
-        note = Note(user_id=user_id, entry_type='note', title=title, body=body)
-        db.session.add(note)
-    
-    # --- 2. THE MAGIC PARSER ---
-    # Looks for pattern: [YYYY-MM-DD] : Event Name
-    pattern = r"\[(\d{4}-\d{2}-\d{2})\]\s*:\s*(.*)"
-    match = re.search(pattern, title) # Checks the title for the pattern
-    
-    if match:
-        extracted_date = match.group(1)
-        extracted_event = match.group(2)
-        
-        # Check if this event already exists to avoid duplicates
-        existing_event = Note.query.filter_by(
-            user_id=user_id, 
-            entry_type='event', 
-            title=extracted_event
+        note = Note.query.filter_by(
+            id      = note_id,
+            user_id = session['user_id']
         ).first()
-        
-        if not existing_event:
-            new_event = Note(
-                user_id=user_id,
-                entry_type='event',
-                title=extracted_event,
-                start_datetime=datetime.fromisoformat(extracted_date)
-            )
-            db.session.add(new_event)
+        if not note:
+            return jsonify({'status': 'error', 'message': 'Not found'}), 404
+        note.title          = title
+        note.body           = body
+        note.start_datetime = start_dt
+        note.updated_at     = datetime.utcnow()
+    else:
+        note = Note(user_id=session['user_id'], entry_type='note', start_datetime=start_dt)
+        note.title = title
+        note.body  = body
+        db.session.add(note)
 
     db.session.commit()
-    return jsonify({"status": "success", "id": note.id})
+    return jsonify({'status': 'success', 'id': note.id})
+
 
 @pug_bp.route('/api/notes/<int:note_id>', methods=['DELETE'])
-def soft_delete_note(note_id):
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
+def delete_note(note_id):
+    err = login_required_api()
+    if err: return err
 
-    note = Note.query.filter_by(id=note_id, user_id=user_id).first()
-    if note:
-        note.is_deleted = True 
-        db.session.commit()
-        return jsonify({"status": "success"})
-    return jsonify({"error": "Note not found"}), 404
+    note = Note.query.filter_by(id=note_id, user_id=session['user_id']).first_or_404()
+    note.is_deleted = True
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
-# ==========================================
-# --- 2. GOALS API ---
-# ==========================================
-@pug_bp.route('/api/goals', methods=['GET', 'POST'])
-def handle_goals():
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
 
-    if request.method == 'GET':
-        goals = Note.query.filter_by(user_id=user_id, entry_type='goal', is_deleted=False).order_by(Note.created_at.desc()).all()
-        return jsonify([g.to_dict() for g in goals])
+# ─────────────────────────────────────────
+# API: GOALS
+# ─────────────────────────────────────────
 
-    if request.method == 'POST':
-        data = request.get_json()
-        new_goal = Note(user_id=user_id, entry_type='goal', title=data.get('title', ''))
-        db.session.add(new_goal)
-        db.session.commit()
-        return jsonify({"status": "success"})
+@pug_bp.route('/api/goals', methods=['GET'])
+def get_goals():
+    err = login_required_api()
+    if err: return err
 
-@pug_bp.route('/api/goals/<int:goal_id>', methods=['PATCH', 'DELETE'])
-def modify_goal(goal_id):
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
+    goals = Note.query.filter_by(
+        user_id    = session['user_id'],
+        entry_type = 'goal',
+        is_deleted = False
+    ).order_by(Note.created_at.asc()).all()
 
-    goal = Note.query.filter_by(id=goal_id, user_id=user_id, entry_type='goal').first()
-    if not goal:
-        return jsonify({"error": "Not found"}), 404
+    return jsonify([g.to_dict() for g in goals])
 
-    if request.method == 'PATCH':
-        data = request.get_json()
-        if 'is_finished' in data:
-            goal.is_finished = data['is_finished']
-        db.session.commit()
-        return jsonify({"status": "success"})
 
-    if request.method == 'DELETE':
-        goal.is_deleted = True
-        db.session.commit()
-        return jsonify({"status": "success"})
+@pug_bp.route('/api/goals', methods=['POST'])
+def add_goal():
+    err = login_required_api()
+    if err: return err
 
-# ==========================================
-# --- 3. MEDIA API ---
-# ==========================================
-@pug_bp.route('/api/upload', methods=['POST'])
-def upload_file():
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
+    data  = request.get_json()
+    title = data.get('title', '').strip()
+    if not title:
+        return jsonify({'status': 'error'}), 400
 
-    file = request.files.get('file')
-    if file:
-        os.makedirs(CUSTOM_MEDIA_FOLDER, exist_ok=True)
-        safe_name = secure_filename(file.filename)
-        unique_filename = f"user_{user_id}_{int(time.time())}_{safe_name}"
-        
-        filepath = os.path.join(CUSTOM_MEDIA_FOLDER, unique_filename)
-        file.save(filepath)
-        
-        file_url = url_for('pug.serve_media', filename=unique_filename)
-        return jsonify({'url': file_url})
-    return jsonify({'error': 'No file'}), 400
+    goal = Note(user_id=session['user_id'], entry_type='goal')
+    goal.title = title
+    db.session.add(goal)
+    db.session.commit()
+    return jsonify({'status': 'success', 'id': goal.id})
 
-@pug_bp.route('/media/<filename>')
-def serve_media(filename):
-    # Depending on how secure you want this, you might check if the filename starts with f"user_{session['user_id']}_"
-    return send_from_directory(CUSTOM_MEDIA_FOLDER, filename)
 
-# ==========================================
-# --- 4. CONSISTENCY API ---
-# ==========================================
-@pug_bp.route('/api/consistency', methods=['GET'])
-def get_consistency():
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
+@pug_bp.route('/api/goals/<int:goal_id>', methods=['PATCH'])
+def update_goal(goal_id):
+    err = login_required_api()
+    if err: return err
 
-    today = datetime.utcnow().date()
-    data = []
-    
-    for i in range(6, -1, -1):
-        target_date = today - timedelta(days=i)
-        
-        added = Note.query.filter(
-            Note.user_id == user_id, 
-            Note.entry_type == 'goal',
-            Note.is_deleted == False,
-            db.func.date(Note.created_at) == target_date
-        ).count()
-        
-        finished = Note.query.filter(
-            Note.user_id == user_id,
-            Note.entry_type == 'goal',
-            Note.is_finished == True,
-            Note.is_deleted == False,
-            db.func.date(Note.updated_at) == target_date
-        ).count()
-        
-        data.append({
-            "day": target_date.strftime("%a"), 
-            "added": added,
-            "finished": finished
-        })
-        
-    return jsonify(data)
-
-# ==========================================
-# --- 5. THE DREAM API ---
-# ==========================================
-@pug_bp.route('/api/dream', methods=['GET', 'POST'])
-def handle_dream():
-    user_id = get_current_user()
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
-
-    if request.method == 'GET':
-        dream = Note.query.filter_by(user_id=user_id, entry_type='dream', is_deleted=False).first()
-        return jsonify({"dream": dream.title if dream else None})
-
-    if request.method == 'POST':
-        existing = Note.query.filter_by(user_id=user_id, entry_type='dream', is_deleted=False).first()
-        if existing:
-            return jsonify({"error": "Dream already locked in."}), 403
-
-        data = request.get_json()
-        new_dream = Note(user_id=user_id, entry_type='dream', title=data.get('title'))
-        db.session.add(new_dream)
-        db.session.commit()
-        return jsonify({"status": "success", "dream": new_dream.title})
-
-# ==========================================
-# --- 6. THE AI ASK API ---
-# ==========================================
-@pug_bp.route('/api/ask', methods=['POST'])
-def ask_ai():
-    # The AI doesn't access the database, but we still ensure only logged-in users can burn your API credits!
-    if not get_current_user(): return jsonify({"error": "Unauthorized"}), 401
+    goal = Note.query.filter_by(
+        id=goal_id, user_id=session['user_id'], entry_type='goal'
+    ).first_or_404()
 
     data = request.get_json()
-    user_prompt = data.get('prompt', '')
+    if 'is_finished' in data:
+        goal.is_finished = data['is_finished']
 
-    if not user_prompt:
-        return jsonify({"reply": "I need a prompt to process."}), 400
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
-    api_key = os.environ.get("GROQ_API_KEY")
-    if not api_key:
-        return jsonify({"reply": "System offline: GROQ_API_KEY missing from .env file."}), 500
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-    
-    payload = {
-            "model": "llama-3.3-70b-versatile",        
-            "messages": [
-            {"role": "system", "content": "You are the AI brain embedded in a personal productivity dashboard called Blankit. You are concise, highly intelligent, and direct. Keep your answers relatively short unless asked to explain deeply, as you are displaying in a small web widget."},
-            {"role": "user", "content": user_prompt}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 2048
-    }
+@pug_bp.route('/api/goals/<int:goal_id>', methods=['DELETE'])
+def delete_goal(goal_id):
+    err = login_required_api()
+    if err: return err
 
+    goal = Note.query.filter_by(
+        id=goal_id, user_id=session['user_id'], entry_type='goal'
+    ).first_or_404()
+    goal.is_deleted = True
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+# ─────────────────────────────────────────
+# API: DREAM
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/dream', methods=['GET'])
+def get_dream():
+    err = login_required_api()
+    if err: return err
+
+    dream = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='dream', is_deleted=False
+    ).first()
+
+    return jsonify({'dream': dream.title if dream else None})
+
+
+@pug_bp.route('/api/dream', methods=['POST'])
+def set_dream():
+    err = login_required_api()
+    if err: return err
+
+    existing = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='dream', is_deleted=False
+    ).first()
+
+    if existing:
+        return jsonify({'status': 'error', 'message': 'Dream already locked'}), 409
+
+    data  = request.get_json()
+    title = data.get('title', '').strip()
+    if not title:
+        return jsonify({'status': 'error'}), 400
+
+    dream = Note(user_id=session['user_id'], entry_type='dream')
+    dream.title = title
+    db.session.add(dream)
+    db.session.commit()
+    return jsonify({'status': 'success', 'dream': dream.title})
+
+
+# ─────────────────────────────────────────
+# API: CONSISTENCY CHART
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/consistency', methods=['GET'])
+def get_consistency():
+    err = login_required_api()
+    if err: return err
+
+    result = []
+    today  = datetime.utcnow().date()
+
+    for i in range(6, -1, -1):
+        day   = today - timedelta(days=i)
+        start = datetime(day.year, day.month, day.day, 0,  0,  0)
+        end   = datetime(day.year, day.month, day.day, 23, 59, 59)
+
+        added = Note.query.filter(
+            Note.user_id    == session['user_id'],
+            Note.entry_type == 'goal',
+            Note.is_deleted == False,
+            Note.created_at >= start,
+            Note.created_at <= end
+        ).count()
+
+        finished = Note.query.filter(
+            Note.user_id     == session['user_id'],
+            Note.entry_type  == 'goal',
+            Note.is_deleted  == False,
+            Note.is_finished == True,
+            Note.updated_at  >= start,
+            Note.updated_at  <= end
+        ).count()
+
+        result.append({
+            'day':      day.strftime('%a'),
+            'added':    added,
+            'finished': finished
+        })
+
+    return jsonify(result)
+
+
+# ─────────────────────────────────────────
+# API: CALENDAR EVENTS
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/events', methods=['GET'])
+def get_events():
+    err = login_required_api()
+    if err: return err
+
+    events = Note.query.filter(
+        Note.user_id        == session['user_id'],
+        Note.is_deleted     == False,
+        Note.start_datetime != None
+    ).all()
+
+    return jsonify([{
+        'id':             e.id,
+        'title':          e.title,
+        'start_datetime': e.start_datetime.isoformat() if e.start_datetime else None
+    } for e in events])
+
+
+# ─────────────────────────────────────────
+# API: FILE UPLOAD (MinIO)
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/upload', methods=['POST'])
+def upload_file():
+    err = login_required_api()
+    if err: return err
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+
+    file     = request.files['file']
+    filename = secure_filename(file.filename)
+
+    if not filename:
+        return jsonify({'error': 'Empty filename'}), 400
+
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+
+    if ext in ALLOWED_IMAGE:
+        content_type = f'image/{ext if ext != "jpg" else "jpeg"}'
+    elif ext in ALLOWED_VIDEO:
+        content_type = f'video/{ext}'
+    else:
+        return jsonify({'error': f'.{ext} not allowed'}), 400
+
+    # Build object name: user_id/uuid.ext
+    # This keeps each user's files in their own "folder" inside the bucket
+    # user_id scoping means you can never accidentally serve User A's file to User B
+    object_name = f"user_{session['user_id']}/{uuid.uuid4().hex}.{ext}"
+
+    ensure_bucket()
+
+    # Read file into memory and upload to MinIO
+    # file_data = the raw bytes of the uploaded file
+    file_data   = file.read()
+    file_length = len(file_data)
+
+    import io
+    # io.BytesIO wraps the bytes in a file-like object
+    # MinIO's put_object needs a file-like object, not raw bytes
+    minio_client.put_object(
+        MINIO_BUCKET,
+        object_name,
+        io.BytesIO(file_data),
+        length       = file_length,
+        content_type = content_type
+    )
+
+    # Build a URL the browser can use to load the file
+    # We proxy it through Flask so auth is enforced — no direct MinIO access
+    url = url_for('pug.serve_media', object_name=object_name)
+    return jsonify({'url': url, 'type': 'image' if ext in ALLOWED_IMAGE else 'video'})
+
+
+@pug_bp.route('/api/media/<path:object_name>')
+def serve_media(object_name):
+    """
+    Serves a file from MinIO to the browser.
+    path: in the route means object_name can contain slashes e.g. user_1/abc.jpg
+
+    Why proxy through Flask instead of direct MinIO URL?
+    - Enforces login — anonymous users can't hotlink to media
+    - Hides your MinIO endpoint from the browser
+    - Lets you add watermarks, resize, or other processing later
+    """
+    err = login_required_api()
+    if err: return err
+
+    # Security check: user can only access their own files
+    # The object name starts with user_{id}/ — verify it matches session
+    expected_prefix = f"user_{session['user_id']}/"
+    if not object_name.startswith(expected_prefix):
+        return jsonify({'error': 'Forbidden'}), 403
+
+    from flask import Response
     try:
-        response = requests.post(url, headers=headers, json=payload)
-        response_data = response.json()
-        
-        if 'choices' in response_data and len(response_data['choices']) > 0:
-            reply_text = response_data['choices'][0]['message']['content']
-            return jsonify({"reply": reply_text})
-        else:
-            error_msg = response_data.get('error', {}).get('message', 'Unknown API Error')
-            return jsonify({"reply": f"API Error: {error_msg}"})
-            
-    except Exception as e:
-        print(f"AI API Error: {e}")
-        return jsonify({"reply": "System offline: Could not connect to Groq mainframe."}), 500
-
-@pug_bp.route('/api/events', methods=['GET', 'POST'])
-def handle_events():
-    user_id = session.get('user_id')
-    if not user_id: return jsonify({"error": "Unauthorized"}), 401
-
-    if request.method == 'GET':
-        # Fetch all entries where entry_type is 'event'
-        events = Note.query.filter_by(user_id=user_id, entry_type='event', is_deleted=False).all()
-        return jsonify([e.to_dict() for e in events])
-
-    if request.method == 'POST':
-        data = request.get_json()
-        new_event = Note(
-            user_id=user_id,
-            entry_type='event',
-            title=data.get('title'),
-            start_datetime=datetime.fromisoformat(data.get('date'))
+        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        # Stream the file back to the browser
+        # iter_content chunks the response so large videos don't load into RAM at once
+        return Response(
+            response.stream(32 * 1024),  # 32KB chunks
+            content_type = response.headers.get('content-type', 'application/octet-stream')
         )
-        db.session.add(new_event)
-        db.session.commit()
-        return jsonify({"status": "success"})
+    except S3Error:
+        return jsonify({'error': 'File not found'}), 404
+
+
+# ─────────────────────────────────────────
+# API: ASK (Knowledge Engine)
+# ─────────────────────────────────────────
+
+@pug_bp.route('/api/ask', methods=['POST'])
+def ask():
+    err = login_required_api()
+    if err: return err
+
+    data  = request.get_json()
+    query = data.get('query', '').strip()
+    if not query:
+        return jsonify({'error': 'Empty query'}), 400
+
+    import requests as req
+    try:
+        # DuckDuckGo Instant Answer API — free, no key, works worldwide
+        # Swap this URL for your Ollama endpoint when BuddyBot is ready:
+        #   http://localhost:11434/api/generate
+        r = req.get(
+            'https://api.duckduckgo.com/',
+            params  = {'q': query, 'format': 'json', 'no_html': 1, 'skip_disambig': 1},
+            timeout = 5
+        )
+        result = r.json()
+        answer = result.get('AbstractText') or result.get('Answer') or \
+                 "No direct answer found. Try rephrasing."
+        return jsonify({'answer': answer})
+
+    except Exception as e:
+        current_app.logger.error(f"Ask error: {e}")
+        return jsonify({'error': 'Knowledge engine unavailable'}), 503
