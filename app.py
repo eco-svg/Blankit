@@ -25,23 +25,23 @@ def create_app():
     )
     app.config.from_object(Config)
 
-    # ── init db ──────────────────────────────────────────────────
+    # ── init db ──────────────────────────────────────────────
     db.init_app(app)
 
-    # ── register blueprints ──────────────────────────────────────
+    # ── register blueprints ──────────────────────────────────
     from routes.svg_routes.svg_route import svg
     from routes.svg_routes.api_route import api
+    from routes.auth_route import auth
     app.register_blueprint(svg)
     app.register_blueprint(api)
+    app.register_blueprint(auth)
 
-    # ── create tables + seed badges on first run ─────────────────
+    # ── create tables + seed badges on first run ─────────────
     with app.app_context():
         db.create_all()
-        from svg_services.badge_service import seed_badges
         seed_badges()
 
     return app
-
 
 if __name__ == '__main__':
     app = create_app()

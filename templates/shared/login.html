@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-distro="ecosvg">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Blankit — Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='shared/login.css') }}"/>
+  <style>
+    #bg-ecosvg   { background-image: url("{{ url_for('static', filename='shared/svg_backgroung.jpg') }}"); }
+    #bg-divyanhu { background-image: url("{{ url_for('static', filename='shared/divyanshu_background.jpg') }}"); }
+  </style>
+</head>
+<body>
+
+  <!-- PER-DISTRO BACKGROUNDS -->
+  <div class="bg-layer active" id="bg-ecosvg"></div>
+  <div class="bg-layer" id="bg-divyanhu"></div>
+  <div class="bg-layer" id="bg-thepug">
+    <video autoplay muted loop playsinline>
+      <source src="{{ url_for('static', filename='shared/pug_background.mp4') }}" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- TERMINAL BAR -->
+  <div class="terminal-bar">
+    <span class="t-dot r"></span>
+    <span class="t-dot y"></span>
+    <span class="t-dot g"></span>
+    <span class="t-title">blankit@auth:~$</span>
+    <span class="t-cmd" id="termCmd">_</span>
+  </div>
+
+  <main class="main">
+
+    <!-- DISTRO SWIPER -->
+    <section class="distro-section">
+      <p class="section-label">// select_distro</p>
+
+      <div class="swiper-wrap">
+        <button class="swipe-arrow" id="arrowLeft">&#8592;</button>
+
+        <div class="swiper" id="swiper">
+
+          <div class="distro-card active" data-distro="ecosvg" data-index="0">
+            <span class="distro-index">01</span>
+            <span class="distro-glyph">◈</span>
+            <span class="distro-name">ecosvg</span>
+            <span class="distro-handle">@eco-svg</span>
+            <div class="distro-tags">
+              <span class="tag">habits</span>
+              <span class="tag">AI</span>
+              <span class="tag">tracking</span>
+            </div>
+          </div>
+
+          <div class="distro-card" data-distro="divyanhu" data-index="1">
+            <span class="distro-index">02</span>
+            <span class="distro-glyph">◇</span>
+            <span class="distro-name">divyanhu</span>
+            <span class="distro-handle">@divyanhu</span>
+            <div class="distro-tags"><span class="tag">—</span></div>
+          </div>
+
+          <div class="distro-card" data-distro="thepug" data-index="2">
+            <span class="distro-index">03</span>
+            <span class="distro-glyph">◉</span>
+            <span class="distro-name">thepug</span>
+            <span class="distro-handle">@thepug</span>
+            <div class="distro-tags"><span class="tag">—</span></div>
+          </div>
+
+        </div>
+
+        <button class="swipe-arrow" id="arrowRight">&#8594;</button>
+      </div>
+
+      <div class="swiper-dots">
+        <span class="s-dot active" data-index="0"></span>
+        <span class="s-dot" data-index="1"></span>
+        <span class="s-dot" data-index="2"></span>
+      </div>
+
+      <div class="distro-info">
+        <div class="info-line">
+          <span class="info-key">maintainer</span>
+          <span class="info-val" id="infoMaintainer">eco-svg</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">focus</span>
+          <span class="info-val" id="infoFocus">habit tracking + AI insights</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">status</span>
+          <span class="info-val info-active" id="infoStatus">● active</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">about</span>
+          <span class="info-val info-muted" id="infoAbout">— to be filled —</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUTH CARD -->
+    <section class="auth-section">
+      <p class="section-label">// <span id="authLabel">auth.login</span></p>
+
+      <div class="auth-card">
+
+        <div class="tabs">
+          <button class="tab active" data-tab="login">login</button>
+          <button class="tab" data-tab="register">register</button>
+          <button class="tab" data-tab="forgot">forgot</button>
+          <div class="tab-line" id="tabLine"></div>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="panel active" id="panel-login">
+          <div class="method-row">
+            <button class="method-btn active" data-method="email">email</button>
+            <span class="sep">|</span>
+            <button class="method-btn" data-method="username">username</button>
+          </div>
+          <div class="field">
+            <label class="field-label" id="loginIdentifierLabel">// email</label>
+            <input class="field-input" type="email" id="loginIdentifier"
+                   placeholder="you@example.com" autocomplete="email"/>
+            <span class="field-err" id="loginIdentifierErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">// password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="loginPassword"
+                     placeholder="••••••••" autocomplete="current-password"/>
+              <button class="eye-btn" data-target="loginPassword">show</button>
+            </div>
+            <span class="field-err" id="loginPasswordErr"></span>
+          </div>
+          <div class="field-row">
+            <label class="check-label">
+              <input type="checkbox" id="rememberMe"/> keep_me_in
+            </label>
+            <button class="link-btn" data-tab="forgot">forgot?</button>
+          </div>
+          <button class="submit-btn" id="loginBtn">
+            $ login --distro=<span class="btn-distro" id="loginDistroLabel">ecosvg</span>
+            <span class="btn-loader hidden" id="loginLoader"></span>
+          </button>
+          <div class="flash hidden" id="loginFlash"></div>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="panel" id="panel-register">
+          <div class="field">
+            <label class="field-label">// username</label>
+            <input class="field-input" type="text" id="regUsername"
+                   placeholder="your_handle" autocomplete="username"/>
+            <span class="field-err" id="regUsernameErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">// email</label>
+            <input class="field-input" type="email" id="regEmail"
+                   placeholder="you@example.com" autocomplete="email"/>
+            <span class="field-err" id="regEmailErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">// password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="regPassword"
+                     placeholder="min 8 chars" autocomplete="new-password"/>
+              <button class="eye-btn" data-target="regPassword">show</button>
+            </div>
+            <div class="strength-row">
+              <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+              <span class="strength-label" id="strengthLabel">—</span>
+            </div>
+            <span class="field-err" id="regPasswordErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label">// confirm_password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="regConfirm"
+                     placeholder="••••••••" autocomplete="new-password"/>
+              <button class="eye-btn" data-target="regConfirm">show</button>
+            </div>
+            <span class="field-err" id="regConfirmErr"></span>
+          </div>
+          <button class="submit-btn" id="registerBtn">
+            $ register --distro=<span class="btn-distro" id="registerDistroLabel">ecosvg</span>
+            <span class="btn-loader hidden" id="registerLoader"></span>
+          </button>
+          <div class="flash hidden" id="registerFlash"></div>
+        </div>
+
+        <!-- FORGOT -->
+        <div class="panel" id="panel-forgot">
+          <div class="field">
+            <label class="field-label">// email</label>
+            <input class="field-input" type="email" id="forgotEmail"
+                   placeholder="you@example.com" autocomplete="email"/>
+            <span class="field-err" id="forgotEmailErr"></span>
+          </div>
+          <button class="submit-btn" id="forgotBtn">
+            $ send --reset-link
+            <span class="btn-loader hidden" id="forgotLoader"></span>
+          </button>
+          <div class="flash hidden" id="forgotFlash"></div>
+          <button class="link-btn back" data-tab="login">← back to login</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="locked-bar hidden" id="lockedBar">
+    🔒 distro locked — your account is bound to
+    <strong id="lockedName">ecosvg</strong>.
+    switching not allowed.
+  </div>
+
+  <script src="{{ url_for('static', filename='shared/login.js') }}"></script>
+</body>
+</html>
