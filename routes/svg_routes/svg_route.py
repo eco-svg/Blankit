@@ -5,8 +5,13 @@ svg = Blueprint('svg', __name__)
 USERNAME = 'eco-svg'   # hardcoded until login is added
 
 @svg.route('/')
+def login():
+    return render_template('shared/login.html', username=USERNAME)
+
+@svg.route('/home')
 def home():
     return render_template('svg_templates/home.html', username=USERNAME)
+
 
 @svg.route('/settings')
 def settings():
