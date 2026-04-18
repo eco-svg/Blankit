@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ecosvg — habit tracker</title>
+  <title>{{ username }} — habit tracker</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
@@ -13,7 +13,7 @@
 
 <body>
 
-  <!-- ── SIDEBAR ── -->
+  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <span class="brand">
@@ -22,44 +22,29 @@
       </span>
       <button class="sidebar-close" id="sidebarClose">✕</button>
     </div>
-
     <nav class="sidebar-nav">
-      <a class="sidebar-nav-item active" href="/">
-        <span class="sidebar-nav-icon">⬡</span> Home
-      </a>
-
-      <a class="sidebar-nav-item" href="/manifestation">
-        <span class="sidebar-nav-icon">✦</span> Manifestation
-      </a>
-      <a class="sidebar-nav-item" href="/history">
-        <span class="sidebar-nav-icon">◷</span> History
-      </a>
-      <a class="sidebar-nav-item" href="/achievements">
-        <span class="sidebar-nav-icon">◎</span> Achievements
-      </a>
-      <a class="sidebar-nav-item" href="/calendar">
-        <span class="sidebar-nav-icon">▦</span> Calendar
-      </a>
-      <a class="sidebar-nav-item" href="/settings">
-        <span class="sidebar-nav-icon">⚙</span> Settings
-      </a>
+      <a class="sidebar-nav-item active" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
     </nav>
-
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
         <div class="avatar">{{ username[:2].upper() }}</div>
         <div class="sidebar-profile-info">
           <span class="sidebar-username">{{ username }}</span>
-          <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- sidebar backdrop -->
   <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
 
-  <!-- ── TOPBAR ── -->
+  <!-- TOPBAR -->
   <header class="topbar">
     <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
       <span></span><span></span><span></span>
@@ -68,33 +53,28 @@
       <span class="brand-icon">◈</span>
       <span class="brand-name">{{ username }}</span>
     </a>
-    <!-- <div class="theme-switcher" id="themeSwitcher">
-      <button class="theme-btn active" data-theme="forest">Forest</button>
-      <button class="theme-btn" data-theme="cyber">Cyber</button>
-      <button class="theme-btn" data-theme="ember">Ember</button>
-      <button class="theme-btn" data-theme="void">◻ Void</button>
-    </div> -->
     <div class="topbar-right">
-      <span class="streak-badge" id="globalStreak">🔥 9 day streak</span>
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar" id="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
 
-  <!-- ── HERO GREETING ── -->
+  <!-- HERO -->
   <section class="hero">
     <p class="hero-date" id="heroDate"></p>
     <h1 class="hero-title" id="heroGreeting">Good morning</h1>
-    <p class="hero-sub" id="heroSub">You have 3 habits left today</p>
+    <p class="hero-sub" id="heroSub">Loading habits…</p>
     <div class="ring-wrap">
       <svg class="ring-svg" viewBox="0 0 120 120">
-        <circle class="ring-bg" cx="60" cy="60" r="50" />
+        <circle class="ring-bg"   cx="60" cy="60" r="50" />
         <circle class="ring-fill" cx="60" cy="60" r="50" id="ringFill" />
-        <text class="ring-pct" x="60" y="60" text-anchor="middle" dominant-baseline="central" id="ringPct">67%</text>
+        <text class="ring-pct" x="60" y="60" text-anchor="middle"
+              dominant-baseline="central" id="ringPct">0%</text>
       </svg>
     </div>
   </section>
 
-  <!-- ── MAIN CONTENT ── -->
+  <!-- MAIN -->
   <main class="main-grid">
     <section class="card habits-card">
       <div class="card-header">
@@ -102,70 +82,8 @@
         <button class="add-btn" id="addHabitBtn" title="Add habit">+</button>
       </div>
       <ul class="habit-list" id="habitList">
-        <li class="habit-item done" data-id="1">
-          <button class="habit-check" aria-label="Toggle habit"><span class="check-inner">✓</span></button>
-          <div class="habit-info">
-            <span class="habit-name">Morning walk</span>
-            <span class="habit-meta auto-tracked">📍 GPS auto-tracked</span>
-          </div>
-          <div class="habit-right">
-            <span class="habit-streak">12d</span>
-            <div class="habit-bar">
-              <div class="habit-bar-fill" style="--pct:80%"></div>
-            </div>
-          </div>
-        </li>
-        <li class="habit-item done" data-id="2">
-          <button class="habit-check" aria-label="Toggle habit"><span class="check-inner">✓</span></button>
-          <div class="habit-info">
-            <span class="habit-name">Drink 2L water</span>
-            <span class="habit-meta">manual</span>
-          </div>
-          <div class="habit-right">
-            <span class="habit-streak">7d</span>
-            <div class="habit-bar">
-              <div class="habit-bar-fill" style="--pct:70%"></div>
-            </div>
-          </div>
-        </li>
-        <li class="habit-item" data-id="3">
-          <button class="habit-check" aria-label="Toggle habit"><span class="check-inner"></span></button>
-          <div class="habit-info">
-            <span class="habit-name">Read 20 pages</span>
-            <span class="habit-meta">manual</span>
-          </div>
-          <div class="habit-right">
-            <span class="habit-streak">3d</span>
-            <div class="habit-bar">
-              <div class="habit-bar-fill" style="--pct:30%"></div>
-            </div>
-          </div>
-        </li>
-        <li class="habit-item" data-id="4">
-          <button class="habit-check" aria-label="Toggle habit"><span class="check-inner"></span></button>
-          <div class="habit-info">
-            <span class="habit-name">10 push-ups</span>
-            <span class="habit-meta auto-tracked">📷 Camera AI</span>
-          </div>
-          <div class="habit-right">
-            <span class="habit-streak">5d</span>
-            <div class="habit-bar">
-              <div class="habit-bar-fill" style="--pct:50%"></div>
-            </div>
-          </div>
-        </li>
-        <li class="habit-item" data-id="5">
-          <button class="habit-check" aria-label="Toggle habit"><span class="check-inner"></span></button>
-          <div class="habit-info">
-            <span class="habit-name">Meditate 10 min</span>
-            <span class="habit-meta auto-tracked">🎙 Mic detected</span>
-          </div>
-          <div class="habit-right">
-            <span class="habit-streak">2d</span>
-            <div class="habit-bar">
-              <div class="habit-bar-fill" style="--pct:20%"></div>
-            </div>
-          </div>
+        <li class="habit-item habit-empty">
+          <span style="color:var(--clr-text-muted);font-size:0.78rem">Loading…</span>
         </li>
       </ul>
     </section>
@@ -174,11 +92,10 @@
       <div class="card ai-card">
         <div class="ai-icon">◈</div>
         <p class="ai-label">AI insight</p>
-        <p class="ai-text" id="aiInsight">You always skip reading on Wednesdays. Want to move it to Thursday morning?
-        </p>
+        <p class="ai-text" id="aiInsight">Analysing your patterns…</p>
         <div class="ai-actions">
-          <button class="ai-btn accept">Accept</button>
-          <button class="ai-btn dismiss">Dismiss</button>
+          <button class="ai-btn accept" id="aiAccept">Accept</button>
+          <button class="ai-btn dismiss" id="aiDismiss">Dismiss</button>
         </div>
       </div>
       <div class="card heatmap-card">
@@ -194,7 +111,7 @@
         <p class="goal-title">Get fit in 90 days</p>
         <div class="goal-progress-wrap">
           <div class="goal-progress-bar">
-            <div class="goal-progress-fill" style="--gpct: 48%"></div>
+            <div class="goal-progress-fill" style="--gpct:48%"></div>
           </div>
           <span class="goal-pct">48%</span>
         </div>
@@ -203,7 +120,7 @@
     </aside>
   </main>
 
-  <!-- ── CAMERA AI OVERLAY ── -->
+  <!-- CAMERA OVERLAY -->
   <div class="cam-overlay hidden" id="camOverlay">
     <div class="cam-modal">
       <div class="cam-header">
@@ -221,7 +138,7 @@
     </div>
   </div>
 
-  <!-- ── ADD HABIT MODAL ── -->
+  <!-- ADD HABIT MODAL -->
   <div class="cam-overlay hidden" id="addModal">
     <div class="cam-modal add-modal">
       <div class="cam-header">
@@ -241,7 +158,8 @@
     </div>
   </div>
 
+  <!-- pass username to JS for onboarding key -->
+  <script>window.__blankit_user = "{{ username }}";</script>
   <script src="{{ url_for('static', filename='svg_style/svg_animation.js') }}"></script>
 </body>
-
 </html>

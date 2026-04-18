@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════
-   manifestation.js — coming soon page
+   community.js — coming soon page
    ═══════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,8 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (notifyBtn) {
     notifyBtn.addEventListener('click', () => {
-      notifyBtn.textContent = '✓ Done!';
-      notifyBtn.disabled    = true;
+      notifyBtn.textContent   = '✓ Done!';
+      notifyBtn.disabled      = true;
       notifyBtn.style.opacity = '0.6';
       if (notifyFlash) {
         notifyFlash.classList.remove('hidden');

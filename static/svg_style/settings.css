@@ -1,0 +1,23 @@
+/* ═══════════════════════════════════════
+   settings.css — Blankit settings page
+   ═══════════════════════════════════════ */
+
+/* ── LOGOUT BUTTON ── */
+.logout-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.45rem 1.1rem;
+  background: transparent;
+  border: 1px solid #d95252;
+  border-radius: 6px;
+  color: #d95252;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.logout-btn:hover {
+  background: #d95252;
+  color: #fff;
+}
