@@ -910,6 +910,10 @@ div.infinite-canvas video {
     z-index: 100; /* Bumping this way up so it floats above everything */
     pointer-events: none; /* Allows you to click the card through the gap bar space */
 }
+
+.gap-bar > * {
+    pointer-events: auto; /* ...but allow clicks on the actual text/input! */
+}
 /* For cards that share a row, stretch the gap bar across both columns */
 .gap-bar.span-row {
     width: calc(200% + var(--gap)); 
@@ -927,6 +931,11 @@ div.infinite-canvas video {
   min-height: 80px; 
   padding: 0 20px;
   z-index: 100;
+  pointer-events: none; /* Ensure the dream-bar container also ignores clicks */
+}
+
+.dream-bar > * {
+    pointer-events: auto; /* Re-enable clicks for the input inside the dream-bar */
 }
  
 /* The text that gaps.js injects into dreamContainer */
