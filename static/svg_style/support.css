@@ -1,0 +1,229 @@
+/* ═══════════════════════════════════════
+   support.css — VEYRA support page
+   ═══════════════════════════════════════ */
+
+.sidebar-soon-tag {
+  font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
+  background: var(--accent-soft); color: var(--accent);
+  letter-spacing: 0.08em; margin-left: 4px; vertical-align: middle;
+}
+
+.sup-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── HERO ── */
+.sup-hero {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.sup-glyph {
+  font-size: 2.4rem;
+  color: var(--accent);
+  animation: heartbeat 2s ease-in-out infinite;
+}
+@keyframes heartbeat {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+.sup-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--accent);
+  font-style: italic;
+  line-height: 1.1;
+}
+.sup-sub {
+  font-size: 0.8rem;
+  color: var(--text2);
+  max-width: 440px;
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+}
+
+/* ── SECTIONS ── */
+.sup-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.sup-section-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text3);
+  border-left: 2px solid var(--accent);
+  padding-left: 8px;
+}
+
+/* ── ROADMAP ── */
+.sup-roadmap { display: flex; flex-direction: column; gap: 2px; }
+.sup-roadmap-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.sup-roadmap-item:last-child { border-bottom: none; }
+.sup-roadmap-icon {
+  font-size: 1.1rem;
+  color: var(--accent2);
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+.sup-roadmap-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sup-roadmap-name { font-size: 0.82rem; color: var(--text); letter-spacing: 0.02em; }
+.sup-roadmap-desc { font-size: 0.68rem; color: var(--text3); line-height: 1.5; }
+.sup-roadmap-status {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sup-roadmap-status.pending  { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent2); }
+.sup-roadmap-status.building { background: rgba(239,159,39,0.15); color: #EF9F27; border: 1px solid rgba(239,159,39,0.3); }
+.sup-roadmap-status.active   { background: rgba(59,109,17,0.12); color: var(--accent2); border: 1px solid var(--accent2); }
+
+/* ── SOCIAL CARDS ── */
+.sup-socials {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.sup-social-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.sup-social-card:hover {
+  border-color: var(--accent2);
+  background: var(--accent-soft);
+  transform: translateX(4px);
+}
+
+/* platform accent colours on hover */
+.sup-social-card[data-platform="github"]:hover    { border-color: #6e40c9; }
+.sup-social-card[data-platform="instagram"]:hover { border-color: #e1306c; }
+.sup-social-card[data-platform="gmail"]:hover     { border-color: #ea4335; }
+.sup-social-card[data-platform="twitter"]:hover   { border-color: #1d9bf0; }
+
+.sup-social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.sup-social-card:hover .sup-social-icon { background: var(--bg); }
+
+.sup-social-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.sup-social-name {
+  font-size: 0.82rem;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+.sup-social-handle {
+  font-size: 0.7rem;
+  color: var(--accent2);
+  letter-spacing: 0.04em;
+}
+.sup-social-desc {
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.03em;
+}
+.sup-social-arrow {
+  font-size: 1rem;
+  color: var(--text3);
+  flex-shrink: 0;
+  transition: color 0.15s, transform 0.15s;
+}
+.sup-social-card:hover .sup-social-arrow {
+  color: var(--accent);
+  transform: translate(2px, -2px);
+}
+
+/* ── CONTACT FORM ── */
+.sup-contact-card { display: flex; flex-direction: column; gap: 1rem; }
+.sup-contact-desc { font-size: 0.78rem; color: var(--text2); line-height: 1.6; }
+.sup-form { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.sup-input {
+  width: 100%;
+  padding: 0.55rem 0.8rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+  resize: none;
+}
+.sup-input:focus { border-color: var(--accent); }
+.sup-textarea { min-height: 100px; }
+
+.sup-send-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1.4rem;
+  background: var(--accent);
+  border: none;
+  border-radius: 6px;
+  color: var(--bg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.sup-send-btn:hover { opacity: 0.82; }
+
+/* ── HONEST NOTE ── */
+.sup-note {
+  font-size: 0.72rem;
+  color: var(--text3);
+  line-height: 1.7;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.sup-note-icon { color: var(--accent2); flex-shrink: 0; margin-top: 2px; }
+
+.hidden { display: none !important; }

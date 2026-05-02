@@ -21,3 +21,283 @@
   background: #d95252;
   color: #fff;
 }
+
+/* ══════════════════════════════
+   DELETE ACCOUNT
+   ══════════════════════════════ */
+.delete-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.42rem 1rem;
+  background: transparent;
+  border: 1px solid #d95252;
+  border-radius: 6px;
+  color: #d95252;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.delete-btn:hover { background: #d95252; color: #fff; }
+
+/* modal overlay */
+.del-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.del-overlay.hidden { display: none !important; }
+
+.del-modal {
+  background: var(--surface);
+  border: 1px solid #d95252;
+  border-radius: 14px;
+  padding: 2rem 2rem 1.5rem;
+  max-width: 400px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.del-icon {
+  font-size: 2rem;
+  color: #d95252;
+  text-align: center;
+}
+.del-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem;
+  color: #d95252;
+  text-align: center;
+  font-style: italic;
+}
+.del-desc {
+  font-size: 0.75rem;
+  color: var(--text2);
+  line-height: 1.6;
+  text-align: center;
+}
+.del-confirm-label {
+  font-size: 0.7rem;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+.del-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.del-input:focus { border-color: #d95252; }
+
+.del-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+.del-cancel-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.del-cancel-btn:hover { background: var(--bg2); }
+
+.del-confirm-btn {
+  flex: 1;
+  padding: 0.5rem;
+  background: #d95252;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.03em;
+}
+.del-confirm-btn:hover:not(:disabled) { opacity: 0.82; }
+.del-confirm-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.del-flash {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 0.25rem 0;
+}
+
+/* ══════════════════════════════
+   DELETE ACCOUNT BUTTON
+   ══════════════════════════════ */
+.delete-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  padding: 0.45rem 1.1rem;
+  background: transparent;
+  border: 1px solid #d95252;
+  border-radius: 6px;
+  color: #d95252;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.delete-btn:hover { background: #d95252; color: #fff; }
+
+/* ══════════════════════════════
+   DELETE CONFIRM MODAL
+   ══════════════════════════════ */
+.delete-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.delete-modal.hidden { display: none !important; }
+
+.delete-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 499;
+}
+.delete-modal-backdrop.hidden { display: none !important; }
+
+.delete-modal-box {
+  background: var(--surface);
+  border: 1px solid #d95252;
+  border-radius: 14px;
+  padding: 2rem 1.75rem;
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 501;
+  animation: slideUp 0.2s ease both;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.delete-modal-icon {
+  font-size: 1.8rem;
+  text-align: center;
+  color: #d95252;
+}
+
+.delete-modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem;
+  color: #d95252;
+  text-align: center;
+  margin: 0;
+}
+
+.delete-modal-desc {
+  font-size: 0.76rem;
+  color: var(--text2);
+  line-height: 1.6;
+  text-align: center;
+  margin: 0;
+}
+
+.delete-modal-confirm-label {
+  font-size: 0.7rem;
+  color: var(--text3);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+.delete-modal-confirm-label strong { color: var(--text); }
+
+.delete-modal-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.delete-modal-input:focus { border-color: #d95252; }
+
+.delete-modal-actions {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.delete-modal-cancel {
+  flex: 1;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.delete-modal-cancel:hover { border-color: var(--accent2); color: var(--text); }
+
+.delete-modal-confirm {
+  flex: 1;
+  padding: 0.5rem;
+  background: #d95252;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.03em;
+}
+.delete-modal-confirm:hover:not(:disabled) { opacity: 0.85; }
+.delete-modal-confirm:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.delete-modal-flash {
+  font-size: 0.7rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 5px;
+  border-left: 2px solid;
+  letter-spacing: 0.03em;
+}
+.delete-modal-flash.success { border-color: var(--accent); color: var(--accent); background: rgba(57,255,20,0.05); }
+.delete-modal-flash.error   { border-color: #d95252; color: #d95252; background: rgba(217,82,82,0.06); }

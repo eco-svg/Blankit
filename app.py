@@ -13,9 +13,12 @@ if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
 =======
 from flask import Flask
+from flask_mail import Mail
 from svg_config import Config
 from svg_models import db
 from svg_services.badge_service import seed_badges
+
+mail = Mail()
 
 def create_app():
     app = Flask(
@@ -25,18 +28,19 @@ def create_app():
     )
     app.config.from_object(Config)
 
-    # ── init db ──────────────────────────────────────────────
     db.init_app(app)
+    mail.init_app(app)
 
-    # ── register blueprints ──────────────────────────────────
     from routes.svg_routes.svg_route import svg
     from routes.svg_routes.api_route import api
-    from routes.auth_route import auth
+    from routes.auth_route import auth, init_mail
+
+    init_mail(mail)
+
     app.register_blueprint(svg)
     app.register_blueprint(api)
     app.register_blueprint(auth)
 
-    # ── create tables + seed badges on first run ─────────────
     with app.app_context():
         db.create_all()
         seed_badges()

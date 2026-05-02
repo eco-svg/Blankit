@@ -1,8 +1,13 @@
 /* ═══════════════════════════════════════════
-   calendar.js — ecosvg habit tracker
+   calendar.js — real API data per user
+   Todos saved to DB, habits from API
    ═══════════════════════════════════════════ */
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+
+  /* ── THEME ── */
+  const saved = localStorage.getItem('ecosvg-theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
 
   /* ══════════════════════════════
      STATE
@@ -10,65 +15,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const TODAY     = new Date();
   TODAY.setHours(0,0,0,0);
 
-  let currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
-  let miniMonth    = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
-  let selectedDate = new Date(TODAY);
-  let currentView  = 'monthly'; // 'monthly' | 'weekly'
-  let weekStart    = getWeekStart(TODAY);
+  let currentMonth     = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  let miniMonth        = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1);
+  let selectedDate     = new Date(TODAY);
+  let currentView      = 'monthly';
+  let weekStart        = getWeekStart(TODAY);
   let selectedPriority = 'medium';
-
-  // Mock habit data — replace with real data when backend ready
-  const HABITS = [
-    { id: 'walk',  name: 'Morning walk' },
-    { id: 'water', name: 'Drink 2L water' },
-    { id: 'read',  name: 'Read 20 pages' },
-    { id: 'push',  name: '10 push-ups' },
-    { id: 'med',   name: 'Meditate' },
-  ];
-
-  // Mock habit completion — random for demo
-  function getHabitCompletion(dateKey) {
-    // seed random based on date so it's stable per session
-    const seed = dateKey.split('-').reduce((a, b) => a + parseInt(b), 0);
-    return HABITS.map((h, i) => ({ ...h, done: ((seed + i * 7) % 3) !== 0 }));
-  }
+  let habits           = [];
+  let yearlyData       = [];
+  let todosCache       = {};
 
   /* ══════════════════════════════
-     STORAGE
+     FETCH HABITS + YEARLY DATA
      ══════════════════════════════ */
-  const TODOS_KEY = 'ecosvg-todos';
-
-  function loadTodos() {
-    try { return JSON.parse(localStorage.getItem(TODOS_KEY)) || {}; }
-    catch { return {}; }
-  }
-
-  function saveTodos(todos) {
-    localStorage.setItem(TODOS_KEY, JSON.stringify(todos));
-  }
-
-  function dateKey(date) {
-    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
-  }
-
-  function getTodosForDate(date) {
-    return loadTodos()[dateKey(date)] || [];
-  }
-
-  function setTodosForDate(date, todos) {
-    const all = loadTodos();
-    all[dateKey(date)] = todos;
-    saveTodos(all);
+  async function init() {
+    try {
+      const [hRes, yRes] = await Promise.all([
+        fetch('/api/habits'),
+        fetch('/api/stats/yearly'),
+      ]);
+      habits     = await hRes.json();
+      yearlyData = await yRes.json();
+    } catch(e) {
+      console.error('Calendar init failed', e);
+    }
+    renderMini();
+    renderMonthly();
+    renderDayDetail();
   }
 
   /* ══════════════════════════════
      HELPERS
      ══════════════════════════════ */
+  function dateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  }
+
   function getWeekStart(date) {
-    const d = new Date(date);
-    const day = d.getDay(); // 0=Sun
-    const diff = (day === 0) ? -6 : 1 - day; // Mon start
-    d.setDate(d.getDate() + diff);
+    const d   = new Date(date);
+    const day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
     d.setHours(0,0,0,0);
     return d;
   }
@@ -85,9 +71,61 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
   }
 
+  function getLevelForDate(key) {
+    const entry = yearlyData.find(d => d.date === key);
+    return entry ? entry.level : 0;
+  }
+
   const MONTH_NAMES = ['January','February','March','April','May','June',
-                        'July','August','September','October','November','December'];
+                       'July','August','September','October','November','December'];
   const SHORT_DAYS  = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  /* ══════════════════════════════
+     TODOS — API
+     ══════════════════════════════ */
+  async function fetchTodos(date) {
+    const key = dateKey(date);
+    if (todosCache[key]) return todosCache[key];
+    try {
+      const res  = await fetch(`/api/todos/${key}`);
+      const data = await res.json();
+      todosCache[key] = data;
+      return data;
+    } catch(e) {
+      return [];
+    }
+  }
+
+  async function addTodo(date, text, priority) {
+    const key = dateKey(date);
+    try {
+      const res  = await fetch(`/api/todos/${key}`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ text, priority }),
+      });
+      const todo = await res.json();
+      todosCache[key] = [...(todosCache[key] || []), todo];
+      return todo;
+    } catch(e) { return null; }
+  }
+
+  async function toggleTodoApi(todoId, date) {
+    const key = dateKey(date);
+    try {
+      const res  = await fetch(`/api/todos/item/${todoId}/toggle`, { method:'POST' });
+      const todo = await res.json();
+      todosCache[key] = (todosCache[key] || []).map(t => t.id === todoId ? todo : t);
+    } catch(e) { console.error(e); }
+  }
+
+  async function deleteTodoApi(todoId, date) {
+    const key = dateKey(date);
+    try {
+      await fetch(`/api/todos/item/${todoId}`, { method:'DELETE' });
+      todosCache[key] = (todosCache[key] || []).filter(t => t.id !== todoId);
+    } catch(e) { console.error(e); }
+  }
 
   /* ══════════════════════════════
      VIEW TOGGLE
@@ -115,8 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
      MINI CALENDAR
      ══════════════════════════════ */
   function renderMini() {
-    const label = document.getElementById('miniMonthLabel');
-    label.textContent = `${MONTH_NAMES[miniMonth.getMonth()]} ${miniMonth.getFullYear()}`;
+    document.getElementById('miniMonthLabel').textContent =
+      `${MONTH_NAMES[miniMonth.getMonth()]} ${miniMonth.getFullYear()}`;
 
     const container = document.getElementById('miniCalDays');
     container.innerHTML = '';
@@ -124,127 +162,103 @@ document.addEventListener('DOMContentLoaded', () => {
     const year  = miniMonth.getFullYear();
     const month = miniMonth.getMonth();
     const first = new Date(year, month, 1);
-    const last  = new Date(year, month + 1, 0);
+    const last  = new Date(year, month+1, 0);
+    let startDow = first.getDay();
+    startDow = startDow === 0 ? 6 : startDow - 1;
 
-    // Monday-start offset
-    let startDow = first.getDay(); // 0=Sun
-    startDow = (startDow === 0) ? 6 : startDow - 1;
-
-    const todos = loadTodos();
-
-    // prev month filler
     for (let i = 0; i < startDow; i++) {
-      const d = new Date(year, month, -startDow + i + 1);
-      const el = makeMiniDay(d, true, todos);
-      container.appendChild(el);
+      container.appendChild(makeMiniDay(new Date(year, month, -startDow+i+1), true));
     }
-    // current month
     for (let d = 1; d <= last.getDate(); d++) {
-      const date = new Date(year, month, d);
-      const el = makeMiniDay(date, false, todos);
-      container.appendChild(el);
+      container.appendChild(makeMiniDay(new Date(year, month, d), false));
     }
-    // next month filler
     const total = startDow + last.getDate();
-    const remainder = (7 - (total % 7)) % 7;
-    for (let i = 1; i <= remainder; i++) {
-      const d = new Date(year, month + 1, i);
-      const el = makeMiniDay(d, true, todos);
-      container.appendChild(el);
+    const rem   = (7 - (total % 7)) % 7;
+    for (let i = 1; i <= rem; i++) {
+      container.appendChild(makeMiniDay(new Date(year, month+1, i), true));
     }
   }
 
-  function makeMiniDay(date, otherMonth, todos) {
+  function makeMiniDay(date, otherMonth) {
     const el = document.createElement('div');
     el.className = 'mini-day';
     el.textContent = date.getDate();
-    if (otherMonth) el.classList.add('other-month');
-    if (isSameDay(date, TODAY)) el.classList.add('today');
+    if (otherMonth)              el.classList.add('other-month');
+    if (isSameDay(date, TODAY))  el.classList.add('today');
     if (isSameDay(date, selectedDate)) el.classList.add('selected');
-    const key = dateKey(date);
-    if (todos[key] && todos[key].length > 0) el.classList.add('has-todos');
+    const key   = dateKey(date);
+    const level = getLevelForDate(key);
+    if (level > 0) el.classList.add('has-todos');
     el.addEventListener('click', () => selectDate(date));
     return el;
   }
 
   document.getElementById('miniPrev').addEventListener('click', () => {
-    miniMonth = new Date(miniMonth.getFullYear(), miniMonth.getMonth() - 1, 1);
+    miniMonth = new Date(miniMonth.getFullYear(), miniMonth.getMonth()-1, 1);
     renderMini();
   });
   document.getElementById('miniNext').addEventListener('click', () => {
-    miniMonth = new Date(miniMonth.getFullYear(), miniMonth.getMonth() + 1, 1);
+    miniMonth = new Date(miniMonth.getFullYear(), miniMonth.getMonth()+1, 1);
     renderMini();
   });
 
   /* ══════════════════════════════
      DAY DETAIL
      ══════════════════════════════ */
-  function renderDayDetail() {
+  async function renderDayDetail() {
     document.getElementById('dayDetailDate').textContent = formatDateLabel(selectedDate);
 
-    // habit dots
+    // habit dots from yearlyData level
     const dotsWrap = document.getElementById('dayHabitDots');
     dotsWrap.innerHTML = '';
-    const habits = getHabitCompletion(dateKey(selectedDate));
     habits.forEach(h => {
       const dot = document.createElement('div');
-      dot.className = `habit-dot${h.done ? ' done' : ''}`;
+      dot.className = 'habit-dot';
       dot.innerHTML = `<div class="habit-dot-circle"></div><span>${h.name}</span>`;
       dotsWrap.appendChild(dot);
     });
 
-    renderTodoList();
+    await renderTodoList();
   }
 
-  function renderTodoList() {
-    const todos   = getTodosForDate(selectedDate);
-    const list    = document.getElementById('todoList');
-    const empty   = document.getElementById('todoEmpty');
+  async function renderTodoList() {
+    const todos = await fetchTodos(selectedDate);
+    const list  = document.getElementById('todoList');
+    const empty = document.getElementById('todoEmpty');
     list.innerHTML = '';
 
-    if (todos.length === 0) {
-      empty.style.display = 'block';
-      return;
-    }
+    if (!todos.length) { empty.style.display = 'block'; return; }
     empty.style.display = 'none';
 
-    todos.forEach((todo, idx) => {
+    todos.forEach(todo => {
       const li = document.createElement('li');
       li.className = `todo-item${todo.done ? ' done' : ''}`;
       li.innerHTML = `
         <button class="todo-check">${todo.done ? '✓' : ''}</button>
         <div class="todo-priority ${todo.priority}"></div>
         <span class="todo-text">${todo.text}</span>
-        <button class="todo-delete" title="Delete">✕</button>
-      `;
-      li.querySelector('.todo-check').addEventListener('click', () => toggleTodo(idx));
-      li.querySelector('.todo-delete').addEventListener('click', () => deleteTodo(idx));
+        <button class="todo-delete" title="Delete">✕</button>`;
+
+      li.querySelector('.todo-check').addEventListener('click', async () => {
+        await toggleTodoApi(todo.id, selectedDate);
+        await renderTodoList();
+        if (currentView === 'monthly') renderMonthly();
+        else renderWeekly();
+        renderMini();
+      });
+
+      li.querySelector('.todo-delete').addEventListener('click', async () => {
+        await deleteTodoApi(todo.id, selectedDate);
+        await renderTodoList();
+        if (currentView === 'monthly') renderMonthly();
+        else renderWeekly();
+        renderMini();
+      });
+
       list.appendChild(li);
     });
-
-    // refresh calendar cells too
-    if (currentView === 'monthly') renderMonthly();
-    else renderWeekly();
-    renderMini();
   }
 
-  function toggleTodo(idx) {
-    const todos = getTodosForDate(selectedDate);
-    todos[idx].done = !todos[idx].done;
-    setTodosForDate(selectedDate, todos);
-    renderTodoList();
-  }
-
-  function deleteTodo(idx) {
-    const todos = getTodosForDate(selectedDate);
-    todos.splice(idx, 1);
-    setTodosForDate(selectedDate, todos);
-    renderTodoList();
-  }
-
-  /* ══════════════════════════════
-     SELECT DATE
-     ══════════════════════════════ */
   function selectDate(date) {
     selectedDate = new Date(date);
     selectedDate.setHours(0,0,0,0);
@@ -260,87 +274,74 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderMonthly() {
     const year  = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
-
-    document.getElementById('mainMonthLabel').textContent =
-      `${MONTH_NAMES[month]} ${year}`;
+    document.getElementById('mainMonthLabel').textContent = `${MONTH_NAMES[month]} ${year}`;
 
     const grid = document.getElementById('mainCalGrid');
     grid.innerHTML = '';
 
     const first = new Date(year, month, 1);
-    const last  = new Date(year, month + 1, 0);
+    const last  = new Date(year, month+1, 0);
     let startDow = first.getDay();
-    startDow = (startDow === 0) ? 6 : startDow - 1;
+    startDow = startDow === 0 ? 6 : startDow - 1;
 
-    const todos = loadTodos();
-
-    // prev month filler
     for (let i = 0; i < startDow; i++) {
-      const d = new Date(year, month, -startDow + i + 1);
-      grid.appendChild(makeMainDay(d, true, todos));
+      grid.appendChild(makeMainDay(new Date(year, month, -startDow+i+1), true));
     }
-    // days
     for (let d = 1; d <= last.getDate(); d++) {
-      const date = new Date(year, month, d);
-      grid.appendChild(makeMainDay(date, false, todos));
+      grid.appendChild(makeMainDay(new Date(year, month, d), false));
     }
-    // filler
     const total = startDow + last.getDate();
     const rem   = (7 - (total % 7)) % 7;
     for (let i = 1; i <= rem; i++) {
-      const d = new Date(year, month + 1, i);
-      grid.appendChild(makeMainDay(d, true, todos));
+      grid.appendChild(makeMainDay(new Date(year, month+1, i), true));
     }
   }
 
-  function makeMainDay(date, otherMonth, todos) {
+  function makeMainDay(date, otherMonth) {
     const el = document.createElement('div');
     el.className = 'main-day';
-    if (otherMonth) el.classList.add('other-month');
-    if (isSameDay(date, TODAY)) el.classList.add('today');
+    if (otherMonth)              el.classList.add('other-month');
+    if (isSameDay(date, TODAY))  el.classList.add('today');
     if (isSameDay(date, selectedDate)) el.classList.add('selected');
 
-    const key       = dateKey(date);
-    const dayTodos  = todos[key] || [];
-    const habits    = getHabitCompletion(key);
+    const key   = dateKey(date);
+    const level = getLevelForDate(key);
+    const cached = todosCache[key] || [];
 
-    // day number
     const numEl = document.createElement('div');
-    numEl.className = 'main-day-num';
+    numEl.className   = 'main-day-num';
     numEl.textContent = date.getDate();
     el.appendChild(numEl);
 
-    // todo chips (max 3)
     const todosWrap = document.createElement('div');
     todosWrap.className = 'main-day-todos';
-    dayTodos.slice(0, 3).forEach(t => {
+    cached.slice(0,3).forEach(t => {
       const chip = document.createElement('div');
-      chip.className = `main-day-chip ${t.priority}${t.done ? ' done' : ''}`;
+      chip.className   = `main-day-chip ${t.priority}${t.done ? ' done' : ''}`;
       chip.textContent = t.text;
       todosWrap.appendChild(chip);
     });
-    if (dayTodos.length > 3) {
+    if (cached.length > 3) {
       const more = document.createElement('div');
-      more.className = 'main-day-more';
-      more.textContent = `+${dayTodos.length - 3} more`;
+      more.className   = 'main-day-more';
+      more.textContent = `+${cached.length - 3} more`;
       todosWrap.appendChild(more);
     }
     el.appendChild(todosWrap);
 
-    // habit dots
+    // habit completion dots from yearly heatmap level
     const dotsWrap = document.createElement('div');
     dotsWrap.className = 'main-day-dots';
-    habits.forEach(h => {
+    if (level > 0) {
       const dot = document.createElement('div');
-      dot.className = `main-day-dot${h.done ? ' done' : ''}`;
-      dot.title = h.name;
+      dot.className = 'main-day-dot done';
+      dot.title     = `${level * 25}% complete`;
       dotsWrap.appendChild(dot);
-    });
+    }
     el.appendChild(dotsWrap);
 
     el.addEventListener('click', () => {
       selectDate(date);
-      // sync month if clicking filler day
       if (otherMonth) {
         currentMonth = new Date(date.getFullYear(), date.getMonth(), 1);
         miniMonth    = new Date(currentMonth);
@@ -353,11 +354,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   document.getElementById('mainPrev').addEventListener('click', () => {
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()-1, 1);
     renderMonthly();
   });
   document.getElementById('mainNext').addEventListener('click', () => {
-    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth()+1, 1);
     renderMonthly();
   });
 
@@ -365,9 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
      WEEKLY VIEW
      ══════════════════════════════ */
   function renderWeekly() {
-    const end = new Date(weekStart);
+    const end    = new Date(weekStart);
     end.setDate(end.getDate() + 6);
-
     const startM = MONTH_NAMES[weekStart.getMonth()];
     const endM   = MONTH_NAMES[end.getMonth()];
     const label  = startM === endM
@@ -376,17 +376,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('weekLabel').textContent = label;
 
-    const grid  = document.getElementById('weekGrid');
+    const grid = document.getElementById('weekGrid');
     grid.innerHTML = '';
-    const todos = loadTodos();
 
     for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
+      const date  = new Date(weekStart);
       date.setDate(date.getDate() + i);
-
-      const key      = dateKey(date);
-      const dayTodos = todos[key] || [];
-      const habits   = getHabitCompletion(key);
+      const key    = dateKey(date);
+      const cached = todosCache[key] || [];
+      const level  = getLevelForDate(key);
 
       const col = document.createElement('div');
       col.className = 'week-day';
@@ -399,24 +397,23 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="week-day-num">${date.getDate()}</span>
         </div>
         <div class="week-day-todos"></div>
-        <div class="week-day-dots"></div>
-      `;
+        <div class="week-day-dots"></div>`;
 
       const todosWrap = col.querySelector('.week-day-todos');
-      dayTodos.forEach(t => {
+      cached.forEach(t => {
         const chip = document.createElement('div');
-        chip.className = `week-chip ${t.priority}${t.done ? ' done' : ''}`;
+        chip.className   = `week-chip ${t.priority}${t.done ? ' done' : ''}`;
         chip.textContent = t.text;
         todosWrap.appendChild(chip);
       });
 
       const dotsWrap = col.querySelector('.week-day-dots');
-      habits.forEach(h => {
+      if (level > 0) {
         const dot = document.createElement('div');
-        dot.className = `week-dot${h.done ? ' done' : ''}`;
-        dot.title = h.name;
+        dot.className = 'week-dot done';
+        dot.title     = `${level * 25}% habits done`;
         dotsWrap.appendChild(dot);
-      });
+      }
 
       col.addEventListener('click', () => selectDate(date));
       grid.appendChild(col);
@@ -437,14 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ══════════════════════════════
      ADD TODO MODAL
      ══════════════════════════════ */
-  const todoModal        = document.getElementById('todoModal');
-  const todoModalBackdrop= document.getElementById('todoModalBackdrop');
-  const todoInput        = document.getElementById('todoInput');
-  const todoModalSave    = document.getElementById('todoModalSave');
-  const todoModalClose   = document.getElementById('todoModalClose');
+  const todoModal         = document.getElementById('todoModal');
+  const todoModalBackdrop = document.getElementById('todoModalBackdrop');
+  const todoInput         = document.getElementById('todoInput');
+  const todoModalSave     = document.getElementById('todoModalSave');
+  const todoModalClose    = document.getElementById('todoModalClose');
 
   function openTodoModal() {
-    todoInput.value = '';
+    todoInput.value  = '';
     selectedPriority = 'medium';
     document.querySelectorAll('.priority-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.priority === 'medium');
@@ -463,7 +460,6 @@ document.addEventListener('DOMContentLoaded', () => {
   todoModalClose.addEventListener('click', closeTodoModal);
   todoModalBackdrop.addEventListener('click', closeTodoModal);
 
-  // priority buttons
   document.querySelectorAll('.priority-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       selectedPriority = btn.dataset.priority;
@@ -472,26 +468,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // save todo
-  todoModalSave.addEventListener('click', saveTodo);
-  todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveTodo(); });
-
-  function saveTodo() {
+  async function saveTodo() {
     const text = todoInput.value.trim();
     if (!text) return;
-    const todos = getTodosForDate(selectedDate);
-    todos.push({ text, priority: selectedPriority, done: false });
-    setTodosForDate(selectedDate, todos);
-    renderTodoList();
-    renderDayDetail();
+    await addTodo(selectedDate, text, selectedPriority);
+    await renderTodoList();
+    if (currentView === 'monthly') renderMonthly();
+    else renderWeekly();
+    renderMini();
     closeTodoModal();
   }
 
-  /* ══════════════════════════════
-     INITIAL RENDER
-     ══════════════════════════════ */
-  renderMini();
-  renderMonthly();
-  renderDayDetail();
+  todoModalSave.addEventListener('click', saveTodo);
+  todoInput.addEventListener('keydown', e => { if (e.key === 'Enter') saveTodo(); });
 
+  /* ── INIT ── */
+  await init();
 });

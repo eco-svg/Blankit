@@ -1,3 +1,26 @@
+/* ══════════════════════════════
+   RESEND VERIFICATION
+   ══════════════════════════════ */
+async function resendVerification() {
+  const identifier = document.getElementById('loginIdentifier').value.trim();
+  const method     = document.querySelector('.method-btn.active')?.dataset.method || 'email';
+  const email      = method === 'email' ? identifier : '';
+  if (!email) { return; }
+
+  try {
+    const res  = await fetch('/auth/resend-verification', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    showFlash('loginFlash', '✓ verification email resent — check your inbox', 'success');
+    typeCmd('auth --resend-verification');
+  } catch {
+    showFlash('loginFlash', 'network error');
+  }
+}
+
 /* ═══════════════════════════════════════
    login.js — Blankit auth
    ═══════════════════════════════════════ */
@@ -342,6 +365,9 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
       showFlash('loginFlash', '✓ authenticated. redirecting...', 'success');
       typeCmd(`auth --success redirect=${data.redirect}`);
       setTimeout(() => window.location.href = data.redirect, 900);
+    } else if (res.status === 403 && data.error === 'email_not_verified') {
+      showOtpPanel(data.email);
+      typeCmd('auth --verify-otp');
     } else {
       showFlash('loginFlash', data.error || 'invalid credentials');
       typeCmd('auth --error: invalid credentials');
@@ -384,12 +410,9 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 
     const data = await res.json();
 
-    if (res.ok) {
-      localStorage.setItem('blankit-locked-distro', getCurrentDistro());
-      lockDistro(getCurrentDistro());
-      showFlash('registerFlash', '✓ account created. please sign in.', 'success');
-      typeCmd('auth --register --success');
-      setTimeout(() => switchTab('login'), 1500);
+    if (res.ok && data.message === 'otp_sent') {
+      showOtpPanel(data.email);
+      typeCmd('auth --register --otp-sent');
     } else {
       showFlash('registerFlash', data.error || 'registration failed');
       typeCmd('auth --register --error');
@@ -444,3 +467,161 @@ document.addEventListener('keydown', e => {
   const btn = map[active.id];
   if (btn) document.getElementById(btn).click();
 });
+
+/* ══════════════════════════════
+   OTP PANEL
+   ══════════════════════════════ */
+
+function showOtpPanel(email) {
+  // hide main panels
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+  // create OTP panel if not exists
+  let otpPanel = document.getElementById('panel-otp');
+  if (!otpPanel) {
+    otpPanel = document.createElement('div');
+    otpPanel.id        = 'panel-otp';
+    otpPanel.className = 'panel active';
+    otpPanel.innerHTML = `
+      <p style="font-size:0.7rem;color:var(--text3);letter-spacing:0.04em;line-height:1.6">
+        A 6-digit code was sent to<br>
+        <strong style="color:var(--accent)" id="otpEmailDisplay"></strong>
+      </p>
+
+      <div class="field">
+        <label class="field-label">// verification_code</label>
+        <input class="field-input" type="text" id="otpInput"
+               placeholder="______" maxlength="6"
+               style="font-size:1.4rem;letter-spacing:0.4em;text-align:center"/>
+        <span class="field-err" id="otpErr"></span>
+      </div>
+
+      <button class="submit-btn" id="otpSubmitBtn">
+        $ verify --otp
+        <span class="btn-loader hidden" id="otpLoader"></span>
+      </button>
+      <div class="flash hidden" id="otpFlash"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.25rem">
+        <button class="link-btn" id="otpResendBtn">Resend code</button>
+        <span id="otpTimer" style="font-size:0.62rem;color:var(--text3)"></span>
+      </div>
+    `;
+    document.querySelector('.auth-card').appendChild(otpPanel);
+  } else {
+    otpPanel.classList.add('active');
+  }
+
+  // set email
+  const emailDisplay = document.getElementById('otpEmailDisplay');
+  if (emailDisplay) emailDisplay.textContent = email;
+
+  // clear previous state
+  document.getElementById('otpInput').value = '';
+  document.getElementById('otpErr').textContent = '';
+  document.getElementById('otpFlash').classList.add('hidden');
+
+  // update tab line to nothing
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tabLine').style.width = '0';
+
+  typeCmd('auth --enter-otp');
+  startOtpTimer();
+
+  // submit
+  document.getElementById('otpSubmitBtn').onclick = submitOtp;
+  document.getElementById('otpInput').onkeydown = e => { if (e.key === 'Enter') submitOtp(); };
+
+  // auto-submit when 6 digits entered
+  document.getElementById('otpInput').oninput = function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    if (this.value.length === 6) submitOtp();
+  };
+
+  // resend
+  document.getElementById('otpResendBtn').onclick = async () => {
+    try {
+      const res  = await fetch('/auth/resend-otp', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      const flash = document.getElementById('otpFlash');
+      flash.textContent = res.ok ? '✓ new code sent — check your inbox' : data.error;
+      flash.className   = `flash ${res.ok ? 'success' : 'error'}`;
+      flash.classList.remove('hidden');
+      if (res.ok) startOtpTimer();
+    } catch {
+      document.getElementById('otpFlash').textContent = 'network error';
+      document.getElementById('otpFlash').className = 'flash error';
+      document.getElementById('otpFlash').classList.remove('hidden');
+    }
+  };
+}
+
+let otpTimerInterval = null;
+
+function startOtpTimer() {
+  if (otpTimerInterval) clearInterval(otpTimerInterval);
+  let seconds = 600; // 10 minutes
+  const timerEl = document.getElementById('otpTimer');
+  if (!timerEl) return;
+
+  function tick() {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    timerEl.textContent = `expires in ${m}:${String(s).padStart(2,'0')}`;
+    if (seconds <= 0) {
+      clearInterval(otpTimerInterval);
+      timerEl.textContent = 'code expired';
+      timerEl.style.color = 'var(--err)';
+    }
+    seconds--;
+  }
+  tick();
+  otpTimerInterval = setInterval(tick, 1000);
+}
+
+async function submitOtp() {
+  const otp     = document.getElementById('otpInput').value.trim();
+  const errEl   = document.getElementById('otpErr');
+  errEl.textContent = '';
+
+  if (otp.length !== 6) { errEl.textContent = 'enter all 6 digits'; return; }
+
+  document.getElementById('otpSubmitBtn').disabled = true;
+  document.getElementById('otpLoader').classList.remove('hidden');
+  typeCmd('auth --verify-otp...');
+
+  try {
+    const res  = await fetch('/auth/verify-otp', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ otp }),
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      if (otpTimerInterval) clearInterval(otpTimerInterval);
+      const flash = document.getElementById('otpFlash');
+      flash.textContent = '✓ verified! please sign in.';
+      flash.className   = 'flash success';
+      flash.classList.remove('hidden');
+      typeCmd('auth --verified');
+      setTimeout(() => {
+        document.getElementById('panel-otp').classList.remove('active');
+        switchTab('login');
+      }, 1500);
+    } else {
+      errEl.textContent = data.error || 'incorrect code';
+      document.getElementById('otpInput').value = '';
+      typeCmd('auth --otp-error');
+    }
+  } catch {
+    errEl.textContent = 'network error';
+  } finally {
+    document.getElementById('otpSubmitBtn').disabled = false;
+    document.getElementById('otpLoader').classList.add('hidden');
+  }
+}
