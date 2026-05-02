@@ -4,7 +4,7 @@ from flask import Blueprint, render_template
 # Get the absolute path to the 'Blankit' root folder
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 # Point exactly to your uniquely named templates folder
-TEMPLATE_DIR = os.path.join(BASE_DIR, "templates", "divyanhu_templates")
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates", "CatalystCrew_templates")
 
 divyanshu_bp = Blueprint('divyanshu', __name__, template_folder=TEMPLATE_DIR)
 

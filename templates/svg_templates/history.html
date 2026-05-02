@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ecosvg — history</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/history.css') }}" />
+</head>
+
+<body>
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="brand">
+                <span class="brand-icon">◈</span>
+                <span class="brand-name">{{ username }}</span>
+            </span>
+            <button class="sidebar-close" id="sidebarClose">✕</button>
+        </div>
+        <nav class="sidebar-nav">
+            <a class="sidebar-nav-item" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+
+            <a class="sidebar-nav-item" href="/manifestation">
+                <span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-soon-tag">soon</span></a>
+
+            <a class="sidebar-nav-item" href="/achievements">
+                <span class="sidebar-nav-icon">◎</span> Achievements
+            </a>
+
+            <a class="sidebar-nav-item" href="/calendar">
+                <span class="sidebar-nav-icon">▦</span> Calendar
+
+                <a class="sidebar-nav-item active" href="/history">
+                    <span class="sidebar-nav-icon">◷</span> History
+
+
+                    <a class="sidebar-nav-item" href="/community">
+                        <a class="sidebar-nav-item" href="/settings">
+
+                            <span class="sidebar-nav-icon">⚙</span> Settings</a>
+                    </a>
+                    <span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+            </a>
+    </div>
+    <a class="sidebar-nav-item active" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+    </nav>
+    <div class="sidebar-footer">
+        <!-- <div class="sidebar-profile-row">
+            <div class="avatar">{{ username[:2].upper() }}</div>
+            <div class="sidebar-profile-info">
+                <span class="sidebar-username">{{ username }}</span>
+                <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span> -->
+    </div>
+    </div>
+    </div>
+    </div>
+    <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+    <!-- ── TOPBAR ── -->
+    <header class="topbar">
+        <button class="sidebar-toggle" id="sidebarToggle"><span></span><span></span><span></span></button>
+        <a class="brand" href="/" style="text-decoration:none">
+            <span class="brand-icon">◈</span>
+            <span class="brand-name">{{ username }}</span>
+        </a>
+        <div class="topbar-right">
+            <span class="streak-badge">🔥 9 day streak</span>
+            <div class="avatar">{{ username[:2].upper() }}</div>
+        </div>
+    </header>
+
+    <!-- ── MAIN ── -->
+    <main class="history-main">
+
+        <div class="history-header">
+            <h1 class="history-title">History</h1>
+            <p class="history-sub">Track your consistency over time</p>
+        </div>
+
+        <!-- DISCIPLINE SCORE -->
+        <div class="discipline-card">
+            <div class="discipline-left">
+                <p class="discipline-label">Discipline score</p>
+                <div class="discipline-score-wrap">
+                    <span class="discipline-score" id="disciplineScore">--</span>
+                    <span class="discipline-max">/100</span>
+                </div>
+                <p class="discipline-verdict" id="disciplineVerdict">Calculating…</p>
+            </div>
+            <div class="discipline-right">
+                <svg class="discipline-ring" viewBox="0 0 80 80">
+                    <circle class="d-ring-bg" cx="40" cy="40" r="32" />
+                    <circle class="d-ring-fill" cx="40" cy="40" r="32" id="disciplineRing" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- HABIT FILTER -->
+        <div class="habit-filter-row">
+            <span class="filter-label">Habit</span>
+            <div class="habit-filter-btns" id="habitFilterBtns">
+                <button class="habit-filter-btn active" data-habit="all">All habits</button>
+            </div>
+        </div>
+
+        <!-- VIEW SWITCHER -->
+        <div class="view-switcher" id="viewSwitcher">
+            <button class="view-btn active" data-view="weekly">Weekly</button>
+            <button class="view-btn" data-view="monthly">Monthly</button>
+            <button class="view-btn" data-view="yearly">Yearly</button>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="chart-wrap" id="chartWrap">
+
+            <!-- WEEKLY BAR CHART -->
+            <div class="chart-panel" id="panelWeekly">
+                <p class="chart-title">This week — completion rate</p>
+                <div class="bar-chart" id="barChart"></div>
+                <div class="bar-legend" id="barLegend"></div>
+            </div>
+
+            <!-- MONTHLY LINE CHART -->
+            <div class="chart-panel hidden" id="panelMonthly">
+                <p class="chart-title">This month — daily completion %</p>
+                <div class="line-chart-wrap">
+                    <svg class="line-chart-svg" id="lineChartSvg" viewBox="0 0 600 200"
+                        preserveAspectRatio="none"></svg>
+                </div>
+                <div class="line-x-labels" id="lineXLabels"></div>
+            </div>
+
+            <!-- YEARLY HEATMAP -->
+            <div class="chart-panel hidden" id="panelYearly">
+                <p class="chart-title">This year — habit heatmap</p>
+                <div class="year-heatmap-wrap">
+                    <div class="year-heatmap" id="yearHeatmap"></div>
+                    <div class="year-month-labels" id="yearMonthLabels"></div>
+                </div>
+                <div class="heatmap-scale">
+                    <span>Less</span>
+                    <span class="scale-cell" data-level="0"></span>
+                    <span class="scale-cell" data-level="1"></span>
+                    <span class="scale-cell" data-level="2"></span>
+                    <span class="scale-cell" data-level="3"></span>
+                    <span class="scale-cell" data-level="4"></span>
+                    <span>More</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- STREAK TABLE -->
+        <div class="streak-section">
+            <p class="streak-section-title">Individual streaks</p>
+            <div class="streak-list" id="streakList"></div>
+        </div>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='svg_style/svg_animation.js') }}"></script>
+    <script src="{{ url_for('static', filename='svg_style/history.js') }}"></script>
+</body>
+
+</html>
