@@ -1,4 +1,14 @@
+# Environments
 .env
-__pycache__/
 venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Databases & Local Instances
+instance/
+*.db
+
+# Tools
 tools/
