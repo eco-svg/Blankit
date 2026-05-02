@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html lang="en" data-distro="ecosvg">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Blankit — Sign in</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap">
-  <link rel="stylesheet" href="{{ url_for('static', filename='shared/login.css') }}"/>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='shared/login.css') }}" />
   <style>
-    #bg-ecosvg   { background-image: url("{{ url_for('static', filename='shared/svg_backgroung.jpg') }}"); }
-    #bg-divyanhu { background-image: url("{{ url_for('static', filename='shared/divyanshu_background.jpg') }}"); }
+    #bg-ecosvg {
+      background-image: url("{{ url_for('static', filename='shared/svg_backgroung.jpg') }}");
+    }
+
+    #bg-divyanhu {
+      background-image: url("{{ url_for('static', filename='shared/divyanshu_background.jpg') }}");
+    }
   </style>
 </head>
+
 <body>
 
   <!-- PER-DISTRO BACKGROUNDS -->
@@ -36,7 +44,7 @@
 
     <!-- DISTRO SWIPER -->
     <section class="distro-section">
-      <p class="section-label">// select_distro</p>
+      <p class="section-label">// select distro</p>
 
       <div class="swiper-wrap">
         <button class="swipe-arrow" id="arrowLeft">&#8592;</button>
@@ -97,7 +105,47 @@
         </div>
         <div class="info-line">
           <span class="info-key">about</span>
-          <span class="info-val info-muted" id="infoAbout">— to be filled —</span>
+          <span class="info-val info-muted" id="infoAbout">
+            <p><b>The first rule of ECO-SVG is — you don’t talk about ECO-SVG.</b></p>
+
+            <p><b>The second rule of ECO-SVG is — you don’t talk about ECO-SVG.</b></p>
+
+            <p><b>Because the moment you start talking,<br>
+                you stop doing.</b></p>
+
+            <p><b>This isn’t for motivation.<br>
+                Motivation is noise.</b></p>
+
+            <p><b>This is for the days you don’t feel like it.<br>
+                The days you want to quit.<br>
+                The days nobody’s watching.</b></p>
+
+            <p><b>ECO-SVG doesn’t care how you feel.</b></p>
+
+            <p><b>It cares if you showed up.</b></p>
+
+            <p><b>No aesthetics.<br>
+                No fake productivity.<br>
+                No “I’ll start tomorrow.”</b></p>
+
+            <p><b>Just quiet, repeated execution.</b></p>
+
+            <p><b>Again.<br>
+                And again.<br>
+                And again.</b></p>
+
+            <p><b>Until it becomes you.</b></p>
+
+            <p><b>You don’t track habits here.</b></p>
+
+            <p><b>You eliminate the version of you<br>
+                that needed motivation in the first place.</b></p>
+
+            <p><b>ECO-SVG.</b></p>
+
+            <p><b>Stay silent.<br>
+                Stay consistent.</b></p>
+          </span>
         </div>
       </div>
     </section>
@@ -124,22 +172,22 @@
           </div>
           <div class="field">
             <label class="field-label" id="loginIdentifierLabel">// email</label>
-            <input class="field-input" type="email" id="loginIdentifier"
-                   placeholder="you@example.com" autocomplete="email"/>
+            <input class="field-input" type="email" id="loginIdentifier" placeholder="you@example.com"
+              autocomplete="email" />
             <span class="field-err" id="loginIdentifierErr"></span>
           </div>
           <div class="field">
             <label class="field-label">// password</label>
             <div class="input-row">
-              <input class="field-input" type="password" id="loginPassword"
-                     placeholder="••••••••" autocomplete="current-password"/>
+              <input class="field-input" type="password" id="loginPassword" placeholder="••••••••"
+                autocomplete="current-password" />
               <button class="eye-btn" data-target="loginPassword">show</button>
             </div>
             <span class="field-err" id="loginPasswordErr"></span>
           </div>
           <div class="field-row">
             <label class="check-label">
-              <input type="checkbox" id="rememberMe"/> keep_me_in
+              <input type="checkbox" id="rememberMe" /> keep me in
             </label>
             <button class="link-btn" data-tab="forgot">forgot?</button>
           </div>
@@ -154,21 +202,19 @@
         <div class="panel" id="panel-register">
           <div class="field">
             <label class="field-label">// username</label>
-            <input class="field-input" type="text" id="regUsername"
-                   placeholder="your_handle" autocomplete="username"/>
+            <input class="field-input" type="text" id="regUsername" placeholder="your handle" autocomplete="username" />
             <span class="field-err" id="regUsernameErr"></span>
           </div>
           <div class="field">
             <label class="field-label">// email</label>
-            <input class="field-input" type="email" id="regEmail"
-                   placeholder="you@example.com" autocomplete="email"/>
+            <input class="field-input" type="email" id="regEmail" placeholder="you@example.com" autocomplete="email" />
             <span class="field-err" id="regEmailErr"></span>
           </div>
           <div class="field">
             <label class="field-label">// password</label>
             <div class="input-row">
-              <input class="field-input" type="password" id="regPassword"
-                     placeholder="min 8 chars" autocomplete="new-password"/>
+              <input class="field-input" type="password" id="regPassword" placeholder="min 8 chars"
+                autocomplete="new-password" />
               <button class="eye-btn" data-target="regPassword">show</button>
             </div>
             <div class="strength-row">
@@ -180,10 +226,10 @@
             <span class="field-err" id="regPasswordErr"></span>
           </div>
           <div class="field">
-            <label class="field-label">// confirm_password</label>
+            <label class="field-label">// confirm password</label>
             <div class="input-row">
-              <input class="field-input" type="password" id="regConfirm"
-                     placeholder="••••••••" autocomplete="new-password"/>
+              <input class="field-input" type="password" id="regConfirm" placeholder="••••••••"
+                autocomplete="new-password" />
               <button class="eye-btn" data-target="regConfirm">show</button>
             </div>
             <span class="field-err" id="regConfirmErr"></span>
@@ -199,8 +245,8 @@
         <div class="panel" id="panel-forgot">
           <div class="field">
             <label class="field-label">// email</label>
-            <input class="field-input" type="email" id="forgotEmail"
-                   placeholder="you@example.com" autocomplete="email"/>
+            <input class="field-input" type="email" id="forgotEmail" placeholder="you@example.com"
+              autocomplete="email" />
             <span class="field-err" id="forgotEmailErr"></span>
           </div>
           <button class="submit-btn" id="forgotBtn">
@@ -224,4 +270,5 @@
 
   <script src="{{ url_for('static', filename='shared/login.js') }}"></script>
 </body>
+
 </html>

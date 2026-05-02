@@ -47,6 +47,7 @@
           </a>
           <a class="sidebar-nav-item" href="/community">
             <span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+          <a class="sidebar-nav-item active" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
@@ -146,114 +147,55 @@
         </div>
       </div>
     </section>
-
     <!-- MY ACHIEVEMENTS -->
     <section class="ach-section" id="myAch">
       <div class="ach-section-head">
         <span class="ach-section-label">My Achievements</span>
         <span class="ach-section-hint">Earned badges can be pinned to the podium</span>
       </div>
-
-      <div class="ach-badges-list">
-
-        <div class="ach-badge earned" data-id="iron" data-icon="🏆" data-name="Iron Discipline">
-          <div class="ach-badge-icon">🏆</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Iron Discipline</div>
-            <div class="ach-badge-desc">Completed all habits for 30 days straight</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-iron"></span>
-        </div>
-
-        <div class="ach-badge earned" data-id="riser" data-icon="⚡" data-name="Early Riser">
-          <div class="ach-badge-icon">⚡</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Early Riser</div>
-            <div class="ach-badge-desc">Morning habits before 7am, 20 days in a row</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-riser"></span>
-        </div>
-
-        <div class="ach-badge earned" data-id="seed" data-icon="🌱" data-name="First Seed">
-          <div class="ach-badge-icon">🌱</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">First Seed</div>
-            <div class="ach-badge-desc">Completed your very first 7 day streak</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-seed"></span>
-        </div>
-
-        <div class="ach-badge earned" data-id="fire" data-icon="🔥" data-name="On Fire">
-          <div class="ach-badge-icon">🔥</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">On Fire</div>
-            <div class="ach-badge-desc">7 day streak</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-fire"></span>
-        </div>
-
-        <div class="ach-badge earned" data-id="hydrated" data-icon="💧" data-name="Hydrated">
-          <div class="ach-badge-icon">💧</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Hydrated</div>
-            <div class="ach-badge-desc">Water habit 14 days</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-hydrated"></span>
-        </div>
-
-        <div class="ach-badge earned" data-id="book" data-icon="📚" data-name="Bookworm">
-          <div class="ach-badge-icon">📚</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Bookworm</div>
-            <div class="ach-badge-desc">Read 10 days straight</div>
-          </div>
-          <button class="ach-badge-pin" title="Pin to podium">⊕</button>
-          <span class="ach-badge-rank-tag" id="tag-book"></span>
-        </div>
-
-        <!-- LOCKED -->
-        <div class="ach-badge locked">
-          <div class="ach-badge-icon">💎</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Diamond</div>
-            <div class="ach-badge-desc">100 day streak</div>
-          </div>
-          <span class="ach-badge-lock">🔒</span>
-        </div>
-
-        <div class="ach-badge locked">
-          <div class="ach-badge-icon">⚔️</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Warrior</div>
-            <div class="ach-badge-desc">50 day streak</div>
-          </div>
-          <span class="ach-badge-lock">🔒</span>
-        </div>
-
-        <div class="ach-badge locked">
-          <div class="ach-badge-icon">🎯</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Sharpshooter</div>
-            <div class="ach-badge-desc">100% completion for a week</div>
-          </div>
-          <span class="ach-badge-lock">🔒</span>
-        </div>
-
-        <div class="ach-badge locked">
-          <div class="ach-badge-icon">🌙</div>
-          <div class="ach-badge-body">
-            <div class="ach-badge-name">Night Owl</div>
-            <div class="ach-badge-desc">Log habits after 10pm, 7 days</div>
-          </div>
-          <span class="ach-badge-lock">🔒</span>
-        </div>
-
+      <div class="ach-badges-list" id="achBadgesList">
+        <div style="color:var(--clr-text-muted);font-size:0.8rem;padding:1rem 0">Loading badges…</div>
       </div>
+    </section>
+
+    <!-- LOCKED -->
+    <div class="ach-badge locked">
+      <div class="ach-badge-icon">💎</div>
+      <div class="ach-badge-body">
+        <div class="ach-badge-name">Diamond</div>
+        <div class="ach-badge-desc">100 day streak</div>
+      </div>
+      <span class="ach-badge-lock">🔒</span>
+    </div>
+
+    <div class="ach-badge locked">
+      <div class="ach-badge-icon">⚔️</div>
+      <div class="ach-badge-body">
+        <div class="ach-badge-name">Warrior</div>
+        <div class="ach-badge-desc">50 day streak</div>
+      </div>
+      <span class="ach-badge-lock">🔒</span>
+    </div>
+
+    <div class="ach-badge locked">
+      <div class="ach-badge-icon">🎯</div>
+      <div class="ach-badge-body">
+        <div class="ach-badge-name">Sharpshooter</div>
+        <div class="ach-badge-desc">100% completion for a week</div>
+      </div>
+      <span class="ach-badge-lock">🔒</span>
+    </div>
+
+    <div class="ach-badge locked">
+      <div class="ach-badge-icon">🌙</div>
+      <div class="ach-badge-body">
+        <div class="ach-badge-name">Night Owl</div>
+        <div class="ach-badge-desc">Log habits after 10pm, 7 days</div>
+      </div>
+      <span class="ach-badge-lock">🔒</span>
+    </div>
+
+    </div>
     </section>
 
   </main>

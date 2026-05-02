@@ -79,8 +79,16 @@ def calendar():
     user = get_user()
     return render_template('svg_templates/calendar.html', username=user['username'])
 
+
 @svg.route('/community')
 @login_required
 def community():
     user = get_user()
     return render_template('svg_templates/community.html', username=user['username'])
+
+
+@svg.route('/support')
+@login_required
+def support():
+    user = get_user()
+    return render_template('svg_templates/support.html', username=user['username'])

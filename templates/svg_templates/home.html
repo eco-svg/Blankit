@@ -1,16 +1,86 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{{ username }} — habit tracker</title>
+  <title>{{ username }} — Grōv</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
+  <style>
+    /* ── COMING SOON CARDS ── */
+    .cs-mini-card {
+      border-left: 3px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cs-mini-badge {
+      font-size: 0.52rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent2);
+      border-radius: 999px;
+      padding: 2px 8px;
+      width: fit-content;
+    }
+    .cs-mini-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--accent);
+      font-style: italic;
+    }
+    .cs-mini-desc {
+      font-size: 0.72rem;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+    .cs-mini-features {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 0.25rem;
+    }
+    .cs-mini-feature {
+      font-size: 0.68rem;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cs-mini-feature::before {
+      content: '◈';
+      color: var(--accent2);
+      font-size: 0.55rem;
+    }
+    .cs-mini-link {
+      font-size: 0.68rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-top: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .cs-mini-link:hover { opacity: 1; }
+    .nav-soon-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+  </style>
 </head>
-
 <body>
 
   <!-- SIDEBAR -->
@@ -25,11 +95,12 @@
     <nav class="sidebar-nav">
       <a class="sidebar-nav-item active" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
       <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
       <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
       <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
-      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
-      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
       <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
@@ -41,7 +112,6 @@
       </div>
     </div>
   </div>
-
   <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
 
   <!-- TOPBAR -->
@@ -82,22 +152,31 @@
         <button class="add-btn" id="addHabitBtn" title="Add habit">+</button>
       </div>
       <ul class="habit-list" id="habitList">
-        <li class="habit-item habit-empty">
-          <span style="color:var(--clr-text-muted);font-size:0.78rem">Loading…</span>
+        <li class="habit-item" style="justify-content:center;padding:1.5rem 0">
+          <span style="color:var(--text3);font-size:0.78rem">Loading…</span>
         </li>
       </ul>
     </section>
 
     <aside class="right-col">
-      <div class="card ai-card">
-        <div class="ai-icon">◈</div>
-        <p class="ai-label">AI insight</p>
-        <p class="ai-text" id="aiInsight">Analysing your patterns…</p>
-        <div class="ai-actions">
-          <button class="ai-btn accept" id="aiAccept">Accept</button>
-          <button class="ai-btn dismiss" id="aiDismiss">Dismiss</button>
+
+      <!-- AI INSIGHT — coming soon -->
+      <div class="card cs-mini-card" id="aiCard">
+        <div class="cs-mini-badge">Coming Soon</div>
+        <p class="cs-mini-title">AI Insights</p>
+        <p class="cs-mini-desc">
+          Blankit will analyse your habit patterns and give you personalised nudges —
+          like rescheduling habits you skip or spotting your best performance windows.
+        </p>
+        <div class="cs-mini-features">
+          <span class="cs-mini-feature">Pattern detection across 30 days</span>
+          <span class="cs-mini-feature">Smart rescheduling suggestions</span>
+          <span class="cs-mini-feature">Weekly performance summaries</span>
         </div>
+        <a href="/support" class="cs-mini-link">Help us build this faster ♡</a>
       </div>
+
+      <!-- THIS WEEK HEATMAP -->
       <div class="card heatmap-card">
         <h3 class="card-title small">This week</h3>
         <div class="heatmap" id="heatmap"></div>
@@ -106,17 +185,23 @@
           <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
         </div>
       </div>
-      <div class="card goal-card">
-        <p class="goal-label">Active goal</p>
-        <p class="goal-title">Get fit in 90 days</p>
-        <div class="goal-progress-wrap">
-          <div class="goal-progress-bar">
-            <div class="goal-progress-fill" style="--gpct:48%"></div>
-          </div>
-          <span class="goal-pct">48%</span>
+
+      <!-- ACTIVE GOAL — coming soon -->
+      <div class="card cs-mini-card">
+        <div class="cs-mini-badge">Coming Soon</div>
+        <p class="cs-mini-title">Goals & Manifestation</p>
+        <p class="cs-mini-desc">
+          Write one sentence about what you want to achieve. Grōv breaks it into
+          a personalised habit plan with smart pacing and AI-driven adjustments.
+        </p>
+        <div class="cs-mini-features">
+          <span class="cs-mini-feature">AI habit plan from your goal</span>
+          <span class="cs-mini-feature">Timeline-based intensity scaling</span>
+          <span class="cs-mini-feature">Progress tracked automatically</span>
         </div>
-        <p class="goal-days">44 days remaining</p>
+        <a href="/manifestation" class="cs-mini-link">Read the feature preview →</a>
       </div>
+
     </aside>
   </main>
 
@@ -124,7 +209,7 @@
   <div class="cam-overlay hidden" id="camOverlay">
     <div class="cam-modal">
       <div class="cam-header">
-        <span class="cam-title">Camera AI — counting push-ups</span>
+        <span class="cam-title">Camera AI — counting reps</span>
         <button class="cam-close" id="camClose">✕</button>
       </div>
       <div class="cam-feed">
@@ -158,7 +243,6 @@
     </div>
   </div>
 
-  <!-- pass username to JS for onboarding key -->
   <script>window.__blankit_user = "{{ username }}";</script>
   <script src="{{ url_for('static', filename='svg_style/svg_animation.js') }}"></script>
 </body>
