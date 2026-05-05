@@ -1,17 +1,16 @@
-# routes/pug_routes/pug_route.py
-
 import os
 import uuid
+import io
 from datetime import datetime, timedelta
 from flask import (
     Blueprint, render_template, request,
-    jsonify, session, redirect, url_for, current_app
+    jsonify, session, redirect, url_for, current_app, Response
 )
-from minio import Minio               # pip install minio
+from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
-from .extensions import db
-from .notes import Note, User
+from svg_models import db          # shared db — NOT from .extensions
+from .notes import Note            # User no longer needed here
 
 pug_bp = Blueprint(
     'pug',
@@ -24,38 +23,18 @@ pug_bp = Blueprint(
 # ─────────────────────────────────────────
 # MINIO SETUP
 # ─────────────────────────────────────────
-# MinIO runs locally on port 9000.
-# Credentials are read from environment variables — never hardcode them.
-# Set these in your .env file:
-#   MINIO_ENDPOINT=localhost:9000
-#   MINIO_ACCESS_KEY=your_access_key
-#   MINIO_SECRET_KEY=your_secret_key
-#   MINIO_BUCKET=blankit-media
-
 MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
 MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
 MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'blankit-media')
 
-# Minio() creates the client connection.
-# secure=False means HTTP not HTTPS — fine for localhost.
-# Set secure=True when you move to a remote server with SSL.
 minio_client = Minio(
     MINIO_ENDPOINT,
-    access_key = MINIO_ACCESS_KEY,
-    secret_key = MINIO_SECRET_KEY,
-    secure     = False
+    access_key=MINIO_ACCESS_KEY,
+    secret_key=MINIO_SECRET_KEY,
+    secure=False
 )
 
-def ensure_bucket():
-    """Creates the MinIO bucket if it doesn't exist yet."""
-    try:
-        if not minio_client.bucket_exists(MINIO_BUCKET):
-            minio_client.make_bucket(MINIO_BUCKET)
-    except S3Error as e:
-        print(f"MinIO bucket error: {e}")
-
-# Allowed file types
 ALLOWED_IMAGE = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 ALLOWED_VIDEO = {'mp4', 'webm'}
 
@@ -64,10 +43,29 @@ ALLOWED_VIDEO = {'mp4', 'webm'}
 # HELPERS
 # ─────────────────────────────────────────
 
+def ensure_bucket():
+    try:
+        if not minio_client.bucket_exists(MINIO_BUCKET):
+            minio_client.make_bucket(MINIO_BUCKET)
+    except S3Error as e:
+        print(f"MinIO bucket error: {e}")
+
+
+def login_required_page():
+    """For page routes — redirects to login if not authenticated or wrong distro."""
+    if not session.get('user_id'):
+        return redirect(url_for('svg.login'))
+    if session.get('distro') != 'thepug':
+        return redirect(url_for('svg.login'))
+    return None
+
+
 def login_required_api():
-    """Returns a 401 error response if user is not logged in, else None."""
-    if 'user_id' not in session:
+    """For API routes — returns 401 JSON if not authenticated or wrong distro."""
+    if not session.get('user_id'):
         return jsonify({'error': 'Not authenticated'}), 401
+    if session.get('distro') != 'thepug':
+        return jsonify({'error': 'Forbidden'}), 403
     return None
 
 
@@ -75,11 +73,11 @@ def login_required_api():
 # PAGE ROUTES
 # ─────────────────────────────────────────
 
-@pug_bp.route('/home')
+@pug_bp.route('/pug/home')
 def home():
-    if 'user_id' not in session:
-        return redirect(url_for('index'))
-    # Pass username to template — replaces hardcoded "User" in header
+    guard = login_required_page()
+    if guard:
+        return guard
     return render_template('home.html', username=session.get('username', 'User'))
 
 
@@ -87,21 +85,21 @@ def home():
 # API: NOTES
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/notes', methods=['GET'])
+@pug_bp.route('/pug/api/notes', methods=['GET'])
 def get_notes():
     err = login_required_api()
     if err: return err
 
     notes = Note.query.filter_by(
-        user_id    = session['user_id'],
-        entry_type = 'note',
-        is_deleted = False
+        user_id=session['user_id'],
+        entry_type='note',
+        is_deleted=False
     ).order_by(Note.updated_at.desc()).all()
 
     return jsonify([n.to_dict() for n in notes])
 
 
-@pug_bp.route('/api/notes', methods=['POST'])
+@pug_bp.route('/pug/api/notes', methods=['POST'])
 def save_note():
     err = login_required_api()
     if err: return err
@@ -112,7 +110,7 @@ def save_note():
 
     note_id      = data.get('id')
     title        = data.get('title', '')
-    body         = data.get('body',  '')
+    body         = data.get('body', '')
     start_dt_str = data.get('start_datetime')
 
     start_dt = None
@@ -123,10 +121,7 @@ def save_note():
             pass
 
     if note_id:
-        note = Note.query.filter_by(
-            id      = note_id,
-            user_id = session['user_id']
-        ).first()
+        note = Note.query.filter_by(id=note_id, user_id=session['user_id']).first()
         if not note:
             return jsonify({'status': 'error', 'message': 'Not found'}), 404
         note.title          = title
@@ -143,7 +138,7 @@ def save_note():
     return jsonify({'status': 'success', 'id': note.id})
 
 
-@pug_bp.route('/api/notes/<int:note_id>', methods=['DELETE'])
+@pug_bp.route('/pug/api/notes/<int:note_id>', methods=['DELETE'])
 def delete_note(note_id):
     err = login_required_api()
     if err: return err
@@ -158,21 +153,21 @@ def delete_note(note_id):
 # API: GOALS
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/goals', methods=['GET'])
+@pug_bp.route('/pug/api/goals', methods=['GET'])
 def get_goals():
     err = login_required_api()
     if err: return err
 
     goals = Note.query.filter_by(
-        user_id    = session['user_id'],
-        entry_type = 'goal',
-        is_deleted = False
+        user_id=session['user_id'],
+        entry_type='goal',
+        is_deleted=False
     ).order_by(Note.created_at.asc()).all()
 
     return jsonify([g.to_dict() for g in goals])
 
 
-@pug_bp.route('/api/goals', methods=['POST'])
+@pug_bp.route('/pug/api/goals', methods=['POST'])
 def add_goal():
     err = login_required_api()
     if err: return err
@@ -189,7 +184,7 @@ def add_goal():
     return jsonify({'status': 'success', 'id': goal.id})
 
 
-@pug_bp.route('/api/goals/<int:goal_id>', methods=['PATCH'])
+@pug_bp.route('/pug/api/goals/<int:goal_id>', methods=['PATCH'])
 def update_goal(goal_id):
     err = login_required_api()
     if err: return err
@@ -206,7 +201,7 @@ def update_goal(goal_id):
     return jsonify({'status': 'success'})
 
 
-@pug_bp.route('/api/goals/<int:goal_id>', methods=['DELETE'])
+@pug_bp.route('/pug/api/goals/<int:goal_id>', methods=['DELETE'])
 def delete_goal(goal_id):
     err = login_required_api()
     if err: return err
@@ -223,7 +218,7 @@ def delete_goal(goal_id):
 # API: DREAM
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/dream', methods=['GET'])
+@pug_bp.route('/pug/api/dream', methods=['GET'])
 def get_dream():
     err = login_required_api()
     if err: return err
@@ -235,7 +230,7 @@ def get_dream():
     return jsonify({'dream': dream.title if dream else None})
 
 
-@pug_bp.route('/api/dream', methods=['POST'])
+@pug_bp.route('/pug/api/dream', methods=['POST'])
 def set_dream():
     err = login_required_api()
     if err: return err
@@ -263,7 +258,7 @@ def set_dream():
 # API: CONSISTENCY CHART
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/consistency', methods=['GET'])
+@pug_bp.route('/pug/api/consistency', methods=['GET'])
 def get_consistency():
     err = login_required_api()
     if err: return err
@@ -306,7 +301,7 @@ def get_consistency():
 # API: CALENDAR EVENTS
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/events', methods=['GET'])
+@pug_bp.route('/pug/api/events', methods=['GET'])
 def get_events():
     err = login_required_api()
     if err: return err
@@ -328,7 +323,7 @@ def get_events():
 # API: FILE UPLOAD (MinIO)
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/upload', methods=['POST'])
+@pug_bp.route('/pug/api/upload', methods=['POST'])
 def upload_file():
     err = login_required_api()
     if err: return err
@@ -351,63 +346,38 @@ def upload_file():
     else:
         return jsonify({'error': f'.{ext} not allowed'}), 400
 
-    # Build object name: user_id/uuid.ext
-    # This keeps each user's files in their own "folder" inside the bucket
-    # user_id scoping means you can never accidentally serve User A's file to User B
     object_name = f"user_{session['user_id']}/{uuid.uuid4().hex}.{ext}"
-
     ensure_bucket()
 
-    # Read file into memory and upload to MinIO
-    # file_data = the raw bytes of the uploaded file
     file_data   = file.read()
     file_length = len(file_data)
 
-    import io
-    # io.BytesIO wraps the bytes in a file-like object
-    # MinIO's put_object needs a file-like object, not raw bytes
     minio_client.put_object(
         MINIO_BUCKET,
         object_name,
         io.BytesIO(file_data),
-        length       = file_length,
-        content_type = content_type
+        length=file_length,
+        content_type=content_type
     )
 
-    # Build a URL the browser can use to load the file
-    # We proxy it through Flask so auth is enforced — no direct MinIO access
     url = url_for('pug.serve_media', object_name=object_name)
     return jsonify({'url': url, 'type': 'image' if ext in ALLOWED_IMAGE else 'video'})
 
 
-@pug_bp.route('/api/media/<path:object_name>')
+@pug_bp.route('/pug/api/media/<path:object_name>')
 def serve_media(object_name):
-    """
-    Serves a file from MinIO to the browser.
-    path: in the route means object_name can contain slashes e.g. user_1/abc.jpg
-
-    Why proxy through Flask instead of direct MinIO URL?
-    - Enforces login — anonymous users can't hotlink to media
-    - Hides your MinIO endpoint from the browser
-    - Lets you add watermarks, resize, or other processing later
-    """
     err = login_required_api()
     if err: return err
 
-    # Security check: user can only access their own files
-    # The object name starts with user_{id}/ — verify it matches session
     expected_prefix = f"user_{session['user_id']}/"
     if not object_name.startswith(expected_prefix):
         return jsonify({'error': 'Forbidden'}), 403
 
-    from flask import Response
     try:
         response = minio_client.get_object(MINIO_BUCKET, object_name)
-        # Stream the file back to the browser
-        # iter_content chunks the response so large videos don't load into RAM at once
         return Response(
-            response.stream(32 * 1024),  # 32KB chunks
-            content_type = response.headers.get('content-type', 'application/octet-stream')
+            response.stream(32 * 1024),
+            content_type=response.headers.get('content-type', 'application/octet-stream')
         )
     except S3Error:
         return jsonify({'error': 'File not found'}), 404
@@ -417,7 +387,7 @@ def serve_media(object_name):
 # API: ASK (Knowledge Engine)
 # ─────────────────────────────────────────
 
-@pug_bp.route('/api/ask', methods=['POST'])
+@pug_bp.route('/pug/api/ask', methods=['POST'])
 def ask():
     err = login_required_api()
     if err: return err
@@ -429,19 +399,15 @@ def ask():
 
     import requests as req
     try:
-        # DuckDuckGo Instant Answer API — free, no key, works worldwide
-        # Swap this URL for your Ollama endpoint when BuddyBot is ready:
-        #   http://localhost:11434/api/generate
         r = req.get(
             'https://api.duckduckgo.com/',
-            params  = {'q': query, 'format': 'json', 'no_html': 1, 'skip_disambig': 1},
-            timeout = 5
+            params={'q': query, 'format': 'json', 'no_html': 1, 'skip_disambig': 1},
+            timeout=5
         )
         result = r.json()
         answer = result.get('AbstractText') or result.get('Answer') or \
                  "No direct answer found. Try rephrasing."
         return jsonify({'answer': answer})
-
     except Exception as e:
         current_app.logger.error(f"Ask error: {e}")
         return jsonify({'error': 'Knowledge engine unavailable'}), 503

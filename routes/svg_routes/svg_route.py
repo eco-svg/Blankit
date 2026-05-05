@@ -3,6 +3,11 @@ from functools import wraps
 
 svg = Blueprint('svg', __name__)
 
+DISTRO_REDIRECTS = {
+    'ecosvg':   '/home',
+    'divyanhu': '/d/home',
+    'thepug':   '/pug/home',
+}
 
 def get_user():
     return {
@@ -11,11 +16,13 @@ def get_user():
         'user_id':  session.get('user_id'),
     }
 
-
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('user_id'):
+            return redirect(url_for('svg.login'))
+        # Ecosvg-only pages — kick other distros back to login
+        if session.get('distro') != 'ecosvg':
             return redirect(url_for('svg.login'))
         return f(*args, **kwargs)
     return decorated
@@ -23,10 +30,9 @@ def login_required(f):
 
 @svg.route('/')
 def login():
-    # Only redirect if session is genuinely valid
     if session.get('user_id') and session.get('username'):
-        return redirect(url_for('svg.home'))
-    # Clear any broken/partial session
+        distro = session.get('distro', 'ecosvg')
+        return redirect(DISTRO_REDIRECTS.get(distro, '/home'))
     session.clear()
     return render_template('shared/login.html')
 

@@ -1,18 +1,41 @@
 import os
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, session, redirect, url_for
+from functools import wraps
 
-# Get the absolute path to the 'Blankit' root folder
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-# Point exactly to your uniquely named templates folder
+BASE_DIR     = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates", "divyanhu_templates")
 
 divyanshu_bp = Blueprint('divyanshu', __name__, template_folder=TEMPLATE_DIR)
 
-@divyanshu_bp.route('/')
-@divyanshu_bp.route('/home')
-def home():
-    return render_template('home.html')
 
-@divyanshu_bp.route('/habit-tracker')
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user_id'):
+            return redirect(url_for('svg.login'))
+        if session.get('distro') != 'divyanhu':
+            return redirect(url_for('svg.login'))
+        return f(*args, **kwargs)
+    return decorated
+
+
+def get_user():
+    return {
+        'username': session.get('username', ''),
+        'distro':   session.get('distro', 'divyanhu'),
+        'user_id':  session.get('user_id'),
+    }
+
+
+@divyanshu_bp.route('/d/home')
+@login_required
+def home():
+    user = get_user()
+    return render_template('home.html', username=user['username'])
+
+
+@divyanshu_bp.route('/d/habit-tracker')
+@login_required
 def habit_tracker():
-    return render_template('home.html')
+    user = get_user()
+    return render_template('home.html', username=user['username'])

@@ -1,54 +1,39 @@
-/* ══════════════════════════════
-   RESEND VERIFICATION
-   ══════════════════════════════ */
-async function resendVerification() {
-  const identifier = document.getElementById('loginIdentifier').value.trim();
-  const method     = document.querySelector('.method-btn.active')?.dataset.method || 'email';
-  const email      = method === 'email' ? identifier : '';
-  if (!email) { return; }
-
-  try {
-    const res  = await fetch('/auth/resend-verification', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ email }),
-    });
-    const data = await res.json();
-    showFlash('loginFlash', '✓ verification email resent — check your inbox', 'success');
-    typeCmd('auth --resend-verification');
-  } catch {
-    showFlash('loginFlash', 'network error');
-  }
-}
-
 /* ═══════════════════════════════════════
-   login.js — Blankit auth
-   ═══════════════════════════════════════ */
+   login.js — VEYRA auth
+═══════════════════════════════════════ */
 
 /* ══════════════════════════════
    DISTRO DATA
-   ══════════════════════════════ */
+══════════════════════════════ */
 const DISTROS = {
   ecosvg:   { maintainer: 'eco-svg',  focus: 'habit tracking + AI insights', status: '● active', about: '— to be filled —' },
   divyanhu: { maintainer: 'divyanhu', focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
   thepug:   { maintainer: 'thepug',   focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
 };
-
 const DISTRO_KEYS = ['ecosvg', 'divyanhu', 'thepug'];
 const BG_IDS      = { ecosvg: 'bg-ecosvg', divyanhu: 'bg-divyanhu', thepug: 'bg-thepug' };
 
+// Where each distro lands after login/register
+const DISTRO_REDIRECTS = {
+  ecosvg:   '/home',
+  divyanhu: '/d/home',
+  thepug:   '/pug/home',
+};
+
 /* ══════════════════════════════
    STATE
-   ══════════════════════════════ */
+══════════════════════════════ */
 let currentIndex = 0;
 let isLocked     = false;
 let lockedDistro = null;
 
+// Track which distro the OTP was sent for so we redirect correctly after verify
+let pendingDistro = null;
+
 /* ══════════════════════════════
    TERMINAL TYPEWRITER
-   ══════════════════════════════ */
+══════════════════════════════ */
 const termCmd = document.getElementById('termCmd');
-
 function typeCmd(text) {
   termCmd.textContent = '';
   let i = 0;
@@ -58,12 +43,11 @@ function typeCmd(text) {
     if (i >= text.length) clearInterval(iv);
   }, 38);
 }
-
 typeCmd('select_distro --interactive');
 
 /* ══════════════════════════════
    BACKGROUND SWITCHER
-   ══════════════════════════════ */
+══════════════════════════════ */
 function switchBg(distro) {
   document.querySelectorAll('.bg-layer').forEach(l => l.classList.remove('active'));
   const el = document.getElementById(BG_IDS[distro]);
@@ -72,7 +56,7 @@ function switchBg(distro) {
 
 /* ══════════════════════════════
    SWIPER
-   ══════════════════════════════ */
+══════════════════════════════ */
 const cards  = document.querySelectorAll('.distro-card');
 const dots   = document.querySelectorAll('.s-dot');
 const arrowL = document.getElementById('arrowLeft');
@@ -107,7 +91,6 @@ function showCard(index, direction = 1) {
 
   dots.forEach((d, i) => d.classList.toggle('active', i === index));
   currentIndex = index;
-
   const key = DISTRO_KEYS[index];
   updateDistroInfo(key);
   updateDistroLabels(key);
@@ -125,11 +108,9 @@ function updateArrows() {
 arrowL.addEventListener('click', () => {
   if (!isLocked && currentIndex > 0) showCard(currentIndex - 1, -1);
 });
-
 arrowR.addEventListener('click', () => {
   if (!isLocked && currentIndex < DISTRO_KEYS.length - 1) showCard(currentIndex + 1, 1);
 });
-
 dots.forEach(dot => {
   dot.addEventListener('click', () => {
     if (isLocked) return;
@@ -141,11 +122,7 @@ dots.forEach(dot => {
 /* touch / swipe */
 let touchStartX = 0;
 const swiper = document.getElementById('swiper');
-
-swiper.addEventListener('touchstart', e => {
-  touchStartX = e.touches[0].clientX;
-}, { passive: true });
-
+swiper.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
 swiper.addEventListener('touchend', e => {
   if (isLocked) return;
   const diff = touchStartX - e.changedTouches[0].clientX;
@@ -158,7 +135,7 @@ updateArrows();
 
 /* ══════════════════════════════
    DISTRO INFO
-   ══════════════════════════════ */
+══════════════════════════════ */
 function updateDistroInfo(distro) {
   const d = DISTROS[distro];
   document.getElementById('infoMaintainer').textContent = d.maintainer;
@@ -174,21 +151,19 @@ function updateDistroLabels(distro) {
 
 /* ══════════════════════════════
    DISTRO LOCK
-   ══════════════════════════════ */
+══════════════════════════════ */
 function lockDistro(distro) {
   isLocked     = true;
   lockedDistro = distro;
-
   arrowL.style.display = 'none';
   arrowR.style.display = 'none';
   dots.forEach(d => { d.style.pointerEvents = 'none'; d.style.opacity = '0.25'; });
-
   document.getElementById('lockedBar').classList.remove('hidden');
   document.getElementById('lockedName').textContent = distro;
   typeCmd(`distro --locked=${distro}`);
 }
 
-const savedLocked = localStorage.getItem('blankit-locked-distro');
+const savedLocked = localStorage.getItem('veyra-locked-distro');
 if (savedLocked && DISTRO_KEYS.includes(savedLocked)) {
   const idx = DISTRO_KEYS.indexOf(savedLocked);
   showCard(idx, 1);
@@ -197,19 +172,17 @@ if (savedLocked && DISTRO_KEYS.includes(savedLocked)) {
 
 /* ══════════════════════════════
    TAB SWITCHER
-   ══════════════════════════════ */
-const tabs      = document.querySelectorAll('.tab');
-const tabLine   = document.getElementById('tabLine');
-const authLabel = document.getElementById('authLabel');
+══════════════════════════════ */
+const tabs    = document.querySelectorAll('.tab');
+const tabLine = document.getElementById('tabLine');
 
 function switchTab(name) {
   tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(`panel-${name}`).classList.add('active');
+  const panel = document.getElementById(`panel-${name}`);
+  if (panel) panel.classList.add('active');
   positionTabLine(name);
   clearAllErrors();
-  const labels = { login: 'auth.login', register: 'auth.register', forgot: 'auth.forgot_password' };
-  authLabel.textContent = labels[name] || name;
   typeCmd(`auth --mode=${name}`);
 }
 
@@ -223,12 +196,10 @@ function positionTabLine(name) {
 }
 
 tabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab.dataset.tab)));
-
 document.querySelectorAll('[data-tab]').forEach(el => {
   if (el.classList.contains('tab')) return;
   el.addEventListener('click', () => switchTab(el.dataset.tab));
 });
-
 setTimeout(() => positionTabLine('login'), 60);
 window.addEventListener('resize', () => {
   const active = document.querySelector('.tab.active');
@@ -237,18 +208,15 @@ window.addEventListener('resize', () => {
 
 /* ══════════════════════════════
    LOGIN METHOD TOGGLE
-   ══════════════════════════════ */
+══════════════════════════════ */
 let loginMethod = 'email';
-
 document.querySelectorAll('.method-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loginMethod = btn.dataset.method;
-
     const input = document.getElementById('loginIdentifier');
     const label = document.getElementById('loginIdentifierLabel');
-
     if (loginMethod === 'email') {
       input.type = 'email'; input.placeholder = 'you@example.com';
       label.textContent = '// email';
@@ -262,7 +230,7 @@ document.querySelectorAll('.method-btn').forEach(btn => {
 
 /* ══════════════════════════════
    PASSWORD SHOW / HIDE
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.querySelectorAll('.eye-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     const input = document.getElementById(btn.dataset.target);
@@ -274,7 +242,7 @@ document.querySelectorAll('.eye-btn').forEach(btn => {
 
 /* ══════════════════════════════
    PASSWORD STRENGTH
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.getElementById('regPassword').addEventListener('input', function () {
   const pw = this.value;
   let score = 0;
@@ -283,11 +251,9 @@ document.getElementById('regPassword').addEventListener('input', function () {
   if (/[A-Z]/.test(pw))        score++;
   if (/[0-9]/.test(pw))        score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-
   const pct    = pw.length ? Math.min((score / 5) * 100, 100) : 0;
   const colors = ['#ff5252', '#ff5252', '#ffc14d', '#39ff14', '#22cc00'];
   const labels = ['', 'weak', 'fair', 'good', 'strong', 'max'];
-
   document.getElementById('strengthFill').style.width      = pct + '%';
   document.getElementById('strengthFill').style.background = colors[Math.min(score - 1, 4)] || 'transparent';
   document.getElementById('strengthLabel').textContent     = pw.length ? (labels[score] || 'max') : '—';
@@ -295,18 +261,16 @@ document.getElementById('regPassword').addEventListener('input', function () {
 
 /* ══════════════════════════════
    VALIDATION HELPERS
-   ══════════════════════════════ */
+══════════════════════════════ */
 function setErr(id, msg) {
   const el = document.getElementById(id);
   if (el) el.textContent = msg;
 }
-
 function clearAllErrors() {
   document.querySelectorAll('.field-err').forEach(e => e.textContent = '');
   document.querySelectorAll('.field-input').forEach(i => i.classList.remove('error'));
   document.querySelectorAll('.flash').forEach(f => f.classList.add('hidden'));
 }
-
 function showFlash(id, msg, type = 'error') {
   const el = document.getElementById(id);
   if (!el) return;
@@ -315,19 +279,16 @@ function showFlash(id, msg, type = 'error') {
   el.classList.remove('hidden');
   if (type === 'success') setTimeout(() => el.classList.add('hidden'), 4000);
 }
-
 function setLoading(btnId, loaderId, on) {
   document.getElementById(btnId).disabled = on;
   document.getElementById(loaderId).classList.toggle('hidden', !on);
 }
-
 function validEmail(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
-
 function getCurrentDistro() { return DISTRO_KEYS[currentIndex]; }
 
 /* ══════════════════════════════
    LOGIN
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.getElementById('loginBtn').addEventListener('click', async () => {
   clearAllErrors();
   const identifier = document.getElementById('loginIdentifier').value.trim();
@@ -356,18 +317,22 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
         distro:   getCurrentDistro(),
       }),
     });
-
     const data = await res.json();
 
     if (res.ok && data.redirect) {
-      localStorage.setItem('blankit-locked-distro', getCurrentDistro());
-      lockDistro(getCurrentDistro());
+      // Lock to the distro the server confirmed (from DB)
+      const confirmedDistro = data.distro || getCurrentDistro();
+      localStorage.setItem('veyra-locked-distro', confirmedDistro);
+      lockDistro(confirmedDistro);
       showFlash('loginFlash', '✓ authenticated. redirecting...', 'success');
       typeCmd(`auth --success redirect=${data.redirect}`);
       setTimeout(() => window.location.href = data.redirect, 900);
+
     } else if (res.status === 403 && data.error === 'email_not_verified') {
+      pendingDistro = getCurrentDistro();
       showOtpPanel(data.email);
       typeCmd('auth --verify-otp');
+
     } else {
       showFlash('loginFlash', data.error || 'invalid credentials');
       typeCmd('auth --error: invalid credentials');
@@ -382,7 +347,7 @@ document.getElementById('loginBtn').addEventListener('click', async () => {
 
 /* ══════════════════════════════
    REGISTER
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.getElementById('registerBtn').addEventListener('click', async () => {
   clearAllErrors();
   const username = document.getElementById('regUsername').value.trim();
@@ -391,26 +356,28 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const confirm  = document.getElementById('regConfirm').value;
   let ok = true;
 
-  if (!username || username.length < 3)      { setErr('regUsernameErr', 'min 3 chars'); ok = false; }
-  else if (!/^[a-zA-Z0-9_]+$/.test(username)) { setErr('regUsernameErr', 'a-z 0-9 _ only'); ok = false; }
-  if (!validEmail(email))                    { setErr('regEmailErr', 'invalid email'); ok = false; }
-  if (!password || password.length < 8)      { setErr('regPasswordErr', 'min 8 chars'); ok = false; }
-  if (password !== confirm)                  { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
+  if (!username || username.length < 3)        { setErr('regUsernameErr', 'min 3 chars'); ok = false; }
+  else if (!/^[a-zA-Z0-9_]+$/.test(username))  { setErr('regUsernameErr', 'a-z 0-9 _ only'); ok = false; }
+  if (!validEmail(email))                       { setErr('regEmailErr', 'invalid email'); ok = false; }
+  if (!password || password.length < 8)         { setErr('regPasswordErr', 'min 8 chars'); ok = false; }
+  if (password !== confirm)                     { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
   if (!ok) return;
 
   setLoading('registerBtn', 'registerLoader', true);
   typeCmd('auth --register --processing...');
 
   try {
-    const res  = await fetch('/auth/register', {
+    const distro = getCurrentDistro();
+    const res    = await fetch('/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, distro: getCurrentDistro() }),
+      body: JSON.stringify({ username, email, password, distro }),
     });
-
     const data = await res.json();
 
     if (res.ok && data.message === 'otp_sent') {
+      // Remember which distro this registration is for
+      pendingDistro = distro;
       showOtpPanel(data.email);
       typeCmd('auth --register --otp-sent');
     } else {
@@ -426,7 +393,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
 
 /* ══════════════════════════════
    FORGOT PASSWORD
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.getElementById('forgotBtn').addEventListener('click', async () => {
   clearAllErrors();
   const email = document.getElementById('forgotEmail').value.trim();
@@ -441,7 +408,6 @@ document.getElementById('forgotBtn').addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     });
-
     const data = await res.json();
     showFlash(
       'forgotFlash',
@@ -458,7 +424,7 @@ document.getElementById('forgotBtn').addEventListener('click', async () => {
 
 /* ══════════════════════════════
    ENTER KEY
-   ══════════════════════════════ */
+══════════════════════════════ */
 document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const active = document.querySelector('.panel.active');
@@ -470,13 +436,10 @@ document.addEventListener('keydown', e => {
 
 /* ══════════════════════════════
    OTP PANEL
-   ══════════════════════════════ */
-
+══════════════════════════════ */
 function showOtpPanel(email) {
-  // hide main panels
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 
-  // create OTP panel if not exists
   let otpPanel = document.getElementById('panel-otp');
   if (!otpPanel) {
     otpPanel = document.createElement('div');
@@ -487,7 +450,6 @@ function showOtpPanel(email) {
         A 6-digit code was sent to<br>
         <strong style="color:var(--accent)" id="otpEmailDisplay"></strong>
       </p>
-
       <div class="field">
         <label class="field-label">// verification_code</label>
         <input class="field-input" type="text" id="otpInput"
@@ -495,13 +457,11 @@ function showOtpPanel(email) {
                style="font-size:1.4rem;letter-spacing:0.4em;text-align:center"/>
         <span class="field-err" id="otpErr"></span>
       </div>
-
       <button class="submit-btn" id="otpSubmitBtn">
         $ verify --otp
         <span class="btn-loader hidden" id="otpLoader"></span>
       </button>
       <div class="flash hidden" id="otpFlash"></div>
-
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:0.25rem">
         <button class="link-btn" id="otpResendBtn">Resend code</button>
         <span id="otpTimer" style="font-size:0.62rem;color:var(--text3)"></span>
@@ -512,33 +472,26 @@ function showOtpPanel(email) {
     otpPanel.classList.add('active');
   }
 
-  // set email
   const emailDisplay = document.getElementById('otpEmailDisplay');
   if (emailDisplay) emailDisplay.textContent = email;
 
-  // clear previous state
-  document.getElementById('otpInput').value = '';
-  document.getElementById('otpErr').textContent = '';
+  document.getElementById('otpInput').value        = '';
+  document.getElementById('otpErr').textContent    = '';
   document.getElementById('otpFlash').classList.add('hidden');
 
-  // update tab line to nothing
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('tabLine').style.width = '0';
 
   typeCmd('auth --enter-otp');
   startOtpTimer();
 
-  // submit
-  document.getElementById('otpSubmitBtn').onclick = submitOtp;
-  document.getElementById('otpInput').onkeydown = e => { if (e.key === 'Enter') submitOtp(); };
-
-  // auto-submit when 6 digits entered
-  document.getElementById('otpInput').oninput = function() {
+  document.getElementById('otpSubmitBtn').onclick   = submitOtp;
+  document.getElementById('otpInput').onkeydown     = e => { if (e.key === 'Enter') submitOtp(); };
+  document.getElementById('otpInput').oninput       = function () {
     this.value = this.value.replace(/[^0-9]/g, '');
     if (this.value.length === 6) submitOtp();
   };
 
-  // resend
   document.getElementById('otpResendBtn').onclick = async () => {
     try {
       const res  = await fetch('/auth/resend-otp', {
@@ -553,25 +506,24 @@ function showOtpPanel(email) {
       flash.classList.remove('hidden');
       if (res.ok) startOtpTimer();
     } catch {
-      document.getElementById('otpFlash').textContent = 'network error';
-      document.getElementById('otpFlash').className = 'flash error';
-      document.getElementById('otpFlash').classList.remove('hidden');
+      const flash = document.getElementById('otpFlash');
+      flash.textContent = 'network error';
+      flash.className   = 'flash error';
+      flash.classList.remove('hidden');
     }
   };
 }
 
 let otpTimerInterval = null;
-
 function startOtpTimer() {
   if (otpTimerInterval) clearInterval(otpTimerInterval);
-  let seconds = 600; // 10 minutes
+  let seconds = 600;
   const timerEl = document.getElementById('otpTimer');
   if (!timerEl) return;
-
   function tick() {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
-    timerEl.textContent = `expires in ${m}:${String(s).padStart(2,'0')}`;
+    timerEl.textContent = `expires in ${m}:${String(s).padStart(2, '0')}`;
     if (seconds <= 0) {
       clearInterval(otpTimerInterval);
       timerEl.textContent = 'code expired';
@@ -584,8 +536,8 @@ function startOtpTimer() {
 }
 
 async function submitOtp() {
-  const otp     = document.getElementById('otpInput').value.trim();
-  const errEl   = document.getElementById('otpErr');
+  const otp   = document.getElementById('otpInput').value.trim();
+  const errEl = document.getElementById('otpErr');
   errEl.textContent = '';
 
   if (otp.length !== 6) { errEl.textContent = 'enter all 6 digits'; return; }
@@ -604,15 +556,22 @@ async function submitOtp() {
 
     if (res.ok) {
       if (otpTimerInterval) clearInterval(otpTimerInterval);
+
       const flash = document.getElementById('otpFlash');
-      flash.textContent = '✓ verified! please sign in.';
+      flash.textContent = '✓ verified! redirecting...';
       flash.className   = 'flash success';
       flash.classList.remove('hidden');
       typeCmd('auth --verified');
+
+      // Lock distro and redirect to the correct home — NOT just login tab
+      const distro   = pendingDistro || getCurrentDistro();
+      const redirect = DISTRO_REDIRECTS[distro] || '/home';
+      localStorage.setItem('veyra-locked-distro', distro);
+
       setTimeout(() => {
-        document.getElementById('panel-otp').classList.remove('active');
-        switchTab('login');
-      }, 1500);
+        window.location.href = redirect;
+      }, 1200);
+
     } else {
       errEl.textContent = data.error || 'incorrect code';
       document.getElementById('otpInput').value = '';

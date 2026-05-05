@@ -7,7 +7,6 @@ from svg_models.reset_token import VerifyToken, ResetToken
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
-# mail instance set by app.py via init_mail()
 mail = None
 
 def init_mail(mail_instance):
@@ -16,8 +15,8 @@ def init_mail(mail_instance):
 
 DISTRO_REDIRECTS = {
     'ecosvg':   '/home',
-    'divyanhu': '/home',
-    'thepug':   '/home',
+    'divyanhu': '/d/home',
+    'thepug':   '/pug/home',
 }
 
 
@@ -31,26 +30,19 @@ def send_otp_email(user, otp):
 <body style="font-family:monospace;background:#f4f7ee;padding:2rem;color:#2d4a35;margin:0">
   <div style="max-width:460px;margin:0 auto;background:#fff;
               border:1px solid #c0dd97;border-radius:12px;padding:2rem 2.5rem">
-
-    <h2 style="color:#3B6D11;font-size:1.3rem;margin:0 0 0.5rem">
-      VEYRA ◈
-    </h2>
+    <h2 style="color:#3B6D11;font-size:1.3rem;margin:0 0 0.5rem">VEYRA ◈</h2>
     <p style="color:#555;font-size:0.85rem;margin:0 0 1.5rem;line-height:1.6">
       Hi {user.username}, here is your verification code:
     </p>
-
-    <!-- OTP block -->
     <div style="background:#f4f7ee;border:2px solid #3B6D11;border-radius:10px;
                 padding:1.2rem;text-align:center;margin-bottom:1.5rem">
       <span style="font-size:2.8rem;font-weight:700;letter-spacing:0.35em;
                    color:#3B6D11;font-family:monospace">{otp}</span>
     </div>
-
     <p style="color:#888;font-size:0.75rem;line-height:1.6;margin:0">
       This code expires in <strong>10 minutes</strong>.<br>
       If you didn't sign up for VEYRA, ignore this email.
     </p>
-
     <hr style="border:none;border-top:1px solid #e8f0d8;margin:1.5rem 0"/>
     <p style="color:#bbb;font-size:0.65rem;margin:0">
       VEYRA — habit tracker · veyrasupportus@gmail.com
@@ -73,6 +65,9 @@ def register():
     password = data.get('password', '')
     distro   = data.get('distro', 'ecosvg')
 
+    if distro not in DISTRO_REDIRECTS:
+        return jsonify({'error': 'invalid distro'}), 400
+
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'username already taken'}), 409
     if User.query.filter_by(email=email).first():
@@ -88,7 +83,6 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    # generate OTP and send
     token_obj = VerifyToken(user_id=new_user.id)
     db.session.add(token_obj)
     db.session.commit()
@@ -99,7 +93,6 @@ def register():
         current_app.logger.error(f'Mail error: {e}')
         return jsonify({'error': 'account created but email failed — contact support'}), 500
 
-    # store user_id in session temporarily for OTP verification
     session['pending_user_id'] = new_user.id
     session['pending_email']   = email
 
@@ -118,7 +111,6 @@ def verify_otp():
     if not user_id:
         return jsonify({'error': 'session expired — please register again'}), 400
 
-    # find latest valid token for this user
     token_obj = VerifyToken.query.filter_by(
         user_id=user_id, used=False
     ).order_by(VerifyToken.created_at.desc()).first()
@@ -129,17 +121,24 @@ def verify_otp():
     if token_obj.otp != otp:
         return jsonify({'error': 'incorrect OTP — try again'}), 400
 
-    # mark verified
-    user = User.query.get(user_id)
-    user.is_verified   = True
-    token_obj.used     = True
+    user             = User.query.get(user_id)
+    user.is_verified = True
+    token_obj.used   = True
     db.session.commit()
 
-    # clear pending session
     session.pop('pending_user_id', None)
     session.pop('pending_email', None)
 
-    return jsonify({'message': 'verified'}), 200
+    # Log the user in immediately after verification
+    session['user_id']  = user.id
+    session['username'] = user.username
+    session['distro']   = user.distro
+
+    return jsonify({
+        'message':  'verified',
+        'redirect': DISTRO_REDIRECTS.get(user.distro, '/home'),
+        'distro':   user.distro,
+    }), 200
 
 
 # ══════════════════════════════
@@ -157,7 +156,6 @@ def resend_otp():
     if not user or user.is_verified:
         return jsonify({'error': 'invalid request'}), 400
 
-    # invalidate old OTPs
     VerifyToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
     db.session.commit()
 
@@ -197,8 +195,11 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'invalid credentials'}), 401
 
+    # Block cross-distro login
+    if user.distro != distro:
+        return jsonify({'error': f'this account belongs to {user.distro}, not {distro}'}), 403
+
     if not user.is_verified:
-        # send a fresh OTP so they can verify
         VerifyToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
         db.session.commit()
         token_obj = VerifyToken(user_id=user.id)
@@ -210,17 +211,17 @@ def login():
             send_otp_email(user, token_obj.otp)
         except Exception:
             pass
-        return jsonify({
-            'error':  'email_not_verified',
-            'email':  user.email,
-        }), 403
+        return jsonify({'error': 'email_not_verified', 'email': user.email}), 403
 
     session.permanent   = remember
     session['user_id']  = user.id
     session['username'] = user.username
-    session['distro']   = distro
+    session['distro']   = user.distro   # always from DB, never trust client
 
-    return jsonify({'redirect': DISTRO_REDIRECTS.get(distro, '/home')}), 200
+    return jsonify({
+        'redirect': DISTRO_REDIRECTS.get(user.distro, '/home'),
+        'distro':   user.distro,
+    }), 200
 
 
 # ══════════════════════════════
@@ -261,7 +262,6 @@ def delete_account():
         return jsonify({'error': 'user not found'}), 404
 
     try:
-        # cascade deletes habits, logs, todos via DB relationships
         db.session.delete(user)
         db.session.commit()
         session.clear()
