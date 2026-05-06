@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let consistencyChart;
 
     function renderChart() {
-        fetch('/api/consistency')
+        fetch('/pug/api/consistency')
             .then(res => res.json())
             .then(data => {
                 const labels = data.map(d => d.day);

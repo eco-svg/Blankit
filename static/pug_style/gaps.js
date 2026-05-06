@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function checkDream() {
-        fetch('/api/dream')
+        fetch('/pug/api/dream')
             .then(res => {
                 if (!res.ok) throw new Error("API not ready");
                 return res.json();
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function lockInDream(dreamText) {
-        fetch('/api/dream', {
+        fetch('/pug/api/dream', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: dreamText })

@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================================
 
     function loadNotesList() {
-        fetch('/api/notes')
+        fetch('/pug/api/notes')
             .then(res => res.json())
             .then(notes => {
                 noteItemsContainer.innerHTML = '';
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
             start_datetime: dateInput ? dateInput.value || null : null
         };
 
-        fetch('/api/notes', {
+        fetch('/pug/api/notes', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(payload)
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('file', file);
 
-        fetch('/api/upload', { method: 'POST', body: formData })
+        fetch('/pug/api/upload', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
             if (data.url) {
@@ -307,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnConfirmDelete.addEventListener('click', () => {
         btnConfirmDelete.textContent = 'Deleting...';
 
-        fetch(`/api/notes/${currentNoteId}`, { method: 'DELETE' })
+        fetch(`/pug/api/notes/${currentNoteId}`, { method: 'DELETE' })
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {

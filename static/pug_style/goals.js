@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnConfirmAchieve.addEventListener('click', () => {
             if (pendingAchieveId) {
-                fetch(`/api/goals/${pendingAchieveId}`, {
+                fetch(`/pug/api/goals/${pendingAchieveId}`, {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_finished: true })
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadGoals() {
-        fetch('/api/goals')
+        fetch('/pug/api/goals')
             .then(res => res.json())
             .then(goals => {
                 activeGoalsList.innerHTML = '';
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = inputGoal.value.trim();
         if (!title) return;
 
-        fetch('/api/goals', {
+        fetch('/pug/api/goals', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: title })
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                      // Fallback if modal HTML is missing
                     if (confirm("Move this to Finished?")) {
-                        fetch(`/api/goals/${pendingAchieveId}`, {
+                        fetch(`/pug/api/goals/${pendingAchieveId}`, {
                             method: 'PATCH',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ is_finished: true })
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.action-remove').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
-                fetch(`/api/goals/${id}`, { method: 'DELETE' }).then(loadGoals);
+                fetch(`/pug/api/goals/${id}`, { method: 'DELETE' }).then(loadGoals);
             });
         });
     }

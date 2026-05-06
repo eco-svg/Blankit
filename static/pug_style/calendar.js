@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- 1. THE DATA FETCH ---
     window.refreshNexusCalendar = async function() {
         try {
-            const res = await fetch('/api/events');
+            const res = await fetch('/pug/api/events');
             if (res.ok) {
                 events = await res.json();
             }

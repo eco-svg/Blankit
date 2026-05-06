@@ -2,10 +2,8 @@ import os
 from flask import Blueprint, render_template, session, redirect, url_for
 from functools import wraps
 
-BASE_DIR     = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-TEMPLATE_DIR = os.path.join(BASE_DIR, "templates", "divyanhu_templates")
-
-divyanshu_bp = Blueprint('divyanshu', __name__, template_folder=TEMPLATE_DIR)
+# No template_folder — full paths used in render_template
+divyanshu_bp = Blueprint('divyanshu', __name__)
 
 
 def login_required(f):
@@ -31,11 +29,11 @@ def get_user():
 @login_required
 def home():
     user = get_user()
-    return render_template('home.html', username=user['username'])
+    return render_template('divyanhu_templates/home.html', username=user['username'])
 
 
 @divyanshu_bp.route('/d/habit-tracker')
 @login_required
 def habit_tracker():
     user = get_user()
-    return render_template('home.html', username=user['username'])
+    return render_template('divyanhu_templates/home.html', username=user['username'])

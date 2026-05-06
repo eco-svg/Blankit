@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // POST the query to our Flask backend
             // Flask then calls the AI API and returns the response
             // Keeping AI calls server-side means the API key is never exposed to the browser
-            const res = await fetch('/api/ask', {
+            const res = await fetch('/pug/api/ask', {
                 method:  'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body:    JSON.stringify({ query: query })
