@@ -1,49 +1,29 @@
 /**
  * Main Application
- * Initializes and coordinates all modules
+ * Initializes and coordinates all modules.
  */
 
 const App = {
     habitData: null,
     initialized: false,
 
-    /**
-     * Initialize application
-     */
     init() {
-        if (this.initialized) {
-            console.warn('App already initialized');
-            return;
-        }
+        if (this.initialized) return;
 
-        console.log('Initializing Habit Tracker...');
-
-        // Load data
         this.habitData = DataManager.loadData();
-        
-        // Initialize monthly data
         DataManager.initializeMonthlyData(this.habitData);
-
-        // Initialize all modules
         this.initializeModules();
-
-        // Setup error handling
         this.setupErrorHandling();
-
         this.initialized = true;
-        console.log('Habit Tracker initialized successfully');
     },
 
-    /**
-     * Initialize all application modules
-     */
     initializeModules() {
         try {
-            // Core modules
+            // Core
             Profile.init(this.habitData);
             Theme.init(this.habitData);
-            
-            // Feature modules
+
+            // Features
             Steps.init(this.habitData);
             Goals.init(this.habitData);
             Stats.init(this.habitData);
@@ -51,6 +31,11 @@ const App = {
             Alarms.init(this.habitData);
             Weather.init(this.habitData);
             Coach.init(this.habitData);
+
+            // New modules
+            Health.init(this.habitData);
+            Analytics.init(this.habitData);
+            Recurring.init(this.habitData);   // must come after Goals.init
 
             // Load saved notes
             Coach.loadNotes();
@@ -61,122 +46,35 @@ const App = {
         }
     },
 
-    /**
-     * Setup global error handling
-     */
     setupErrorHandling() {
-        window.addEventListener('error', (event) => {
-            console.error('Global error:', event.error);
-            this.logError(event.error);
-        });
-
-        window.addEventListener('unhandledrejection', (event) => {
-            console.error('Unhandled promise rejection:', event.reason);
-            this.logError(event.reason);
-        });
+        window.addEventListener('error', (e) => console.error('Global error:', e.error));
+        window.addEventListener('unhandledrejection', (e) => console.error('Unhandled rejection:', e.reason));
     },
 
-    /**
-     * Handle initialization errors
-     * @param {Error} error - Error object
-     */
     handleInitializationError(error) {
-        const errorMessage = 'Failed to initialize application. Please refresh the page.';
-        console.error(errorMessage, error);
-        
-        // Show user-friendly error
-        if (confirm(errorMessage + '\n\nWould you like to reset your data?')) {
-            this.resetApplication();
-        }
-    },
-
-    /**
-     * Log error for debugging
-     * @param {Error} error - Error object
-     */
-    logError(error) {
-        // In production, send to error tracking service
-        const errorLog = {
-            message: error.message,
-            stack: error.stack,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent
-        };
-        
-        console.error('Error log:', errorLog);
-    },
-
-    /**
-     * Reset application data
-     */
-    resetApplication() {
-        if (confirm('This will delete all your data. Are you sure?')) {
+        if (confirm('Failed to initialize. Reset data?')) {
             DataManager.clearData();
             window.location.reload();
         }
     },
 
-    /**
-     * Cleanup and destroy application
-     */
     destroy() {
         if (!this.initialized) return;
-
-        console.log('Destroying Habit Tracker...');
-
-        // Stop intervals
-        if (Alarms) Alarms.destroy();
-        if (Weather) Weather.destroy();
-        if (Stats) Stats.destroy();
-
+        if (Alarms)    Alarms.destroy();
+        if (Weather)   Weather.destroy();
+        if (Stats)     Stats.destroy();
+        if (Analytics) Analytics.destroy();
+        if (Recurring) Recurring.destroy();
         this.initialized = false;
-        console.log('Habit Tracker destroyed');
     },
 
-    /**
-     * Get application version
-     * @returns {string} Version number
-     */
-    getVersion() {
-        return '1.0.0';
-    },
-
-    /**
-     * Get application info
-     * @returns {Object} App info
-     */
-    getInfo() {
-        return {
-            name: 'AI Habit Architect',
-            version: this.getVersion(),
-            author: 'Divyanshu',
-            initialized: this.initialized,
-            dataSize: JSON.stringify(this.habitData).length
-        };
-    }
+    getVersion() { return '2.0.0'; }
 };
 
-/**
- * Auto-initialize on DOM ready
- */
-document.addEventListener('DOMContentLoaded', () => {
-    App.init();
-});
+document.addEventListener('DOMContentLoaded', () => App.init());
 
-/**
- * Cleanup on page unload
- */
 window.addEventListener('beforeunload', () => {
-    // Final save before leaving
-    if (App.habitData) {
-        DataManager.saveData(App.habitData);
-    }
+    if (App.habitData) DataManager.saveData(App.habitData);
 });
 
-// Export for external access
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = App;
-}
-
-// Make App globally accessible for debugging
 window.HabitTrackerApp = App;

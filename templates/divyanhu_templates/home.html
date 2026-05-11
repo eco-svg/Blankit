@@ -6,22 +6,26 @@
     <title>AI Habit Architect</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='divyanshu_style/dstyle.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.SERVER_USERNAME = "{{ username | e }}";
+        window.SERVER_EMAIL    = "{{ email | e }}";
+    </script>
 </head>
 <body>
 
-<!-- Profile Header -->
-<div class="profile-header">
+<!-- Profile Header — fixed top-left, never scrolls -->
+<div class="profile-header" id="profileHeader">
     <div class="profile-toggle" id="profileToggle">
         <div class="profile-avatar">👤</div>
         <div>
-            <div style="font-weight: 600; font-size: 0.95rem;">User Profile</div>
-            <div style="font-size: 0.75rem; color: var(--text-dim);">Click to view</div>
+            <div style="font-weight:600;font-size:0.95rem;">User Profile</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);">Click to view</div>
         </div>
     </div>
     <div class="profile-dropdown" id="profileDropdown">
         <div class="profile-info">
-            <div class="profile-name" id="profileName">Divyanshu</div>
-            <div class="profile-email">divyanshu@habittracker.com</div>
+            <div class="profile-name"  id="profileName">{{ username }}</div>
+            <div class="profile-email" id="profileEmail">{{ email }}</div>
         </div>
         <div class="profile-stats">
             <div class="profile-stat">
@@ -33,22 +37,18 @@
                 <div class="profile-stat-label">Goals Done</div>
             </div>
         </div>
-        <div class="profile-menu-item" id="viewHistoryBtn">
-            <span>📜</span> View History
-        </div>
-        <div class="profile-menu-item" id="editProfileBtn">
-            <span>✏️</span> Edit Profile
-        </div>
-        <div class="profile-menu-item" id="viewSettingsBtn">
-            <span>⚙️</span> Settings
-        </div>
+        <div class="profile-menu-item" id="viewHistoryBtn"><span>📜</span> View History</div>
+        <div class="profile-menu-item" id="editProfileBtn"><span>✏️</span> Edit Profile</div>
+        <div class="profile-menu-item" id="viewSettingsBtn"><span>⚙️</span> Settings</div>
         <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
     </div>
 </div>
 
 <div class="main-dashboard">
-    <!-- Left Sidebar -->
+
+    <!-- ══════════════════ LEFT SIDEBAR ══════════════════ -->
     <div class="settings-sidebar">
+
         <div class="card">
             <h3>🎨 Theme</h3>
             <div class="theme-controls">
@@ -71,17 +71,56 @@
         <div class="card">
             <h3>👟 Step Tracker</h3>
             <div class="step-display" id="stepCount">0</div>
-            <div class="km-display" id="kmDisplay">0.00 km</div>
+            <div class="km-display"   id="kmDisplay">0.00 km</div>
             <div class="step-progress">
                 <div class="step-progress-bar" id="stepProgressBar"></div>
             </div>
-            <div style="text-align: center; color: var(--text-dim); font-size: 0.9rem; margin-bottom: 10px;">
+            <div style="text-align:center;color:var(--text-dim);font-size:0.9rem;margin-bottom:10px;">
                 <span id="stepGoalText">0 / 10,000 steps</span>
             </div>
-            <div class="input-group">
+            <div class="input-group step-input-group">
                 <input type="number" id="stepInput" placeholder="Add steps" min="0">
                 <button id="updateStepsBtn">Update</button>
             </div>
+        </div>
+
+        <!-- Water Intake — moved to left sidebar for balance -->
+        <div class="card">
+            <h3>💧 Water Intake</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="waterCount">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> / 8 glasses</span>
+            </div>
+            <div id="waterGlasses"
+                 style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:10px;"></div>
+            <div class="step-progress" style="margin-bottom:10px;">
+                <div id="waterBar" class="step-progress-bar"
+                     style="background:linear-gradient(90deg,#58a6ff,#3fb950);width:0%"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button id="removeWaterBtn"
+                        style="flex:1;background:var(--border);color:var(--text);">− Glass</button>
+                <button id="addWaterBtn" style="flex:1;">+ Glass</button>
+            </div>
+        </div>
+
+        <!-- BMI Calculator — moved to left sidebar for balance -->
+        <div class="card">
+            <h3>⚖️ BMI Calculator</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="bmiValue" style="font-size:2.2rem;">--</span>
+                <div id="bmiCategory"
+                     style="font-size:0.9rem;font-weight:600;margin-top:2px;">--</div>
+            </div>
+            <div class="step-progress" style="margin-bottom:10px;">
+                <div id="bmiBar" class="step-progress-bar"
+                     style="background:linear-gradient(90deg,var(--accent),var(--warning),var(--fire));width:0%"></div>
+            </div>
+            <div class="input-group" style="margin-bottom:8px;">
+                <input type="number" id="heightInput" placeholder="Height (cm)" min="50" max="250">
+                <input type="number" id="weightInput" placeholder="Weight (kg)"  min="10" max="300">
+            </div>
+            <button id="calcBmiBtn" style="width:100%;">Calculate BMI</button>
         </div>
 
         <div class="card">
@@ -94,22 +133,33 @@
             </select>
         </div>
 
-        <div class="card" style="flex-grow: 1;">
+        <div class="card" style="flex-grow:1;">
             <h3>📝 Daily Notes</h3>
-            <textarea class="notes-area" id="notesArea" placeholder="Write your thoughts..."></textarea>
-            <button id="saveNotesBtn" style="margin-top: 10px;">💾 Save Notes</button>
+            <textarea class="notes-area" id="notesArea"
+                      placeholder="Write your thoughts..."></textarea>
+            <button id="saveNotesBtn" style="margin-top:10px;">💾 Save Notes</button>
         </div>
-    </div>
 
-    <!-- Middle Section -->
+    </div><!-- /left sidebar -->
+
+    <!-- ══════════════════ MIDDLE SECTION ══════════════════ -->
     <div class="middle-section">
+
         <div class="welcome-banner card">
             <h1 id="greetingText">Good Evening 👋</h1>
-            <div class="streak-pill" id="streakPill">🔥 <span id="streakCount">0</span> Day Streak</div>
+            <div class="streak-pill" id="streakPill">
+                🔥 <span id="streakCount">0</span> Day Streak
+            </div>
         </div>
 
+        <!-- Goal Tracker -->
         <div class="card">
-            <h3>🎯 Goal Tracker</h3>
+            <h3>Goal Tracker
+                <span style="font-size:0.75rem;color:var(--text-dim);
+                             font-weight:400;margin-left:8px;">
+                    ↻ = recurring daily goal
+                </span>
+            </h3>
             <div class="goal-list" id="goalList"></div>
             <div class="input-group">
                 <input type="text" id="goalInput" placeholder="Add new goal...">
@@ -117,14 +167,59 @@
             </div>
         </div>
 
+        <!-- Daily Inspiration -->
         <div class="card">
-            <h3>💡 Daily Inspiration</h3>
+            <h3>Daily Inspiration</h3>
             <div class="quote-box" id="quoteBox">Loading inspiration...</div>
-            <button id="newQuoteBtn" style="margin-top: 10px;">🔄 New Quote</button>
+            <button id="newQuoteBtn" style="margin-top:10px;">🔄 New Quote</button>
         </div>
 
+        <!-- Analytics: Weekly vs Monthly -->
         <div class="card">
-            <h3>📊 Monthly Performance</h3>
+            <div style="display:flex;align-items:center;
+                        justify-content:space-between;margin-bottom:12px;">
+                <h3 style="margin:0;">📊 Performance Analytics</h3>
+                <div style="display:flex;gap:8px;">
+                    <button id="weeklyBtn"  class="analytics-toggle active">Weekly</button>
+                    <button id="monthlyBtn" class="analytics-toggle">Monthly</button>
+                </div>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-dim);
+                        text-align:center;margin-bottom:10px;"
+                 id="analyticsPeriod">Last 7 days</div>
+            <div class="stats-grid" style="margin-bottom:10px;">
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsCompleted">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsRate">0%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsActiveDays">0</span>
+                    <span class="stat-label">Active Days</span>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsTotal">0</span>
+                    <span class="stat-label">Total Goals</span>
+                </div>
+                <div class="stat-card" style="grid-column:span 2;">
+                    <span class="stat-value" id="analyticsBestDay"
+                          style="font-size:1.3rem;">--</span>
+                    <span class="stat-label">Best Day</span>
+                </div>
+            </div>
+            <div class="chart-container" style="height:260px;margin-top:12px;">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="card">
+            <h3>📅 This Month</h3>
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-value" id="totalGoalsMonth">0</span>
@@ -144,19 +239,25 @@
             </div>
         </div>
 
+        <!-- Activity History -->
         <div class="card">
             <h3>📜 Activity History</h3>
             <div class="history-list" id="historyList">
                 <div class="history-item">
                     <div class="history-date">No activity yet</div>
-                    <div class="history-content">Start adding goals to build your history!</div>
+                    <div class="history-content">
+                        Start adding goals to build your history!
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Right Sidebar -->
+    </div><!-- /middle -->
+
+    <!-- ══════════════════ RIGHT SIDEBAR ══════════════════ -->
     <div class="right-sidebar">
+
+        <!-- DateTime + Weather -->
         <div class="datetime-widget">
             <div class="time-display" id="timeDisplay">00:00</div>
             <div class="date-display" id="dateDisplay">Loading...</div>
@@ -167,6 +268,7 @@
             </div>
         </div>
 
+        <!-- Alarm — RIGHT BELOW WEATHER as requested -->
         <div class="card">
             <h3>⏰ Set Reminder</h3>
             <div class="input-group">
@@ -176,16 +278,95 @@
             <div class="alarm-list" id="alarmList"></div>
         </div>
 
+        <!-- Sleep Tracker -->
+        <div class="card">
+            <h3>😴 Sleep Tracker</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="sleepHours"
+                      style="font-size:2rem;">--</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> slept</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.8rem;color:var(--text-dim);
+                                margin-bottom:4px;">Bedtime</div>
+                    <input type="time" id="bedtimeInput" style="width:100%;">
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.8rem;color:var(--text-dim);
+                                margin-bottom:4px;">Wake time</div>
+                    <input type="time" id="waketimeInput" style="width:100%;">
+                </div>
+            </div>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.8rem;color:var(--text-dim);
+                            margin-bottom:6px;">Sleep Quality</div>
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <span class="sleep-star" data-val="1"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="2"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="3"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="4"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="5"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                </div>
+            </div>
+            <button id="saveSleepBtn" style="width:100%;">💾 Save Sleep</button>
+        </div>
+
+        <!-- Calorie Logger -->
+        <div class="card">
+            <h3>🍽️ Calorie Logger</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="totalCalories">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> kcal today</span>
+            </div>
+            <div id="mealList"
+                 style="max-height:100px;overflow-y:auto;margin-bottom:8px;"></div>
+            <input type="text" id="mealNameInput" placeholder="Meal name..."
+                   style="width:100%;margin-bottom:6px;">
+            <div class="input-group">
+                <input type="number" id="mealCalInput" placeholder="Calories" min="0">
+                <button id="addMealBtn">Add</button>
+            </div>
+        </div>
+
+        <!-- Workout Log — fixed sets/reps boundary -->
+        <div class="card">
+            <h3>💪 Workout Log</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="totalWorkouts">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> exercises</span>
+            </div>
+            <div id="workoutList"
+                 style="max-height:100px;overflow-y:auto;margin-bottom:8px;"></div>
+            <input type="text" id="workoutExInput" placeholder="Exercise name..."
+                   style="width:100%;margin-bottom:6px;">
+            <!-- FIX: both inputs equal width, contained inside card -->
+            <div class="workout-inputs">
+                <input type="number" id="workoutSetsInput"
+                       placeholder="Sets" min="1">
+                <input type="number" id="workoutRepsInput"
+                       placeholder="Reps" min="1">
+            </div>
+            <button id="addWorkoutBtn" style="width:100%;margin-top:6px;">
+                ➕ Log Exercise
+            </button>
+        </div>
+
+        <!-- Motivation Zone -->
         <div class="card">
             <h3>📺 Motivation Zone</h3>
-            <iframe 
-                width="100%" 
-                height="180" 
+            <iframe width="100%" height="180"
                 src="https://www.youtube.com/embed?listType=search&list=productivity+motivation+shorts"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
             </iframe>
         </div>
 
+        <!-- AI Coach -->
         <div class="card">
             <h3>🤖 AI Habit Coach</h3>
             <div id="chatHistory"></div>
@@ -194,8 +375,10 @@
                 <button id="sendMessageBtn">Send</button>
             </div>
         </div>
-    </div>
-</div>
+
+    </div><!-- /right sidebar -->
+
+</div><!-- /main-dashboard -->
 
 <!-- JavaScript Modules -->
 <script src="{{ url_for('static', filename='divyanshu_style/js/utils.js') }}"></script>
@@ -209,6 +392,9 @@
 <script src="{{ url_for('static', filename='divyanshu_style/js/alarms.js') }}"></script>
 <script src="{{ url_for('static', filename='divyanshu_style/js/weather.js') }}"></script>
 <script src="{{ url_for('static', filename='divyanshu_style/js/coach.js') }}"></script>
+<script src="{{ url_for('static', filename='divyanshu_style/js/health.js') }}"></script>
+<script src="{{ url_for('static', filename='divyanshu_style/js/analytics.js') }}"></script>
+<script src="{{ url_for('static', filename='divyanshu_style/js/recurring.js') }}"></script>
 <script src="{{ url_for('static', filename='divyanshu_style/js/app.js') }}"></script>
 </body>
 </html>

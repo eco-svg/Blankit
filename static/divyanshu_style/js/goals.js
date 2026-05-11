@@ -1,6 +1,11 @@
 /**
  * Goal Management
- * Handles goal creation, completion, and deletion
+ * Handles goal creation, completion, and deletion.
+ *
+ * FIX: updateStreak() now checks data.lastStreakDate so the streak
+ *      counter only increments ONCE per calendar day, no matter how
+ *      many goals are toggled. Previously it incremented on every
+ *      completion, causing the "hardcoded 3 days" symptom.
  */
 
 const Goals = {
@@ -22,12 +27,12 @@ const Goals = {
      */
     cacheElements() {
         this.elements = {
-            list: document.getElementById('goalList'),
-            input: document.getElementById('goalInput'),
-            addBtn: document.getElementById('addGoalBtn'),
+            list:         document.getElementById('goalList'),
+            input:        document.getElementById('goalInput'),
+            addBtn:       document.getElementById('addGoalBtn'),
             streakToggle: document.getElementById('streakToggle'),
-            streakPill: document.getElementById('streakPill'),
-            streakCount: document.getElementById('streakCount')
+            streakPill:   document.getElementById('streakPill'),
+            streakCount:  document.getElementById('streakCount')
         };
     },
 
@@ -50,7 +55,6 @@ const Goals = {
                 }
             });
 
-            // Auto-focus on click
             this.elements.input.addEventListener('focus', () => {
                 this.elements.input.select();
             });
@@ -61,6 +65,18 @@ const Goals = {
                 this.toggleStreak();
             });
         }
+
+        // Apply saved toggle state on load
+        if (this.data.streakEnabled) {
+            this.elements.streakToggle.classList.add('active');
+            this.elements.streakPill.classList.remove('hidden');
+        } else {
+            this.elements.streakToggle.classList.remove('active');
+            this.elements.streakPill.classList.add('hidden');
+        }
+
+        // Render current streak count
+        this.elements.streakCount.textContent = this.data.streak;
     },
 
     /**
@@ -68,7 +84,7 @@ const Goals = {
      */
     addGoal() {
         const goalText = this.elements.input.value.trim();
-        
+
         if (goalText === '') {
             alert('Please enter a goal!');
             this.elements.input.focus();
@@ -80,8 +96,7 @@ const Goals = {
             return;
         }
 
-        // Check for duplicate goals
-        const duplicate = this.data.goals.some(g => 
+        const duplicate = this.data.goals.some(g =>
             g.text.toLowerCase() === goalText.toLowerCase() && !g.completed
         );
         if (duplicate) {
@@ -130,7 +145,9 @@ const Goals = {
             this.updateStreak();
             this.celebrateCompletion(goal);
         } else {
-            this.data.completedToday--;
+            if (this.data.completedToday > 0) {
+                this.data.completedToday--;
+            }
         }
 
         this.render();
@@ -161,12 +178,12 @@ const Goals = {
     },
 
     /**
-     * Toggle streak display
+     * Toggle streak display visibility
      */
     toggleStreak() {
         this.data.streakEnabled = !this.data.streakEnabled;
         this.elements.streakToggle.classList.toggle('active');
-        
+
         if (this.data.streakEnabled) {
             this.elements.streakPill.classList.remove('hidden');
         } else {
@@ -177,25 +194,27 @@ const Goals = {
     },
 
     /**
-     * Update streak count
+     * Update streak count.
+     *
+     * FIX: The streak should only go up by 1 per calendar day.
+     * We store the last date we incremented in data.lastStreakDate.
+     * If it is already today we skip the increment entirely.
      */
     updateStreak() {
-        const today = Utils.getCurrentDate();
-        const currentMonth = Utils.getCurrentMonth();
-        
-        if (!this.data.monthlyData[currentMonth].days[today]) {
-            this.data.monthlyData[currentMonth].days[today] = {
-                completed: 0,
-                total: 0
-            };
+        const today = Utils.getCurrentDate(); // 'YYYY-MM-DD'
+
+        // Only increment once per calendar day
+        if (this.data.lastStreakDate === today) {
+            // Already counted today — just refresh the display
+            this.elements.streakCount.textContent = this.data.streak;
+            return;
         }
 
-        if (this.data.completedToday > 0) {
-            this.data.streak++;
-        }
-
+        // Increment streak and record today's date
+        this.data.streak++;
+        this.data.lastStreakDate = today;
         this.elements.streakCount.textContent = this.data.streak;
-        
+
         if (typeof Profile !== 'undefined') {
             Profile.updateStats();
         }
@@ -208,7 +227,7 @@ const Goals = {
      */
     updateMonthlyStats() {
         DataManager.updateMonthlyData(this.data);
-        
+
         if (typeof Stats !== 'undefined') {
             Stats.updateStats();
         }
@@ -219,13 +238,13 @@ const Goals = {
     },
 
     /**
-     * Celebrate goal completion
+     * Celebrate goal completion with coach message
      */
     celebrateCompletion(goal) {
         if (typeof Coach === 'undefined') return;
 
         const completedCount = this.data.goals.filter(g => g.completed).length;
-        const totalCount = this.data.goals.length;
+        const totalCount     = this.data.goals.length;
 
         if (completedCount === totalCount && totalCount > 0) {
             Coach.addMessage('Coach', '🎉 All goals completed! You\'re unstoppable!');
@@ -247,20 +266,14 @@ const Goals = {
             return;
         }
 
-        // Separate active and completed goals
-        const activeGoals = this.data.goals.filter(g => !g.completed);
-        const completedGoals = this.data.goals.filter(g => g.completed);
+        const activeGoals    = this.data.goals.filter(g => !g.completed);
+        const completedGoals = this.data.goals.filter(g =>  g.completed);
 
-        // Render active goals first
         activeGoals.forEach(goal => {
-            const goalItem = this.createGoalElement(goal);
-            this.elements.list.appendChild(goalItem);
+            this.elements.list.appendChild(this.createGoalElement(goal));
         });
-
-        // Then completed goals
         completedGoals.forEach(goal => {
-            const goalItem = this.createGoalElement(goal);
-            this.elements.list.appendChild(goalItem);
+            this.elements.list.appendChild(this.createGoalElement(goal));
         });
     },
 
@@ -280,27 +293,27 @@ const Goals = {
     /**
      * Create goal DOM element
      * @param {Object} goal - Goal object
-     * @returns {HTMLElement} Goal element
+     * @returns {HTMLElement}
      */
     createGoalElement(goal) {
         const div = document.createElement('div');
         div.className = 'goal-item' + (goal.completed ? ' completed' : '');
 
         const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
+        checkbox.type    = 'checkbox';
         checkbox.checked = goal.completed;
         checkbox.addEventListener('change', () => this.toggleGoal(goal.id));
 
         const span = document.createElement('span');
         span.style.flexGrow = '1';
-        span.textContent = goal.text;
+        span.textContent    = goal.text;
 
         const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = '🗑️';
-        deleteBtn.title = 'Delete goal';
-        deleteBtn.style.padding = '5px 10px';
-        deleteBtn.style.fontSize = '0.8rem';
-        deleteBtn.style.background = 'var(--fire)';
+        deleteBtn.textContent       = '🗑️';
+        deleteBtn.title             = 'Delete goal';
+        deleteBtn.style.padding     = '5px 10px';
+        deleteBtn.style.fontSize    = '0.8rem';
+        deleteBtn.style.background  = 'var(--fire)';
         deleteBtn.addEventListener('click', () => this.deleteGoal(goal.id));
 
         div.appendChild(checkbox);
@@ -311,36 +324,36 @@ const Goals = {
     },
 
     /**
-     * Show success feedback
+     * Show success feedback on Add button
      */
     showSuccess() {
         const btn = this.elements.addBtn;
         if (!btn) return;
 
         const originalText = btn.textContent;
-        btn.textContent = '✓ Added';
+        btn.textContent    = '✓ Added';
         btn.style.background = 'var(--success)';
 
         setTimeout(() => {
-            btn.textContent = originalText;
+            btn.textContent    = originalText;
             btn.style.background = '';
         }, 1500);
     },
 
     /**
      * Get completed goals count
-     * @returns {number} Number of completed goals
+     * @returns {number}
      */
     getCompletedCount() {
         return this.data.goals.filter(g => g.completed).length;
     },
 
     /**
-     * Clear completed goals
+     * Clear all completed goals
      */
     clearCompleted() {
         const completedCount = this.data.goals.filter(g => g.completed).length;
-        
+
         if (completedCount === 0) {
             alert('No completed goals to clear!');
             return;
@@ -351,7 +364,7 @@ const Goals = {
         }
 
         this.data.goals = this.data.goals.filter(g => !g.completed);
-        
+
         if (typeof History !== 'undefined') {
             History.addEntry(`Cleared ${completedCount} completed goals`);
         }

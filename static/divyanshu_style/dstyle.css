@@ -43,15 +43,21 @@
 body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans',
+                 Helvetica, Arial, sans-serif;
     padding: 20px;
     overflow-x: hidden;
-    transition: all 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Profile Header */
+/* ═══════════════════════════════════════════════════════════
+   Profile Header
+   FIX: always position:fixed, never moves on scroll.
+   The !important on position ensures no media query can
+   override it back to relative at normal desktop widths.
+═══════════════════════════════════════════════════════════ */
 .profile-header {
-    position: fixed;
+    position: fixed !important;
     top: 20px;
     left: 20px;
     z-index: 1000;
@@ -67,7 +73,7 @@ body {
     border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
 }
 
 .profile-toggle:hover {
@@ -86,6 +92,7 @@ body {
     font-size: 1.3rem;
     font-weight: bold;
     color: white;
+    flex-shrink: 0;
 }
 
 .profile-dropdown {
@@ -97,24 +104,16 @@ body {
     border-radius: 12px;
     padding: 15px;
     min-width: 250px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
     display: none;
     animation: slideDown 0.3s ease;
 }
 
-.profile-dropdown.active {
-    display: block;
-}
+.profile-dropdown.active { display: block; }
 
 @keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .profile-info {
@@ -123,16 +122,8 @@ body {
     margin-bottom: 15px;
 }
 
-.profile-name {
-    font-size: 1.2rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.profile-email {
-    font-size: 0.9rem;
-    color: var(--text-dim);
-}
+.profile-name  { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
+.profile-email { font-size: 0.9rem; color: var(--text-dim); }
 
 .profile-stats {
     display: grid;
@@ -154,10 +145,7 @@ body {
     color: var(--accent);
 }
 
-.profile-stat-label {
-    font-size: 0.75rem;
-    color: var(--text-dim);
-}
+.profile-stat-label { font-size: 0.75rem; color: var(--text-dim); }
 
 .profile-menu-item {
     padding: 10px;
@@ -188,11 +176,11 @@ body {
     transition: all 0.2s;
 }
 
-.logout-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
+.logout-btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
+/* ═══════════════════════════════════════════════════════════
+   Main Dashboard Grid
+═══════════════════════════════════════════════════════════ */
 .main-dashboard {
     display: grid;
     grid-template-columns: 300px 1fr 340px;
@@ -200,9 +188,12 @@ body {
     max-width: 1800px;
     margin: 0 auto;
     min-height: 90vh;
-    padding-top: 80px;
+    padding-top: 80px;   /* space for fixed profile header */
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Card
+═══════════════════════════════════════════════════════════ */
 .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -210,25 +201,17 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
 }
 
-h1, h2, h3, h4 {
-    margin-bottom: 15px;
-}
+h1,h2,h3,h4 { margin-bottom: 15px; }
+h1 { font-size: 2rem;  font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 600; }
 
-h1 {
-    font-size: 2rem;
-    font-weight: 700;
-}
-
-h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-/* Left Sidebar */
+/* ═══════════════════════════════════════════════════════════
+   Left Sidebar
+═══════════════════════════════════════════════════════════ */
 .settings-sidebar {
     display: flex;
     flex-direction: column;
@@ -258,12 +241,8 @@ h3 {
     font-family: inherit;
 }
 
-/* Theme Controls */
-.theme-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
+/* ── Theme Buttons ── */
+.theme-controls { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .theme-btn {
     flex: 1;
@@ -279,18 +258,10 @@ h3 {
     transition: all 0.2s;
 }
 
-.theme-btn:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-}
+.theme-btn:hover          { border-color: var(--accent); transform: translateY(-2px); }
+.theme-btn.active         { background: var(--accent); border-color: var(--accent); color: white; }
 
-.theme-btn.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-}
-
-/* Streak Toggle */
+/* ── Toggle Switch ── */
 .toggle-container {
     display: flex;
     align-items: center;
@@ -303,40 +274,36 @@ h3 {
 
 .toggle-switch {
     position: relative;
-    width: 50px;
-    height: 26px;
+    width: 50px; height: 26px;
     background: var(--border);
     border-radius: 13px;
     cursor: pointer;
     transition: background 0.3s;
+    flex-shrink: 0;
 }
 
-.toggle-switch.active {
-    background: var(--accent);
-}
+.toggle-switch.active { background: var(--accent); }
 
 .toggle-slider {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 20px;
-    height: 20px;
+    top: 3px; left: 3px;
+    width: 20px; height: 20px;
     background: white;
     border-radius: 50%;
     transition: transform 0.3s;
 }
 
-.toggle-switch.active .toggle-slider {
-    transform: translateX(24px);
-}
+.toggle-switch.active .toggle-slider { transform: translateX(24px); }
 
-/* Step Tracker in Left Sidebar */
+/* ═══════════════════════════════════════════════════════════
+   Step Tracker
+═══════════════════════════════════════════════════════════ */
 .step-display {
     font-size: 2.2rem;
     font-weight: bold;
     color: var(--accent);
     text-align: center;
-    margin: 10px 0 5px 0;
+    margin: 10px 0 5px;
 }
 
 .km-display {
@@ -362,17 +329,22 @@ h3 {
     transition: width 0.5s ease;
 }
 
-/* Middle Section */
-.middle-section {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+/* FIX: Update button never wraps */
+.step-input-group          { display: flex; gap: 8px; align-items: center; }
+.step-input-group input    { flex: 1; min-width: 0; }
+.step-input-group #updateStepsBtn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 0.9rem;
 }
 
-.welcome-banner {
-    text-align: center;
-    padding: 30px;
-}
+/* ═══════════════════════════════════════════════════════════
+   Middle Section
+═══════════════════════════════════════════════════════════ */
+.middle-section { display: flex; flex-direction: column; gap: 20px; }
+
+.welcome-banner { text-align: center; padding: 30px; }
 
 .streak-pill {
     background: #21262d;
@@ -387,17 +359,13 @@ h3 {
     transition: all 0.3s;
 }
 
-.streak-pill.hidden {
-    opacity: 0;
-    transform: scale(0);
-}
+.streak-pill.hidden { opacity: 0; transform: scale(0); }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%,100% { transform: scale(1); }
+    50%      { transform: scale(1.05); }
 }
 
-/* Quote Box Above Graph */
 .quote-box {
     font-style: italic;
     color: var(--text-dim);
@@ -429,30 +397,13 @@ h3 {
     transition: all 0.2s;
 }
 
-.goal-item:hover {
-    border-color: var(--accent);
-    transform: translateX(5px);
-}
+.goal-item:hover         { border-color: var(--accent); transform: translateX(5px); }
+.goal-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+.goal-item.completed     { opacity: 0.6; text-decoration: line-through; }
 
-.goal-item input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
+.chart-container { position: relative; height: 280px; margin-top: 15px; }
 
-.goal-item.completed {
-    opacity: 0.6;
-    text-decoration: line-through;
-}
-
-/* Chart Container */
-.chart-container {
-    position: relative;
-    height: 280px;
-    margin-top: 15px;
-}
-
-/* Stats Grid */
+/* ── Stats Grid ── */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -476,16 +427,10 @@ h3 {
     margin-bottom: 5px;
 }
 
-.stat-label {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-}
+.stat-label { font-size: 0.85rem; color: var(--text-dim); }
 
-/* History Section */
-.history-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
+/* ── History ── */
+.history-list { max-height: 200px; overflow-y: auto; }
 
 .history-item {
     padding: 10px;
@@ -496,26 +441,14 @@ h3 {
     transition: all 0.2s;
 }
 
-.history-item:hover {
-    transform: translateX(5px);
-    border-left-color: var(--success);
-}
+.history-item:hover    { transform: translateX(5px); border-left-color: var(--success); }
+.history-date          { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 5px; }
+.history-content       { font-size: 0.95rem; }
 
-.history-date {
-    font-size: 0.85rem;
-    color: var(--text-dim);
-    margin-bottom: 5px;
-}
-
-.history-content {
-    font-size: 0.95rem;
-}
-
-/* Input Styles */
-.input-group {
-    display: flex;
-    gap: 10px;
-}
+/* ═══════════════════════════════════════════════════════════
+   Input Styles
+═══════════════════════════════════════════════════════════ */
+.input-group { display: flex; gap: 10px; }
 
 input[type="text"],
 input[type="number"],
@@ -527,6 +460,7 @@ input[type="time"] {
     padding: 10px;
     border-radius: 6px;
     font-size: 0.95rem;
+    min-width: 0;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -546,23 +480,15 @@ button {
     transition: all 0.2s;
 }
 
-button:hover {
-    opacity: 0.9;
-    transform: translateY(-2px);
-}
+button:hover  { opacity: 0.9; transform: translateY(-2px); }
+button:active { transform: translateY(0); }
 
-button:active {
-    transform: translateY(0);
-}
+/* ═══════════════════════════════════════════════════════════
+   Right Sidebar
+═══════════════════════════════════════════════════════════ */
+.right-sidebar { display: flex; flex-direction: column; gap: 15px; }
 
-/* Right Sidebar */
-.right-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-/* Date Time Weather Widget */
+/* DateTime Widget */
 .datetime-widget {
     background: linear-gradient(135deg, var(--accent), var(--fire));
     color: white;
@@ -571,17 +497,8 @@ button:active {
     text-align: center;
 }
 
-.time-display {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.date-display {
-    font-size: 1rem;
-    opacity: 0.9;
-    margin-bottom: 15px;
-}
+.time-display  { font-size: 2.5rem; font-weight: bold; margin-bottom: 5px; }
+.date-display  { font-size: 1rem;   opacity: 0.9;      margin-bottom: 15px; }
 
 .weather-info {
     display: flex;
@@ -591,16 +508,10 @@ button:active {
     font-size: 1.2rem;
 }
 
-.weather-icon {
-    font-size: 2rem;
-}
+.weather-icon { font-size: 2rem; }
 
-/* Alarm Status */
-.alarm-list {
-    margin-top: 10px;
-    max-height: 120px;
-    overflow-y: auto;
-}
+/* Alarm */
+.alarm-list { margin-top: 10px; max-height: 120px; overflow-y: auto; }
 
 .alarm-item {
     display: flex;
@@ -613,14 +524,10 @@ button:active {
     border: 1px solid var(--border);
 }
 
-.alarm-item button {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    background: var(--fire);
-}
+.alarm-item button { padding: 5px 10px; font-size: 0.8rem; background: var(--fire); }
 
 /* Chat */
-#chat-history {
+#chatHistory {
     height: 180px;
     background: var(--bg);
     border-radius: 8px;
@@ -631,63 +538,105 @@ button:active {
     font-size: 0.9rem;
 }
 
-.chat-message {
-    margin-bottom: 10px;
-    line-height: 1.5;
-}
+.chat-message  { margin-bottom: 10px; line-height: 1.5; }
+.chat-user     { color: var(--accent); font-weight: 600; }
+.chat-coach    { color: var(--fire);   font-weight: 600; }
 
-.chat-user {
-    color: var(--accent);
+iframe { border-radius: 8px; border: none; }
+
+/* ═══════════════════════════════════════════════════════════
+   Analytics Toggle Buttons
+═══════════════════════════════════════════════════════════ */
+.analytics-toggle {
+    padding: 6px 16px;
+    font-size: 0.85rem;
     font-weight: 600;
+    background: var(--bg);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.chat-coach {
-    color: var(--fire);
-    font-weight: 600;
+.analytics-toggle:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    transform: none;
 }
 
-iframe {
-    border-radius: 8px;
-    border: none;
+.analytics-toggle.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
 }
 
-/* Responsive */
+/* ═══════════════════════════════════════════════════════════
+   Health rows (meals, workouts)
+═══════════════════════════════════════════════════════════ */
+.health-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 5px;
+    border: 1px solid var(--border);
+    font-size: 0.88rem;
+    overflow: hidden;
+}
+
+.health-row span:first-child {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   FIX: Workout Sets + Reps — equal width, inside card boundary
+═══════════════════════════════════════════════════════════ */
+.workout-inputs {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.workout-inputs input {
+    flex: 1;
+    min-width: 0;       /* allows inputs to shrink below intrinsic size */
+    width: 0;           /* forces equal flex distribution */
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Recurring goal ↻ button
+═══════════════════════════════════════════════════════════ */
+.goal-item button[title*="ecurring"]:hover {
+    opacity: 0.85;
+    transform: rotate(20deg) translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Misc
+═══════════════════════════════════════════════════════════ */
+.loading { opacity: 0.5; pointer-events: none; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar              { width: 8px; height: 8px; }
+::-webkit-scrollbar-track        { background: var(--bg); }
+::-webkit-scrollbar-thumb        { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════
+   Responsive — single column on narrow screens
+   Profile stays fixed even here; only the dashboard reflows.
+═══════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
     .main-dashboard {
         grid-template-columns: 1fr;
+        padding-top: 100px;   /* leave room for fixed profile header */
     }
-    .profile-header {
-        position: relative;
-        top: 0;
-        left: 0;
-        margin-bottom: 20px;
-    }
-    .main-dashboard {
-        padding-top: 20px;
-    }
-}
-
-/* Loading Animation */
-.loading {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
-/* Scrollbar Styling */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--border);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
 }

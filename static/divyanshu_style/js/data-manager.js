@@ -1,17 +1,32 @@
 /**
  * Data Manager
- * Handles all localStorage operations and data persistence
+ * Handles all localStorage operations and data persistence.
+ *
+ * FIX: Storage key is now per-user so different logged-in users
+ *      don't overwrite each other's data in the same browser.
+ * FIX: Default userName reads from window.SERVER_USERNAME injected
+ *      by the Flask template instead of the hardcoded 'Divyanshu'.
  */
-
 const DataManager = {
-    STORAGE_KEY: 'habitTrackerData',
-    
+
     /**
-     * Default data structure
+     * Build a user-scoped storage key so each account has its own data.
+     * Falls back to a generic key when no username is available.
+     * @returns {string}
+     */
+    getStorageKey() {
+        const username = (window.SERVER_USERNAME || 'default').toLowerCase().trim();
+        return `habitTrackerData_${username}`;
+    },
+
+    /**
+     * Default data structure.
+     * userName is seeded from the Flask-injected window.SERVER_USERNAME.
      */
     getDefaultData() {
         return {
             streak: 0,
+            lastStreakDate: null,   // FIX: track which date the streak was last incremented
             goals: [],
             completedToday: 0,
             steps: 0,
@@ -21,19 +36,22 @@ const DataManager = {
             streakEnabled: true,
             theme: 'dark',
             history: [],
-            userName: 'Divyanshu'
+            userName: window.SERVER_USERNAME || 'User'
         };
     },
 
     /**
-     * Load data from localStorage
+     * Load data from localStorage.
+     * Uses per-user key so different accounts are fully isolated.
      * @returns {Object} Habit data
      */
     loadData() {
         try {
-            const saved = localStorage.getItem(this.STORAGE_KEY);
+            const saved = localStorage.getItem(this.getStorageKey());
             if (saved) {
                 const data = JSON.parse(saved);
+                // Always keep userName in sync with the current session
+                data.userName = window.SERVER_USERNAME || data.userName || 'User';
                 return { ...this.getDefaultData(), ...data };
             }
         } catch (error) {
@@ -43,30 +61,30 @@ const DataManager = {
     },
 
     /**
-     * Save data to localStorage
+     * Save data to localStorage.
      * @param {Object} data - Data to save
      */
     saveData(data) {
         try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
+            localStorage.setItem(this.getStorageKey(), JSON.stringify(data));
         } catch (error) {
             console.error('Error saving data:', error);
         }
     },
 
     /**
-     * Clear all data
+     * Clear all data for the current user.
      */
     clearData() {
         try {
-            localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.getStorageKey());
         } catch (error) {
             console.error('Error clearing data:', error);
         }
     },
 
     /**
-     * Initialize monthly data for current month
+     * Initialize monthly data for current month.
      * @param {Object} data - Habit data
      */
     initializeMonthlyData(data) {
@@ -81,7 +99,7 @@ const DataManager = {
     },
 
     /**
-     * Update monthly statistics
+     * Update monthly statistics.
      * @param {Object} data - Habit data
      */
     updateMonthlyData(data) {
@@ -89,7 +107,7 @@ const DataManager = {
         const today = Utils.getCurrentDate();
         const monthData = data.monthlyData[currentMonth];
 
-        const todayGoals = data.goals.filter(g => 
+        const todayGoals = data.goals.filter(g =>
             g.createdAt.startsWith(currentMonth)
         );
         const todayCompleted = todayGoals.filter(g => g.completed).length;
@@ -104,7 +122,7 @@ const DataManager = {
     },
 
     /**
-     * Get last N days of data
+     * Get last N days of data.
      * @param {Object} monthData - Monthly data
      * @param {number} days - Number of days
      * @returns {Array} Array of day data
@@ -116,7 +134,6 @@ const DataManager = {
             date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().slice(0, 10);
             const dayData = monthData.days[dateStr] || { completed: 0, total: 0 };
-            
             result.push({
                 date: date.getDate(),
                 completed: dayData.completed,
@@ -127,7 +144,7 @@ const DataManager = {
     },
 
     /**
-     * Export data as JSON
+     * Export data as JSON.
      * @param {Object} data - Data to export
      * @returns {string} JSON string
      */
@@ -136,9 +153,9 @@ const DataManager = {
     },
 
     /**
-     * Import data from JSON
+     * Import data from JSON.
      * @param {string} jsonString - JSON data
-     * @returns {Object} Parsed data
+     * @returns {Object|null} Parsed data
      */
     importData(jsonString) {
         try {

@@ -18,9 +18,13 @@ def create_app():
         static_folder='static',
     )
 
+    app.secret_key = "abc123"
+
     # Config
     app.config.from_object(Config)
-
+    app.config['SECRET_KEY'] = 'abc123'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blankit.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # SINGLE DB INIT (important)
     db.init_app(app)
 
