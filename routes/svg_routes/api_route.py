@@ -67,7 +67,7 @@ def toggle_habit(habit_id):
     # verify habit belongs to user
     Habit.query.filter_by(id=habit_id, user_id=user_id).first_or_404()
     done       = habit_service.toggle_habit(habit_id)
-    new_badges = badge_service.check_and_unlock(habit_id)
+    new_badges = badge_service.check_and_unlock(habit_id, user_id)
     _, _, pct  = habit_service.get_completion_today(user_id)
     score      = habit_service.get_discipline_score(user_id)
     return jsonify({
@@ -161,18 +161,18 @@ def delete_todo(todo_id):
 
 @api.route('/badges', methods=['GET'])
 def get_badges():
-    require_user()
-    return jsonify(badge_service.get_all_badges_with_status())
+    user_id = require_user()
+    return jsonify(badge_service.get_all_badges_with_status(user_id))
 
 
 @api.route('/badges/<int:badge_id>/podium', methods=['POST'])
 def set_podium(badge_id):
-    require_user()
+    user_id = require_user()
     data = request.get_json()
     rank = data.get('rank')
     if rank not in [1, 2, 3]:
         return jsonify({'error': 'Rank must be 1, 2 or 3'}), 400
-    success = badge_service.set_podium_rank(badge_id, rank)
+    success = badge_service.set_podium_rank(badge_id, rank, user_id)
     if not success:
         return jsonify({'error': 'Badge not earned yet'}), 400
     return jsonify({'success': True})

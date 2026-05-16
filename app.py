@@ -41,6 +41,24 @@ from routes.pug_routes.pug_route import pug_bp
 mail = Mail()
 
 
+def _migrate_schema():
+    """Idempotent startup migrations for schema changes not handled by db.create_all()."""
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    if 'user_badges' not in inspector.get_table_names():
+        return  # table not yet created — db.create_all() will handle it correctly
+    columns = {c['name'] for c in inspector.get_columns('user_badges')}
+    if 'user_id' in columns:
+        return  # already migrated
+    with db.engine.begin() as conn:
+        conn.execute(text('ALTER TABLE user_badges ADD COLUMN user_id INTEGER REFERENCES users(id)'))
+        conn.execute(text('DELETE FROM user_badges WHERE user_id IS NULL'))
+        try:
+            conn.execute(text('ALTER TABLE user_badges ALTER COLUMN user_id SET NOT NULL'))
+        except Exception:
+            pass  # SQLite doesn't support this; PostgreSQL (Supabase) does
+
+
 def create_app():
     app = Flask(
         __name__,
@@ -81,6 +99,7 @@ def create_app():
     # Init DB
     with app.app_context():
         db.create_all()
+        _migrate_schema()
         seed_badges()
 
     return app

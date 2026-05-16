@@ -18,23 +18,24 @@ def seed_badges():
     db.session.commit()
 
 
-def check_and_unlock(habit_id=None):
+def check_and_unlock(habit_id, user_id):
     """
     Run after every habit toggle.
-    Check all badge conditions and unlock any newly earned ones.
+    Checks all badge conditions for this user and unlocks any newly earned ones.
     Returns list of newly unlocked badge dicts.
     """
+    if not user_id:
+        return []
+
     newly_earned = []
     all_badges   = Badge.query.all()
-    earned_ids   = {ub.badge_id for ub in UserBadge.query.all()}
+    earned_ids   = {ub.badge_id for ub in UserBadge.query.filter_by(user_id=user_id).all()}
 
     for badge in all_badges:
         if badge.id in earned_ids:
-            continue  # already earned
-
-        earned = _check_condition(badge.condition, habit_id)
-        if earned:
-            ub = UserBadge(badge_id=badge.id)
+            continue
+        if _check_condition(badge.condition, habit_id, user_id):
+            ub = UserBadge(badge_id=badge.id, user_id=user_id)
             db.session.add(ub)
             newly_earned.append(badge.to_dict(earned=True))
 
@@ -42,42 +43,32 @@ def check_and_unlock(habit_id=None):
     return newly_earned
 
 
-def _check_condition(condition, habit_id=None):
-    """Return True if the badge condition is met."""
-    today   = date.today()
-    habits  = Habit.query.filter_by(is_active=True).all()
+def _check_condition(condition, habit_id, user_id):
+    """Return True if the badge condition is met for this user."""
+    today  = date.today()
+    habits = Habit.query.filter_by(is_active=True, user_id=user_id).all() if user_id else []
 
     # ── streak conditions ──────────────────────────────────────────
     if condition.startswith('streak_'):
         days = int(condition.split('_')[1])
-        # check if ANY habit has a streak >= days
-        for h in habits:
-            if get_streak(h.id) >= days:
-                return True
-        return False
+        return any(get_streak(h.id) >= days for h in habits)
 
     # ── first week ever ────────────────────────────────────────────
     if condition == 'first_week':
-        for h in habits:
-            if get_streak(h.id) >= 7:
-                return True
-        return False
+        return any(get_streak(h.id) >= 7 for h in habits)
 
     # ── single habit N consecutive days ───────────────────────────
     if condition.startswith('habit_'):
         days = int(condition.split('_')[1])
-        for h in habits:
-            if get_streak(h.id) >= days:
-                return True
-        return False
+        return any(get_streak(h.id) >= days for h in habits)
 
     # ── perfect week (100% every day this week) ────────────────────
     if condition == 'perfect_week':
+        if not habits:
+            return False
         habit_ids = [h.id for h in habits]
         total     = len(habits)
-        if total == 0:
-            return False
-        start = today - timedelta(days=today.weekday())
+        start     = today - timedelta(days=today.weekday())
         for i in range(7):
             d = start + timedelta(days=i)
             if d > today:
@@ -93,8 +84,11 @@ def _check_condition(condition, habit_id=None):
 
     # ── night logging (logged after 10pm for 7 days) ───────────────
     if condition == 'night_7':
-        from datetime import datetime
+        if not habits:
+            return False
+        habit_ids  = [h.id for h in habits]
         night_days = HabitLog.query.filter(
+            HabitLog.habit_id.in_(habit_ids),
             db.extract('hour', HabitLog.logged_at) >= 22,
             HabitLog.done == True
         ).distinct(HabitLog.date).count()
@@ -103,29 +97,27 @@ def _check_condition(condition, habit_id=None):
     return False
 
 
-def get_all_badges_with_status():
-    """Return all badges with earned=True/False and podium rank."""
-    badges     = Badge.query.all()
-    user_badges = {ub.badge_id: ub for ub in UserBadge.query.all()}
-    result = []
-    for b in badges:
-        ub = user_badges.get(b.id)
-        result.append(b.to_dict(
-            earned    = ub is not None,
-            earned_at = ub.earned_at if ub else None,
-            rank      = ub.podium_rank if ub else None,
-        ))
-    return result
+def get_all_badges_with_status(user_id):
+    """Return all badges with earned=True/False and podium rank for this user."""
+    badges      = Badge.query.all()
+    user_badges = {ub.badge_id: ub for ub in UserBadge.query.filter_by(user_id=user_id).all()}
+    return [
+        b.to_dict(
+            earned    = b.id in user_badges,
+            earned_at = user_badges[b.id].earned_at if b.id in user_badges else None,
+            rank      = user_badges[b.id].podium_rank if b.id in user_badges else None,
+        )
+        for b in badges
+    ]
 
 
-def set_podium_rank(badge_id, rank):
-    """Assign a podium rank (1/2/3) to an earned badge."""
-    # clear existing badge at that rank
-    existing = UserBadge.query.filter_by(podium_rank=rank).first()
+def set_podium_rank(badge_id, rank, user_id):
+    """Assign a podium rank (1/2/3) to an earned badge for this user."""
+    existing = UserBadge.query.filter_by(podium_rank=rank, user_id=user_id).first()
     if existing:
         existing.podium_rank = None
 
-    ub = UserBadge.query.filter_by(badge_id=badge_id).first()
+    ub = UserBadge.query.filter_by(badge_id=badge_id, user_id=user_id).first()
     if ub:
         ub.podium_rank = rank
         db.session.commit()
