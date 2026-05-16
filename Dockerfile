@@ -3,9 +3,10 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
-    gcc g++ cmake \
+    gcc g++ cmake git \
     libopenblas-dev \
     libpq-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
