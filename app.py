@@ -28,7 +28,6 @@ def _ensure_buddybot_model():
             filename='BuddyBot_8B_Final.Q4_K_M.gguf',
             local_dir=os.path.dirname(model_path),
             token=token,
-            local_dir_use_symlinks=False
         )
         print('[startup] BuddyBot model ready.')
     except Exception as e:
