@@ -46,11 +46,9 @@ def create_app():
         static_folder='static',
     )
 
-    app.secret_key = "abc123"
-
     # Config
     app.config.from_object(Config)
-    app.config['SECRET_KEY'] = 'abc123'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-only-change-in-prod')
     db_url = os.environ.get('DATABASE_URL', 'sqlite:///blankit.db')
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
