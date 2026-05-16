@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_mail import Mail
 from svg_config import Config
@@ -23,7 +24,10 @@ def create_app():
     # Config
     app.config.from_object(Config)
     app.config['SECRET_KEY'] = 'abc123'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blankit.db'
+    db_url = os.environ.get('DATABASE_URL', 'sqlite:///blankit.db')
+    if db_url.startswith('postgres://'):
+        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # SINGLE DB INIT (important)
     db.init_app(app)
@@ -55,4 +59,6 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 7860))
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug, host='0.0.0.0', port=port, use_reloader=False)

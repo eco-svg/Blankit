@@ -12,3 +12,9 @@ instance/
 
 # Tools
 tools/
+
+
+#pug_specific:
+pug_modals/
+chat_logs/
+datasets/
