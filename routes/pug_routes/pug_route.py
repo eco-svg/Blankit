@@ -598,7 +598,7 @@ def download_blinkbot_modelfile():
 def download_blinkbot_setup():
     err = login_required_page()
     if err: return err
-    host = request.host
+    host = re.sub(r'[^a-zA-Z0-9.\-:_]', '', request.host)
     script = f"""#!/bin/bash
 # BlinkBot Setup Script
 # Run this on your device after installing Ollama
@@ -659,7 +659,7 @@ def install_blinkbot():
     No auth required — this runs in the user's terminal, not the browser.
     """
     from flask import make_response
-    host = request.host
+    host = re.sub(r'[^a-zA-Z0-9.\-:_]', '', request.host)
 
     script = f'''#!/bin/bash
 set -e

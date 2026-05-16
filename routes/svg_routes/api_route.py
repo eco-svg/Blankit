@@ -111,16 +111,18 @@ def stats_yearly():
 
 @api.route('/todos/<string:date_str>', methods=['GET'])
 def get_todos(date_str):
+    user_id = require_user()
     try:
         d = date.fromisoformat(date_str)
     except ValueError:
         return jsonify({'error': 'Invalid date format. Use YYYY-MM-DD'}), 400
-    todos = Todo.query.filter_by(date=d).order_by(Todo.created_at).all()
+    todos = Todo.query.filter_by(date=d, user_id=user_id).order_by(Todo.created_at).all()
     return jsonify([t.to_dict() for t in todos])
 
 
 @api.route('/todos/<string:date_str>', methods=['POST'])
 def add_todo(date_str):
+    user_id = require_user()
     try:
         d = date.fromisoformat(date_str)
     except ValueError:
@@ -129,7 +131,7 @@ def add_todo(date_str):
     text = (data.get('text') or '').strip()
     if not text:
         return jsonify({'error': 'Text is required'}), 400
-    todo = Todo(text=text, date=d, priority=data.get('priority', 'medium'))
+    todo = Todo(text=text, date=d, priority=data.get('priority', 'medium'), user_id=user_id)
     db.session.add(todo)
     db.session.commit()
     return jsonify(todo.to_dict()), 201
@@ -137,7 +139,8 @@ def add_todo(date_str):
 
 @api.route('/todos/item/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
-    todo      = Todo.query.get_or_404(todo_id)
+    user_id   = require_user()
+    todo      = Todo.query.filter_by(id=todo_id, user_id=user_id).first_or_404()
     todo.done = not todo.done
     db.session.commit()
     return jsonify(todo.to_dict())
@@ -145,7 +148,8 @@ def toggle_todo(todo_id):
 
 @api.route('/todos/item/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
-    todo = Todo.query.get_or_404(todo_id)
+    user_id = require_user()
+    todo    = Todo.query.filter_by(id=todo_id, user_id=user_id).first_or_404()
     db.session.delete(todo)
     db.session.commit()
     return jsonify({'success': True})
