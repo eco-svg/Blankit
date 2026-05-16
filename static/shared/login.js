@@ -429,10 +429,117 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   const active = document.querySelector('.panel.active');
   if (!active) return;
-  const map = { 'panel-login': 'loginBtn', 'panel-register': 'registerBtn', 'panel-forgot': 'forgotBtn' };
-  const btn = map[active.id];
-  if (btn) document.getElementById(btn).click();
+  const map = { 'panel-login': 'loginBtn', 'panel-register': 'registerBtn', 'panel-forgot': 'forgotBtn', 'panel-reset': 'resetSubmitBtn' };
+  const btnId = map[active.id];
+  const btnEl = btnId && document.getElementById(btnId);
+  if (btnEl) btnEl.click();
 });
+
+/* ══════════════════════════════
+   RESET PASSWORD (token from email link)
+══════════════════════════════ */
+(function checkResetToken() {
+  const params     = new URLSearchParams(window.location.search);
+  const resetToken = params.get('reset_token');
+  if (!resetToken) return;
+  history.replaceState({}, '', window.location.pathname);
+  showResetPanel(resetToken);
+})();
+
+function showResetPanel(token) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+
+  let panel = document.getElementById('panel-reset');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id        = 'panel-reset';
+    panel.className = 'panel active';
+    panel.innerHTML = `
+      <p style="font-size:0.7rem;color:var(--text3);letter-spacing:0.04em;line-height:1.6">
+        Enter your new password below.
+      </p>
+      <div class="field">
+        <label class="field-label">// new_password</label>
+        <div class="input-row">
+          <input class="field-input" type="password" id="resetPassword"
+                 placeholder="min 8 characters" autocomplete="new-password"/>
+          <button class="eye-btn" data-target="resetPassword">show</button>
+        </div>
+        <span class="field-err" id="resetPasswordErr"></span>
+      </div>
+      <div class="field">
+        <label class="field-label">// confirm_password</label>
+        <div class="input-row">
+          <input class="field-input" type="password" id="resetConfirm"
+                 placeholder="••••••••" autocomplete="new-password"/>
+          <button class="eye-btn" data-target="resetConfirm">show</button>
+        </div>
+        <span class="field-err" id="resetConfirmErr"></span>
+      </div>
+      <button class="submit-btn" id="resetSubmitBtn">
+        $ reset --password
+        <span class="btn-loader hidden" id="resetLoader"></span>
+      </button>
+      <div class="flash hidden" id="resetFlash"></div>
+    `;
+    document.querySelector('.auth-card').appendChild(panel);
+    panel.querySelectorAll('.eye-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp = document.getElementById(btn.dataset.target);
+        const vis = inp.type === 'text';
+        inp.type = vis ? 'password' : 'text';
+        btn.textContent = vis ? 'show' : 'hide';
+      });
+    });
+  } else {
+    panel.classList.add('active');
+  }
+
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tabLine').style.width = '0';
+  typeCmd('auth --reset-password');
+
+  const doReset = () => submitReset(token);
+  document.getElementById('resetSubmitBtn').onclick              = doReset;
+  document.getElementById('resetPassword').onkeydown             = e => { if (e.key === 'Enter') doReset(); };
+  document.getElementById('resetConfirm').onkeydown              = e => { if (e.key === 'Enter') doReset(); };
+}
+
+async function submitReset(token) {
+  const password = document.getElementById('resetPassword').value;
+  const confirm  = document.getElementById('resetConfirm').value;
+  document.getElementById('resetPasswordErr').textContent = '';
+  document.getElementById('resetConfirmErr').textContent  = '';
+
+  if (!password || password.length < 8) { document.getElementById('resetPasswordErr').textContent = 'min 8 chars'; return; }
+  if (password !== confirm)             { document.getElementById('resetConfirmErr').textContent  = 'passwords do not match'; return; }
+
+  document.getElementById('resetSubmitBtn').disabled = true;
+  document.getElementById('resetLoader').classList.remove('hidden');
+  typeCmd('auth --reset-password...');
+
+  try {
+    const res  = await fetch('/auth/reset-password', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ token, new_password: password }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showFlash('resetFlash', '✓ password updated — sign in with your new password', 'success');
+      typeCmd('auth --reset-success');
+      setTimeout(() => switchTab('login'), 2500);
+    } else {
+      showFlash('resetFlash', data.error || 'reset failed');
+      typeCmd('auth --reset-error');
+    }
+  } catch {
+    showFlash('resetFlash', 'network error');
+  } finally {
+    document.getElementById('resetSubmitBtn').disabled = false;
+    document.getElementById('resetLoader').classList.add('hidden');
+  }
+}
 
 /* ══════════════════════════════
    OTP PANEL

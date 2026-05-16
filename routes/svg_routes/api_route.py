@@ -161,11 +161,13 @@ def delete_todo(todo_id):
 
 @api.route('/badges', methods=['GET'])
 def get_badges():
+    require_user()
     return jsonify(badge_service.get_all_badges_with_status())
 
 
 @api.route('/badges/<int:badge_id>/podium', methods=['POST'])
 def set_podium(badge_id):
+    require_user()
     data = request.get_json()
     rank = data.get('rank')
     if rank not in [1, 2, 3]:

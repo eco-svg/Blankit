@@ -4,6 +4,7 @@ from flask_mail import Message
 from svg_models import db
 from svg_models.user import User
 from svg_models.reset_token import VerifyToken, ResetToken
+from extensions import limiter
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -18,6 +19,42 @@ DISTRO_REDIRECTS = {
     'divyanhu': '/d/home',
     'thepug':   '/pug/home',
 }
+
+
+def send_reset_email(user, reset_url):
+    msg = Message(
+        subject    = 'Reset your VEYRA password',
+        recipients = [user.email],
+        html       = f'''
+<!DOCTYPE html>
+<html>
+<body style="font-family:monospace;background:#f4f7ee;padding:2rem;color:#2d4a35;margin:0">
+  <div style="max-width:460px;margin:0 auto;background:#fff;
+              border:1px solid #c0dd97;border-radius:12px;padding:2rem 2.5rem">
+    <h2 style="color:#3B6D11;font-size:1.3rem;margin:0 0 0.5rem">VEYRA ◈</h2>
+    <p style="color:#555;font-size:0.85rem;margin:0 0 1.5rem;line-height:1.6">
+      Hi {user.username}, click below to reset your password.<br>
+      This link expires in <strong>1 hour</strong>.
+    </p>
+    <div style="text-align:center;margin-bottom:1.5rem">
+      <a href="{reset_url}" style="display:inline-block;background:#3B6D11;color:#fff;
+                text-decoration:none;padding:0.75rem 2rem;border-radius:8px;
+                font-family:monospace;font-size:0.9rem;letter-spacing:0.05em">
+        Reset password →
+      </a>
+    </div>
+    <p style="color:#888;font-size:0.75rem;line-height:1.6;margin:0">
+      If you didn't request this, ignore this email — your password won't change.
+    </p>
+    <hr style="border:none;border-top:1px solid #e8f0d8;margin:1.5rem 0"/>
+    <p style="color:#bbb;font-size:0.65rem;margin:0">
+      VEYRA — veyrasupportus@gmail.com
+    </p>
+  </div>
+</body>
+</html>'''
+    )
+    mail.send(msg)
 
 
 def send_otp_email(user, otp):
@@ -58,6 +95,7 @@ def send_otp_email(user, otp):
 #  REGISTER
 # ══════════════════════════════
 @auth.route('/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     data     = request.get_json()
     username = data.get('username', '').strip()
@@ -179,6 +217,7 @@ def resend_otp():
 #  LOGIN
 # ══════════════════════════════
 @auth.route('/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     data       = request.get_json()
     identifier = data.get('identifier', '').strip()
@@ -228,15 +267,47 @@ def login():
 #  FORGOT PASSWORD
 # ══════════════════════════════
 @auth.route('/forgot-password', methods=['POST'])
+@limiter.limit("3 per minute")
 def forgot_password():
     data  = request.get_json()
     email = data.get('email', '').strip()
     user  = User.query.filter_by(email=email).first()
     if user and user.is_verified:
+        ResetToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
+        db.session.commit()
         token_obj = ResetToken(user_id=user.id)
         db.session.add(token_obj)
         db.session.commit()
+        reset_url = f"{request.url_root}?reset_token={token_obj.token}"
+        try:
+            send_reset_email(user, reset_url)
+        except Exception as e:
+            current_app.logger.error(f'Reset email error: {e}')
     return jsonify({'message': 'reset link sent if email exists'}), 200
+
+
+@auth.route('/reset-password', methods=['POST'])
+@limiter.limit("5 per minute")
+def reset_password():
+    data         = request.get_json()
+    token        = data.get('token', '').strip()
+    new_password = data.get('new_password', '')
+
+    if not token or len(new_password) < 8:
+        return jsonify({'error': 'invalid request'}), 400
+
+    token_obj = ResetToken.query.filter_by(token=token, used=False).first()
+    if not token_obj or not token_obj.is_valid():
+        return jsonify({'error': 'reset link expired or already used'}), 400
+
+    user = User.query.get(token_obj.user_id)
+    if not user:
+        return jsonify({'error': 'user not found'}), 404
+
+    user.password_hash = generate_password_hash(new_password)
+    token_obj.used     = True
+    db.session.commit()
+    return jsonify({'message': 'password updated'}), 200
 
 
 # ══════════════════════════════

@@ -1,9 +1,11 @@
 import os
 from flask import Flask
 from flask_mail import Mail
+from werkzeug.middleware.proxy_fix import ProxyFix
 from svg_config import Config
 from svg_models import db
 from svg_services.badge_service import seed_badges
+from extensions import limiter
 
 
 def _ensure_buddybot_model():
@@ -45,6 +47,7 @@ def create_app():
         template_folder='templates',
         static_folder='static',
     )
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
     # Config
     app.config.from_object(Config)
@@ -57,8 +60,9 @@ def create_app():
     # SINGLE DB INIT (important)
     db.init_app(app)
 
-    # Mail
+    # Mail + rate limiter
     mail.init_app(app)
+    limiter.init_app(app)
 
     # Import SVG routes
     from routes.svg_routes.svg_route import svg
