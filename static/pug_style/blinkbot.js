@@ -227,9 +227,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     userCtx      = ctx.user_context  || {};
 
     if (ctx.model_url) {
+        // wllama runs in a Web Worker — relative URLs don't resolve there, must be absolute
+        const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
         showLoadingUI();
         try {
-            await initWllama(ctx.model_url);
+            await initWllama(absoluteModelUrl);
         } catch (e) {
             console.warn('wllama load failed, server-only mode:', e);
             // still activate — server fallback handles all messages

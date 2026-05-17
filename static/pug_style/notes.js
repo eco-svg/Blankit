@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State ---
     let typingTimer    = null;
     let currentNoteId  = null;
+    let savedRange     = null; // last known cursor position inside bodyInput
     const TYPING_DELAY = 1000; // ms to wait after user stops typing before saving
 
     // --- Limits ---
@@ -183,23 +184,41 @@ document.addEventListener('DOMContentLoaded', () => {
     // SECTION 4: MEDIA UPLOAD WITH VALIDATION
     // =========================================================
 
-    // Inserts a DOM node (img or video) at the cursor position inside the editor
-    function insertNodeAtCursor(node) {
+    // Save cursor position whenever user interacts with the editor
+    bodyInput.addEventListener('keyup',    saveCursor);
+    bodyInput.addEventListener('mouseup',  saveCursor);
+    bodyInput.addEventListener('touchend', saveCursor);
+
+    function saveCursor() {
         const sel = window.getSelection();
-        // getSelection() returns where the cursor/selection is on the page
-        if (sel && sel.getRangeAt && sel.rangeCount) {
+        if (sel && sel.rangeCount && bodyInput.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+        }
+    }
+
+    function insertNodeAtCursor(node) {
+        bodyInput.focus();
+        const sel = window.getSelection();
+        // Restore saved range if current selection is outside the editor
+        if (savedRange && sel && (
+            !sel.rangeCount || !bodyInput.contains(sel.getRangeAt(0).commonAncestorContainer)
+        )) {
+            sel.removeAllRanges();
+            sel.addRange(savedRange);
+        }
+        if (sel && sel.getRangeAt && sel.rangeCount &&
+            bodyInput.contains(sel.getRangeAt(0).commonAncestorContainer)) {
             const range = sel.getRangeAt(0);
+            range.deleteContents();
             range.insertNode(node);
-            // Move cursor to just after the inserted node
             range.setStartAfter(node);
             range.collapse(true);
             sel.removeAllRanges();
             sel.addRange(range);
         } else {
-            // Fallback: just append to the end of the editor
             bodyInput.appendChild(node);
         }
-        handleTyping(); // trigger save after inserting media
+        handleTyping();
     }
 
     function uploadMedia(file, type) {

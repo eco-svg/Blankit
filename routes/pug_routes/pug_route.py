@@ -211,6 +211,9 @@ def _call_groq_chat(message, session_history, user_context):
             if '[REPLY]' in clean:
                 clean = clean.split('[REPLY]', 1)[-1].strip()
             return clean or raw.strip()
+        if r.status_code == 400:
+            # Groq content filter — return a neutral message rather than 503
+            return "That one's outside what I can work with on this channel. BuddyBot handles it — coming soon."
         current_app.logger.error(f"Groq chat {r.status_code}: {r.text[:200]}")
     except Exception as e:
         current_app.logger.error(f"Groq chat error: {e}")
