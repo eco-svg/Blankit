@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div style="font-size:1.3rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">
                     BLINK<span style="color:var(--text-dim);">BOT</span>
                 </div>
-                <p style="color:var(--text-dim);font-size:0.76rem;line-height:1.6;margin:0;">
+                <p style="color:var(--text);font-size:0.82rem;font-weight:700;line-height:1.6;margin:0;letter-spacing:0.02em;">
                     Loading to your device — first time only.
                 </p>
                 <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:5px;overflow:hidden;">
