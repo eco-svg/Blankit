@@ -308,17 +308,17 @@ def _count_media(user_id):
 
 
 def _generate_character_sheet(user_id, user_context, notes_count, streak):
-    import requests as req
-    api_key = os.environ.get('GROQ_API_KEY', '')
-    if not api_key:
-        return None
+    from .chat_logger import read_user_log
 
     goals_str    = ', '.join(user_context['active_goals'][:10]) or 'none set'
     finished_str = ', '.join(user_context['finished_this_week'][:5]) or 'none this week'
     notes_str    = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
 
+    chat_log     = read_user_log(user_id) or ''
+    chat_snippet = chat_log[-1000:].strip() if chat_log else 'No chat history yet.'
+
     prompt = (
-        "Analyze this user's life data and generate a concise RPG character sheet.\n\n"
+        "Analyze this user's complete data and generate a precise RPG character sheet.\n\n"
         f"Dream: {user_context['dream'] or 'not set'}\n"
         f"Active Goals: {goals_str}\n"
         f"Recently Completed: {finished_str}\n"
@@ -326,6 +326,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         f"Member Since: {user_context['member_since']}\n"
         f"Total Notes: {notes_count}\n"
         f"Current Streak: {streak} days\n\n"
+        f"Recent Conversation History:\n{chat_snippet}\n\n"
         "Output ONLY valid JSON, no other text:\n"
         '{"class_official":"2-3 word professional title",'
         '"class_playful":"2-4 word evocative title — poetic, ironic, or dramatic, specific to this person",'
@@ -338,9 +339,44 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         '{"name":"2-3 word skill","rank":"C"}'
         ']}\n\n'
         "Ranks: S+ exceptional, S mastery, A strong, B developing, C emerging, D early. "
-        "Detect skills from actual content and patterns — make them specific to what this person does."
+        "Detect skills from the actual content, goals, notes, and conversation patterns — specific to this person."
     )
 
+    def _parse_json(raw):
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group())
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    # Primary: BuddyBot on-server
+    if _LLAMA_OK and os.path.exists(_BUDDY_PATH):
+        try:
+            model    = _get_buddybot()
+            messages = [
+                {'role': 'system', 'content': (
+                    'You generate RPG character sheets as valid JSON. '
+                    'Output only the JSON object, nothing else.'
+                )},
+                {'role': 'user', 'content': prompt}
+            ]
+            out = model.create_chat_completion(
+                messages=messages, max_tokens=400, temperature=0.8,
+                stop=['<|im_end|>', '</s>']
+            )
+            result = _parse_json(out['choices'][0]['message']['content'].strip())
+            if result:
+                return result
+        except Exception as e:
+            current_app.logger.error(f'BuddyBot character sheet error: {e}')
+
+    # Fallback: Groq
+    import requests as req
+    api_key = os.environ.get('GROQ_API_KEY', '')
+    if not api_key:
+        return None
     try:
         r = req.post(
             'https://api.groq.com/openai/v1/chat/completions',
@@ -354,12 +390,9 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
             timeout=20
         )
         if r.ok:
-            raw   = r.json()['choices'][0]['message']['content'].strip()
-            match = re.search(r'\{.*\}', raw, re.DOTALL)
-            if match:
-                return json.loads(match.group())
+            return _parse_json(r.json()['choices'][0]['message']['content'].strip())
     except Exception as e:
-        current_app.logger.error(f'Character sheet gen error: {e}')
+        current_app.logger.error(f'Groq character sheet error: {e}')
     return None
 
 
