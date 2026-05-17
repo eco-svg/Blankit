@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=9">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=10">
 </head>
 <body>
 
@@ -38,6 +38,11 @@
             <div class="pp-rank-row"><span style="color:#c06030;">E</span> Beginner &nbsp;·&nbsp; <span style="color:#803010;">F</span> Not started</div>
           </div>
           <div class="pp-divider"></div>
+          <div class="pp-item" id="ppChangeAvatar">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"></circle><path d="M3 21v-1a9 9 0 0 1 18 0v1"></path></svg>
+            Change Avatar
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+          </div>
           <div class="pp-item" id="ppChangeUsername">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
             Change Username
@@ -115,8 +120,12 @@
 
     <main class="playground">
 
+      <!-- Long-term Dream — compact full-row card -->
+      <div class="card dream dream-standalone" id="sec-dream">
+        <div id="dreamContainer" class="dream-inner"></div>
+      </div>
+
       <div class="card notes" id="sec-notes">
-        <div class="gap-bar span-row dream-bar" id="dreamContainer"></div>
         <div class="card-top-bar">
           <h2 class="card-title">Notes</h2>
         </div>

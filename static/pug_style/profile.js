@@ -3,12 +3,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const ppChangeUsername = document.getElementById('ppChangeUsername');
     const ppChangePassword = document.getElementById('ppChangePassword');
     const ppDeleteAccount  = document.getElementById('ppDeleteAccount');
+    const ppChangeAvatar   = document.getElementById('ppChangeAvatar');
+    const avatarFileInput  = document.getElementById('avatarFileInput');
     const profilePopup     = document.getElementById('profilePopup');
     const langBtns         = document.querySelectorAll('.pp-lang-btn');
     const statusDot        = document.getElementById('statusDot');
     const ppAppLangRow     = document.getElementById('ppAppLangRow');
 
     function closePopup() { profilePopup?.classList.add('hidden'); }
+
+    // ── Avatar / PFP ────────────────────────────────────────────────────────────
+    const AVATAR_KEY = 'pug_avatar';
+
+    function applyAvatar(dataUrl) {
+        const avatarEl = document.querySelector('.user-avatar');
+        if (!avatarEl) return;
+        avatarEl.style.backgroundImage  = `url(${dataUrl})`;
+        avatarEl.style.backgroundSize   = 'cover';
+        avatarEl.style.backgroundPosition = 'center';
+        avatarEl.classList.add('has-photo');
+    }
+
+    const savedAvatar = localStorage.getItem(AVATAR_KEY);
+    if (savedAvatar) applyAvatar(savedAvatar);
+
+    ppChangeAvatar?.addEventListener('click', e => {
+        e.stopPropagation();
+        avatarFileInput?.click();
+    });
+
+    avatarFileInput?.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (file.size > 2 * 1024 * 1024) { alert('Image too large — max 2 MB.'); return; }
+        const reader = new FileReader();
+        reader.onload = evt => {
+            const dataUrl = evt.target.result;
+            localStorage.setItem(AVATAR_KEY, dataUrl);
+            applyAvatar(dataUrl);
+            closePopup();
+        };
+        reader.readAsDataURL(file);
+        e.target.value = '';   // reset so same file can be re-selected
+    });
 
     // ── Status Dot ─────────────────────────────────────────────────────────────
     const STATUS_CYCLE = ['online', 'afk', 'offline'];
@@ -149,8 +186,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) { alert(data.error); return; }
             const nameEl = document.querySelector('.greeting-name');
             if (nameEl) nameEl.textContent = data.username;
-            const initEl = document.querySelector('.avatar-initial');
-            if (initEl) initEl.textContent = data.username[0].toUpperCase();
+            // Only update initial if no photo is set
+            if (!localStorage.getItem(AVATAR_KEY)) {
+                const initEl = document.querySelector('.avatar-initial');
+                if (initEl) initEl.textContent = data.username[0].toUpperCase();
+            }
             const statsTitle = document.querySelector('#statsModal .logo');
             if (statsTitle) {
                 const tn = statsTitle.firstChild;

@@ -328,7 +328,7 @@ body.header-hidden .l-bar {
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
-  flex: 1;
+  flex: 0.7;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -441,7 +441,7 @@ body.header-hidden .l-bar {
 
 /* ── Finished / Cancelled Two-Column Card ──────────── */
 .r-done-card {
-  flex: 0 0 180px;
+  flex: 0 0 234px;
 }
 
 .r-done-cols {
@@ -2118,3 +2118,46 @@ div.infinite-canvas video {
   color: var(--accent);
 }
 .lang-welcome-local:hover { background: rgba(212,165,116,0.18) !important; }
+
+/* ── Dream — standalone compact first card ────────────── */
+/* Reserve a small first row in the playground for the dream card */
+.playground {
+  grid-template-rows: 140px;   /* first row: dream card */
+  grid-auto-rows: 800px;       /* all other rows: 800px */
+}
+
+.dream-standalone {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.dream-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+}
+
+/* override gap-bar float — dream is now in-flow */
+.dream-standalone .gap-bar,
+.dream-inner .gap-bar {
+  position: static;
+  width: 100%;
+}
+
+/* ── Avatar image overlay ─────────────────────────────── */
+.user-avatar.has-photo {
+  background-image: var(--avatar-url);
+  background-size: cover;
+  background-position: center;
+}
+
+.user-avatar.has-photo .avatar-initial {
+  display: none;
+}
