@@ -181,7 +181,14 @@ def _call_groq_chat(message, session_history, user_context):
         ctx_lines.append('  None')
     ctx_lines.append('────────────────────────────────────────')
 
-    messages = [{'role': 'system', 'content': BUDDYBOT_SYSTEM + '\n\n' + '\n'.join(ctx_lines)}]
+    # Groq's llama-3.3-70b ignores <think> tag instructions and outputs reasoning as prose.
+    # Override it explicitly at the top of the system prompt.
+    groq_override = (
+        "CRITICAL: Do NOT output your reasoning steps, thinking process, or numbered analysis. "
+        "Do NOT start with 'First,', 'Second,', or any step-by-step preamble. "
+        "Respond directly in BuddyBot's voice. Your answer is the first thing you write.\n\n"
+    )
+    messages = [{'role': 'system', 'content': groq_override + BUDDYBOT_SYSTEM + '\n\n' + '\n'.join(ctx_lines)}]
     for h in (session_history or [])[-10:]:
         if h.get('role') in ('user', 'assistant') and h.get('content'):
             messages.append({'role': h['role'], 'content': h['content']})
@@ -198,6 +205,11 @@ def _call_groq_chat(message, session_history, user_context):
         if r.ok:
             raw   = r.json()['choices'][0]['message']['content']
             clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+            # Strip leaked numbered reasoning prose (e.g. "First, I need to...\nSecond,...")
+            clean = re.sub(
+                r'^(?:(?:First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth)[,.].*\n?)+\s*',
+                '', clean, flags=re.MULTILINE | re.IGNORECASE
+            ).strip()
             return clean or raw.strip()
         current_app.logger.error(f"Groq chat {r.status_code}: {r.text[:200]}")
     except Exception as e:

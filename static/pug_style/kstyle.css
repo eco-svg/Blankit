@@ -1049,6 +1049,14 @@ div.infinite-canvas video {
 .chat-window::-webkit-scrollbar { width: 4px; }
 .chat-window::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
 
+/* Prevent markdown-rendered images from blowing up the chat card */
+.chat-window img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin-top: 6px;
+}
+
 .chat-message {
     max-width: 85%;
     padding: 10px 14px;
