@@ -27,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Limits ---
     const MAX_IMAGE_MB    = 5;
-    const MAX_VIDEO_MB    = 80;   // rough upper bound for ~3 min video
-    const MAX_VIDEO_SECS  = 180;  // 3 minutes — hard cap checked after file loads
+    const MAX_VIDEO_MB    = 50;
+    const MAX_VIDEO_SECS  = 120;  // 2 minutes hard cap
 
 
     // =========================================================
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tempVideo.addEventListener('loadedmetadata', () => {
                 URL.revokeObjectURL(tempVideo.src); // free the memory
                 if (tempVideo.duration > MAX_VIDEO_SECS) {
-                    setStatus(`Max video length is 3 minutes`, 'var(--accent2)');
+                    setStatus(`Max video length is 2 minutes`, 'var(--accent2)');
                     return;
                 }
                 // Duration is fine — proceed to upload

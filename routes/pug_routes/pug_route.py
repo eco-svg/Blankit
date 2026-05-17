@@ -128,6 +128,81 @@ def _build_context_block(ctx):
     return '\n'.join(lines)
 
 
+def _groq_search(query):
+    import requests as req
+    api_key = os.environ.get('GROQ_API_KEY', '')
+    if not api_key:
+        return None
+    try:
+        r = req.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json={
+                'model': 'llama-3.1-8b-instant',
+                'messages': [
+                    {'role': 'system', 'content': 'You are a concise knowledge assistant. Answer factually and briefly.'},
+                    {'role': 'user',   'content': query}
+                ],
+                'max_tokens': 400
+            },
+            timeout=10
+        )
+        if r.ok:
+            return r.json()['choices'][0]['message']['content']
+    except Exception:
+        pass
+    return None
+
+
+def _call_groq_chat(message, session_history, user_context):
+    import requests as req
+    api_key = os.environ.get('GROQ_API_KEY', '')
+    if not api_key:
+        return None
+
+    ctx_lines = [
+        '────────────────────────────────────────',
+        'USER CONTEXT',
+        '────────────────────────────────────────',
+        f'Username     : {user_context["username"]}',
+        f'Member since : {user_context["member_since"]}',
+        f'Dream        : {user_context["dream"] or "Not set"}',
+        '', 'Active Goals:',
+    ]
+    for g in user_context['active_goals'] or ['None']:
+        ctx_lines.append(f'  - {g}')
+    ctx_lines += ['', 'Completed Goals (last 7 days):']
+    for g in user_context['finished_this_week'] or ['None']:
+        ctx_lines.append(f'  - {g}')
+    ctx_lines += ['', 'Recent Note Titles:']
+    for n in user_context['recent_notes'] or []:
+        ctx_lines.append(f'  [{n["date"]}] {n["title"]}')
+    if not user_context['recent_notes']:
+        ctx_lines.append('  None')
+    ctx_lines.append('────────────────────────────────────────')
+
+    messages = [{'role': 'system', 'content': BUDDYBOT_SYSTEM + '\n\n' + '\n'.join(ctx_lines)}]
+    for h in (session_history or [])[-10:]:
+        if h.get('role') in ('user', 'assistant') and h.get('content'):
+            messages.append({'role': h['role'], 'content': h['content']})
+    messages.append({'role': 'user', 'content': message})
+
+    try:
+        r = req.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json={'model': 'llama-3.3-70b-versatile', 'messages': messages,
+                  'max_tokens': 600, 'temperature': 0.7},
+            timeout=30
+        )
+        if r.ok:
+            return r.json()['choices'][0]['message']['content']
+        current_app.logger.error(f"Groq chat {r.status_code}: {r.text[:200]}")
+    except Exception as e:
+        current_app.logger.error(f"Groq chat error: {e}")
+    return None
+
+
 def _call_buddybot(context_packet, user_context):
     ctx_line = (
         f"Username: {user_context['username']}, "
@@ -137,18 +212,39 @@ def _call_buddybot(context_packet, user_context):
     )
     user_msg = f"[CONTEXT] {ctx_line}\n\n{context_packet}"
 
-    model = _get_buddybot()
-    out   = model.create_chat_completion(
-        messages=[
-            {'role': 'system', 'content': BUDDYBOT_SYSTEM},
-            {'role': 'user',   'content': user_msg}
-        ],
-        max_tokens=600,
-        temperature=0.7,
-        stop=['<|im_end|>', '</s>']
-    )
-    raw   = out['choices'][0]['message']['content']
+    model    = _get_buddybot()
+    messages = [
+        {'role': 'system', 'content': BUDDYBOT_SYSTEM},
+        {'role': 'user',   'content': user_msg}
+    ]
+
+    raw = ''
+    for _ in range(3):  # max 3 groq search iterations
+        out = model.create_chat_completion(
+            messages=messages,
+            max_tokens=600,
+            temperature=0.7,
+            stop=['<|im_end|>', '</s>']
+        )
+        raw = out['choices'][0]['message']['content']
+
+        search_match = re.search(r'<groq_search>(.*?)</groq_search>', raw, re.DOTALL)
+        if not search_match:
+            break
+
+        query  = search_match.group(1).strip()
+        result = _groq_search(query)
+        if not result:
+            break
+
+        messages.append({'role': 'assistant', 'content': raw})
+        messages.append({
+            'role': 'user',
+            'content': f'[SEARCH RESULT for "{query}"]\n{result}\n\nNow answer the original question using this information.'
+        })
+
     clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL)
+    clean = re.sub(r'<groq_search>.*?</groq_search>', '', clean, flags=re.DOTALL)
     return clean.strip()
 
 # No template_folder — full paths used in render_template
@@ -164,6 +260,7 @@ MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
 MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'blankit-media')
 MINIO_SECURE     = os.environ.get('MINIO_SECURE',     'false').lower() == 'true'
+_UPLOAD_LOCAL_DIR = os.environ.get('UPLOAD_DIR', '/tmp/blankit_media')
 
 minio_client = Minio(
     MINIO_ENDPOINT,
@@ -396,12 +493,19 @@ def upload_file():
     else:
         return jsonify({'error': f'.{ext} not allowed'}), 400
     object_name = f"user_{session['user_id']}/{uuid.uuid4().hex}.{ext}"
-    ensure_bucket()
-    file_data = file.read()
-    minio_client.put_object(
-        MINIO_BUCKET, object_name, io.BytesIO(file_data),
-        length=len(file_data), content_type=content_type
-    )
+    file_data   = file.read()
+    try:
+        ensure_bucket()
+        minio_client.put_object(
+            MINIO_BUCKET, object_name, io.BytesIO(file_data),
+            length=len(file_data), content_type=content_type
+        )
+    except Exception as e:
+        current_app.logger.warning(f"MinIO unavailable, falling back to local storage: {e}")
+        local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        with open(local_path, 'wb') as f:
+            f.write(file_data)
     return jsonify({'url': url_for('pug.serve_media', object_name=object_name),
                     'type': 'image' if ext in ALLOWED_IMAGE else 'video'})
 
@@ -419,7 +523,14 @@ def serve_media(object_name):
             content_type=response.headers.get('content-type', 'application/octet-stream')
         )
     except S3Error:
-        return jsonify({'error': 'File not found'}), 404
+        pass
+    import mimetypes
+    local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
+    if os.path.exists(local_path):
+        ct = mimetypes.guess_type(local_path)[0] or 'application/octet-stream'
+        with open(local_path, 'rb') as f:
+            return Response(f.read(), content_type=ct)
+    return jsonify({'error': 'File not found'}), 404
 
 
 @pug_bp.route('/pug/api/ask', methods=['POST'])
@@ -464,40 +575,41 @@ def ask():
 
 @pug_bp.route('/pug/api/blinkbot', methods=['POST'])
 def blinkbot_chat():
-    """
-    Temporary server-side endpoint used only by the local BlinkBot client.
-    BlinkBot assembles context on-device and POSTs a context packet here.
-    This endpoint forwards it straight to BuddyBot and returns the answer.
-    No BlinkBot model runs on the server — only BuddyBot.
-    """
     err = login_required_api()
     if err: return err
 
-    if not _LLAMA_OK or not _BUDDYBOT_ENABLED:
-        return jsonify({'error': 'BuddyBot not available on this server'}), 503
-
     data    = request.get_json()
     message = data.get('message', '').strip()
+    history = data.get('history', [])
 
     if not message:
         return jsonify({'error': 'Empty message'}), 400
 
     try:
         user_context = _assemble_user_context(session['user_id'], session.get('username', ''))
-        goals_str    = ', '.join(user_context['active_goals']) or 'none'
-        notes_str    = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
 
-        context_packet = (
-            f"situation_type: general\n"
-            f"user_signals: username={user_context['username']}, "
-            f"dream={user_context['dream'] or 'not set'}, "
-            f"active_goals=[{goals_str}]\n"
-            f"recent_pattern: recent notes titled [{notes_str}]\n"
-            f"question_core: {message}\n"
-            f"task: answer_directly"
-        )
+        # Premium path: BuddyBot (fine-tuned 8B, full context)
+        # TODO: add user.is_premium check when payment is wired
+        use_buddybot = _LLAMA_OK and _BUDDYBOT_ENABLED
+        if use_buddybot:
+            goals_str = ', '.join(user_context['active_goals']) or 'none'
+            notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
+            packet = (
+                f"situation_type: general\n"
+                f"user_signals: username={user_context['username']}, "
+                f"dream={user_context['dream'] or 'not set'}, "
+                f"active_goals=[{goals_str}]\n"
+                f"recent_pattern: recent notes titled [{notes_str}]\n"
+                f"question_core: {message}\n"
+                f"task: answer_directly"
+            )
+            final = _call_buddybot(packet, user_context)
+        else:
+            # Free path: Groq with assembled user context + session history
+            final = _call_groq_chat(message, history, user_context)
 
-        final = _call_buddybot(context_packet, user_context)
+        if not final:
+            return jsonify({'error': 'AI unavailable'}), 503
 
         from .chat_logger import append_chat_entry
         append_chat_entry(session['user_id'], message, final)
@@ -506,7 +618,7 @@ def blinkbot_chat():
 
     except Exception as e:
         current_app.logger.error(f"BlinkBot relay error: {e}")
-        return jsonify({'error': 'BuddyBot unavailable'}), 503
+        return jsonify({'error': 'AI unavailable'}), 503
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
@@ -553,10 +665,14 @@ def blinkbot_context():
     if err: return err
     user_context = _assemble_user_context(session['user_id'], session.get('username', ''))
     ctx_block    = _build_context_block(user_context)
+    # Always serve model through our proxy so HF_TOKEN stays server-side
+    hf_url    = os.environ.get('BLINKBOT_MODEL_URL')
+    model_url = '/pug/install/blinkbot-model' if (hf_url or os.path.exists(_BLINK_PATH)) else None
+
     return jsonify({
-        'system_prompt':    BLINKBOT_SYSTEM + ctx_block,
-        'user_context':     user_context,
-        'buddybot_endpoint': '/pug/api/buddybot'
+        'system_prompt': BLINKBOT_SYSTEM + ctx_block,
+        'user_context':  user_context,
+        'model_url':     model_url,
     })
 
 
@@ -643,13 +759,31 @@ echo ""
 
 @pug_bp.route('/pug/install/blinkbot-model')
 def install_blinkbot_model():
-    """Public model download used by the one-liner install script (no browser session needed)."""
-    from flask import send_file
-    return send_file(
-        _BLINK_PATH,
-        as_attachment=True,
-        download_name='BlinkBot_1.5B.gguf'
-    )
+    # Local file (dev)
+    if os.path.exists(_BLINK_PATH):
+        from flask import send_file
+        return send_file(_BLINK_PATH, as_attachment=True, download_name='BlinkBot_1.5B.gguf')
+
+    # Proxy from private HF repo using server-side token
+    hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
+    if not hf_url:
+        return jsonify({'error': 'Model not available'}), 404
+
+    import requests as req
+    token   = os.environ.get('HF_TOKEN', '')
+    headers = {'Authorization': f'Bearer {token}'} if token else {}
+    try:
+        r = req.get(hf_url, headers=headers, stream=True, timeout=30)
+        if not r.ok:
+            current_app.logger.error(f"HF model fetch {r.status_code}")
+            return jsonify({'error': 'Model unavailable'}), 503
+        resp_headers = {'Content-Type': 'application/octet-stream'}
+        if r.headers.get('Content-Length'):
+            resp_headers['Content-Length'] = r.headers['Content-Length']
+        return Response(r.iter_content(chunk_size=65536), headers=resp_headers)
+    except Exception as e:
+        current_app.logger.error(f"BlinkBot proxy error: {e}")
+        return jsonify({'error': 'Model proxy failed'}), 503
 
 
 @pug_bp.route('/pug/install/blinkbot')

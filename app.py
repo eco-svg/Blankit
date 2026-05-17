@@ -74,6 +74,7 @@ def create_app():
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB upload cap
     # SINGLE DB INIT (important)
     db.init_app(app)
 
