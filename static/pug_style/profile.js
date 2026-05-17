@@ -171,22 +171,44 @@ document.addEventListener('DOMContentLoaded', () => {
     setLangStyle(savedStyle);
     langBtns.forEach(b => b.addEventListener('click', () => setLangStyle(b.dataset.lang)));
 
-    // ── Change Username ────────────────────────────────────────────────────────
-    ppChangeUsername?.addEventListener('click', () => {
-        closePopup();
-        const val = prompt('New username:');
-        if (!val || !val.trim()) return;
+    // ── Change Username modal ──────────────────────────────────────────────────
+    const unModal       = document.getElementById('changeUsernameModal');
+    const unInput       = document.getElementById('newUsernameInput');
+    const unError       = document.getElementById('usernameError');
+    const unCurrentSpan = document.getElementById('currentUsernameDisplay');
+    const unCancelBtn   = document.getElementById('cancelUsernameBtn');
+    const unConfirmBtn  = document.getElementById('confirmUsernameBtn');
+
+    function openUnModal() {
+        if (unCurrentSpan) unCurrentSpan.textContent = document.querySelector('.greeting-name')?.textContent || '';
+        if (unInput)  unInput.value = '';
+        if (unError)  unError.textContent = '';
+        unModal?.classList.remove('hidden');
+        setTimeout(() => unInput?.focus(), 60);
+    }
+
+    ppChangeUsername?.addEventListener('click', () => { closePopup(); openUnModal(); });
+    unCancelBtn?.addEventListener('click', () => unModal?.classList.add('hidden'));
+    window.addEventListener('click', e => { if (e.target === unModal) unModal?.classList.add('hidden'); });
+    unInput?.addEventListener('keydown', e => { if (e.key === 'Enter') submitUsername(); });
+    unConfirmBtn?.addEventListener('click', submitUsername);
+
+    function submitUsername() {
+        const val = unInput?.value.trim();
+        if (!val) { if (unError) unError.textContent = 'Username cannot be empty.'; return; }
+        if (val.length < 2) { if (unError) unError.textContent = 'At least 2 characters.'; return; }
+        unConfirmBtn.disabled = true;
         fetch('/pug/api/profile/username', {
-            method:  'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ username: val.trim() })
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: val })
         })
         .then(r => r.json())
         .then(data => {
-            if (data.error) { alert(data.error); return; }
+            unConfirmBtn.disabled = false;
+            if (data.error) { if (unError) unError.textContent = data.error; return; }
+            unModal?.classList.add('hidden');
             const nameEl = document.querySelector('.greeting-name');
             if (nameEl) nameEl.textContent = data.username;
-            // Only update initial if no photo is set
             if (!localStorage.getItem(AVATAR_KEY)) {
                 const initEl = document.querySelector('.avatar-initial');
                 if (initEl) initEl.textContent = data.username[0].toUpperCase();
@@ -197,46 +219,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (tn && tn.nodeType === Node.TEXT_NODE) tn.textContent = data.username;
             }
         })
-        .catch(() => alert('Could not update username.'));
-    });
+        .catch(() => { unConfirmBtn.disabled = false; if (unError) unError.textContent = 'Could not update. Try again.'; });
+    }
 
-    // ── Change Password ────────────────────────────────────────────────────────
+    // ── Change Password modal ──────────────────────────────────────────────────
+    const pwModal      = document.getElementById('changePasswordModal');
+    const pwCurInput   = document.getElementById('currentPwInput');
+    const pwNewInput   = document.getElementById('newPwInput');
+    const pwError      = document.getElementById('passwordError');
+    const pwCancelBtn  = document.getElementById('cancelPasswordBtn');
+    const pwConfirmBtn = document.getElementById('confirmPasswordBtn');
+
     ppChangePassword?.addEventListener('click', () => {
         closePopup();
-        const current = prompt('Current password:');
-        if (current === null) return;
-        const next = prompt('New password (min 6 chars):');
-        if (!next || next.length < 6) { alert('Password too short.'); return; }
+        if (pwCurInput) pwCurInput.value = '';
+        if (pwNewInput) pwNewInput.value = '';
+        if (pwError)    pwError.textContent = '';
+        pwModal?.classList.remove('hidden');
+        setTimeout(() => pwCurInput?.focus(), 60);
+    });
+    pwCancelBtn?.addEventListener('click', () => pwModal?.classList.add('hidden'));
+    window.addEventListener('click', e => { if (e.target === pwModal) pwModal?.classList.add('hidden'); });
+    pwNewInput?.addEventListener('keydown', e => { if (e.key === 'Enter') submitPassword(); });
+    pwConfirmBtn?.addEventListener('click', submitPassword);
+
+    function submitPassword() {
+        const current = pwCurInput?.value;
+        const next    = pwNewInput?.value;
+        if (!current) { if (pwError) pwError.textContent = 'Enter your current password.'; return; }
+        if (!next || next.length < 6) { if (pwError) pwError.textContent = 'New password needs at least 6 characters.'; return; }
+        pwConfirmBtn.disabled = true;
         fetch('/pug/api/profile/password', {
-            method:  'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ current, new: next })
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ current, new: next })
         })
         .then(r => r.json())
         .then(data => {
-            if (data.error) { alert(data.error); return; }
-            alert('Password updated.');
+            pwConfirmBtn.disabled = false;
+            if (data.error) { if (pwError) pwError.textContent = data.error; return; }
+            pwModal?.classList.add('hidden');
         })
-        .catch(() => alert('Could not update password.'));
-    });
+        .catch(() => { pwConfirmBtn.disabled = false; if (pwError) pwError.textContent = 'Could not update. Try again.'; });
+    }
 
-    // ── Delete Account ─────────────────────────────────────────────────────────
+    // ── Delete Account modal ───────────────────────────────────────────────────
+    const delModal      = document.getElementById('deleteAccountModal');
+    const delPwInput    = document.getElementById('deleteAccountPwInput');
+    const delError      = document.getElementById('deleteAccountError');
+    const delCancelBtn  = document.getElementById('cancelDeleteAccountBtn');
+    const delConfirmBtn = document.getElementById('confirmDeleteAccountBtn');
+
     ppDeleteAccount?.addEventListener('click', () => {
         closePopup();
-        if (!confirm('Delete your account? This cannot be undone.')) return;
-        const password = prompt('Confirm your password to delete:');
-        if (password === null) return;
+        if (delPwInput) delPwInput.value = '';
+        if (delError)   delError.textContent = '';
+        delModal?.classList.remove('hidden');
+        setTimeout(() => delPwInput?.focus(), 60);
+    });
+    delCancelBtn?.addEventListener('click',  () => delModal?.classList.add('hidden'));
+    window.addEventListener('click', e => { if (e.target === delModal) delModal?.classList.add('hidden'); });
+    delPwInput?.addEventListener('keydown', e => { if (e.key === 'Enter') submitDelete(); });
+    delConfirmBtn?.addEventListener('click', submitDelete);
+
+    function submitDelete() {
+        const pw = delPwInput?.value;
+        if (!pw) { if (delError) delError.textContent = 'Password is required.'; return; }
+        delConfirmBtn.disabled = true;
         fetch('/pug/api/profile/delete', {
-            method:  'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ password })
+            method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pw })
         })
         .then(r => r.json())
         .then(data => {
-            if (data.error) { alert(data.error); return; }
+            delConfirmBtn.disabled = false;
+            if (data.error) { if (delError) delError.textContent = data.error; return; }
             window.location.href = '/login';
         })
-        .catch(() => alert('Could not delete account.'));
-    });
+        .catch(() => { delConfirmBtn.disabled = false; if (delError) delError.textContent = 'Could not delete. Try again.'; });
+    }
 
 });

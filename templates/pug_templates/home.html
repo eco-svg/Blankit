@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=10">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=11">
 </head>
 <body>
 
@@ -304,32 +304,28 @@
 
   </div>
 
-  <!-- Stats Modal -->
-  <div id="statsModal" class="custom-modal hidden">
-    <div class="modal-content stats-sheet">
+  <!-- Stats Popup Panel (anchored top-right, like profile popup) -->
+  <div id="statsModal" class="stats-popup">
+    <div class="stats-popup-inner stats-sheet">
       <div class="stats-header">
-        <h2 class="logo">{{ username }}</h2>
-        <button class="icon-btn close-modal" style="border:none;font-size:1.4rem;background:transparent;cursor:pointer;color:var(--text-dim);opacity:0.6;">&times;</button>
+        <h2 class="logo" style="font-size:1.1rem;">{{ username }}</h2>
+        <button class="close-modal" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.3rem;line-height:1;padding:0;">&times;</button>
       </div>
 
-      <!-- Class -->
       <div class="char-class-section">
         <div class="char-class-label">CLASS</div>
         <div class="char-class-name" id="statClassName">—</div>
       </div>
 
-      <!-- Personality -->
-      <div class="char-class-section" style="margin-top:14px;">
+      <div class="char-class-section" style="margin-top:12px;">
         <div class="char-class-label">PERSONALITY</div>
-        <div class="char-class-name" id="statPersonality" style="font-size:1.1rem;">—</div>
-        <div class="char-bio" id="statPersonalityDesc" style="margin-top:6px;"></div>
+        <div class="char-class-name" id="statPersonality" style="font-size:1rem;">—</div>
+        <div class="char-bio" id="statPersonalityDesc" style="margin-top:5px;"></div>
       </div>
 
-      <!-- Bio -->
-      <div class="char-bio" id="statBio" style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;"></div>
+      <div class="char-bio" id="statBio" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;"></div>
 
-      <!-- Skills -->
-      <div class="char-skills" style="margin-top:14px;">
+      <div class="char-skills" style="margin-top:12px;">
         <div class="char-skills-header">DETECTED SKILLS</div>
         <div id="statSkillsList" class="skills-list">
           <div class="skill-loading">Scanning data...</div>
@@ -357,6 +353,66 @@
       <div class="modal-actions">
         <button id="cancelAchieveBtn" class="nav-pill btn-ghost">Wait, no</button>
         <button id="confirmAchieveBtn" class="nav-pill btn-danger" style="background:var(--green);color:#111;">Hell Yeah</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Username -->
+  <div id="changeUsernameModal" class="custom-modal hidden">
+    <div class="modal-content action-sheet" style="max-width:360px;">
+      <div class="action-sheet-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h3 class="action-sheet-title">Change Username</h3>
+      <p class="action-sheet-sub">Current: <span id="currentUsernameDisplay" style="color:var(--accent);"></span></p>
+      <div class="action-field-wrap">
+        <input type="text" id="newUsernameInput" class="action-input" placeholder="New username" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="action-error" id="usernameError"></div>
+      <div class="modal-actions">
+        <button id="cancelUsernameBtn" class="action-btn-ghost">Cancel</button>
+        <button id="confirmUsernameBtn" class="action-btn-accent">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change Password -->
+  <div id="changePasswordModal" class="custom-modal hidden">
+    <div class="modal-content action-sheet" style="max-width:360px;">
+      <div class="action-sheet-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <h3 class="action-sheet-title">Change Password</h3>
+      <div class="action-field-wrap">
+        <input type="password" id="currentPwInput" class="action-input" placeholder="Current password" autocomplete="current-password">
+      </div>
+      <div class="action-field-wrap">
+        <input type="password" id="newPwInput" class="action-input" placeholder="New password (min 6 chars)" autocomplete="new-password">
+      </div>
+      <div class="action-error" id="passwordError"></div>
+      <div class="modal-actions">
+        <button id="cancelPasswordBtn" class="action-btn-ghost">Cancel</button>
+        <button id="confirmPasswordBtn" class="action-btn-accent">Update</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Account — dramatic warning -->
+  <div id="deleteAccountModal" class="custom-modal hidden">
+    <div class="modal-content danger-sheet" style="max-width:400px;">
+      <div class="danger-icon-wrap">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c85a2a" stroke-width="1.6"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h3 class="danger-title">Delete Account</h3>
+      <p class="danger-warning-text">Everything — notes, goals, work, data — will be <strong>permanently erased</strong>. This cannot be undone. Ever.</p>
+      <div class="danger-confirm-label">Enter your password to proceed:</div>
+      <div class="action-field-wrap">
+        <input type="password" id="deleteAccountPwInput" class="action-input danger-input" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <div class="action-error" id="deleteAccountError"></div>
+      <div class="modal-actions" style="margin-top:22px;">
+        <button id="cancelDeleteAccountBtn" class="action-btn-ghost">Keep my account</button>
+        <button id="confirmDeleteAccountBtn" class="action-btn-destroy">Delete Forever</button>
       </div>
     </div>
   </div>

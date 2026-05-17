@@ -36,14 +36,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
 
-    // ── Modal open/close ────────────────────────────────────────────────────
-    btn?.addEventListener('click', () => {
-        modal.classList.remove('hidden');
+    // ── Popup open/close ────────────────────────────────────────────────────
+    function openStats() {
+        modal.classList.add('visible');
         if (!sheet) fetchStats(false);
-    });
+    }
+    function closeStats() { modal.classList.remove('visible'); }
 
-    closeBtn?.addEventListener('click', () => modal.classList.add('hidden'));
-    window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
+    btn?.addEventListener('click', e => { e.stopPropagation(); openStats(); });
+    closeBtn?.addEventListener('click', closeStats);
+
+    // Click outside the popup to close
+    document.addEventListener('click', e => {
+        if (modal.classList.contains('visible') && !modal.contains(e.target) && e.target !== btn) {
+            closeStats();
+        }
+    });
 
     // ── Render helpers ──────────────────────────────────────────────────────
     function normaliseRank(raw) {
