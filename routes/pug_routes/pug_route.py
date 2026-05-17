@@ -130,6 +130,72 @@ def _build_context_block(ctx):
     return '\n'.join(lines)
 
 
+_STOP_WORDS = {
+    'the','a','an','is','it','to','of','and','or','in','on','at',
+    'i','my','me','you','we','do','did','was','are','have','has',
+    'be','this','that','what','how','why','who','when','where',
+    'can','will','would','should','could','just','really','very',
+}
+
+
+def _parse_chat_log(log_text):
+    """Parse decrypted chat log into a list of {date, user, bot} dicts."""
+    exchanges = []
+    current_date = ''
+    pending_user = None
+    for line in log_text.split('\n'):
+        line = line.rstrip()
+        if line.startswith('_____') and line.endswith('_____:'):
+            current_date = line.strip('_:').strip()
+        elif '] You: ' in line:
+            pending_user = line.split('] You: ', 1)[-1]
+        elif '] BlinkBot: ' in line and pending_user is not None:
+            bot_msg = line.split('] BlinkBot: ', 1)[-1]
+            exchanges.append({'date': current_date, 'user': pending_user, 'bot': bot_msg})
+            pending_user = None
+    return exchanges
+
+
+def _search_chat_history(user_id, query, max_results=6):
+    """
+    Keyword search through the full persistent chat log.
+    Returns the top-N most relevant exchanges regardless of age.
+    """
+    from .chat_logger import read_user_log
+    log = read_user_log(user_id)
+    if not log:
+        return []
+
+    exchanges = _parse_chat_log(log)
+    if not exchanges:
+        return []
+
+    query_words = set(query.lower().split()) - _STOP_WORDS
+    if not query_words:
+        return []
+
+    scored = []
+    for ex in exchanges:
+        combined = (ex['user'] + ' ' + ex['bot']).lower()
+        score = sum(1 for w in query_words if w in combined)
+        if score > 0:
+            scored.append((score, ex))
+
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return [ex for _, ex in scored[:max_results]]
+
+
+def _format_memory_block(exchanges):
+    """Format relevant past exchanges as a context block for the prompt."""
+    if not exchanges:
+        return ''
+    lines = ['RELEVANT PAST CONVERSATIONS (from memory):']
+    for ex in exchanges:
+        lines.append(f"[{ex['date']}] You: {ex['user']}")
+        lines.append(f"              BlinkBot: {ex['bot']}")
+    return '\n'.join(lines)
+
+
 def _groq_search(query):
     import requests as req
     api_key = os.environ.get('GROQ_API_KEY', '')
@@ -156,7 +222,7 @@ def _groq_search(query):
     return None
 
 
-def _call_groq_chat(message, session_history, user_context):
+def _call_groq_chat(message, session_history, user_context, user_id=None):
     import requests as req
     api_key = os.environ.get('GROQ_API_KEY', '')
     if not api_key:
@@ -181,6 +247,14 @@ def _call_groq_chat(message, session_history, user_context):
         ctx_lines.append(f'  [{n["date"]}] {n["title"]}')
     if not user_context['recent_notes']:
         ctx_lines.append('  None')
+
+    # Search persistent chat log for relevant past exchanges
+    if user_id:
+        relevant = _search_chat_history(user_id, message)
+        memory_block = _format_memory_block(relevant)
+        if memory_block:
+            ctx_lines += ['', memory_block]
+
     ctx_lines.append('────────────────────────────────────────')
 
     # Groq's llama-3.3-70b doesn't natively use <think> tags — it outputs reasoning as prose.
@@ -314,8 +388,18 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     finished_str = ', '.join(user_context['finished_this_week'][:5]) or 'none this week'
     notes_str    = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
 
-    chat_log     = read_user_log(user_id) or ''
-    chat_snippet = chat_log[-1000:].strip() if chat_log else 'No chat history yet.'
+    # Pull ALL exchanges from full history — search for themes that reveal character
+    log        = read_user_log(user_id) or ''
+    exchanges  = _parse_chat_log(log) if log else []
+    # Build a condensed timeline: every exchange as one line
+    history_lines = [
+        f"[{ex['date']}] You: {ex['user'][:80]} | BlinkBot: {ex['bot'][:80]}"
+        for ex in exchanges
+    ]
+    # If too large, keep most recent + sample older ones
+    if len(history_lines) > 40:
+        history_lines = history_lines[:10] + ['...'] + history_lines[-30:]
+    chat_summary = '\n'.join(history_lines) if history_lines else 'No chat history yet.'
 
     prompt = (
         "Analyze this user's complete data and generate a precise RPG character sheet.\n\n"
@@ -326,7 +410,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         f"Member Since: {user_context['member_since']}\n"
         f"Total Notes: {notes_count}\n"
         f"Current Streak: {streak} days\n\n"
-        f"Recent Conversation History:\n{chat_snippet}\n\n"
+        f"Full Conversation History:\n{chat_summary}\n\n"
         "Output ONLY valid JSON, no other text:\n"
         '{"class_official":"2-3 word professional title",'
         '"class_playful":"2-4 word evocative title — poetic, ironic, or dramatic, specific to this person",'
@@ -758,7 +842,7 @@ def blinkbot_chat():
             final = _call_buddybot(packet, user_context)
         else:
             # Free path: Groq with assembled user context + session history
-            final = _call_groq_chat(message, history, user_context)
+            final = _call_groq_chat(message, history, user_context, user_id=user_id)
 
         if not final:
             return jsonify({'error': 'AI unavailable'}), 503
