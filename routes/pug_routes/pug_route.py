@@ -196,7 +196,9 @@ def _call_groq_chat(message, session_history, user_context):
             timeout=30
         )
         if r.ok:
-            return r.json()['choices'][0]['message']['content']
+            raw   = r.json()['choices'][0]['message']['content']
+            clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+            return clean or raw.strip()
         current_app.logger.error(f"Groq chat {r.status_code}: {r.text[:200]}")
     except Exception as e:
         current_app.logger.error(f"Groq chat error: {e}")
@@ -260,7 +262,10 @@ MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
 MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'blankit-media')
 MINIO_SECURE     = os.environ.get('MINIO_SECURE',     'false').lower() == 'true'
-_UPLOAD_LOCAL_DIR = os.environ.get('UPLOAD_DIR', '/tmp/blankit_media')
+_UPLOAD_LOCAL_DIR = os.environ.get(
+    'UPLOAD_DIR',
+    '/data/blankit_media' if os.path.isdir('/data') else '/tmp/blankit_media'
+)
 
 minio_client = Minio(
     MINIO_ENDPOINT,

@@ -692,11 +692,11 @@ body::after {
     background: var(--accent-glow);
 }
 /* Find and replace the div.infinite-canvas img block */
-div.infinite-canvas img, 
+div.infinite-canvas img,
 div.infinite-canvas video {
     display: block !important;
-    max-width: 200px ; /* Stretches to card width, but never past it */
-    height: 150px;     /* Keeps the stars from looking squashed */
+    max-width: 100%;
+    height: auto;
     margin: 15px 0 !important;
     border-radius: 10px !important;
     box-shadow: 0 4px 20px rgba(0,0,0,0.5);
