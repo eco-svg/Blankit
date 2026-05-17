@@ -1034,6 +1034,7 @@ div.infinite-canvas video {
 /* --- AI CHAT WINDOW STYLES --- */
 .chat-window {
     flex-grow: 1;
+    min-height: 0;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -1116,6 +1117,7 @@ div.infinite-canvas video {
 .buddybot-main {
     background: rgba(74, 122, 170, 0.12) !important;
     border-color: rgba(74,122,170,0.15) !important;
+    overflow: hidden !important;
 }
 
 .buddybot-main:hover {
@@ -1153,7 +1155,12 @@ div.infinite-canvas video {
 /* Ensures chat windows don't break the layout */
 .chat-window {
     flex-grow: 1;
+    min-height: 0;
     overflow-y: auto;
+}
+
+#blinkChatState {
+    min-height: 0;
 }
 
 .calender {
