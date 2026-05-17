@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     const modal           = document.getElementById('statsModal');
-    const btn             = document.getElementById('statsBtn');
-    const btn2            = document.getElementById('statsBtn2');
-    const closeBtn        = document.querySelector('#statsModal .close-modal');
+    const btn      = document.getElementById('statsBtn');
+    const closeBtn = document.querySelector('#statsModal .close-modal');
     const classNameEl     = document.getElementById('statClassName');
     const personalityEl   = document.getElementById('statPersonality');
     const personalityDesc = document.getElementById('statPersonalityDesc');
@@ -41,12 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btn?.addEventListener('click', () => {
         modal.classList.remove('hidden');
         if (!sheet) fetchStats(false);
-    });
-
-    btn2?.addEventListener('click', () => {
-        modal.classList.remove('hidden');
-        if (!sheet) fetchStats(false);
-        else renderModal();
     });
 
     closeBtn?.addEventListener('click', () => modal.classList.add('hidden'));

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=8">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=9">
 </head>
 <body>
 
@@ -22,6 +22,7 @@
       <div class="avatar-wrap">
         <div class="user-avatar" id="profileTrigger">
           <span class="avatar-initial">{{ username[0]|upper }}</span>
+          <span class="status-dot" id="statusDot" data-status="online" title="Online"></span>
         </div>
         <!-- Profile popup -->
         <div class="profile-popup hidden" id="profilePopup">
@@ -46,11 +47,15 @@
             Change Password
           </div>
           <div class="pp-divider"></div>
-          <div class="pp-label">Language</div>
+          <div class="pp-label">Language Style</div>
           <div class="pp-lang-row">
             <button class="pp-lang-btn active" data-lang="plain">Plain</button>
             <button class="pp-lang-btn" data-lang="advanced">Advanced</button>
             <button class="pp-lang-btn" data-lang="pro">Pro</button>
+          </div>
+          <div class="pp-label" style="margin-top:6px;">App Language</div>
+          <div class="pp-lang-row" id="ppAppLangRow">
+            <!-- JS populates: English + detected local language -->
           </div>
           <div class="pp-divider"></div>
           <div class="pp-item pp-danger" id="ppDeleteAccount">
@@ -197,10 +202,9 @@
         </div>
         <div class="card-top-bar">
           <h2 class="card-title">Skills</h2>
-          <button id="statsBtn2" class="icon-btn" title="Generate character sheet" style="font-size:0.7rem;font-family:var(--font-mono);padding:4px 10px;border:1px solid var(--border);border-radius:6px;color:var(--text-dim);">analyze ↗</button>
         </div>
         <div class="skills-main-list" id="skillsMainList">
-          <div class="skill-loading" style="margin-top:30px;">Click <strong>analyze</strong> or open STATS to detect your skills.</div>
+          <div class="skill-loading" style="margin-top:30px;">Open STATS to generate your skill sheet.</div>
         </div>
       </div>
 
@@ -359,6 +363,34 @@
     </div>
   </div>
 
+  <!-- First-launch language welcome -->
+  <div id="langWelcomeModal" class="lang-welcome hidden">
+    <div class="lang-welcome-box">
+      <div class="lang-welcome-title">Welcome, {{ username }}!</div>
+      <div class="lang-welcome-sub" id="lwSub">Which language would you like to use?</div>
+      <div class="lang-welcome-btns">
+        <button class="lang-welcome-btn" id="lwEnglish">English</button>
+        <button class="lang-welcome-btn lang-welcome-local" id="lwLocal">Local</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add achievement modal -->
+  <div id="addAchievementModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:420px;">
+      <h3 style="margin-bottom:6px;font-size:1.1rem;color:var(--text);font-weight:600;">Add to Work</h3>
+      <p style="color:var(--text-muted);font-size:0.80rem;margin-bottom:18px;">Projects, releases, real results. No certs.</p>
+      <input id="achievementTitleInput" type="text" placeholder="What did you build / ship / finish?" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
+      <input id="achievementDescInput" type="text" placeholder="One-line description (optional)" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:18px;">
+      <div class="modal-actions">
+        <button id="cancelAchievementBtn" class="nav-pill btn-ghost">Cancel</button>
+        <button id="confirmAchievementBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Add</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('pug.static', filename='ani.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='notes.js') }}"></script>
@@ -370,6 +402,7 @@
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='achievements.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 

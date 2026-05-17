@@ -1086,6 +1086,51 @@ def delete_account():
     return jsonify({'ok': True})
 
 
+@pug_bp.route('/pug/api/achievements', methods=['GET'])
+def get_achievements():
+    err = login_required_api()
+    if err: return err
+    items = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='achievement', is_deleted=False
+    ).order_by(Note.created_at.desc()).all()
+    return jsonify([{'id': n.id, 'title': n.title, 'body': n.body or '',
+                     'created_at': n.created_at.isoformat() if n.created_at else None}
+                    for n in items])
+
+
+@pug_bp.route('/pug/api/achievements', methods=['POST'])
+def add_achievement():
+    err = login_required_api()
+    if err: return err
+    data  = request.get_json(force=True) or {}
+    title = (data.get('title') or '').strip()
+    if not title:
+        return jsonify({'error': 'Title required'}), 400
+    n = Note(
+        user_id    = session['user_id'],
+        entry_type = 'achievement',
+        is_deleted = False,
+        is_finished= False,
+    )
+    n.title = title
+    n.body  = (data.get('description') or '').strip()
+    db.session.add(n)
+    db.session.commit()
+    return jsonify({'id': n.id, 'title': n.title, 'body': n.body}), 201
+
+
+@pug_bp.route('/pug/api/achievements/<int:aid>', methods=['DELETE'])
+def delete_achievement(aid):
+    err = login_required_api()
+    if err: return err
+    n = Note.query.filter_by(id=aid, user_id=session['user_id'], entry_type='achievement').first()
+    if not n:
+        return jsonify({'error': 'Not found'}), 404
+    n.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])
 def blinkbot_debug():
     err = login_required_api()
