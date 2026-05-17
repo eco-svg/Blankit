@@ -8,8 +8,8 @@
   --border2:      rgba(255,255,255,0.14);
   --border-hover: #d4a57455;
   --text:         #f0ebe0;
-  --text-muted:   rgba(240,235,224,0.55);
-  --text-dim:     rgba(240,235,224,0.28);
+  --text-muted:   rgba(240,235,224,0.72);
+  --text-dim:     rgba(240,235,224,0.52);
   --accent:       #d4a574;
   --accent-glow:  #d4a57418;
   --accent2:      #c85a2a;
@@ -55,8 +55,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 15px;
+  line-height: 1.62;
   overflow-x: hidden;
 }
 
@@ -156,7 +156,7 @@ body::after {
 
 .nav-pill {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.74rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
@@ -346,10 +346,10 @@ body.header-hidden .l-bar {
 
 .r-goals-section-label {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.70rem;
   letter-spacing: 0.14em;
   color: var(--text-dim);
-  opacity: 0.55;
+
   margin: 10px 0 5px;
   text-transform: uppercase;
 }
@@ -460,7 +460,7 @@ body.header-hidden .l-bar {
 
 .r-done-label {
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.70rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 4px;
@@ -476,7 +476,7 @@ body.header-hidden .l-bar {
 }
 
 .r-done-item {
-  font-size: 0.67rem;
+  font-size: 0.75rem;
   color: var(--text-dim);
   padding: 3px 5px;
   border-radius: 4px;
@@ -721,7 +721,7 @@ body.header-hidden .l-bar {
 
 .save-status {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.73rem;
   color: var(--text-dim);
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -864,7 +864,7 @@ body.header-hidden .l-bar {
     position: absolute;
     right: 14px; top: 14px;
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
 }
 
@@ -1561,7 +1561,7 @@ div.infinite-canvas video {
 
 .stat-card label, .stat-label-text {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
     color: var(--text-dim);
     display: block;
@@ -1629,7 +1629,7 @@ div.infinite-canvas video {
 
 .stats-label {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     color: var(--accent);
@@ -1664,7 +1664,7 @@ div.infinite-canvas video {
 
 .char-class-label {
     font-family: var(--font-mono);
-    font-size: 0.62rem;
+    font-size: 0.72rem;
     letter-spacing: 0.14em;
     color: var(--text-dim);
     margin-bottom: 4px;
@@ -1687,7 +1687,7 @@ div.infinite-canvas video {
 
 .class-mode-btn {
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: 0.72rem;
     letter-spacing: 0.08em;
     padding: 4px 12px;
     border-radius: 20px;
@@ -1720,7 +1720,7 @@ div.infinite-canvas video {
 
 .char-skills-header {
     font-family: var(--font-mono);
-    font-size: 0.60rem;
+    font-size: 0.70rem;
     letter-spacing: 0.14em;
     color: var(--text-dim);
     margin-bottom: 10px;
@@ -1864,7 +1864,7 @@ div.infinite-canvas video {
 
 .pp-label {
   font-family: var(--font-mono);
-  font-size: 0.55rem;
+  font-size: 0.68rem;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -1880,7 +1880,7 @@ div.infinite-canvas video {
 .pp-lang-btn {
   flex: 1;
   font-family: var(--font-mono);
-  font-size: 0.60rem;
+  font-size: 0.70rem;
   letter-spacing: 0.06em;
   padding: 4px 0;
   border-radius: 6px;
@@ -1989,13 +1989,13 @@ div.infinite-canvas video {
 /* ── r-bar card inline header ─────────────────────────── */
 .r-card-header {
   font-family: var(--font-mono);
-  font-size: 0.60rem;
+  font-size: 0.70rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(240,235,224,0.50);
+  color: var(--text-muted);
   margin-bottom: 10px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   font-weight: 600;
 }
 
@@ -2005,8 +2005,8 @@ div.infinite-canvas video {
 }
 
 .pp-rank-row {
-  font-size: 0.68rem;
-  color: rgba(240,235,224,0.55);
+  font-size: 0.75rem;
+  color: var(--text-muted);
   padding: 2px 0;
   line-height: 1.5;
   font-family: var(--font-mono);
@@ -2020,7 +2020,7 @@ div.infinite-canvas video {
 
 /* ── Skill note sub-text ──────────────────────────────── */
 .skill-note {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   color: var(--text-dim);
   font-style: italic;
   margin-top: 2px;
