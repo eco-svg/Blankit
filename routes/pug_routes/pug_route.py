@@ -922,6 +922,22 @@ def get_stats_sheet():
     })
 
 
+@pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])
+def blinkbot_debug():
+    err = login_required_api()
+    if err: return err
+    hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
+    token  = os.environ.get('HF_TOKEN', '')
+    return jsonify({
+        'BLINKBOT_MODEL_URL': hf_url[:60] + '...' if len(hf_url) > 60 else (hf_url or 'NOT SET'),
+        'HF_TOKEN':           'SET' if token else 'NOT SET',
+        'BLINK_PATH_exists':  os.path.exists(_BLINK_PATH),
+        'BLINK_PATH':         _BLINK_PATH,
+        'BUDDY_PATH_exists':  os.path.exists(_BUDDY_PATH),
+        'BUDDY_PATH':         _BUDDY_PATH,
+    })
+
+
 @pug_bp.route('/pug/api/blinkbot-context', methods=['GET'])
 def blinkbot_context():
     """
@@ -1064,13 +1080,13 @@ def install_blinkbot_model():
         return jsonify({'error': 'Model not available'}), 404
 
     token = os.environ.get('HF_TOKEN', '')
-    current_app.logger.info(f"BlinkBot proxy: url={'SET' if hf_url else 'MISSING'} token={'SET' if token else 'MISSING'}")
+    print(f"[blink-proxy] url={'SET('+hf_url[:40]+')' if hf_url else 'MISSING'} token={'SET' if token else 'MISSING'}", flush=True)
     try:
         if flask_request.method == 'HEAD':
             r = _hf_fetch('HEAD', hf_url, token, timeout=15)
-            current_app.logger.info(f"HF HEAD → {r.status_code} (final url domain: {r.url[:60] if hasattr(r,'url') else '?'})")
+            print(f"[blink-proxy] HEAD → {r.status_code}", flush=True)
             if not r.ok:
-                current_app.logger.error(f"HF HEAD failed {r.status_code}: {r.text[:120]}")
+                print(f"[blink-proxy] HEAD failed: {r.text[:200]}", flush=True)
                 return Response(status=503)
             return Response(status=200, headers={
                 'Content-Type':   'application/octet-stream',
@@ -1079,9 +1095,9 @@ def install_blinkbot_model():
             })
 
         r = _hf_fetch('GET', hf_url, token, stream=True, timeout=60)
-        current_app.logger.info(f"HF GET → {r.status_code}")
+        print(f"[blink-proxy] GET → {r.status_code}", flush=True)
         if not r.ok:
-            current_app.logger.error(f"HF GET failed {r.status_code}: {r.text[:120]}")
+            print(f"[blink-proxy] GET failed: {r.text[:200]}", flush=True)
             return Response(status=503)
         resp_headers = {'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes'}
         if r.headers.get('Content-Length'):
