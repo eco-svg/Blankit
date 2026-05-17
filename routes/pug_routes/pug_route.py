@@ -2,6 +2,8 @@ import os
 import re
 import uuid
 import io
+import time
+import json
 from datetime import datetime, timedelta
 from flask import (
     Blueprint, render_template, request,
@@ -263,6 +265,103 @@ def _call_buddybot(context_packet, user_context):
     clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL)
     clean = re.sub(r'<groq_search>.*?</groq_search>', '', clean, flags=re.DOTALL)
     return clean.strip()
+
+_stats_cache = {}  # {user_id: {'ts': float, 'sheet': dict}}
+
+
+def _calc_streak(user_id):
+    one_year_ago = datetime.utcnow() - timedelta(days=365)
+    entries = Note.query.filter(
+        Note.user_id == user_id,
+        Note.is_deleted == False,
+        Note.entry_type.in_(['note', 'goal']),
+        Note.updated_at >= one_year_ago
+    ).with_entities(Note.updated_at, Note.created_at).all()
+
+    active_dates = set()
+    for e in entries:
+        for dt in (e.updated_at, e.created_at):
+            if dt:
+                active_dates.add(dt.date())
+
+    today = datetime.utcnow().date()
+    check = today if today in active_dates else today - timedelta(days=1)
+    streak = 0
+    for i in range(365):
+        day = check - timedelta(days=i)
+        if day in active_dates:
+            streak += 1
+        else:
+            break
+    return streak
+
+
+def _count_media(user_id):
+    user_dir = os.path.join(_UPLOAD_LOCAL_DIR, f'user_{user_id}')
+    if not os.path.isdir(user_dir):
+        return 0
+    try:
+        return len([f for f in os.listdir(user_dir)
+                    if os.path.isfile(os.path.join(user_dir, f))])
+    except OSError:
+        return 0
+
+
+def _generate_character_sheet(user_id, user_context, notes_count, streak):
+    import requests as req
+    api_key = os.environ.get('GROQ_API_KEY', '')
+    if not api_key:
+        return None
+
+    goals_str    = ', '.join(user_context['active_goals'][:10]) or 'none set'
+    finished_str = ', '.join(user_context['finished_this_week'][:5]) or 'none this week'
+    notes_str    = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
+
+    prompt = (
+        "Analyze this user's life data and generate a concise RPG character sheet.\n\n"
+        f"Dream: {user_context['dream'] or 'not set'}\n"
+        f"Active Goals: {goals_str}\n"
+        f"Recently Completed: {finished_str}\n"
+        f"Recent Note Titles: {notes_str}\n"
+        f"Member Since: {user_context['member_since']}\n"
+        f"Total Notes: {notes_count}\n"
+        f"Current Streak: {streak} days\n\n"
+        "Output ONLY valid JSON, no other text:\n"
+        '{"class_official":"2-3 word professional title",'
+        '"class_playful":"2-4 word evocative title — poetic, ironic, or dramatic, specific to this person",'
+        '"bio":"One sentence. What this person actually is. Direct, no fluff.",'
+        '"skills":['
+        '{"name":"2-3 word skill","rank":"S+"},'
+        '{"name":"2-3 word skill","rank":"S"},'
+        '{"name":"2-3 word skill","rank":"A"},'
+        '{"name":"2-3 word skill","rank":"B"},'
+        '{"name":"2-3 word skill","rank":"C"}'
+        ']}\n\n'
+        "Ranks: S+ exceptional, S mastery, A strong, B developing, C emerging, D early. "
+        "Detect skills from actual content and patterns — make them specific to what this person does."
+    )
+
+    try:
+        r = req.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+            json={
+                'model':       'llama-3.3-70b-versatile',
+                'messages':    [{'role': 'user', 'content': prompt}],
+                'max_tokens':  400,
+                'temperature': 0.8,
+            },
+            timeout=20
+        )
+        if r.ok:
+            raw   = r.json()['choices'][0]['message']['content'].strip()
+            match = re.search(r'\{.*\}', raw, re.DOTALL)
+            if match:
+                return json.loads(match.group())
+    except Exception as e:
+        current_app.logger.error(f'Character sheet gen error: {e}')
+    return None
+
 
 # No template_folder — full paths used in render_template
 pug_bp = Blueprint(
@@ -674,6 +773,37 @@ def buddybot_endpoint():
         return jsonify({'error': 'BuddyBot unavailable'}), 503
 
 
+@pug_bp.route('/pug/api/stats', methods=['GET'])
+def get_stats_sheet():
+    err = login_required_api()
+    if err: return err
+
+    user_id = session['user_id']
+    refresh = request.args.get('refresh', 'false').lower() == 'true'
+
+    notes_count = Note.query.filter_by(
+        user_id=user_id, entry_type='note', is_deleted=False
+    ).count()
+    streak      = _calc_streak(user_id)
+    media_count = _count_media(user_id)
+
+    cached = _stats_cache.get(user_id)
+    if not refresh and cached and (time.time() - cached['ts']) < 86400:
+        sheet = cached['sheet']
+    else:
+        user_context = _assemble_user_context(user_id, session.get('username', ''))
+        sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
+        if sheet:
+            _stats_cache[user_id] = {'ts': time.time(), 'sheet': sheet}
+
+    return jsonify({
+        'notes_count': notes_count,
+        'streak':      streak,
+        'media_count': media_count,
+        'sheet':       sheet,
+    })
+
+
 @pug_bp.route('/pug/api/blinkbot-context', methods=['GET'])
 def blinkbot_context():
     """
@@ -839,7 +969,6 @@ def install_blinkbot_model():
     except Exception as e:
         current_app.logger.error(f"BlinkBot proxy error: {e}")
         return Response(status=503)
-        return Response('Model proxy failed', status=503)
 
 
 @pug_bp.route('/pug/install/blinkbot')

@@ -1319,7 +1319,7 @@ div.infinite-canvas video {
     text-align: left;
 }
 
-.stat-card label {
+.stat-card label, .stat-label-text {
     font-family: var(--font-mono);
     font-size: 0.65rem;
     text-transform: uppercase;
@@ -1404,4 +1404,140 @@ div.infinite-canvas video {
 .stats-btn-inner:hover .stats-label,
 .stats-btn-inner:hover .stats-icon {
     color: var(--bg);
+}
+
+/* ── CHARACTER SHEET ─────────────────────────────── */
+
+.stats-sheet {
+    max-height: 88vh;
+    overflow-y: auto;
+}
+
+.char-class-section {
+    margin-bottom: 16px;
+}
+
+.char-class-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.char-class-name {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
+    margin-bottom: 10px;
+    min-height: 1.9rem;
+}
+
+.char-class-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.class-mode-btn {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.class-mode-btn.active,
+.class-mode-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
+}
+
+.char-bio {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    min-height: 1.2em;
+    font-style: italic;
+}
+
+.char-skills {
+    margin-bottom: 22px;
+}
+
+.char-skills-header {
+    font-family: var(--font-mono);
+    font-size: 0.60rem;
+    letter-spacing: 0.14em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.skill-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.skill-name {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    color: var(--text);
+}
+
+.rank-badge {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    min-width: 28px;
+    text-align: center;
+}
+
+.skill-loading {
+    font-family: var(--font-mono);
+    font-size: 0.70rem;
+    color: var(--text-dim);
+    padding: 10px 0;
+    font-style: italic;
+}
+
+.refresh-stats-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1;
+}
+
+.refresh-stats-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-glow);
 }

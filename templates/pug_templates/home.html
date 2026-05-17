@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=3">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=4">
 </head>
 <body>
 
@@ -266,34 +266,62 @@
   </div>
   <div id="statsModal" class="custom-modal hidden">
     <div class="modal-content stats-sheet">
-        <div class="stats-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="logo">PUG<span>_OS</span> // STATS</h2>
-            <button class="icon-btn close-modal" style="border: none; font-size: 1.5rem; background: transparent; cursor: pointer; color: var(--text-dim);">&times;</button>
+
+      <!-- Header -->
+      <div class="stats-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 class="logo">PUG<span>_OS</span> // STATS</h2>
+        <button class="icon-btn close-modal" style="border:none;font-size:1.5rem;background:transparent;cursor:pointer;color:var(--text-dim);">&times;</button>
+      </div>
+
+      <!-- Character Class -->
+      <div class="char-class-section">
+        <div class="char-class-label">CLASS</div>
+        <div class="char-class-name" id="statClassName">Analyzing...</div>
+        <div class="char-class-toggle">
+          <button class="class-mode-btn active" id="classModeOfficial">Official</button>
+          <button class="class-mode-btn" id="classModePlayful">Playful</button>
         </div>
-        <div class="stats-grid">
-            <div class="stat-card">
-                <span class="stat-label-text">Archive</span>
-                <div class="stat-value" id="stat-notes">--</div>
-                <div class="stat-sub">Flows Synced</div>
-            </div>
-            <div class="stat-card accent">
-                <span class="stat-label-text">The Grind</span>
-                <div class="stat-value" id="stat-streak">--</div>
-                <div class="stat-sub">Day Streak</div>
-            </div>
-            <div class="stat-card">
-                <span class="stat-label-text">Vault</span>
-                <div class="stat-value" id="stat-media">--</div>
-                <div class="stat-sub">Media Objects</div>
-            </div>
-            <div class="stat-card accent">
-                <span class="stat-label-text">Vessel</span>
-                <div class="stat-value">10km</div>
-                <div class="stat-sub">Target Goal</div>
-            </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="char-bio" id="statBio"></div>
+
+      <!-- Skills -->
+      <div class="char-skills">
+        <div class="char-skills-header">DETECTED SKILLS</div>
+        <div id="statSkillsList" class="skills-list">
+          <div class="skill-loading">Scanning data...</div>
         </div>
+      </div>
+
+      <!-- Real Stats Row -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label-text">Archive</span>
+          <div class="stat-value" id="stat-notes">--</div>
+          <div class="stat-sub">Flows Synced</div>
+        </div>
+        <div class="stat-card accent">
+          <span class="stat-label-text">The Grind</span>
+          <div class="stat-value" id="stat-streak">--</div>
+          <div class="stat-sub">Day Streak</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label-text">Vault</span>
+          <div class="stat-value" id="stat-media">--</div>
+          <div class="stat-sub">Media Objects</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label-text">Recalibrate</span>
+          <div class="stat-value">
+            <button id="refreshStatsBtn" class="refresh-stats-btn" title="Regenerate character sheet">↺</button>
+          </div>
+          <div class="stat-sub">Refresh Sheet</div>
+        </div>
+      </div>
+
     </div>
-</div>
+  </div>
   <div id="deleteModal" class="custom-modal hidden">
       <div class="modal-content">
           <h3 style="margin-bottom: 10px; color: var(--text); font-weight: 600; font-size: 1.4rem;">Delete Flow?</h3>
