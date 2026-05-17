@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return p + '<|im_start|>assistant\n';
     }
 
-    // ── IndexedDB helpers for FileSystemFileHandle persistence ──────────────
+    // ── IndexedDB: persist FileSystemFileHandle across sessions ─────────────
     function openIdb() {
         return new Promise((resolve, reject) => {
             const req = indexedDB.open(IDB_DB, 1);
@@ -96,12 +96,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function getStoredHandle() {
         try {
-            const db  = await openIdb();
-            return await new Promise((resolve, reject) => {
+            const db = await openIdb();
+            return await new Promise((resolve) => {
                 const tx  = db.transaction(IDB_STORE, 'readonly');
-                const get = tx.objectStore(IDB_STORE).get(IDB_KEY);
-                get.onsuccess = () => resolve(get.result || null);
-                get.onerror   = () => resolve(null);
+                const req = tx.objectStore(IDB_STORE).get(IDB_KEY);
+                req.onsuccess = () => resolve(req.result || null);
+                req.onerror   = () => resolve(null);
             });
         } catch { return null; }
     }
@@ -109,11 +109,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function storeHandle(handle) {
         try {
             const db = await openIdb();
-            await new Promise((resolve, reject) => {
+            await new Promise((resolve) => {
                 const tx = db.transaction(IDB_STORE, 'readwrite');
                 tx.objectStore(IDB_STORE).put(handle, IDB_KEY);
                 tx.oncomplete = resolve;
-                tx.onerror    = () => reject(tx.error);
+                tx.onerror    = resolve;
             });
         } catch {}
     }
@@ -130,17 +130,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch {}
     }
 
-    // ── Stream model download → user's real filesystem ──────────────────────
-    async function downloadToDevice(modelUrl) {
-        const handle = await window.showSaveFilePicker({
-            suggestedName: 'BlinkBot_1.5B.gguf',
-            types: [{ description: 'BlinkBot model', accept: { 'application/octet-stream': ['.gguf'] } }],
-        });
+    // ── Get read permission on a stored handle ──────────────────────────────
+    async function permittedFile(handle) {
+        const perm = await handle.queryPermission({ mode: 'read' });
+        if (perm === 'granted') return handle.getFile();
+        const req = await handle.requestPermission({ mode: 'read' });
+        if (req === 'granted') return handle.getFile();
+        throw new Error('permission-denied');
+    }
 
-        const res   = await fetch(modelUrl);
-        const total = parseInt(res.headers.get('Content-Length') || '0');
-        let loaded  = 0;
-
+    // ── Stream model download → user-chosen file on real disk ───────────────
+    async function streamToFile(modelUrl, handle) {
+        const res      = await fetch(modelUrl);
+        const total    = parseInt(res.headers.get('Content-Length') || '0');
+        let   loaded   = 0;
         const writable = await handle.createWritable();
         const reader   = res.body.getReader();
         try {
@@ -160,23 +163,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             await writable.abort();
             throw e;
         }
-
-        await storeHandle(handle);
-        return handle;
     }
 
-    // ── Open stored handle → object URL for wllama ──────────────────────────
-    async function objectUrlFromHandle(handle) {
-        const perm = await handle.queryPermission({ mode: 'read' });
-        if (perm !== 'granted') {
-            const req = await handle.requestPermission({ mode: 'read' });
-            if (req !== 'granted') throw new Error('permission-denied');
-        }
-        const file = await handle.getFile();
-        return URL.createObjectURL(file);
-    }
-
-    // ── OPFS fallback: clear stale data ──────────────────────────────────────
+    // ── OPFS fallback: wipe stale cache ─────────────────────────────────────
     async function clearOpfsCache() {
         try {
             const root = await navigator.storage.getDirectory();
@@ -186,8 +175,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch {}
     }
 
-    // ── Load wllama engine + GGUF model ─────────────────────────────────────
-    async function initWllama(modelUrl) {
+    // ── Load wllama engine + GGUF ────────────────────────────────────────────
+    // prePickedHandle: FileSystemFileHandle passed from click handler (user gesture context)
+    // storedHandle:    FileSystemFileHandle loaded from IndexedDB (existing save)
+    async function initWllama(modelUrl, prePickedHandle, storedHandle) {
         updateProgress(0, 1, 'Loading engine...');
 
         const { Wllama } = await import(WLLAMA_CDN + '/esm/index.js');
@@ -196,43 +187,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             'multi-thread/wllama.wasm':  WLLAMA_CDN + '/src/multi-thread/wllama.wasm',
         });
 
-        const supportsFilePicker = ('showSaveFilePicker' in window);
-        let   objectUrl          = null;
+        // ── Path A: real filesystem (Chrome/Edge) ─────────────────────────
+        if (prePickedHandle || storedHandle) {
+            try {
+                let objectUrl;
 
-        // ── Path A: File System Access API (Chrome/Edge) ─────────────────────
-        if (supportsFilePicker) {
-            const stored = await getStoredHandle();
-
-            if (stored) {
-                // Already saved on device — load instantly
-                try {
+                if (storedHandle && !prePickedHandle) {
+                    // Already saved — load directly from stored file
                     updateProgress(1, 1, 'Loading from your device...');
-                    objectUrl = await objectUrlFromHandle(stored);
-                } catch (e) {
-                    // Handle stale (file moved/deleted) or denied — clear and re-download
-                    await clearStoredHandle();
-                    objectUrl = null;
+                    const file = await permittedFile(storedHandle);
+                    objectUrl  = URL.createObjectURL(file);
+                } else {
+                    // First time — stream download to the chosen location
+                    updateProgress(0, 1, 'Downloading to your device...');
+                    await streamToFile(modelUrl, prePickedHandle);
+                    await storeHandle(prePickedHandle);
+                    const file = await permittedFile(prePickedHandle);
+                    objectUrl  = URL.createObjectURL(file);
                 }
-            }
 
-            if (!objectUrl) {
-                // First time: stream download → user's chosen file location
-                updateProgress(0, 1, 'Choose where to save BlinkBot...');
-                try {
-                    const handle = await downloadToDevice(modelUrl);
-                    updateProgress(1, 1, 'Saved. Loading...');
-                    objectUrl = await objectUrlFromHandle(handle);
-                } catch (e) {
-                    if (e.name === 'AbortError') throw e;  // user cancelled picker
-                    // Download to device failed — fall through to OPFS
-                    console.warn('[blinkbot] device save failed, falling back to OPFS:', e);
-                    objectUrl = null;
-                }
-            }
-
-            if (objectUrl) {
+                updateProgress(1, 1, 'Loading model...');
                 wllama = makeWllama();
-                // allowOffline: false — file is on their real disk, no OPFS needed
                 await wllama.loadModelFromUrl(objectUrl, {
                     allowOffline: false,
                     progressCallback: ({ loaded, total }) => {
@@ -247,10 +222,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modelLoaded = true;
                 updateProgress(1, 1, 'Ready.');
                 return;
+
+            } catch (e) {
+                // Stale handle or permission denied — clear and fall through to OPFS
+                console.warn('[blinkbot] device file failed, falling back to OPFS:', e);
+                await clearStoredHandle();
             }
         }
 
-        // ── Path B: OPFS fallback (Firefox / device save failed) ─────────────
+        // ── Path B: OPFS (Firefox / fallback) ────────────────────────────
         if (navigator.storage?.persist) {
             try { await navigator.storage.persist(); } catch {}
         }
@@ -258,11 +238,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const loadOpts = {
             allowOffline: true,
             progressCallback: ({ loaded, total }) => {
-                const mb = (loaded / 1048576).toFixed(0);
                 updateProgress(loaded, total,
                     total > 0
-                        ? `${mb} / ${(total/1048576).toFixed(0)} MB`
-                        : `${mb} MB downloaded...`
+                        ? `${(loaded/1048576).toFixed(0)} / ${(total/1048576).toFixed(0)} MB`
+                        : `${(loaded/1048576).toFixed(0)} MB downloaded...`
                 );
             },
         };
@@ -312,7 +291,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return data.answer || null;
     }
 
-    // ── Detect route_to_server signal from BlinkBot ─────────────────────────
+    // ── Detect route_to_server signal ───────────────────────────────────────
     function parseBlinkResponse(text) {
         const clean = text.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
         if (/route_to_server/i.test(clean)) return { answer: null, route: true };
@@ -366,7 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (modelLoaded) {
                 showTyping('BlinkBot thinking...');
-                const raw              = await callBlinkLocal(message);
+                const raw               = await callBlinkLocal(message);
                 const { answer, route } = parseBlinkResponse(raw);
 
                 if (route || !answer) {
@@ -392,8 +371,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (final) {
                 addMessage(final, 'assistant', source);
-                history.push({ role: 'user',     content: message });
-                history.push({ role: 'assistant', content: final   });
+                history.push({ role: 'user',      content: message });
+                history.push({ role: 'assistant',  content: final   });
                 if (history.length > 20) history = history.slice(-20);
             } else {
                 addMessage('No response — try again.', 'assistant', null);
@@ -428,21 +407,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const startBtn = document.getElementById('blinkStartBtn');
     startBtn.addEventListener('click', async () => {
-        if (ctx.model_url) {
-            const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
+        if (!ctx.model_url) {
+            setModeLabel('server');
+            activateChat();
+            return;
+        }
 
-            // Check if already saved on device — swap button text accordingly
-            const stored = ('showSaveFilePicker' in window) ? await getStoredHandle() : null;
-            showLoadingUI(stored ? 'Loading BlinkBot from your device...' : 'Saving BlinkBot to your device &mdash; first time only.');
+        const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
+        const canUsePicker     = ('showSaveFilePicker' in window);
 
+        // Check IndexedDB for an existing saved file handle
+        const storedHandle = canUsePicker ? await getStoredHandle() : null;
+
+        // If no existing save, open the file picker NOW — must happen synchronously
+        // within the user gesture context before any other async work
+        let prePickedHandle = null;
+        if (canUsePicker && !storedHandle) {
             try {
-                await initWllama(absoluteModelUrl);
-                setModeLabel('local');
+                prePickedHandle = await window.showSaveFilePicker({
+                    suggestedName: 'BlinkBot_1.5B.gguf',
+                    types: [{ description: 'BlinkBot model', accept: { 'application/octet-stream': ['.gguf'] } }],
+                });
             } catch (e) {
-                console.warn('wllama load failed, server-only mode:', e);
-                setModeLabel('server');
+                if (e.name === 'AbortError') {
+                    // User cancelled the file picker — run in server-only mode
+                    setModeLabel('server');
+                    activateChat();
+                    return;
+                }
+                // showSaveFilePicker blocked (iframe, policy, etc.) — fall through to OPFS
             }
-        } else {
+        }
+
+        const subtitle = storedHandle
+            ? 'Loading BlinkBot from your device...'
+            : prePickedHandle
+                ? 'Saving BlinkBot to your device &mdash; first time only.'
+                : 'Loading &mdash; first time only.';
+
+        showLoadingUI(subtitle);
+
+        try {
+            await initWllama(absoluteModelUrl, prePickedHandle, storedHandle);
+            setModeLabel('local');
+        } catch (e) {
+            console.warn('wllama load failed, server-only mode:', e);
             setModeLabel('server');
         }
         activateChat();
