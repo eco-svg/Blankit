@@ -1071,42 +1071,55 @@ def _hf_fetch(method, url, token, stream=False, timeout=30):
 @pug_bp.route('/pug/install/blinkbot-model.gguf', methods=['GET', 'HEAD'])
 def install_blinkbot_model():
     """
-    Serve BlinkBot GGUF to the browser (wllama).
-    On HF Space: redirect browser directly to CDN — avoids streaming 900MB through
-    Flask which gets killed by the Space proxy timeout.
-    Local dev fallback: send_file from _BLINK_PATH.
+    Serve BlinkBot GGUF to the browser (wllama) with full range-request support.
+    Ranges let wllama chunk the download — each chunk is a short request that
+    won't get killed by the HF Space proxy timeout.
     """
-    from flask import request as flask_request, redirect as flask_redirect
+    from flask import request as flask_request, send_file
 
-    hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
-    token  = os.environ.get('HF_TOKEN', '')
-    on_hf  = os.path.isdir('/data')
+    if not os.path.exists(_BLINK_PATH):
+        return Response(status=404)
 
-    # On HF Space: resolve the CDN URL server-side and redirect the browser there.
-    # Browser downloads directly from CDN at full speed, no Flask proxy in the way.
-    if hf_url and on_hf:
+    file_size = os.path.getsize(_BLINK_PATH)
+
+    if flask_request.method == 'HEAD':
+        return Response(status=200, headers={
+            'Content-Type':   'application/octet-stream',
+            'Content-Length': str(file_size),
+            'Accept-Ranges':  'bytes',
+        })
+
+    # Range request support — wllama will use this to download in chunks
+    range_header = flask_request.headers.get('Range')
+    if range_header:
         try:
-            r = _hf_fetch('HEAD', hf_url, token, timeout=15)
-            print(f"[blink-proxy] HEAD → {r.status_code}  cdn={r.url[:60]}", flush=True)
-            if r.ok:
-                cdn_url = r.url  # final URL after redirect chain (CDN presigned URL)
-                if flask_request.method == 'HEAD':
-                    return Response(status=200, headers={
-                        'Content-Type':   'application/octet-stream',
-                        'Content-Length': r.headers.get('Content-Length', ''),
-                        'Accept-Ranges':  'bytes',
-                    })
-                return flask_redirect(cdn_url, code=302)
-            print(f"[blink-proxy] HEAD failed {r.status_code}: {r.text[:120]}", flush=True)
-        except Exception as e:
-            print(f"[blink-proxy] error: {e}", flush=True)
+            byte_range = range_header.replace('bytes=', '').split('-')
+            start = int(byte_range[0])
+            end   = int(byte_range[1]) if byte_range[1] else file_size - 1
+            length = end - start + 1
+            def chunk_gen():
+                with open(_BLINK_PATH, 'rb') as f:
+                    f.seek(start)
+                    remaining = length
+                    while remaining > 0:
+                        data = f.read(min(65536, remaining))
+                        if not data:
+                            break
+                        remaining -= len(data)
+                        yield data
+            return Response(chunk_gen(), status=206, headers={
+                'Content-Type':   'application/octet-stream',
+                'Content-Range':  f'bytes {start}-{end}/{file_size}',
+                'Content-Length': str(length),
+                'Accept-Ranges':  'bytes',
+            })
+        except Exception:
+            pass  # fall through to full file
 
-    # Local dev (or fallback): serve file directly from disk
-    if os.path.exists(_BLINK_PATH):
-        from flask import send_file
-        return send_file(_BLINK_PATH, mimetype='application/octet-stream')
-
-    return Response(status=404)
+    # Full file (wllama will use range requests if it needs chunking)
+    resp = send_file(_BLINK_PATH, mimetype='application/octet-stream', conditional=True)
+    resp.headers['Accept-Ranges'] = 'bytes'
+    return resp
 
 
 @pug_bp.route('/pug/install/blinkbot')
