@@ -7,31 +7,54 @@ from svg_models import db
 from svg_services.badge_service import seed_badges
 from extensions import limiter
 
+# /data is the HF persistent bucket mount; fall back to /app for local dev
+_DATA_DIR = '/data' if os.path.isdir('/data') else '/app'
 
-def _ensure_buddybot_model():
-    if os.environ.get('BUDDYBOT_ENABLED', 'false').lower() != 'true':
-        return
-    model_path = os.environ.get(
-        'BUDDYBOT_PATH',
-        '/app/pug_modals/buddybot/BuddyBot_8B_Final.Q4_K_M.gguf'
-    )
-    if os.path.exists(model_path):
-        return
-    repo_id = os.environ.get('BUDDYBOT_REPO', 'SomeWhatPug/blankit-buddybot')
-    token   = os.environ.get('HF_TOKEN')
-    print(f'[startup] BuddyBot model not found — downloading from {repo_id}...')
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+
+def _hf_download(repo_id, filename, dest_path, token):
+    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     try:
         from huggingface_hub import hf_hub_download
         hf_hub_download(
             repo_id=repo_id,
-            filename='BuddyBot_8B_Final.Q4_K_M.gguf',
-            local_dir=os.path.dirname(model_path),
+            filename=filename,
+            local_dir=os.path.dirname(dest_path),
             token=token,
         )
-        print('[startup] BuddyBot model ready.')
+        print(f'[startup] Downloaded {filename} → {dest_path}')
+        return True
     except Exception as e:
-        print(f'[startup] BuddyBot download failed: {e}')
+        print(f'[startup] Download failed ({repo_id}/{filename}): {e}')
+        return False
+
+
+def _ensure_buddybot_model():
+    default_path = os.path.join(_DATA_DIR, 'pug_modals', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
+    model_path   = os.environ.get('BUDDYBOT_PATH', default_path)
+    if os.path.exists(model_path):
+        print(f'[startup] BuddyBot found: {model_path}')
+        return
+    repo_id  = os.environ.get('BUDDYBOT_REPO',    'SomeWhatPug/Buddybot_veyra')
+    filename = os.environ.get('BUDDYBOT_FILENAME', 'BuddyBot_8B_Final.Q4_K_M.gguf')
+    token    = os.environ.get('HF_TOKEN')
+    print(f'[startup] BuddyBot not found — downloading from {repo_id}/{filename} ...')
+    _hf_download(repo_id, filename, model_path, token)
+
+
+def _ensure_blinkbot_model():
+    repo_id = os.environ.get('BLINKBOT_REPO', '')
+    if not repo_id:
+        return  # wllama proxy handles browser delivery; skip server-side download
+    default_path = os.path.join(_DATA_DIR, 'pug_modals', 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
+    model_path   = os.environ.get('BLINKBOT_PATH', default_path)
+    if os.path.exists(model_path):
+        print(f'[startup] BlinkBot found: {model_path}')
+        return
+    filename = os.environ.get('BLINKBOT_FILENAME', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
+    token    = os.environ.get('HF_TOKEN')
+    print(f'[startup] BlinkBot not found — downloading from {repo_id}/{filename} ...')
+    _hf_download(repo_id, filename, model_path, token)
+
 
 # Blueprints
 from routes.divyanshu_routes.droute import divyanshu_bp
@@ -55,7 +78,7 @@ def _migrate_schema():
         try:
             conn.execute(text('ALTER TABLE user_badges ALTER COLUMN user_id SET NOT NULL'))
         except Exception:
-            pass  # SQLite doesn't support this; PostgreSQL (Supabase) does
+            pass  # SQLite doesn't support this; PostgreSQL does
 
 
 def create_app():
@@ -75,28 +98,23 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB upload cap
-    # SINGLE DB INIT (important)
     db.init_app(app)
 
-    # Mail + rate limiter
     mail.init_app(app)
     limiter.init_app(app)
 
-    # Import SVG routes
     from routes.svg_routes.svg_route import svg
     from routes.svg_routes.api_route import api
     from routes.auth_route import auth, init_mail
 
     init_mail(mail)
 
-    # Register ALL systems
     app.register_blueprint(svg)
     app.register_blueprint(api)
     app.register_blueprint(auth)
     app.register_blueprint(divyanshu_bp)
     app.register_blueprint(pug_bp)
 
-    # Init DB
     with app.app_context():
         db.create_all()
         _migrate_schema()
@@ -106,6 +124,7 @@ def create_app():
 
 
 if __name__ == '__main__':
+    _ensure_blinkbot_model()
     _ensure_buddybot_model()
     app = create_app()
     port = int(os.environ.get('PORT', 7860))

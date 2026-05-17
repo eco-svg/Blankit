@@ -22,7 +22,8 @@ try:
 except ImportError:
     _LLAMA_OK = False
 
-_MODELS_DIR = os.path.join(os.path.dirname(__file__), '..', '..', 'pug_modals')
+_DATA_DIR   = '/data' if os.path.isdir('/data') else os.path.join(os.path.dirname(__file__), '..', '..')
+_MODELS_DIR = os.path.join(_DATA_DIR, 'pug_modals')
 _BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf'))
 _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf'))
 
