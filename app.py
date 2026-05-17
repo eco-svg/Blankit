@@ -28,6 +28,20 @@ def _hf_download(repo_id, filename, dest_path, token):
         return False
 
 
+def _ensure_blinkbot_model():
+    """Download BlinkBot GGUF to /data so the proxy can serve it directly to the browser."""
+    default_path = os.path.join(_DATA_DIR, 'pug_modals', 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
+    model_path   = os.environ.get('BLINKBOT_PATH', default_path)
+    if os.path.exists(model_path):
+        print(f'[startup] BlinkBot found: {model_path}')
+        return
+    repo_id  = os.environ.get('BLINKBOT_REPO',    'SomeWhatPug/Buddybot_veyra')
+    filename = os.environ.get('BLINKBOT_FILENAME', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
+    token    = os.environ.get('HF_TOKEN')
+    print(f'[startup] BlinkBot not found — downloading from {repo_id}/{filename} ...')
+    _hf_download(repo_id, filename, model_path, token)
+
+
 def _ensure_buddybot_model():
     default_path = os.path.join(_DATA_DIR, 'pug_modals', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
     model_path   = os.environ.get('BUDDYBOT_PATH', default_path)
@@ -110,6 +124,7 @@ def create_app():
 
 
 if __name__ == '__main__':
+    _ensure_blinkbot_model()
     _ensure_buddybot_model()
     app = create_app()
     port = int(os.environ.get('PORT', 7860))
