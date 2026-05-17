@@ -181,12 +181,14 @@ def _call_groq_chat(message, session_history, user_context):
         ctx_lines.append('  None')
     ctx_lines.append('────────────────────────────────────────')
 
-    # Groq's llama-3.3-70b ignores <think> tag instructions and outputs reasoning as prose.
-    # Override it explicitly at the top of the system prompt.
+    # Groq's llama-3.3-70b doesn't natively use <think> tags — it outputs reasoning as prose.
+    # Force a [REPLY] marker so we can reliably split off preamble.
     groq_override = (
-        "CRITICAL: Do NOT output your reasoning steps, thinking process, or numbered analysis. "
-        "Do NOT start with 'First,', 'Second,', or any step-by-step preamble. "
-        "Respond directly in BuddyBot's voice. Your answer is the first thing you write.\n\n"
+        "MANDATORY FORMAT: Before your response to the user, you may think internally. "
+        "Then write the token [REPLY] on its own line, followed immediately by your response. "
+        "ONLY the text after [REPLY] is shown to the user. "
+        "If you write analysis, context-checking, or any reasoning before [REPLY], it is discarded. "
+        "Example:\n[REPLY]\nYour actual response here.\n\n"
     )
     messages = [{'role': 'system', 'content': groq_override + BUDDYBOT_SYSTEM + '\n\n' + '\n'.join(ctx_lines)}]
     for h in (session_history or [])[-10:]:
@@ -205,11 +207,9 @@ def _call_groq_chat(message, session_history, user_context):
         if r.ok:
             raw   = r.json()['choices'][0]['message']['content']
             clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
-            # Strip leaked numbered reasoning prose (e.g. "First, I need to...\nSecond,...")
-            clean = re.sub(
-                r'^(?:(?:First|Second|Third|Fourth|Fifth|Sixth|Seventh|Eighth)[,.].*\n?)+\s*',
-                '', clean, flags=re.MULTILINE | re.IGNORECASE
-            ).strip()
+            # Extract everything after [REPLY] marker; fall back to full clean if missing
+            if '[REPLY]' in clean:
+                clean = clean.split('[REPLY]', 1)[-1].strip()
             return clean or raw.strip()
         current_app.logger.error(f"Groq chat {r.status_code}: {r.text[:200]}")
     except Exception as e:
@@ -684,7 +684,7 @@ def blinkbot_context():
     ctx_block    = _build_context_block(user_context)
     # Always serve model through our proxy so HF_TOKEN stays server-side
     hf_url    = os.environ.get('BLINKBOT_MODEL_URL')
-    model_url = '/pug/install/blinkbot-model' if (hf_url or os.path.exists(_BLINK_PATH)) else None
+    model_url = '/pug/install/blinkbot-model.gguf' if (hf_url or os.path.exists(_BLINK_PATH)) else None
 
     return jsonify({
         'system_prompt': BLINKBOT_SYSTEM + ctx_block,
@@ -774,7 +774,7 @@ echo ""
     return r
 
 
-@pug_bp.route('/pug/install/blinkbot-model')
+@pug_bp.route('/pug/install/blinkbot-model.gguf')
 def install_blinkbot_model():
     # Local file (dev)
     if os.path.exists(_BLINK_PATH):

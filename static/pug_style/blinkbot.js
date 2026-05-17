@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         chatState.style.display       = 'flex';
         chatState.style.flexDirection = 'column';
         chatState.style.flex          = '1';
+        chatState.style.minHeight     = '0';
         input.focus();
     }
 

@@ -1133,6 +1133,16 @@ div.infinite-canvas video {
     box-shadow: 0 8px 32px rgba(74, 122, 170, 0.15) !important;
 }
 
+/* height:0 + flex-grow:1 forces the browser to size from available space, not content */
+.buddybot-main .chat-window {
+    height: 0;
+}
+
+#blinkChatState {
+    min-height: 0;
+    overflow: hidden;
+}
+
 .buddybot-main .msg-ai {
     background: linear-gradient(135deg, rgba(74, 122, 170, 0.1), rgba(74, 122, 170, 0.02)) !important;
     border-color: rgba(74, 122, 170, 0.2) !important;
