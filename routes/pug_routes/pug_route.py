@@ -467,17 +467,41 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Never infer skills from active goals. "
         "   Return only skills with evidence — 0 to 5 max. "
         "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'.\n"
-        "4. Simple English throughout. Common words only.\n\n"
+        "   For each skill, add an optional 'note' field (max 8 words) when the rank is E or F "
+        "   to explain what data would help rank it better (e.g. 'log distance & pace for better rank').\n"
+        "4. RANKING — use world population benchmarks for each skill domain:\n"
+        "   S+ = Beyond world record / no one on earth can match\n"
+        "   S  = Top 0.01% worldwide (elite of elite)\n"
+        "   S- = Top 0.1% worldwide\n"
+        "   A+ = Top 1% worldwide\n"
+        "   A  = Top 1–5% worldwide\n"
+        "   A- = Top 5–10% worldwide\n"
+        "   B+ = Top 10–20% worldwide\n"
+        "   B  = Top 20–35% worldwide\n"
+        "   B- = Top 35–50% worldwide (above median)\n"
+        "   C+ = 50–65th percentile\n"
+        "   C  = Average / median (around 50th percentile)\n"
+        "   C- = Below average\n"
+        "   D+ = Noticeably below average\n"
+        "   D  = Low\n"
+        "   D- = Very low\n"
+        "   E  = Just started / beginner (< ~3 months or very little evidence)\n"
+        "   F  = No real evidence — skill barely exists yet\n"
+        "   RANKING EXAMPLES: Running — world average 5K is ~30 min. Sub-20 = A+. "
+        "   Sub-25 = A. Sub-30 = B. Sub-40 = C. Just started (<3 months, no pace data) = E.\n"
+        "   If you cannot determine rank from available data, use E and add a note asking "
+        "   for the data needed (pace, time, distance, frequency, etc.).\n"
+        "   DO NOT give high ranks because a goal sounds ambitious. Only evidence counts.\n"
+        "5. Simple English throughout. Common words only.\n\n"
         "Output ONLY valid JSON:\n"
         '{"class_official":"role based on achievements (Blank Slate if none)",'
-        '"class_playful":"same role with flair and personality",'
-        '"personality":"2-4 word archetype from behavior/patterns",'
+        '"class_playful":"same role with flair",'
+        '"personality":"2-4 word archetype",'
         '"personality_desc":"One sentence about their mindset.",'
         '"bio":"One sentence. Who they actually are right now.",'
         '"skills":['
-        '{"name":"plain-word skill from evidence","rank":"A"}'
-        ']}\n'
-        "Ranks: S+ proven mastery, S strong evidence, A solid, B developing, C just starting."
+        '{"name":"plain skill name","rank":"E","note":"optional — what data would improve this rank"}'
+        ']}'
     )
 
     def _parse_json(raw):
@@ -757,7 +781,12 @@ def get_consistency():
             Note.is_deleted == False, Note.is_finished == True,
             Note.updated_at >= start, Note.updated_at <= end
         ).count()
-        result.append({'day': day.strftime('%a'), 'added': added, 'finished': finished})
+        dropped = Note.query.filter(
+            Note.user_id == session['user_id'], Note.entry_type == 'goal',
+            Note.is_deleted == True, Note.is_finished == False,
+            Note.updated_at >= start, Note.updated_at <= end
+        ).count()
+        result.append({'day': day.strftime('%a'), 'added': added, 'finished': finished, 'dropped': dropped})
     return jsonify(result)
 
 

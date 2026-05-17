@@ -9,25 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const personalityDesc = document.getElementById('statPersonalityDesc');
     const bioEl           = document.getElementById('statBio');
     const skillsListEl    = document.getElementById('statSkillsList');
-    const officialBtn     = document.getElementById('classModeOfficial');
-    const playfulBtn      = document.getElementById('classModePlayful');
     const rankBadgeEl     = document.getElementById('headerRankBadge');
-
     const skillsMainList  = document.getElementById('skillsMainList');
 
-    let sheet     = null;
-    let classMode = 'official';
+    let sheet = null;
 
+    // Full rank ladder — all caps
     const RANK_COLORS = {
         'S+': '#ffd700',
         'S':  '#ffb700',
+        'S-': '#ffa500',
+        'A+': '#ff7c4d',
         'A':  '#ff8c42',
+        'A-': '#e8854a',
+        'B+': '#5a8fc8',
         'B':  '#4a7aaa',
+        'B-': '#4070a0',
+        'C+': '#8ac888',
         'C':  '#78b878',
+        'C-': '#68a068',
+        'D+': '#a0a0a0',
         'D':  '#888888',
-        'E':  '#c85a2a',
-        'F':  '#c85a2a',
+        'D-': '#707070',
+        'E':  '#c06030',
+        'F':  '#803010',
     };
+
+    const RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
 
     // ── Modal open/close ────────────────────────────────────────────────────
     btn?.addEventListener('click', () => {
@@ -44,35 +52,25 @@ document.addEventListener('DOMContentLoaded', () => {
     closeBtn?.addEventListener('click', () => modal.classList.add('hidden'));
     window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
 
-    officialBtn?.addEventListener('click', () => {
-        classMode = 'official';
-        officialBtn.classList.add('active');
-        playfulBtn.classList.remove('active');
-        renderClass();
-    });
-
-    playfulBtn?.addEventListener('click', () => {
-        classMode = 'playful';
-        playfulBtn.classList.add('active');
-        officialBtn.classList.remove('active');
-        renderClass();
-    });
-
     // ── Render helpers ──────────────────────────────────────────────────────
-    function renderClass() {
-        if (!sheet || !classNameEl) return;
-        classNameEl.textContent = (classMode === 'official'
-            ? sheet.class_official
-            : sheet.class_playful) || '—';
+    function normaliseRank(raw) {
+        if (!raw) return 'F';
+        const r = raw.trim().toUpperCase();
+        return RANK_ORDER.includes(r) ? r : 'F';
     }
 
     function skillRowHTML(s) {
-        const rank  = (s.rank || 'C').toUpperCase();
+        const rank  = normaliseRank(s.rank);
         const color = RANK_COLORS[rank] || '#888';
         const glow  = rank === 'S+' ? `text-shadow:0 0 10px ${color};` : '';
+        const note  = s.note
+            ? `<span class="skill-note">${s.note}</span>` : '';
         return `
             <div class="skill-row">
-                <span class="skill-name">${s.name || '—'}</span>
+                <span class="skill-name-wrap">
+                    <span class="skill-name">${s.name || '—'}</span>
+                    ${note}
+                </span>
                 <span class="rank-badge" style="color:${color};${glow}">${rank}</span>
             </div>`;
     }
@@ -88,9 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function netRank(skills) {
         if (!skills || !skills.length) return null;
-        const order = ['S+','S','A','B','C','D','E','F'];
-        for (const r of order) {
-            if (skills.some(s => (s.rank || '').toUpperCase() === r)) return r;
+        for (const r of RANK_ORDER) {
+            if (skills.some(s => normaliseRank(s.rank) === r)) return r;
         }
         return null;
     }
@@ -98,20 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateRankBadge() {
         if (!rankBadgeEl || !sheet) return;
         const r = netRank(sheet.skills);
-        if (!r) { rankBadgeEl.classList.remove('visible'); return; }
+        if (!r || r === 'F') { rankBadgeEl.classList.remove('visible'); return; }
         const color = RANK_COLORS[r] || '#888';
         rankBadgeEl.textContent = r;
         rankBadgeEl.style.color = color;
         rankBadgeEl.style.borderColor = color;
-        if (r === 'S+') rankBadgeEl.style.textShadow = `0 0 8px ${color}`;
-        else rankBadgeEl.style.textShadow = '';
+        rankBadgeEl.style.textShadow = r === 'S+' ? `0 0 8px ${color}` : '';
         rankBadgeEl.classList.add('visible');
     }
 
     function renderModal() {
         if (!sheet) return;
-        renderClass();
-        if (personalityEl)   personalityEl.textContent   = sheet.personality      || '—';
+        if (classNameEl)     classNameEl.textContent     = sheet.class_official || '—';
+        if (personalityEl)   personalityEl.textContent   = sheet.personality    || '—';
         if (personalityDesc) personalityDesc.textContent = sheet.personality_desc || '';
         if (bioEl)           bioEl.textContent           = sheet.bio || '';
         renderSkills(sheet.skills, skillsListEl);
@@ -128,12 +124,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Fetch stats ─────────────────────────────────────────────────────────
     async function fetchStats(forceRefresh) {
-        if (classNameEl)    classNameEl.textContent    = 'Analyzing...';
-        if (personalityEl)  personalityEl.textContent  = '—';
+        if (classNameEl)     classNameEl.textContent     = 'Analyzing...';
+        if (personalityEl)   personalityEl.textContent   = '—';
         if (personalityDesc) personalityDesc.textContent = '';
-        if (bioEl)          bioEl.textContent          = '';
-        if (skillsListEl)   skillsListEl.innerHTML     = '<div class="skill-loading">Scanning data...</div>';
-        if (skillsMainList) skillsMainList.innerHTML   = '<div class="skill-loading">Scanning...</div>';
+        if (bioEl)           bioEl.textContent           = '';
+        if (skillsListEl)    skillsListEl.innerHTML      = '<div class="skill-loading">Scanning data...</div>';
+        if (skillsMainList)  skillsMainList.innerHTML    = '<div class="skill-loading">Scanning...</div>';
 
         try {
             const url = '/pug/api/stats' + (forceRefresh ? '?refresh=true' : '');
@@ -156,12 +152,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const now  = new Date();
         const next = new Date(now);
         next.setDate(now.getDate() + 1);
-        next.setHours(0, 0, 5, 0); // 00:00:05 next day
-        const ms = next - now;
+        next.setHours(0, 0, 5, 0);
         setTimeout(() => {
             fetchStats(true);
             scheduleMidnightRefresh();
-        }, ms);
+        }, next - now);
     }
     scheduleMidnightRefresh();
 
