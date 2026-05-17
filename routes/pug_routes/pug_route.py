@@ -686,11 +686,13 @@ def blinkbot_context():
     hf_url    = os.environ.get('BLINKBOT_MODEL_URL')
     model_url = '/pug/install/blinkbot-model.gguf' if (hf_url or os.path.exists(_BLINK_PATH)) else None
 
-    return jsonify({
+    resp = jsonify({
         'system_prompt': BLINKBOT_SYSTEM + ctx_block,
         'user_context':  user_context,
         'model_url':     model_url,
     })
+    resp.headers['Cache-Control'] = 'no-store'
+    return resp
 
 
 @pug_bp.route('/pug/download/blinkbot-model')

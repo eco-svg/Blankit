@@ -1125,6 +1125,10 @@ div.infinite-canvas video {
 .buddybot-main {
     background: rgba(74, 122, 170, 0.12) !important;
     border-color: rgba(74,122,170,0.15) !important;
+}
+
+/* Double-class selector beats .card { overflow: visible !important } */
+.card.buddybot-main {
     overflow: hidden !important;
 }
 
@@ -1133,14 +1137,20 @@ div.infinite-canvas video {
     box-shadow: 0 8px 32px rgba(74, 122, 170, 0.15) !important;
 }
 
-/* height:0 + flex-grow:1 forces the browser to size from available space, not content */
-.buddybot-main .chat-window {
-    height: 0;
-}
-
 #blinkChatState {
     min-height: 0;
     overflow: hidden;
+}
+
+/* height:0 forces flex to size from available space; max-height is the hard fallback */
+.buddybot-main .chat-window {
+    height: 0;
+    max-height: 560px;
+}
+
+/* Notes card: clip overflowing images so they don't bleed into adjacent cards */
+.card.notes {
+    overflow: hidden !important;
 }
 
 .buddybot-main .msg-ai {
