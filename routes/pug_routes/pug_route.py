@@ -27,8 +27,23 @@ _MODELS_DIR = os.path.join(_DATA_DIR, 'pug_modals')
 _BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf'))
 _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf'))
 
-_buddybot_model = None
+_blinkbot_model  = None
+_buddybot_model  = None
 _BUDDYBOT_ENABLED = os.environ.get('BUDDYBOT_ENABLED', 'false').lower() == 'true'
+
+
+def _get_blinkbot():
+    global _blinkbot_model
+    if _blinkbot_model is None:
+        _blinkbot_model = Llama(
+            model_path=_BLINK_PATH,
+            n_ctx=2048,
+            n_threads=os.cpu_count() or 4,
+            chat_format='chatml',
+            verbose=False,
+            use_mlock=False,
+        )
+    return _blinkbot_model
 
 
 def _get_buddybot():
@@ -340,6 +355,34 @@ def _call_buddybot(context_packet, user_context):
     clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL)
     clean = re.sub(r'<groq_search>.*?</groq_search>', '', clean, flags=re.DOTALL)
     return clean.strip()
+
+def _call_blinkbot_server(message, session_history, user_context, user_id=None):
+    ctx_block = _build_context_block(user_context)
+
+    if user_id:
+        relevant     = _search_chat_history(user_id, message)
+        memory_block = _format_memory_block(relevant)
+        if memory_block:
+            ctx_block += '\n\n' + memory_block
+
+    model    = _get_blinkbot()
+    messages = [{'role': 'system', 'content': BLINKBOT_SYSTEM + ctx_block}]
+    for h in (session_history or [])[-8:]:
+        if h.get('role') in ('user', 'assistant') and h.get('content'):
+            messages.append({'role': h['role'], 'content': h['content']})
+    messages.append({'role': 'user', 'content': message})
+
+    out   = model.create_chat_completion(
+        messages=messages,
+        max_tokens=512,
+        temperature=0.7,
+        stop=['<|im_end|>', '</s>'],
+    )
+    raw   = out['choices'][0]['message']['content']
+    clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+    clean = re.sub(r'<tool_call>.*?</tool_call>', '', clean, flags=re.DOTALL).strip()
+    return clean
+
 
 _stats_cache = {}  # {user_id: {'ts': float, 'sheet': dict}}
 
@@ -815,46 +858,60 @@ def blinkbot_chat():
     err = login_required_api()
     if err: return err
 
-    data    = request.get_json()
-    message = data.get('message', '').strip()
-    history = data.get('history', [])
+    data     = request.get_json()
+    message  = data.get('message', '').strip()
+    history  = data.get('history', [])
+    user_id  = session['user_id']
 
     if not message:
         return jsonify({'error': 'Empty message'}), 400
 
     try:
-        user_context = _assemble_user_context(session['user_id'], session.get('username', ''))
+        user_context = _assemble_user_context(user_id, session.get('username', ''))
+        final = None
 
-        # Premium path: BuddyBot — only if already loaded in memory (avoid cold-load timeout)
-        # TODO: add user.is_premium check when payment is wired
-        use_buddybot = _LLAMA_OK and _BUDDYBOT_ENABLED and _buddybot_model is not None
-        if use_buddybot:
-            goals_str = ', '.join(user_context['active_goals']) or 'none'
-            notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
-            packet = (
-                f"situation_type: general\n"
-                f"user_signals: username={user_context['username']}, "
-                f"dream={user_context['dream'] or 'not set'}, "
-                f"active_goals=[{goals_str}]\n"
-                f"recent_pattern: recent notes titled [{notes_str}]\n"
-                f"question_core: {message}\n"
-                f"task: answer_directly"
-            )
-            final = _call_buddybot(packet, user_context)
-        else:
-            # Free path: Groq with assembled user context + session history
+        # Tier 1: BlinkBot 1.5B — fast, handles simple queries directly
+        if _LLAMA_OK and os.path.exists(_BLINK_PATH):
+            try:
+                raw = _call_blinkbot_server(message, history, user_context, user_id)
+                if raw and 'route_to_server' not in raw.lower():
+                    final = raw
+                # if route_to_server signal, fall through to BuddyBot / Groq
+            except Exception as e:
+                print(f'[blinkbot] server error: {e}', flush=True)
+
+        # Tier 2: BuddyBot 8B — complex queries
+        if not final and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
+            try:
+                goals_str = ', '.join(user_context['active_goals']) or 'none'
+                notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
+                packet = (
+                    f"situation_type: general\n"
+                    f"user_signals: username={user_context['username']}, "
+                    f"dream={user_context['dream'] or 'not set'}, "
+                    f"active_goals=[{goals_str}]\n"
+                    f"recent_pattern: recent notes titled [{notes_str}]\n"
+                    f"question_core: {message}\n"
+                    f"task: answer_directly"
+                )
+                final = _call_buddybot(packet, user_context)
+            except Exception as e:
+                print(f'[buddybot] relay error: {e}', flush=True)
+
+        # Tier 3: Groq cloud fallback
+        if not final:
             final = _call_groq_chat(message, history, user_context, user_id=user_id)
 
         if not final:
             return jsonify({'error': 'AI unavailable'}), 503
 
         from .chat_logger import append_chat_entry
-        append_chat_entry(session['user_id'], message, final)
+        append_chat_entry(user_id, message, final)
 
         return jsonify({'answer': final, 'routed': True})
 
     except Exception as e:
-        current_app.logger.error(f"BlinkBot relay error: {e}")
+        current_app.logger.error(f'BlinkBot relay error: {e}')
         return jsonify({'error': 'AI unavailable'}), 503
 
 
