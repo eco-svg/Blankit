@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const modeLabel     = document.getElementById('blinkModeLabel');
 
     const WLLAMA_CDN = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2';
+    const IDB_DB     = 'blinkbot-v1';
+    const IDB_STORE  = 'handles';
+    const IDB_KEY    = 'model-file-handle';
 
     let history      = [];
     let systemPrompt = '';
@@ -37,14 +40,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ── Model loading UI ────────────────────────────────────────────────────
-    function showLoadingUI() {
+    function showLoadingUI(subtitle) {
         downloadState.innerHTML = `
             <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
                 <div style="font-size:1.3rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">
                     BLINK<span style="color:var(--text-dim);">BOT</span>
                 </div>
                 <p style="color:var(--text);font-size:0.82rem;font-weight:700;line-height:1.6;margin:0;letter-spacing:0.02em;">
-                    Loading to your device — first time only.
+                    ${subtitle || 'Saving to your device &mdash; first time only.'}
                 </p>
                 <div style="background:rgba(255,255,255,0.06);border-radius:6px;height:5px;overflow:hidden;">
                     <div id="blinkBar" style="height:100%;width:0%;background:#4a7aaa;transition:width 0.25s ease;"></div>
@@ -60,11 +63,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         const label = document.getElementById('blinkLoadMsg');
         if (bar) {
             if (total > 0) {
-                bar.style.width = Math.round((loaded / total) * 100) + '%';
+                bar.style.width     = Math.round((loaded / total) * 100) + '%';
+                bar.style.opacity   = '1';
+                bar.style.animation = '';
             } else if (loaded > 0) {
-                // No Content-Length from CDN — show indeterminate pulse
-                bar.style.width = '100%';
-                bar.style.opacity = '0.4';
+                bar.style.width     = '100%';
+                bar.style.opacity   = '0.4';
                 bar.style.animation = 'blinkPulse 1.4s ease-in-out infinite';
             }
         }
@@ -80,7 +84,99 @@ document.addEventListener('DOMContentLoaded', async () => {
         return p + '<|im_start|>assistant\n';
     }
 
-    // ── Clear all OPFS data for this origin ────────────────────────────────
+    // ── IndexedDB helpers for FileSystemFileHandle persistence ──────────────
+    function openIdb() {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(IDB_DB, 1);
+            req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+            req.onsuccess       = e => resolve(e.target.result);
+            req.onerror         = e => reject(e.target.error);
+        });
+    }
+
+    async function getStoredHandle() {
+        try {
+            const db  = await openIdb();
+            return await new Promise((resolve, reject) => {
+                const tx  = db.transaction(IDB_STORE, 'readonly');
+                const get = tx.objectStore(IDB_STORE).get(IDB_KEY);
+                get.onsuccess = () => resolve(get.result || null);
+                get.onerror   = () => resolve(null);
+            });
+        } catch { return null; }
+    }
+
+    async function storeHandle(handle) {
+        try {
+            const db = await openIdb();
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(IDB_STORE, 'readwrite');
+                tx.objectStore(IDB_STORE).put(handle, IDB_KEY);
+                tx.oncomplete = resolve;
+                tx.onerror    = () => reject(tx.error);
+            });
+        } catch {}
+    }
+
+    async function clearStoredHandle() {
+        try {
+            const db = await openIdb();
+            await new Promise((resolve) => {
+                const tx = db.transaction(IDB_STORE, 'readwrite');
+                tx.objectStore(IDB_STORE).delete(IDB_KEY);
+                tx.oncomplete = resolve;
+                tx.onerror    = resolve;
+            });
+        } catch {}
+    }
+
+    // ── Stream model download → user's real filesystem ──────────────────────
+    async function downloadToDevice(modelUrl) {
+        const handle = await window.showSaveFilePicker({
+            suggestedName: 'BlinkBot_1.5B.gguf',
+            types: [{ description: 'BlinkBot model', accept: { 'application/octet-stream': ['.gguf'] } }],
+        });
+
+        const res   = await fetch(modelUrl);
+        const total = parseInt(res.headers.get('Content-Length') || '0');
+        let loaded  = 0;
+
+        const writable = await handle.createWritable();
+        const reader   = res.body.getReader();
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                await writable.write(value);
+                loaded += value.byteLength;
+                updateProgress(loaded, total,
+                    total > 0
+                        ? `${(loaded/1048576).toFixed(0)} / ${(total/1048576).toFixed(0)} MB`
+                        : `${(loaded/1048576).toFixed(0)} MB saved...`
+                );
+            }
+            await writable.close();
+        } catch (e) {
+            await writable.abort();
+            throw e;
+        }
+
+        await storeHandle(handle);
+        return handle;
+    }
+
+    // ── Open stored handle → object URL for wllama ──────────────────────────
+    async function objectUrlFromHandle(handle) {
+        const perm = await handle.queryPermission({ mode: 'read' });
+        if (perm !== 'granted') {
+            const req = await handle.requestPermission({ mode: 'read' });
+            if (req !== 'granted') throw new Error('permission-denied');
+        }
+        const file = await handle.getFile();
+        return URL.createObjectURL(file);
+    }
+
+    // ── OPFS fallback: clear stale data ──────────────────────────────────────
     async function clearOpfsCache() {
         try {
             const root = await navigator.storage.getDirectory();
@@ -94,27 +190,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function initWllama(modelUrl) {
         updateProgress(0, 1, 'Loading engine...');
 
-        // Request persistent storage — prevents eviction and can raise quota
-        if (navigator.storage?.persist) {
-            try { await navigator.storage.persist(); } catch {}
-        }
-
         const { Wllama } = await import(WLLAMA_CDN + '/esm/index.js');
-
         const makeWllama = () => new Wllama({
             'single-thread/wllama.wasm': WLLAMA_CDN + '/src/single-thread/wllama.wasm',
             'multi-thread/wllama.wasm':  WLLAMA_CDN + '/src/multi-thread/wllama.wasm',
         });
 
+        const supportsFilePicker = ('showSaveFilePicker' in window);
+        let   objectUrl          = null;
+
+        // ── Path A: File System Access API (Chrome/Edge) ─────────────────────
+        if (supportsFilePicker) {
+            const stored = await getStoredHandle();
+
+            if (stored) {
+                // Already saved on device — load instantly
+                try {
+                    updateProgress(1, 1, 'Loading from your device...');
+                    objectUrl = await objectUrlFromHandle(stored);
+                } catch (e) {
+                    // Handle stale (file moved/deleted) or denied — clear and re-download
+                    await clearStoredHandle();
+                    objectUrl = null;
+                }
+            }
+
+            if (!objectUrl) {
+                // First time: stream download → user's chosen file location
+                updateProgress(0, 1, 'Choose where to save BlinkBot...');
+                try {
+                    const handle = await downloadToDevice(modelUrl);
+                    updateProgress(1, 1, 'Saved. Loading...');
+                    objectUrl = await objectUrlFromHandle(handle);
+                } catch (e) {
+                    if (e.name === 'AbortError') throw e;  // user cancelled picker
+                    // Download to device failed — fall through to OPFS
+                    console.warn('[blinkbot] device save failed, falling back to OPFS:', e);
+                    objectUrl = null;
+                }
+            }
+
+            if (objectUrl) {
+                wllama = makeWllama();
+                // allowOffline: false — file is on their real disk, no OPFS needed
+                await wllama.loadModelFromUrl(objectUrl, {
+                    allowOffline: false,
+                    progressCallback: ({ loaded, total }) => {
+                        updateProgress(loaded, total,
+                            total > 0
+                                ? `${(loaded/1048576).toFixed(0)} / ${(total/1048576).toFixed(0)} MB`
+                                : `${(loaded/1048576).toFixed(0)} MB...`
+                        );
+                    },
+                });
+                URL.revokeObjectURL(objectUrl);
+                modelLoaded = true;
+                updateProgress(1, 1, 'Ready.');
+                return;
+            }
+        }
+
+        // ── Path B: OPFS fallback (Firefox / device save failed) ─────────────
+        if (navigator.storage?.persist) {
+            try { await navigator.storage.persist(); } catch {}
+        }
+
         const loadOpts = {
             allowOffline: true,
             progressCallback: ({ loaded, total }) => {
                 const mb = (loaded / 1048576).toFixed(0);
-                if (total > 0) {
-                    updateProgress(loaded, total, `${mb} / ${(total/1048576).toFixed(0)} MB`);
-                } else {
-                    updateProgress(loaded, 0, `${mb} MB downloaded...`);
-                }
+                updateProgress(loaded, total,
+                    total > 0
+                        ? `${mb} / ${(total/1048576).toFixed(0)} MB`
+                        : `${mb} MB downloaded...`
+                );
             },
         };
 
@@ -125,7 +274,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             await wllama.loadModelFromUrl(modelUrl, loadOpts);
         } catch (e) {
             if (e.name === 'QuotaExceededError') {
-                // Old corrupted/partial data is filling OPFS — wipe it and retry
                 updateProgress(0, 0, 'Clearing old cache, retrying...');
                 await clearOpfsCache();
                 wllama = makeWllama();
@@ -278,13 +426,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     systemPrompt = ctx.system_prompt || '';
     userCtx      = ctx.user_context  || {};
 
-    // Show the premium wall landing screen — user clicks to proceed
     const startBtn = document.getElementById('blinkStartBtn');
     startBtn.addEventListener('click', async () => {
         if (ctx.model_url) {
-            // wllama runs in a Web Worker — relative URLs don't resolve there, must be absolute
             const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
-            showLoadingUI();
+
+            // Check if already saved on device — swap button text accordingly
+            const stored = ('showSaveFilePicker' in window) ? await getStoredHandle() : null;
+            showLoadingUI(stored ? 'Loading BlinkBot from your device...' : 'Saving BlinkBot to your device &mdash; first time only.');
+
             try {
                 await initWllama(absoluteModelUrl);
                 setModeLabel('local');
