@@ -124,34 +124,35 @@
           </div>
 
           <!-- State A: pre-chat landing / premium wall -->
-          <div id="blinkDownloadState" style="flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:12px; padding:18px 20px; overflow-y:auto;">
+          <div id="blinkDownloadState" style="flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:11px; padding:18px 20px; overflow-y:auto;">
 
               <div style="font-size:1.25rem; font-family:var(--font-mono); font-weight:700; letter-spacing:0.1em; color:#4a7aaa;">
-                  BLINK<span style="color:var(--text-dim);">BOT</span>
+                  BLINK<span style="color:var(--text);">BOT</span>
               </div>
-              <p style="color:var(--text-dim); font-size:0.74rem; line-height:1.6; margin:0;">
-                  Context-aware assistant. Runs on your data. Always available.
-              </p>
+
+              <!-- Free tier: what it is -->
+              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px 14px;">
+                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:var(--text); letter-spacing:0.1em; margin-bottom:7px; font-weight:600;">FREE</div>
+                  <p style="color:var(--text); font-size:0.73rem; line-height:1.65; margin:0; opacity:0.75;">
+                      Runs <strong style="color:var(--text); opacity:1;">100% on your device</strong> when loaded.<br>
+                      Your data never leaves your machine — ever.<br>
+                      For most questions, a server assist is used.<br>
+                      <span style="opacity:0.55; font-size:0.68rem;">Some uncensored queries may pass through BlinkBot's local filter — but no guarantee.</span>
+                  </p>
+              </div>
 
               <!-- BuddyBot premium teaser -->
-              <div style="background:rgba(74,122,170,0.06); border:1px solid rgba(74,122,170,0.18); border-left:3px solid #4a7aaa; border-radius:8px; padding:12px 14px; margin-top:4px;">
-                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:#4a7aaa; letter-spacing:0.12em; margin-bottom:6px;">
-                      ✦ BUDDYBOT &nbsp;—&nbsp; PREMIUM
-                  </div>
-                  <p style="color:var(--text-dim); font-size:0.72rem; line-height:1.55; margin:0 0 8px;">
-                      Uncensored. Deep reasoning. Full context. No guardrails.<br>
-                      Your life data — actually understood.
+              <div style="background:rgba(74,122,170,0.08); border:1px solid rgba(74,122,170,0.25); border-left:3px solid #4a7aaa; border-radius:8px; padding:12px 14px;">
+                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:#4a7aaa; letter-spacing:0.12em; margin-bottom:7px; font-weight:700;">✦ BUDDYBOT — PREMIUM</div>
+                  <p style="color:var(--text); font-size:0.73rem; line-height:1.65; margin:0 0 6px; opacity:0.85;">
+                      <strong style="color:#4a7aaa;">Fully uncensored.</strong> Answers anything. Zero guardrails.<br>
+                      Still 100% local — responses are computed and delivered privately, never logged.<br>
+                      Understands your full life context. Deep reasoning, not just answers.
                   </p>
-                  <div style="font-size:0.64rem; color:var(--text-dim); opacity:0.35; font-family:var(--font-mono);">Coming soon.</div>
+                  <div style="font-size:0.63rem; color:#4a7aaa; opacity:0.5; font-family:var(--font-mono);">Coming soon.</div>
               </div>
 
-              <!-- What BlinkBot can do -->
-              <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.7; margin-top:2px;">
-                  <span style="color:var(--text); opacity:0.6;">Free tier includes:</span><br>
-                  Goals · Notes · Streaks · Quick answers · Routing to server
-              </div>
-
-              <button id="blinkStartBtn" style="margin-top:auto; font-size:0.78rem; padding:10px 0; cursor:pointer; border-radius:8px; background:#4a7aaa; color:#fff; border:none; font-family:var(--font-mono); letter-spacing:0.05em; width:100%;">
+              <button id="blinkStartBtn" style="margin-top:auto; font-size:0.78rem; padding:10px 0; cursor:pointer; border-radius:8px; background:#4a7aaa; color:#fff; border:none; font-family:var(--font-mono); font-weight:600; letter-spacing:0.06em; width:100%;">
                   Start with BlinkBot &rarr;
               </button>
           </div>
@@ -271,22 +272,22 @@
         </div>
         <div class="stats-grid">
             <div class="stat-card">
-                <label>Archive</label>
+                <span class="stat-label-text">Archive</span>
                 <div class="stat-value" id="stat-notes">--</div>
                 <div class="stat-sub">Flows Synced</div>
             </div>
             <div class="stat-card accent">
-                <label>The Grind</label>
+                <span class="stat-label-text">The Grind</span>
                 <div class="stat-value" id="stat-streak">--</div>
                 <div class="stat-sub">Day Streak</div>
             </div>
             <div class="stat-card">
-                <label>Vault</label>
+                <span class="stat-label-text">Vault</span>
                 <div class="stat-value" id="stat-media">--</div>
                 <div class="stat-sub">Media Objects</div>
             </div>
             <div class="stat-card accent">
-                <label>Vessel</label>
+                <span class="stat-label-text">Vessel</span>
                 <div class="stat-value">10km</div>
                 <div class="stat-sub">Target Goal</div>
             </div>
