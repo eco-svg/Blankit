@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         updateProgress(0, 1, 'Downloading model...');
         await wllama.loadModelFromUrl(modelUrl, {
-            allowOffline: true,
+            allowOffline: false,  // OPFS quota on HF Space is too small for 900MB
             progressCallback: ({ loaded, total }) => {
                 const mb = (loaded / 1048576).toFixed(0);
                 if (total > 0) {
