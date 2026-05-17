@@ -80,19 +80,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         return p + '<|im_start|>assistant\n';
     }
 
+    // ── Clear all OPFS data for this origin ────────────────────────────────
+    async function clearOpfsCache() {
+        try {
+            const root = await navigator.storage.getDirectory();
+            for await (const [name] of root.entries()) {
+                try { await root.removeEntry(name, { recursive: true }); } catch {}
+            }
+        } catch {}
+    }
+
     // ── Load wllama engine + GGUF model ─────────────────────────────────────
     async function initWllama(modelUrl) {
         updateProgress(0, 1, 'Loading engine...');
 
+        // Request persistent storage — prevents eviction and can raise quota
+        if (navigator.storage?.persist) {
+            try { await navigator.storage.persist(); } catch {}
+        }
+
         const { Wllama } = await import(WLLAMA_CDN + '/esm/index.js');
-        wllama = new Wllama({
+
+        const makeWllama = () => new Wllama({
             'single-thread/wllama.wasm': WLLAMA_CDN + '/src/single-thread/wllama.wasm',
             'multi-thread/wllama.wasm':  WLLAMA_CDN + '/src/multi-thread/wllama.wasm',
         });
 
-        updateProgress(0, 1, 'Downloading model...');
-        await wllama.loadModelFromUrl(modelUrl, {
-            allowOffline: false,  // OPFS quota on HF Space is too small for 900MB
+        const loadOpts = {
+            allowOffline: true,
             progressCallback: ({ loaded, total }) => {
                 const mb = (loaded / 1048576).toFixed(0);
                 if (total > 0) {
@@ -101,7 +116,24 @@ document.addEventListener('DOMContentLoaded', async () => {
                     updateProgress(loaded, 0, `${mb} MB downloaded...`);
                 }
             },
-        });
+        };
+
+        updateProgress(0, 1, 'Downloading model...');
+        wllama = makeWllama();
+
+        try {
+            await wllama.loadModelFromUrl(modelUrl, loadOpts);
+        } catch (e) {
+            if (e.name === 'QuotaExceededError') {
+                // Old corrupted/partial data is filling OPFS — wipe it and retry
+                updateProgress(0, 0, 'Clearing old cache, retrying...');
+                await clearOpfsCache();
+                wllama = makeWllama();
+                await wllama.loadModelFromUrl(modelUrl, loadOpts);
+            } else {
+                throw e;
+            }
+        }
 
         modelLoaded = true;
         updateProgress(1, 1, 'Ready.');
