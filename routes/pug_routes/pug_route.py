@@ -779,33 +779,47 @@ echo ""
     return r
 
 
-@pug_bp.route('/pug/install/blinkbot-model.gguf')
+@pug_bp.route('/pug/install/blinkbot-model.gguf', methods=['GET', 'HEAD'])
 def install_blinkbot_model():
+    from flask import request as flask_request
     # Local file (dev)
     if os.path.exists(_BLINK_PATH):
         from flask import send_file
         return send_file(_BLINK_PATH, as_attachment=True, download_name='BlinkBot_1.5B.gguf')
 
-    # Proxy from private HF repo using server-side token
     hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
     if not hf_url:
         return jsonify({'error': 'Model not available'}), 404
 
     import requests as req
     token   = os.environ.get('HF_TOKEN', '')
-    headers = {'Authorization': f'Bearer {token}'} if token else {}
+    hdr     = {'Authorization': f'Bearer {token}'} if token else {}
     try:
-        r = req.get(hf_url, headers=headers, stream=True, timeout=30)
+        if flask_request.method == 'HEAD':
+            # wllama sends HEAD first to get Content-Length; don't stream the whole file
+            r = req.head(hf_url, headers=hdr, allow_redirects=True, timeout=15)
+            if not r.ok:
+                current_app.logger.error(f"HF model HEAD {r.status_code}: {hf_url}")
+                return jsonify({'error': 'Model unavailable'}), 503
+            resp_headers = {
+                'Content-Type':   'application/octet-stream',
+                'Content-Length': r.headers.get('Content-Length', ''),
+                'Accept-Ranges':  'bytes',
+            }
+            return Response(status=200, headers=resp_headers)
+
+        # GET — stream the file through
+        r = req.get(hf_url, headers=hdr, stream=True, allow_redirects=True, timeout=30)
         if not r.ok:
-            current_app.logger.error(f"HF model fetch {r.status_code}")
-            return jsonify({'error': 'Model unavailable'}), 503
-        resp_headers = {'Content-Type': 'application/octet-stream'}
+            current_app.logger.error(f"HF model GET {r.status_code}: {hf_url}")
+            return Response(f'Model fetch failed: {r.status_code}', status=503)
+        resp_headers = {'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes'}
         if r.headers.get('Content-Length'):
             resp_headers['Content-Length'] = r.headers['Content-Length']
         return Response(r.iter_content(chunk_size=65536), headers=resp_headers)
     except Exception as e:
         current_app.logger.error(f"BlinkBot proxy error: {e}")
-        return jsonify({'error': 'Model proxy failed'}), 503
+        return Response('Model proxy failed', status=503)
 
 
 @pug_bp.route('/pug/install/blinkbot')
