@@ -1064,11 +1064,13 @@ def install_blinkbot_model():
         return jsonify({'error': 'Model not available'}), 404
 
     token = os.environ.get('HF_TOKEN', '')
+    current_app.logger.info(f"BlinkBot proxy: url={'SET' if hf_url else 'MISSING'} token={'SET' if token else 'MISSING'}")
     try:
         if flask_request.method == 'HEAD':
             r = _hf_fetch('HEAD', hf_url, token, timeout=15)
+            current_app.logger.info(f"HF HEAD → {r.status_code} (final url domain: {r.url[:60] if hasattr(r,'url') else '?'})")
             if not r.ok:
-                current_app.logger.error(f"HF HEAD {r.status_code}: {hf_url}")
+                current_app.logger.error(f"HF HEAD failed {r.status_code}: {r.text[:120]}")
                 return Response(status=503)
             return Response(status=200, headers={
                 'Content-Type':   'application/octet-stream',
@@ -1077,8 +1079,9 @@ def install_blinkbot_model():
             })
 
         r = _hf_fetch('GET', hf_url, token, stream=True, timeout=60)
+        current_app.logger.info(f"HF GET → {r.status_code}")
         if not r.ok:
-            current_app.logger.error(f"HF GET {r.status_code}: {hf_url}")
+            current_app.logger.error(f"HF GET failed {r.status_code}: {r.text[:120]}")
             return Response(status=503)
         resp_headers = {'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes'}
         if r.headers.get('Content-Length'):
