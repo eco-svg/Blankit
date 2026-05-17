@@ -1406,6 +1406,11 @@ div.infinite-canvas video {
     color: var(--bg);
 }
 
+@keyframes blinkPulse {
+    0%, 100% { opacity: 0.25; }
+    50%       { opacity: 0.65; }
+}
+
 /* ── CHARACTER SHEET ─────────────────────────────── */
 
 .stats-sheet {

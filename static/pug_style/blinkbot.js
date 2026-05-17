@@ -58,8 +58,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     function updateProgress(loaded, total, msg) {
         const bar   = document.getElementById('blinkBar');
         const label = document.getElementById('blinkLoadMsg');
-        if (bar && total > 0) bar.style.width = Math.round((loaded / total) * 100) + '%';
-        if (label && msg)     label.textContent = msg;
+        if (bar) {
+            if (total > 0) {
+                bar.style.width = Math.round((loaded / total) * 100) + '%';
+            } else if (loaded > 0) {
+                // No Content-Length from CDN — show indeterminate pulse
+                bar.style.width = '100%';
+                bar.style.opacity = '0.4';
+                bar.style.animation = 'blinkPulse 1.4s ease-in-out infinite';
+            }
+        }
+        if (label && msg) label.textContent = msg;
     }
 
     // ── ChatML formatter for Qwen ───────────────────────────────────────────
@@ -86,8 +95,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             allowOffline: true,
             progressCallback: ({ loaded, total }) => {
                 const mb = (loaded / 1048576).toFixed(0);
-                const tb = (total  / 1048576).toFixed(0);
-                updateProgress(loaded, total, `${mb} / ${tb} MB`);
+                if (total > 0) {
+                    updateProgress(loaded, total, `${mb} / ${(total/1048576).toFixed(0)} MB`);
+                } else {
+                    updateProgress(loaded, 0, `${mb} MB downloaded...`);
+                }
             },
         });
 
