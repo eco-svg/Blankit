@@ -123,37 +123,42 @@
               <h2 class="card-title" style="color: #4a7aaa;">BlinkBot</h2>
           </div>
 
-          <!-- State A: no local BlinkBot detected -->
-          <div id="blinkDownloadState" style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:14px; padding:20px; overflow-y:auto;">
-              <div style="font-size:1.3rem; font-family:var(--font-mono); font-weight:700; letter-spacing:0.1em; color:#4a7aaa; margin-bottom:2px;">
+          <!-- State A: pre-chat landing / premium wall -->
+          <div id="blinkDownloadState" style="flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:12px; padding:18px 20px; overflow-y:auto;">
+
+              <div style="font-size:1.25rem; font-family:var(--font-mono); font-weight:700; letter-spacing:0.1em; color:#4a7aaa;">
                   BLINK<span style="color:var(--text-dim);">BOT</span>
               </div>
-              <p style="color:var(--text-dim); font-size:0.76rem; line-height:1.6; margin:0;">
-                  Runs locally on your device. Your data never leaves your machine.
+              <p style="color:var(--text-dim); font-size:0.74rem; line-height:1.6; margin:0;">
+                  Context-aware assistant. Runs on your data. Always available.
               </p>
 
-              <div style="font-size:0.74rem; color:var(--text-dim); font-family:var(--font-mono);">
-                  Paste this in your terminal — it handles everything:
+              <!-- BuddyBot premium teaser -->
+              <div style="background:rgba(74,122,170,0.06); border:1px solid rgba(74,122,170,0.18); border-left:3px solid #4a7aaa; border-radius:8px; padding:12px 14px; margin-top:4px;">
+                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:#4a7aaa; letter-spacing:0.12em; margin-bottom:6px;">
+                      ✦ BUDDYBOT &nbsp;—&nbsp; PREMIUM
+                  </div>
+                  <p style="color:var(--text-dim); font-size:0.72rem; line-height:1.55; margin:0 0 8px;">
+                      Uncensored. Deep reasoning. Full context. No guardrails.<br>
+                      Your life data — actually understood.
+                  </p>
+                  <div style="font-size:0.64rem; color:var(--text-dim); opacity:0.35; font-family:var(--font-mono);">Coming soon.</div>
               </div>
 
-              <div style="position:relative; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:6px; padding:10px 40px 10px 12px;">
-                  <code id="blinkInstallCmd" style="font-family:var(--font-mono); font-size:0.68rem; color:#4a7aaa; word-break:break-all; display:block;"></code>
-                  <button id="blinkCopyBtn" onclick="(function(){
-                      navigator.clipboard.writeText(document.getElementById('blinkInstallCmd').textContent).then(()=>{
-                          const b=document.getElementById('blinkCopyBtn');
-                          b.textContent='✓'; setTimeout(()=>b.textContent='⧉',1500);
-                      });
-                  })()" title="Copy command"
-                      style="position:absolute; top:8px; right:8px; background:transparent; border:none; color:var(--text-dim); font-size:0.9rem; cursor:pointer; padding:0 4px; line-height:1;">⧉</button>
+              <!-- What BlinkBot can do -->
+              <div style="font-size:0.7rem; color:var(--text-dim); line-height:1.7; margin-top:2px;">
+                  <span style="color:var(--text); opacity:0.6;">Free tier includes:</span><br>
+                  Goals · Notes · Streaks · Quick answers · Routing to server
               </div>
 
-              <div id="blinkWaiting" style="display:none; font-family:var(--font-mono); font-size:0.7rem; color:var(--text-dim); opacity:0.6;">
-                  <span id="blinkWaitDot">·</span> waiting for BlinkBot...
-              </div>
+              <button id="blinkStartBtn" style="margin-top:auto; font-size:0.78rem; padding:10px 0; cursor:pointer; border-radius:8px; background:#4a7aaa; color:#fff; border:none; font-family:var(--font-mono); letter-spacing:0.05em; width:100%;">
+                  Start with BlinkBot &rarr;
+              </button>
           </div>
 
-          <!-- State B: local BlinkBot detected OR server mode active -->
+          <!-- State B: chat active -->
           <div id="blinkChatState" style="display:none; flex:1; flex-direction:column;">
+              <div style="font-size:0.6rem; font-family:var(--font-mono); color:var(--text-dim); opacity:0.35; padding:0 2px 6px; letter-spacing:0.05em;" id="blinkModeLabel">mode: server</div>
               <div class="chat-window" id="blinkChatWindow">
                   <div class="chat-message msg-ai">Online. Context loaded. What do you need?</div>
               </div>

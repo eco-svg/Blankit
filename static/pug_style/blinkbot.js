@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const chatWindow    = document.getElementById('blinkChatWindow');
     const input         = document.getElementById('blinkInput');
     const sendBtn       = document.getElementById('sendBlinkBtn');
+    const modeLabel     = document.getElementById('blinkModeLabel');
 
     const WLLAMA_CDN = 'https://cdn.jsdelivr.net/npm/@wllama/wllama@2';
 
@@ -127,6 +128,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         return { answer: direct || null, route: false };
     }
 
+    function setModeLabel(mode) {
+        if (modeLabel) modeLabel.textContent = `mode: ${mode}`;
+    }
+
     // ── Chat helpers ─────────────────────────────────────────────────────────
     function addMessage(text, role, source) {
         const msg     = document.createElement('div');
@@ -134,7 +139,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const body    = (role === 'assistant' && typeof marked !== 'undefined')
             ? marked.parse(text) : text;
         const tag     = (role === 'assistant' && source)
-            ? `<span style="font-size:0.6rem;opacity:0.28;display:block;margin-top:4px;font-family:var(--font-mono);">${source}</span>`
+            ? `<span style="font-size:0.62rem;opacity:0.32;display:block;margin-top:5px;font-family:var(--font-mono);letter-spacing:0.04em;">[${source}]</span>`
             : '';
         msg.innerHTML = body + tag;
         chatWindow.appendChild(msg);
@@ -174,17 +179,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (route || !answer) {
                     removeTyping();
-                    showTyping('Thinking harder...');
+                    showTyping('Routing...');
                     final  = await callServer(message, controller.signal);
-                    source = 'BlinkBot → server';
+                    source = 'blink → server';
+                    setModeLabel('hybrid');
                 } else {
                     final  = answer;
-                    source = 'BlinkBot';
+                    source = 'blink local';
+                    setModeLabel('local');
                 }
             } else {
                 showTyping('Thinking...');
                 final  = await callServer(message, controller.signal);
                 source = 'server';
+                setModeLabel('server');
             }
 
             clearTimeout(timer);
@@ -226,30 +234,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     systemPrompt = ctx.system_prompt || '';
     userCtx      = ctx.user_context  || {};
 
-    if (ctx.model_url) {
-        // wllama runs in a Web Worker — relative URLs don't resolve there, must be absolute
-        const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
-        showLoadingUI();
-        try {
-            await initWllama(absoluteModelUrl);
-        } catch (e) {
-            console.warn('wllama load failed, server-only mode:', e);
-            // still activate — server fallback handles all messages
+    // Show the premium wall landing screen — user clicks to proceed
+    const startBtn = document.getElementById('blinkStartBtn');
+    startBtn.addEventListener('click', async () => {
+        if (ctx.model_url) {
+            // wllama runs in a Web Worker — relative URLs don't resolve there, must be absolute
+            const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
+            showLoadingUI();
+            try {
+                await initWllama(absoluteModelUrl);
+                setModeLabel('local');
+            } catch (e) {
+                console.warn('wllama load failed, server-only mode:', e);
+                setModeLabel('server');
+            }
+        } else {
+            setModeLabel('server');
         }
         activateChat();
-    } else {
-        // No model on server — server-only mode
-        downloadState.innerHTML = `
-            <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
-                <div style="font-size:1.3rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">
-                    BLINK<span style="color:var(--text-dim);">BOT</span>
-                </div>
-                <p style="color:var(--text-dim);font-size:0.76rem;line-height:1.6;margin:0;">Running via server.</p>
-                <button id="blinkServerBtn" style="font-size:0.75rem;padding:8px 16px;cursor:pointer;border-radius:6px;background:#4a7aaa;color:#fff;border:none;align-self:flex-start;">
-                    Start chatting
-                </button>
-            </div>`;
-        document.getElementById('blinkServerBtn').addEventListener('click', activateChat);
-    }
+    });
 
 });
