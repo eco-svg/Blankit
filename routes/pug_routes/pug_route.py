@@ -1070,42 +1070,43 @@ def _hf_fetch(method, url, token, stream=False, timeout=30):
 
 @pug_bp.route('/pug/install/blinkbot-model.gguf', methods=['GET', 'HEAD'])
 def install_blinkbot_model():
-    from flask import request as flask_request
-    if os.path.exists(_BLINK_PATH):
-        from flask import send_file
-        return send_file(_BLINK_PATH, as_attachment=True, download_name='BlinkBot_1.5B.gguf')
+    """
+    Serve BlinkBot GGUF to the browser (wllama).
+    On HF Space: redirect browser directly to CDN — avoids streaming 900MB through
+    Flask which gets killed by the Space proxy timeout.
+    Local dev fallback: send_file from _BLINK_PATH.
+    """
+    from flask import request as flask_request, redirect as flask_redirect
 
     hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
-    if not hf_url:
-        return jsonify({'error': 'Model not available'}), 404
+    token  = os.environ.get('HF_TOKEN', '')
+    on_hf  = os.path.isdir('/data')
 
-    token = os.environ.get('HF_TOKEN', '')
-    print(f"[blink-proxy] url={'SET('+hf_url[:40]+')' if hf_url else 'MISSING'} token={'SET' if token else 'MISSING'}", flush=True)
-    try:
-        if flask_request.method == 'HEAD':
+    # On HF Space: resolve the CDN URL server-side and redirect the browser there.
+    # Browser downloads directly from CDN at full speed, no Flask proxy in the way.
+    if hf_url and on_hf:
+        try:
             r = _hf_fetch('HEAD', hf_url, token, timeout=15)
-            print(f"[blink-proxy] HEAD → {r.status_code}", flush=True)
-            if not r.ok:
-                print(f"[blink-proxy] HEAD failed: {r.text[:200]}", flush=True)
-                return Response(status=503)
-            return Response(status=200, headers={
-                'Content-Type':   'application/octet-stream',
-                'Content-Length': r.headers.get('Content-Length', ''),
-                'Accept-Ranges':  'bytes',
-            })
+            print(f"[blink-proxy] HEAD → {r.status_code}  cdn={r.url[:60]}", flush=True)
+            if r.ok:
+                cdn_url = r.url  # final URL after redirect chain (CDN presigned URL)
+                if flask_request.method == 'HEAD':
+                    return Response(status=200, headers={
+                        'Content-Type':   'application/octet-stream',
+                        'Content-Length': r.headers.get('Content-Length', ''),
+                        'Accept-Ranges':  'bytes',
+                    })
+                return flask_redirect(cdn_url, code=302)
+            print(f"[blink-proxy] HEAD failed {r.status_code}: {r.text[:120]}", flush=True)
+        except Exception as e:
+            print(f"[blink-proxy] error: {e}", flush=True)
 
-        r = _hf_fetch('GET', hf_url, token, stream=True, timeout=60)
-        print(f"[blink-proxy] GET → {r.status_code}", flush=True)
-        if not r.ok:
-            print(f"[blink-proxy] GET failed: {r.text[:200]}", flush=True)
-            return Response(status=503)
-        resp_headers = {'Content-Type': 'application/octet-stream', 'Accept-Ranges': 'bytes'}
-        if r.headers.get('Content-Length'):
-            resp_headers['Content-Length'] = r.headers['Content-Length']
-        return Response(r.iter_content(chunk_size=65536), headers=resp_headers)
-    except Exception as e:
-        current_app.logger.error(f"BlinkBot proxy error: {e}")
-        return Response(status=503)
+    # Local dev (or fallback): serve file directly from disk
+    if os.path.exists(_BLINK_PATH):
+        from flask import send_file
+        return send_file(_BLINK_PATH, mimetype='application/octet-stream')
+
+    return Response(status=404)
 
 
 @pug_bp.route('/pug/install/blinkbot')
