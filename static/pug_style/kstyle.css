@@ -328,7 +328,7 @@ body.header-hidden .l-bar {
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
-  flex: 0.7;
+  flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -1830,7 +1830,7 @@ div.infinite-canvas video {
   top: calc(100% + 10px);
   left: 0;
   z-index: 300;
-  min-width: 190px;
+  min-width: 230px;
   background: rgba(18,16,13,0.97);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -2122,14 +2122,14 @@ div.infinite-canvas video {
 /* ── Dream — standalone compact first card ────────────── */
 /* Reserve a small first row in the playground for the dream card */
 .playground {
-  grid-template-rows: 140px;   /* first row: dream card */
+  grid-template-rows: 72px;    /* first row: dream card */
   grid-auto-rows: 800px;       /* all other rows: 800px */
 }
 
 .dream-standalone {
   grid-row: 1;
   grid-column: 1 / -1;
-  height: 140px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
