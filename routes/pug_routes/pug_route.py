@@ -522,7 +522,7 @@ def serve_media(object_name):
             response.stream(32 * 1024),
             content_type=response.headers.get('content-type', 'application/octet-stream')
         )
-    except S3Error:
+    except Exception:
         pass
     import mimetypes
     local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
@@ -588,9 +588,9 @@ def blinkbot_chat():
     try:
         user_context = _assemble_user_context(session['user_id'], session.get('username', ''))
 
-        # Premium path: BuddyBot (fine-tuned 8B, full context)
+        # Premium path: BuddyBot — only if already loaded in memory (avoid cold-load timeout)
         # TODO: add user.is_premium check when payment is wired
-        use_buddybot = _LLAMA_OK and _BUDDYBOT_ENABLED
+        use_buddybot = _LLAMA_OK and _BUDDYBOT_ENABLED and _buddybot_model is not None
         if use_buddybot:
             goals_str = ', '.join(user_context['active_goals']) or 'none'
             notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
