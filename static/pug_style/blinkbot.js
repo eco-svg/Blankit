@@ -407,53 +407,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const startBtn = document.getElementById('blinkStartBtn');
     startBtn.addEventListener('click', async () => {
-        if (!ctx.model_url) {
-            setModeLabel('server');
-            activateChat();
-            return;
-        }
-
-        const absoluteModelUrl = new URL(ctx.model_url, window.location.origin).href;
-        const canUsePicker     = ('showSaveFilePicker' in window);
-
-        // Check IndexedDB for an existing saved file handle
-        const storedHandle = canUsePicker ? await getStoredHandle() : null;
-
-        // If no existing save, open the file picker NOW — must happen synchronously
-        // within the user gesture context before any other async work
-        let prePickedHandle = null;
-        if (canUsePicker && !storedHandle) {
-            try {
-                prePickedHandle = await window.showSaveFilePicker({
-                    suggestedName: 'BlinkBot_1.5B.gguf',
-                    types: [{ description: 'BlinkBot model', accept: { 'application/octet-stream': ['.gguf'] } }],
-                });
-            } catch (e) {
-                if (e.name === 'AbortError') {
-                    // User cancelled the file picker — run in server-only mode
-                    setModeLabel('server');
-                    activateChat();
-                    return;
-                }
-                // showSaveFilePicker blocked (iframe, policy, etc.) — fall through to OPFS
-            }
-        }
-
-        const subtitle = storedHandle
-            ? 'Loading BlinkBot from your device...'
-            : prePickedHandle
-                ? 'Saving BlinkBot to your device &mdash; first time only.'
-                : 'Loading &mdash; first time only.';
-
-        showLoadingUI(subtitle);
-
-        try {
-            await initWllama(absoluteModelUrl, prePickedHandle, storedHandle);
-            setModeLabel('local');
-        } catch (e) {
-            console.warn('wllama load failed, server-only mode:', e);
-            setModeLabel('server');
-        }
+        // Local model disabled until proper CDN/storage solution is in place
+        setModeLabel('server');
         activateChat();
     });
 
