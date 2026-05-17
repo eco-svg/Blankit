@@ -429,46 +429,55 @@ def _count_media(user_id):
 def _generate_character_sheet(user_id, user_context, notes_count, streak):
     from .chat_logger import read_user_log
 
-    goals_str    = ', '.join(user_context['active_goals'][:10]) or 'none set'
-    finished_str = ', '.join(user_context['finished_this_week'][:5]) or 'none this week'
-    notes_str    = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
+    # ALL finished goals (not just this week) — these determine class and skills
+    all_finished = Note.query.filter_by(
+        user_id=user_id, entry_type='goal', is_deleted=False, is_finished=True
+    ).order_by(Note.updated_at.desc()).limit(30).all()
+    finished_str = ', '.join(g.title for g in all_finished) or 'none'
 
-    # Pull ALL exchanges from full history — search for themes that reveal character
-    log        = read_user_log(user_id) or ''
-    exchanges  = _parse_chat_log(log) if log else []
-    # Build a condensed timeline: every exchange as one line
+    goals_str = ', '.join(user_context['active_goals'][:10]) or 'none'
+    notes_str = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
+
+    log       = read_user_log(user_id) or ''
+    exchanges = _parse_chat_log(log) if log else []
     history_lines = [
         f"[{ex['date']}] You: {ex['user'][:80]} | BlinkBot: {ex['bot'][:80]}"
         for ex in exchanges
     ]
-    # If too large, keep most recent + sample older ones
     if len(history_lines) > 40:
         history_lines = history_lines[:10] + ['...'] + history_lines[-30:]
     chat_summary = '\n'.join(history_lines) if history_lines else 'No chat history yet.'
 
     prompt = (
-        "Analyze this user's complete data and generate a precise RPG character sheet.\n\n"
+        "Generate a character sheet for this person. Follow the rules exactly.\n\n"
         f"Dream: {user_context['dream'] or 'not set'}\n"
-        f"Active Goals: {goals_str}\n"
-        f"Recently Completed: {finished_str}\n"
-        f"Recent Note Titles: {notes_str}\n"
+        f"Finished Goals (real achievements): {finished_str}\n"
+        f"Active Goals (aspirations only, NOT achievements): {goals_str}\n"
+        f"Notes Written: {notes_str}\n"
         f"Member Since: {user_context['member_since']}\n"
-        f"Total Notes: {notes_count}\n"
-        f"Current Streak: {streak} days\n\n"
-        f"Full Conversation History:\n{chat_summary}\n\n"
-        "Output ONLY valid JSON, no other text:\n"
-        '{"class_official":"2-3 word professional title",'
-        '"class_playful":"2-4 word evocative title — poetic, ironic, or dramatic, specific to this person",'
-        '"bio":"One sentence. What this person actually is. Direct, no fluff.",'
+        f"Total Notes: {notes_count}, Streak: {streak} days\n\n"
+        f"Conversation History:\n{chat_summary}\n\n"
+        "STRICT RULES:\n"
+        "1. CLASS is determined ONLY by finished goals + top skills. "
+        "   Active/planned goals do NOT count. No finished goals = class is 'Blank Slate'. "
+        "   Use real-world role names (e.g. 'Runner', 'Writer'), NOT game titles.\n"
+        "2. PERSONALITY is inferred from chat patterns, written goals, notes, behavior — "
+        "   who they seem to be, what drives them. Short archetype name + one sentence.\n"
+        "3. SKILLS come ONLY from finished goals and real output. "
+        "   Never infer skills from active goals. "
+        "   Return only skills with evidence — 0 to 5 max. "
+        "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'.\n"
+        "4. Simple English throughout. Common words only.\n\n"
+        "Output ONLY valid JSON:\n"
+        '{"class_official":"role based on achievements (Blank Slate if none)",'
+        '"class_playful":"same role with flair and personality",'
+        '"personality":"2-4 word archetype from behavior/patterns",'
+        '"personality_desc":"One sentence about their mindset.",'
+        '"bio":"One sentence. Who they actually are right now.",'
         '"skills":['
-        '{"name":"2-3 word skill","rank":"S+"},'
-        '{"name":"2-3 word skill","rank":"S"},'
-        '{"name":"2-3 word skill","rank":"A"},'
-        '{"name":"2-3 word skill","rank":"B"},'
-        '{"name":"2-3 word skill","rank":"C"}'
-        ']}\n\n'
-        "Ranks: S+ exceptional, S mastery, A strong, B developing, C emerging, D early. "
-        "Detect skills from the actual content, goals, notes, and conversation patterns — specific to this person."
+        '{"name":"plain-word skill from evidence","rank":"A"}'
+        ']}\n'
+        "Ranks: S+ proven mastery, S strong evidence, A solid, B developing, C just starting."
     )
 
     def _parse_json(raw):
@@ -991,6 +1000,61 @@ def get_stats_sheet():
         'media_count': media_count,
         'sheet':       sheet,
     })
+
+
+@pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
+def update_username():
+    from svg_models.user import User
+    err = login_required_api()
+    if err: return err
+    data     = request.get_json(force=True) or {}
+    new_name = (data.get('username') or '').strip()
+    if not new_name or len(new_name) < 2:
+        return jsonify({'error': 'Username too short'}), 400
+    if User.query.filter(User.username == new_name, User.id != session['user_id']).first():
+        return jsonify({'error': 'Username taken'}), 409
+    user = User.query.get(session['user_id'])
+    user.username = new_name
+    session['username'] = new_name
+    db.session.commit()
+    return jsonify({'ok': True, 'username': new_name})
+
+
+@pug_bp.route('/pug/api/profile/password', methods=['PATCH'])
+def update_password():
+    from svg_models.user import User
+    from werkzeug.security import check_password_hash, generate_password_hash
+    err = login_required_api()
+    if err: return err
+    data         = request.get_json(force=True) or {}
+    current      = data.get('current', '')
+    new_password = data.get('new', '')
+    if not new_password or len(new_password) < 6:
+        return jsonify({'error': 'Password too short (min 6 chars)'}), 400
+    user = User.query.get(session['user_id'])
+    if not check_password_hash(user.password_hash, current):
+        return jsonify({'error': 'Current password is wrong'}), 403
+    user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/profile/delete', methods=['DELETE'])
+def delete_account():
+    from svg_models.user import User
+    from werkzeug.security import check_password_hash
+    err = login_required_api()
+    if err: return err
+    data     = request.get_json(force=True) or {}
+    password = data.get('password', '')
+    user     = User.query.get(session['user_id'])
+    if not check_password_hash(user.password_hash, password):
+        return jsonify({'error': 'Wrong password'}), 403
+    Note.query.filter_by(user_id=user.id).delete()
+    db.session.delete(user)
+    db.session.commit()
+    session.clear()
+    return jsonify({'ok': True})
 
 
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])

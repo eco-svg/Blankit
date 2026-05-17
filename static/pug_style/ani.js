@@ -25,6 +25,43 @@
   }, { passive: true });
 })();
 
+// ── Floating Header Stars ─────────────────────
+(function () {
+  const container = document.getElementById('headerStars');
+  if (!container) return;
+  const COUNT = 28;
+  for (let i = 0; i < COUNT; i++) {
+    const s = document.createElement('span');
+    s.className = 'header-star';
+    const size = Math.random() * 2 + 1;       // 1–3 px
+    const x    = Math.random() * 100;          // % across header
+    const y    = Math.random() * 100;          // % down header
+    const dur  = 4 + Math.random() * 8;        // 4–12 s
+    const del  = Math.random() * dur;          // stagger
+    s.style.cssText =
+      `width:${size}px;height:${size}px;` +
+      `left:${x}%;top:${y}%;` +
+      `animation-duration:${dur}s;animation-delay:-${del}s;`;
+    container.appendChild(s);
+  }
+})();
+
+// ── Profile Popup Toggle ──────────────────────
+(function () {
+  const trigger = document.getElementById('profileTrigger');
+  const popup   = document.getElementById('profilePopup');
+  if (!trigger || !popup) return;
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    popup.classList.toggle('hidden');
+  });
+
+  document.addEventListener('click', e => {
+    if (!popup.contains(e.target)) popup.classList.add('hidden');
+  });
+})();
+
 // ── Active Nav Pill on Scroll ─────────────────
 (function () {
   const pills = document.querySelectorAll('.nav-pill');

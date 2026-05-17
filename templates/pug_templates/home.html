@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=5">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=6">
 </head>
 <body>
 
@@ -16,11 +16,38 @@
   </div>
 
   <header class="main-header" id="mainHeader">
+    <div class="header-stars" id="headerStars"></div>
     <div class="header-left">
       <div class="logo">B<span>.</span></div>
-      <div class="greeting">
+      <div class="greeting" id="profileTrigger" style="cursor:pointer;">
         <span class="greeting-hey">Hey !</span>
-        <span class="greeting-name">{{ username }}</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span class="greeting-name">{{ username }}</span>
+          <span class="header-rank-badge" id="headerRankBadge"></span>
+        </div>
+      </div>
+      <!-- Profile popup -->
+      <div class="profile-popup hidden" id="profilePopup">
+        <div class="pp-item" id="ppChangeUsername">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Change Username
+        </div>
+        <div class="pp-item" id="ppChangePassword">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Change Password
+        </div>
+        <div class="pp-divider"></div>
+        <div class="pp-label">Language</div>
+        <div class="pp-lang-row">
+          <button class="pp-lang-btn active" data-lang="plain">Plain</button>
+          <button class="pp-lang-btn" data-lang="advanced">Advanced</button>
+          <button class="pp-lang-btn" data-lang="pro">Pro</button>
+        </div>
+        <div class="pp-divider"></div>
+        <div class="pp-item pp-danger" id="ppDeleteAccount">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          Delete Account
+        </div>
       </div>
     </div>
 
@@ -209,17 +236,14 @@
           <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
         </div>
         <div class="calendar-days" id="calendarDays"></div>
-        <span class="card-label">Silo Calendar</span>
+        <span class="card-label">Event Calendar</span>
       </div>
 
       <!-- Goals (active + planned) -->
       <div class="r-card r-goals-card">
         <span class="card-label">Goals</span>
         <div class="r-goals-sections">
-          <div class="r-goals-section-label">In Progress</div>
           <div class="r-goals-list" id="rActiveGoalsList"></div>
-          <div class="r-goals-section-label r-planned-label">Planned</div>
-          <div class="r-goals-list" id="rPlannedGoalsList"></div>
         </div>
         <div class="r-goal-input-row">
           <input type="text" id="rNewGoalInput" placeholder="New goal..." autocomplete="off">
@@ -250,21 +274,31 @@
     <div class="modal-content stats-sheet">
       <div class="stats-header">
         <h2 class="logo">{{ username }}<span> // STATS</span></h2>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button id="refreshStatsBtn" class="refresh-stats-btn" title="Regenerate character sheet">↺</button>
-          <button class="icon-btn close-modal" style="border:none;font-size:1.5rem;background:transparent;cursor:pointer;color:var(--text-dim);">&times;</button>
-        </div>
+        <button class="icon-btn close-modal" style="border:none;font-size:1.4rem;background:transparent;cursor:pointer;color:var(--text-dim);opacity:0.6;">&times;</button>
       </div>
+
+      <!-- Class -->
       <div class="char-class-section">
         <div class="char-class-label">CLASS</div>
-        <div class="char-class-name" id="statClassName">Analyzing...</div>
+        <div class="char-class-name" id="statClassName">—</div>
         <div class="char-class-toggle">
           <button class="class-mode-btn active" id="classModeOfficial">Official</button>
           <button class="class-mode-btn" id="classModePlayful">Playful</button>
         </div>
       </div>
-      <div class="char-bio" id="statBio"></div>
-      <div class="char-skills">
+
+      <!-- Personality -->
+      <div class="char-class-section" style="margin-top:14px;">
+        <div class="char-class-label">PERSONALITY</div>
+        <div class="char-class-name" id="statPersonality" style="font-size:1.1rem;">—</div>
+        <div class="char-bio" id="statPersonalityDesc" style="margin-top:6px;"></div>
+      </div>
+
+      <!-- Bio -->
+      <div class="char-bio" id="statBio" style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.06);padding-top:12px;"></div>
+
+      <!-- Skills -->
+      <div class="char-skills" style="margin-top:14px;">
         <div class="char-skills-header">DETECTED SKILLS</div>
         <div id="statSkillsList" class="skills-list">
           <div class="skill-loading">Scanning data...</div>
@@ -318,6 +352,7 @@
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 
 </body>

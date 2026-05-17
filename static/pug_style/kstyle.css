@@ -1786,3 +1786,168 @@ div.infinite-canvas video {
     color: var(--accent);
     background: var(--accent-glow);
 }
+/* ── Header Stars ─────────────────────────────────────── */
+.header-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.header-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0;
+  animation: starFloat linear infinite;
+}
+
+@keyframes starFloat {
+  0%   { opacity: 0;    transform: translateY(0) scale(1); }
+  15%  { opacity: 0.7; }
+  85%  { opacity: 0.4; }
+  100% { opacity: 0;    transform: translateY(-60px) scale(0.5); }
+}
+
+/* ── Header Rank Badge ────────────────────────────────── */
+.header-rank-badge {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+  display: none;
+}
+.header-rank-badge.visible { display: inline-block; }
+
+/* ── Profile Popup ────────────────────────────────────── */
+.profile-popup {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 300;
+  min-width: 190px;
+  background: rgba(18,16,13,0.97);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--radius);
+  padding: 6px 0;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55);
+}
+
+.pp-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+.pp-item:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+.pp-danger { color: #c85a2a; }
+.pp-danger:hover { color: #e06030 !important; background: rgba(200,90,42,0.08) !important; }
+
+.pp-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 4px 0;
+}
+
+.pp-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  padding: 4px 16px 2px;
+}
+
+.pp-lang-row {
+  display: flex;
+  gap: 5px;
+  padding: 4px 16px 8px;
+}
+
+.pp-lang-btn {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  letter-spacing: 0.06em;
+  padding: 4px 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pp-lang-btn:hover { color: var(--text-muted); border-color: rgba(255,255,255,0.20); }
+.pp-lang-btn.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Text visibility bump ─────────────────────────────── */
+/* r-bar section labels, dim text — bump to readable contrast */
+.r-goals-section-label,
+.char-skills-header,
+.r-done-label,
+.r-bar-card-title,
+.cw-date, .cw-day,
+.char-class-label {
+  opacity: 1 !important;
+  color: rgba(240,235,224,0.50) !important;
+}
+
+.r-goal-item,
+.r-done-item.finished { color: rgba(240,235,224,0.82) !important; }
+
+/* card title rows visible */
+.r-card .r-card-title,
+.card-title,
+.section-title {
+  color: var(--text) !important;
+  font-weight: 600;
+}
+
+/* ── Stats modal — personality section ───────────────── */
+#statPersonality {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* ── Stats modal — blackhole accent ──────────────────── */
+.stats-sheet {
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-sheet::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(0,0,0,0.95) 0%,
+    rgba(212,165,116,0.08) 40%,
+    rgba(212,165,116,0.03) 65%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stats-sheet > * { position: relative; z-index: 1; }

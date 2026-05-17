@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Sidebar elements ─────────────────────────────────────────────────────────
     const rActiveList   = document.getElementById('rActiveGoalsList');
-    const rPlannedList  = document.getElementById('rPlannedGoalsList');
     const rFinishedList = document.getElementById('rFinishedList');
     const rCancelList   = document.getElementById('rCancelledList');
     const rInput        = document.getElementById('rNewGoalInput');
@@ -39,15 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────────
-    const TODAY = new Date();
-    TODAY.setHours(0, 0, 0, 0);
-
-    function isPlanned(goal) {
-        if (!goal.start_datetime) return false;
-        const d = new Date(goal.start_datetime);
-        return d > TODAY;
-    }
-
     function makeRGoalItem(goal) {
         const el = document.createElement('div');
         el.className = 'r-goal-item';
@@ -76,11 +66,10 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/pug/api/goals')
             .then(r => r.json())
             .then(goals => {
-                if (rActiveList)  rActiveList.innerHTML  = '';
-                if (rPlannedList) rPlannedList.innerHTML = '';
+                if (rActiveList)   rActiveList.innerHTML   = '';
                 if (rFinishedList) rFinishedList.innerHTML = '';
 
-                let activeCount = 0, plannedCount = 0, finishedCount = 0;
+                let activeCount = 0, finishedCount = 0;
 
                 goals.forEach(goal => {
                     if (goal.is_finished) {
@@ -92,9 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             el.textContent = goal.title;
                             rFinishedList.appendChild(el);
                         }
-                    } else if (isPlanned(goal)) {
-                        plannedCount++;
-                        if (rPlannedList) rPlannedList.appendChild(makeRGoalItem(goal));
                     } else {
                         activeCount++;
                         if (rActiveList) rActiveList.appendChild(makeRGoalItem(goal));
@@ -103,9 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (rActiveList && activeCount === 0) {
                     rActiveList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;padding:4px 6px;">Nothing active.</div>';
-                }
-                if (rPlannedList && plannedCount === 0) {
-                    rPlannedList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;padding:4px 6px;">Nothing planned.</div>';
                 }
                 if (rFinishedList && finishedCount === 0) {
                     rFinishedList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.35;padding:4px 6px;">None yet.</div>';
