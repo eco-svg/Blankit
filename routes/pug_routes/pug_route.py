@@ -29,7 +29,8 @@ _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybo
 
 _blinkbot_model  = None
 _buddybot_model  = None
-_BUDDYBOT_ENABLED = os.environ.get('BUDDYBOT_ENABLED', 'false').lower() == 'true'
+_BUDDYBOT_ENABLED   = os.environ.get('BUDDYBOT_ENABLED',        'false').lower() == 'true'
+_LOCAL_INFERENCE    = os.environ.get('ENABLE_LOCAL_INFERENCE',  'false').lower() == 'true'
 
 
 def _get_blinkbot():
@@ -479,8 +480,8 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
                 pass
         return None
 
-    # Primary: BuddyBot on-server
-    if _LLAMA_OK and os.path.exists(_BUDDY_PATH):
+    # Primary: BuddyBot on-server (needs fast hardware)
+    if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
         try:
             model    = _get_buddybot()
             messages = [
@@ -870,18 +871,17 @@ def blinkbot_chat():
         user_context = _assemble_user_context(user_id, session.get('username', ''))
         final = None
 
-        # Tier 1: BlinkBot 1.5B — fast, handles simple queries directly
-        if _LLAMA_OK and os.path.exists(_BLINK_PATH):
+        # Tier 1: BlinkBot 1.5B — needs fast CPU/GPU, disabled on HF Space
+        if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BLINK_PATH):
             try:
                 raw = _call_blinkbot_server(message, history, user_context, user_id)
                 if raw and 'route_to_server' not in raw.lower():
                     final = raw
-                # if route_to_server signal, fall through to BuddyBot / Groq
             except Exception as e:
                 print(f'[blinkbot] server error: {e}', flush=True)
 
-        # Tier 2: BuddyBot 8B — complex queries
-        if not final and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
+        # Tier 2: BuddyBot 8B — needs fast CPU/GPU, disabled on HF Space
+        if not final and _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
             try:
                 goals_str = ', '.join(user_context['active_goals']) or 'none'
                 notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
@@ -898,7 +898,7 @@ def blinkbot_chat():
             except Exception as e:
                 print(f'[buddybot] relay error: {e}', flush=True)
 
-        # Tier 3: Groq cloud fallback
+        # Tier 3: Groq — always available
         if not final:
             final = _call_groq_chat(message, history, user_context, user_id=user_id)
 
