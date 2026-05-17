@@ -435,6 +435,21 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     ).order_by(Note.updated_at.desc()).limit(30).all()
     finished_str = ', '.join(g.title for g in all_finished) or 'none'
 
+    # Work/achievements (with optional proof URLs for extra evidence)
+    all_work = Note.query.filter_by(
+        user_id=user_id, entry_type='achievement', is_deleted=False
+    ).order_by(Note.created_at.desc()).limit(20).all()
+    work_items = []
+    for w in all_work:
+        desc, proof = _parse_ach_body(w.body)
+        entry = w.title
+        if desc:
+            entry += f' ({desc})'
+        if proof:
+            entry += f' [proof: {proof}]'
+        work_items.append(entry)
+    work_str = ', '.join(work_items) or 'none'
+
     goals_str = ', '.join(user_context['active_goals'][:10]) or 'none'
     notes_str = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
 
@@ -451,19 +466,21 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     prompt = (
         "Generate a character sheet for this person. Follow the rules exactly.\n\n"
         f"Dream: {user_context['dream'] or 'not set'}\n"
-        f"Finished Goals (real achievements): {finished_str}\n"
-        f"Active Goals (aspirations only, NOT achievements): {goals_str}\n"
+        f"Finished Goals: {finished_str}\n"
+        f"Work / Shipped Projects (strongest evidence): {work_str}\n"
+        f"Active Goals (aspirations only, do NOT use for ranking): {goals_str}\n"
         f"Notes Written: {notes_str}\n"
         f"Member Since: {user_context['member_since']}\n"
         f"Total Notes: {notes_count}, Streak: {streak} days\n\n"
         f"Conversation History:\n{chat_summary}\n\n"
         "STRICT RULES:\n"
-        "1. CLASS is determined ONLY by finished goals + top skills. "
-        "   Active/planned goals do NOT count. No finished goals = class is 'Blank Slate'. "
-        "   Use real-world role names (e.g. 'Runner', 'Writer'), NOT game titles.\n"
+        "1. CLASS is determined ONLY by Work/shipped projects + finished goals + top skills. "
+        "   Active/planned goals do NOT count. No real output = class is 'Blank Slate'. "
+        "   Use real-world role names (e.g. 'Runner', 'Writer', 'Developer'), NOT game titles.\n"
         "2. PERSONALITY is inferred from chat patterns, written goals, notes, behavior — "
         "   who they seem to be, what drives them. Short archetype name + one sentence.\n"
-        "3. SKILLS come ONLY from finished goals and real output. "
+        "3. SKILLS come ONLY from Work/shipped projects, finished goals, and real logged output. "
+        "   Work entries with proof URLs are the strongest evidence — weight these highest. "
         "   Never infer skills from active goals. "
         "   Return only skills with evidence — 0 to 5 max. "
         "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'.\n"
@@ -1093,6 +1110,19 @@ def delete_account():
     return jsonify({'ok': True})
 
 
+def _parse_ach_body(raw):
+    """Return (desc, proof_url) from stored body. Handles plain text and JSON."""
+    if not raw:
+        return '', ''
+    if raw.startswith('{'):
+        try:
+            d = json.loads(raw)
+            return d.get('d', ''), d.get('p', '')
+        except Exception:
+            pass
+    return raw, ''
+
+
 @pug_bp.route('/pug/api/achievements', methods=['GET'])
 def get_achievements():
     err = login_required_api()
@@ -1100,9 +1130,12 @@ def get_achievements():
     items = Note.query.filter_by(
         user_id=session['user_id'], entry_type='achievement', is_deleted=False
     ).order_by(Note.created_at.desc()).all()
-    return jsonify([{'id': n.id, 'title': n.title, 'body': n.body or '',
-                     'created_at': n.created_at.isoformat() if n.created_at else None}
-                    for n in items])
+    result = []
+    for n in items:
+        desc, proof = _parse_ach_body(n.body)
+        result.append({'id': n.id, 'title': n.title, 'desc': desc, 'proof': proof,
+                       'created_at': n.created_at.isoformat() if n.created_at else None})
+    return jsonify(result)
 
 
 @pug_bp.route('/pug/api/achievements', methods=['POST'])
@@ -1113,6 +1146,9 @@ def add_achievement():
     title = (data.get('title') or '').strip()
     if not title:
         return jsonify({'error': 'Title required'}), 400
+    desc  = (data.get('description') or '').strip()
+    proof = (data.get('proof') or '').strip()
+    body_val = json.dumps({'d': desc, 'p': proof}) if (desc or proof) else ''
     n = Note(
         user_id    = session['user_id'],
         entry_type = 'achievement',
@@ -1120,10 +1156,10 @@ def add_achievement():
         is_finished= False,
     )
     n.title = title
-    n.body  = (data.get('description') or '').strip()
+    n.body  = body_val
     db.session.add(n)
     db.session.commit()
-    return jsonify({'id': n.id, 'title': n.title, 'body': n.body}), 201
+    return jsonify({'id': n.id, 'title': n.title, 'desc': desc, 'proof': proof}), 201
 
 
 @pug_bp.route('/pug/api/achievements/<int:aid>', methods=['DELETE'])

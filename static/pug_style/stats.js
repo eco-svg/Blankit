@@ -8,8 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const personalityDesc = document.getElementById('statPersonalityDesc');
     const bioEl           = document.getElementById('statBio');
     const skillsListEl    = document.getElementById('statSkillsList');
-    const rankBadgeEl     = document.getElementById('headerRankBadge');
-    const skillsMainList  = document.getElementById('skillsMainList');
+    const rankBadgeEl        = document.getElementById('headerRankBadge');
+    const statsPopupRankBadge = document.getElementById('statsPopupRankBadge');
+    const skillsMainList     = document.getElementById('skillsMainList');
 
     let sheet = null;
 
@@ -94,15 +95,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateRankBadge() {
-        if (!rankBadgeEl || !sheet) return;
+        if (!sheet) return;
         const r = netRank(sheet.skills);
-        if (!r || r === 'F') { rankBadgeEl.classList.remove('visible'); return; }
         const color = RANK_COLORS[r] || '#888';
-        rankBadgeEl.textContent = r;
-        rankBadgeEl.style.color = color;
-        rankBadgeEl.style.borderColor = color;
-        rankBadgeEl.style.textShadow = r === 'S+' ? `0 0 8px ${color}` : '';
-        rankBadgeEl.classList.add('visible');
+
+        // Header badge (visible only if rank is meaningful)
+        if (rankBadgeEl) {
+            if (!r || r === 'F') { rankBadgeEl.classList.remove('visible'); }
+            else {
+                rankBadgeEl.textContent = r;
+                rankBadgeEl.style.color = color;
+                rankBadgeEl.style.borderColor = color;
+                rankBadgeEl.style.textShadow = r === 'S+' ? `0 0 8px ${color}` : '';
+                rankBadgeEl.classList.add('visible');
+            }
+        }
+
+        // Stats popup badge (always shown when we have a rank)
+        if (statsPopupRankBadge) {
+            if (!r) { statsPopupRankBadge.style.display = 'none'; }
+            else {
+                statsPopupRankBadge.textContent = r;
+                statsPopupRankBadge.style.color = color;
+                statsPopupRankBadge.style.borderColor = color;
+                statsPopupRankBadge.style.textShadow = r === 'S+' ? `0 0 8px ${color}` : '';
+                statsPopupRankBadge.style.display = '';
+            }
+        }
     }
 
     function renderModal() {

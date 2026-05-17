@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=12">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=13">
 </head>
 <body>
 
@@ -308,8 +308,10 @@
   <div id="statsModal" class="stats-popup">
     <div class="stats-popup-inner stats-sheet">
       <div class="stats-header">
-        <h2 class="logo" style="font-size:1.1rem;">{{ username }}</h2>
-        <button class="close-modal" style="background:none;border:none;cursor:pointer;color:var(--text-dim);font-size:1.3rem;line-height:1;padding:0;">&times;</button>
+        <h2 class="logo" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+          <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.75rem;padding:1px 6px;border-radius:4px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
+          {{ username }}
+        </h2>
       </div>
 
       <div class="char-class-section">
@@ -448,6 +450,8 @@
       <input id="achievementTitleInput" type="text" placeholder="What did you build / ship / finish?" autocomplete="off"
         style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
       <input id="achievementDescInput" type="text" placeholder="One-line description (optional)" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
+      <input id="achievementProofInput" type="url" placeholder="Proof / link — GitHub, demo, video (optional)" autocomplete="off"
         style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:18px;">
       <div class="modal-actions">
         <button id="cancelAchievementBtn" class="nav-pill btn-ghost">Cancel</button>
@@ -466,8 +470,8 @@
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="{{ url_for('pug.static', filename='stats.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='achievements.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=2"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 

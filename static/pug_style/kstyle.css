@@ -2134,6 +2134,7 @@ div.infinite-canvas video {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin-bottom: calc(-1 * var(--gap));
 }
 
 .dream-inner {

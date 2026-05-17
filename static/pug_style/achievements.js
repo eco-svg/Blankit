@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn= document.getElementById('confirmAchievementBtn');
     const titleInput= document.getElementById('achievementTitleInput');
     const descInput = document.getElementById('achievementDescInput');
+    const proofInput= document.getElementById('achievementProofInput');
     const list      = document.getElementById('achievementsList');
 
     // ── Load ──────────────────────────────────────────────────────────────────
@@ -27,11 +28,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.createElement('div');
         el.className = 'achievement-item';
         el.dataset.id = a.id;
+        const proofHtml = a.proof
+            ? `<a href="${a.proof}" target="_blank" rel="noopener"
+                  style="display:inline-block;margin-top:4px;font-size:0.72rem;color:var(--accent);
+                         opacity:0.8;word-break:break-all;font-family:var(--font-mono);"
+                  title="${a.proof}">&#128279; proof</a>`
+            : '';
         el.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
                 <div>
                     <div class="achievement-title">${a.title}</div>
-                    ${a.body ? `<div class="achievement-desc">${a.body}</div>` : ''}
+                    ${a.desc ? `<div class="achievement-desc">${a.desc}</div>` : ''}
+                    ${proofHtml}
                 </div>
                 <button class="ach-del-btn" title="Remove" data-id="${a.id}"
                     style="flex-shrink:0;background:transparent;border:none;cursor:pointer;
@@ -54,6 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addBtn?.addEventListener('click', () => {
         titleInput.value = '';
         descInput.value  = '';
+        if (proofInput) proofInput.value = '';
         modal.classList.remove('hidden');
         setTimeout(() => titleInput.focus(), 50);
     });
@@ -65,6 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') descInput.focus();
     });
     descInput?.addEventListener('keydown', e => {
+        if (e.key === 'Enter') proofInput ? proofInput.focus() : submit();
+    });
+    proofInput?.addEventListener('keydown', e => {
         if (e.key === 'Enter') submit();
     });
 
@@ -73,10 +85,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function submit() {
         const title = titleInput.value.trim();
         if (!title) { titleInput.focus(); return; }
+        const proof = proofInput?.value.trim() || '';
         fetch('/pug/api/achievements', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ title, description: descInput.value.trim() })
+            body:    JSON.stringify({ title, description: descInput.value.trim(), proof })
         })
         .then(r => r.json())
         .then(data => {
