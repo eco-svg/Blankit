@@ -1,21 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const activeGoalsList = document.getElementById('activeGoalsList');
-    const finishedGoalsList = document.getElementById('finishedGoalsList');
-    const inputGoal = document.getElementById('newGoalInput');
-    const btnAddGoal = document.getElementById('addGoalBtn');
 
-    // --- NEW: Custom Modal Logic for Achieving Goals ---
-    const achieveModal = document.getElementById('achieveModal');
-    const btnCancelAchieve = document.getElementById('cancelAchieveBtn');
+    // ── Main screen elements (now unused for goals display — kept for compatibility) ─
+    const inputGoal   = document.getElementById('newGoalInput');
+    const btnAddGoal  = document.getElementById('addGoalBtn');
+
+    // ── Sidebar elements ─────────────────────────────────────────────────────────
+    const rActiveList   = document.getElementById('rActiveGoalsList');
+    const rPlannedList  = document.getElementById('rPlannedGoalsList');
+    const rFinishedList = document.getElementById('rFinishedList');
+    const rCancelList   = document.getElementById('rCancelledList');
+    const rInput        = document.getElementById('rNewGoalInput');
+    const rAddBtn       = document.getElementById('rAddGoalBtn');
+
+    // ── Achieve modal ─────────────────────────────────────────────────────────────
+    const achieveModal      = document.getElementById('achieveModal');
+    const btnCancelAchieve  = document.getElementById('cancelAchieveBtn');
     const btnConfirmAchieve = document.getElementById('confirmAchieveBtn');
-    let pendingAchieveId = null;
+    let pendingAchieveId    = null;
 
     if (btnCancelAchieve && btnConfirmAchieve && achieveModal) {
         btnCancelAchieve.addEventListener('click', () => {
             achieveModal.classList.add('hidden');
             pendingAchieveId = null;
         });
-
         btnConfirmAchieve.addEventListener('click', () => {
             if (pendingAchieveId) {
                 fetch(`/pug/api/goals/${pendingAchieveId}`, {
@@ -31,104 +38,142 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ── Helpers ──────────────────────────────────────────────────────────────────
+    const TODAY = new Date();
+    TODAY.setHours(0, 0, 0, 0);
+
+    function isPlanned(goal) {
+        if (!goal.start_datetime) return false;
+        const d = new Date(goal.start_datetime);
+        return d > TODAY;
+    }
+
+    function makeRGoalItem(goal) {
+        const el = document.createElement('div');
+        el.className = 'r-goal-item';
+        el.innerHTML = `
+            <span class="r-goal-text" title="${goal.title}">${goal.title}</span>
+            <div class="r-goal-actions">
+                <button class="r-goal-btn btn-finish" data-id="${goal.id}" title="Mark done">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </button>
+                <button class="r-goal-btn btn-cancel" data-id="${goal.id}" title="Cancel">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>`;
+        el.querySelector('.btn-finish').addEventListener('click', () => {
+            pendingAchieveId = goal.id;
+            achieveModal?.classList.remove('hidden');
+        });
+        el.querySelector('.btn-cancel').addEventListener('click', () => {
+            fetch(`/pug/api/goals/${goal.id}`, { method: 'DELETE' }).then(loadGoals);
+        });
+        return el;
+    }
+
+    // ── Load & render all goals ───────────────────────────────────────────────────
     function loadGoals() {
         fetch('/pug/api/goals')
-            .then(res => res.json())
+            .then(r => r.json())
             .then(goals => {
-                activeGoalsList.innerHTML = '';
-                finishedGoalsList.innerHTML = '';
+                if (rActiveList)  rActiveList.innerHTML  = '';
+                if (rPlannedList) rPlannedList.innerHTML = '';
+                if (rFinishedList) rFinishedList.innerHTML = '';
 
-                let activeCount = 0;
-                let finishedCount = 0;
+                let activeCount = 0, plannedCount = 0, finishedCount = 0;
 
                 goals.forEach(goal => {
-                    const el = document.createElement('div');
-                    el.className = goal.is_finished ? 'goal-item finished-item' : 'goal-item';
-                    
-                    if (!goal.is_finished) {
-                        activeCount++;
-                        el.innerHTML = `
-                            <span class="goal-text">${goal.title}</span>
-                            <div class="goal-actions">
-                                <button class="btn-goal-action action-achieve" title="Mark Achieved" data-id="${goal.id}">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                </button>
-                                <button class="btn-goal-action action-remove" title="Remove Goal" data-id="${goal.id}">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                </button>
-                            </div>
-                        `;
-                        activeGoalsList.appendChild(el);
-                    } else {
+                    if (goal.is_finished) {
                         finishedCount++;
-                        el.innerHTML = `<span class="goal-text">${goal.title}</span>`;
-                        finishedGoalsList.appendChild(el);
+                        if (rFinishedList) {
+                            const el = document.createElement('div');
+                            el.className = 'r-done-item finished';
+                            el.title = goal.title;
+                            el.textContent = goal.title;
+                            rFinishedList.appendChild(el);
+                        }
+                    } else if (isPlanned(goal)) {
+                        plannedCount++;
+                        if (rPlannedList) rPlannedList.appendChild(makeRGoalItem(goal));
+                    } else {
+                        activeCount++;
+                        if (rActiveList) rActiveList.appendChild(makeRGoalItem(goal));
                     }
                 });
 
-                // --- THE EMPTY STATES ---
-                if (activeCount === 0) {
-                    activeGoalsList.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:20px; font-style: italic;">No active goals. Set your sights on something!</p>';
+                if (rActiveList && activeCount === 0) {
+                    rActiveList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;padding:4px 6px;">Nothing active.</div>';
                 }
-                if (finishedCount === 0) {
-                    finishedGoalsList.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:20px; font-style: italic;">Nothing finished yet. Get to work!</p>';
+                if (rPlannedList && plannedCount === 0) {
+                    rPlannedList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;padding:4px 6px;">Nothing planned.</div>';
+                }
+                if (rFinishedList && finishedCount === 0) {
+                    rFinishedList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.35;padding:4px 6px;">None yet.</div>';
                 }
 
-                attachActionListeners();
-
-                // --- THE CHART TRIGGER ---
-                // Tell the chart to update ONLY after the new goals have been loaded!
                 window.dispatchEvent(new Event('goalUpdated'));
+            });
+
+        // Load cancelled separately
+        fetch('/pug/api/goals/cancelled')
+            .then(r => r.json())
+            .then(goals => {
+                if (!rCancelList) return;
+                rCancelList.innerHTML = '';
+                if (!goals.length) {
+                    rCancelList.innerHTML = '<div style="font-size:0.68rem;color:var(--text-dim);opacity:0.35;padding:4px 6px;">None.</div>';
+                    return;
+                }
+                goals.forEach(goal => {
+                    const el = document.createElement('div');
+                    el.className = 'r-done-item cancelled';
+                    el.title = goal.title;
+                    el.textContent = goal.title;
+                    rCancelList.appendChild(el);
+                });
+            })
+            .catch(() => {
+                if (rCancelList) rCancelList.innerHTML = '';
             });
     }
 
-    function addGoal() {
-        const title = inputGoal.value.trim();
+    // ── Add goal ──────────────────────────────────────────────────────────────────
+    function addGoal(title) {
         if (!title) return;
-
         fetch('/pug/api/goals', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: title })
-        }).then(() => {
-            inputGoal.value = '';
-            loadGoals(); 
+            body: JSON.stringify({ title })
+        }).then(loadGoals);
+    }
+
+    // Sidebar input
+    if (rAddBtn && rInput) {
+        rAddBtn.addEventListener('click', () => {
+            const t = rInput.value.trim();
+            if (t) { rInput.value = ''; addGoal(t); }
+        });
+        rInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                const t = rInput.value.trim();
+                if (t) { rInput.value = ''; addGoal(t); }
+            }
         });
     }
 
-    btnAddGoal.addEventListener('click', addGoal);
-    inputGoal.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') addGoal();
-    });
-
-    function attachActionListeners() {
-        document.querySelectorAll('.action-achieve').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                // Trigger the custom modal instead of standard confirm
-                pendingAchieveId = e.currentTarget.getAttribute('data-id');
-                if (achieveModal) {
-                    achieveModal.classList.remove('hidden');
-                } else {
-                     // Fallback if modal HTML is missing
-                    if (confirm("Move this to Finished?")) {
-                        fetch(`/pug/api/goals/${pendingAchieveId}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ is_finished: true })
-                        }).then(loadGoals);
-                    }
-                }
-            });
+    // Main screen input (kept for backwards compat, card removed but input may still exist)
+    if (btnAddGoal && inputGoal) {
+        btnAddGoal.addEventListener('click', () => {
+            const t = inputGoal.value.trim();
+            if (t) { inputGoal.value = ''; addGoal(t); }
         });
-
-        document.querySelectorAll('.action-remove').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const id = e.currentTarget.getAttribute('data-id');
-                fetch(`/pug/api/goals/${id}`, { method: 'DELETE' }).then(loadGoals);
-            });
+        inputGoal.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                const t = inputGoal.value.trim();
+                if (t) { inputGoal.value = ''; addGoal(t); }
+            }
         });
     }
 
-    // Initial load
     loadGoals();
 });

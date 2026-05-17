@@ -12,12 +12,10 @@
   window.addEventListener('scroll', () => {
     if (!ticking) {
       requestAnimationFrame(() => {
-        const y = window.scrollY;
-        if (y > lastY && y > 80) {
-          header.classList.add('hidden');
-        } else {
-          header.classList.remove('hidden');
-        }
+        const y       = window.scrollY;
+        const hiding  = y > lastY && y > 80;
+        header.classList.toggle('hidden', hiding);
+        document.body.classList.toggle('header-hidden', hiding);
         header.classList.toggle('scrolled', y > 10);
         lastY = y;
         ticking = false;

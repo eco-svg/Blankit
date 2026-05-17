@@ -292,6 +292,15 @@ body::after {
   gap: var(--gap);
   padding: var(--gap) 8px var(--gap) var(--gap);
   overflow-y: auto;
+  transition: top 0.32s cubic-bezier(0.4,0,0.2,1),
+              height 0.32s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* When header hides, sidebar stretches to fill the space */
+body.header-hidden .r-bar,
+body.header-hidden .l-bar {
+  top: 0;
+  height: 100vh;
 }
 
 .r-bar::-webkit-scrollbar { width: 0; }
@@ -302,7 +311,7 @@ body::after {
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius);
-  padding: 16px 14px 36px;
+  padding: 16px 14px 14px;
   position: relative;
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -313,10 +322,241 @@ body::after {
   box-shadow: 0 4px 20px #00000035;
 }
 
-.streak   { flex: 0 0 90px;  background: rgba(212, 165, 116, 0.13); }
-.buddybot { flex: 1;          background: rgba(74, 122, 170, 0.13); border-color: rgba(74,122,170,0.15) !important; }
+.buddybot { flex: 1; background: rgba(74,122,170,0.13); border-color: rgba(74,122,170,0.15) !important; }
 .buddybot:hover { border-color: rgba(74,122,170,0.35) !important; }
-.calender { flex: 0 0 200px; }
+.calender { flex: 0 0 220px; }
+
+/* ── Sidebar Goals Card ─────────────────────────────── */
+.r-goals-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 8px;
+}
+
+.r-goals-sections {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 2px;
+  margin-bottom: 8px;
+}
+
+.r-goals-section-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--text-dim);
+  opacity: 0.55;
+  margin: 10px 0 5px;
+  text-transform: uppercase;
+}
+
+.r-planned-label { color: #4a7aaa; opacity: 0.7; }
+
+.r-goals-list { display: flex; flex-direction: column; gap: 4px; }
+
+.r-goal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.r-goal-item:hover { background: rgba(255,255,255,0.06); }
+
+.r-goal-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.r-goal-actions {
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.r-goal-item:hover .r-goal-actions { opacity: 1; }
+
+.r-goal-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 2px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.r-goal-btn:hover { color: var(--text); }
+.r-goal-btn.btn-finish:hover { color: var(--green); }
+.r-goal-btn.btn-cancel:hover { color: #c85a2a; }
+
+.r-goal-input-row {
+  display: flex;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.r-goal-input-row input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 0.72rem;
+  color: var(--text);
+  font-family: var(--font-body);
+  outline: none;
+}
+
+.r-goal-input-row input:focus { border-color: var(--accent); }
+
+.r-goal-input-row button {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  width: 28px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.r-goal-input-row button:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Finished / Cancelled Two-Column Card ──────────── */
+.r-done-card {
+  flex: 0 0 180px;
+}
+
+.r-done-cols {
+  display: flex;
+  gap: 10px;
+  height: 100%;
+}
+
+.r-done-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.r-done-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.r-done-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.r-done-item {
+  font-size: 0.67rem;
+  color: var(--text-dim);
+  padding: 3px 5px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.r-done-item.finished { color: var(--green); opacity: 0.75; }
+.r-done-item.cancelled { text-decoration: line-through; opacity: 0.45; }
+
+/* ── Main Skills Card ──────────────────────────────── */
+.skills-main .skills-main-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+  overflow-y: auto;
+  max-height: calc(100% - 60px);
+}
+
+.skills-main .skill-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 0.2s;
+}
+
+.skills-main .skill-row:hover { border-color: rgba(255,255,255,0.15); }
+
+.skills-main .skill-name {
+  font-size: 0.82rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.skills-main .rank-badge {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+/* ── Achievements Card ─────────────────────────────── */
+.achievements-main .achievements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+  overflow-y: auto;
+  max-height: calc(100% - 60px);
+}
+
+.achievement-item {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  transition: border-color 0.2s;
+}
+
+.achievement-item:hover { border-color: rgba(255,255,255,0.15); }
+
+.achievement-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.achievement-desc {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
 
 .playground {
   margin-top: var(--header-h);

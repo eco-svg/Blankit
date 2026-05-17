@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=4">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=5">
 </head>
 <body>
 
@@ -16,46 +16,44 @@
   </div>
 
   <header class="main-header" id="mainHeader">
-<div class="header-left">
-  <div class="logo">B<span>.</span></div>
-  <div class="greeting">
-    <span class="greeting-hey">Hey !</span>
-    <!-- {{ username }} is a Jinja2 template variable — Flask fills it in from session -->
-    <span class="greeting-name">{{ username }}</span>
-  </div>
-</div>
+    <div class="header-left">
+      <div class="logo">B<span>.</span></div>
+      <div class="greeting">
+        <span class="greeting-hey">Hey !</span>
+        <span class="greeting-name">{{ username }}</span>
+      </div>
+    </div>
 
     <nav class="header-nav">
-      <a href="#sec-notes"   class="nav-pill">Notes</a>
-      <a href="#sec-goals"   class="nav-pill">Goals</a>
-      <a href="#sec-social"  class="nav-pill">Social</a>
-      <a href="#sec-growth"  class="nav-pill">Growth</a>
+      <a href="#sec-notes"        class="nav-pill">Notes</a>
+      <a href="#sec-skills"       class="nav-pill">Skills</a>
+      <a href="#sec-achievements" class="nav-pill">Work</a>
+      <a href="#sec-social"       class="nav-pill">Social</a>
+      <a href="#sec-growth"       class="nav-pill">Growth</a>
     </nav>
 
     <div class="header-right">
-    <div class="clock-widget stats-integrated">
+      <div class="clock-widget stats-integrated">
         <div class="cw-info">
-            <div class="cw-row">
-                <span class="cw-time" id="cwTime">00:00</span>
-                <span class="cw-sep">|</span>
-                <span class="cw-weather" id="cwWeather">☀️ --°</span>
-            </div>
-            <div class="cw-row">
-                <span class="cw-date" id="cwDate">Jan 1</span>
-                <span class="cw-sep">|</span>
-                <span class="cw-day" id="cwDay">Monday</span>
-            </div>
+          <div class="cw-row">
+            <span class="cw-time" id="cwTime">00:00</span>
+            <span class="cw-sep">|</span>
+            <span class="cw-weather" id="cwWeather">☀️ --°</span>
+          </div>
+          <div class="cw-row">
+            <span class="cw-date" id="cwDate">Jan 1</span>
+            <span class="cw-sep">|</span>
+            <span class="cw-day" id="cwDay">Monday</span>
+          </div>
         </div>
-
         <button id="statsBtn" class="stats-btn-inner">
-            <span class="stats-label">STATS</span>
-            <div class="stats-icon">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-            </div>
+          <span class="stats-label">STATS</span>
+          <div class="stats-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+          </div>
         </button>
+      </div>
     </div>
-</div>
-
   </header>
 
   <div class="page-layout">
@@ -67,213 +65,196 @@
     </aside>
 
     <main class="playground">
-      
-      <div class="card notes" id="sec-notes">   
-<div class="gap-bar span-row dream-bar" id="dreamContainer"></div>          
-          <div class="card-top-bar">
-              <h2 class="card-title">Notes</h2>
+
+      <div class="card notes" id="sec-notes">
+        <div class="gap-bar span-row dream-bar" id="dreamContainer"></div>
+        <div class="card-top-bar">
+          <h2 class="card-title">Notes</h2>
+        </div>
+        <div class="notes-view-list" id="notesListScreen">
+          <div class="list-header">
+            <h3>Your Flows</h3>
+            <button class="icon-btn" id="newNoteBtn" title="Start New Flow">+</button>
           </div>
-                  
-          <div class="notes-view-list" id="notesListScreen">
-              <div class="list-header">
-                  <h3>Your Flows</h3>
-                  <button class="icon-btn" id="newNoteBtn" title="Start New Flow">+</button>
-              </div>
-              <div class="note-items-container" id="noteItemsContainer"></div>
-          </div>
-
-          <div class="notes-view-editor hidden" id="notesEditorScreen">
-              <div class="editor-top-bar">
-                  <button class="icon-btn back-btn" id="backToListBtn" title="Back to List">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                  </button>
-                  
-                  <div style="display: flex; align-items: center; gap: 15px;">
-                      <span id="saveStatus" class="save-status">Saved</span>
-                      <button class="icon-btn" id="deleteNoteBtn" title="Delete Flow" style="color: #c85a2a;">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                      </button>
-                  </div>
-              </div>
-
-              <div class="editor-header">
-                 <input type="text" id="noteTitle" placeholder="Entry Title..." autocomplete="off" spellcheck="false">
-              </div>
-             
-             <div id="noteBody" class="infinite-canvas" contenteditable="true" data-placeholder="Start your flow (Text, Image, Video)..."></div>
-
-             <div class="editor-media-actions">
-                 <input type="date" id="noteDateInput" style="background: transparent; border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; padding: 4px; outline: none; font-family: var(--font-mono); font-size: 0.8rem; margin-right: 10px; cursor: pointer;">
-                 
-                 <label class="media-btn" title="Add Image" style="cursor: pointer; overflow: hidden; position: relative;">
-                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                     <input type="file" id="imageInput" accept="image/*" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
-                 </label>
-
-                 <label class="media-btn" title="Add Video" style="cursor: pointer; overflow: hidden; position: relative;">
-                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-                     <input type="file" id="videoInput" accept="video/mp4,video/webm" style="opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer;">
-                 </label>
-             </div>
-          </div>
-      </div>
-      
-      <div class="card buddybot-main" id="sec-blinkbot" style="display: flex; flex-direction: column;">
-          <div class="card-top-bar">
-              <h2 class="card-title" style="color: #4a7aaa;">BlinkBot</h2>
-          </div>
-
-          <!-- State A: pre-chat landing / premium wall -->
-          <div id="blinkDownloadState" style="flex:1; display:flex; flex-direction:column; justify-content:flex-start; gap:11px; padding:18px 20px; overflow-y:auto;">
-
-              <div style="font-size:1.25rem; font-family:var(--font-mono); font-weight:700; letter-spacing:0.1em; color:#4a7aaa;">
-                  BLINK<span style="color:var(--text);">BOT</span>
-              </div>
-
-              <!-- Free tier: what it is -->
-              <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px 14px;">
-                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:var(--text); letter-spacing:0.1em; margin-bottom:7px; font-weight:600;">FREE</div>
-                  <p style="color:var(--text); font-size:0.73rem; line-height:1.65; margin:0; opacity:0.85;">
-                      Runs <strong style="color:var(--text); opacity:1;">100% on your device.</strong>
-                      Your data never leaves your machine — <strong>guaranteed.</strong><br>
-                      Server is used for responses, but only anonymised context is sent.<br>
-                      <span style="opacity:0.55; font-size:0.68rem;">Uncensored answers not guaranteed on free tier — server has filters. BuddyBot doesn't.</span>
-                  </p>
-              </div>
-
-              <!-- BuddyBot premium teaser -->
-              <div style="background:rgba(74,122,170,0.08); border:1px solid rgba(74,122,170,0.25); border-left:3px solid #4a7aaa; border-radius:8px; padding:12px 14px;">
-                  <div style="font-size:0.62rem; font-family:var(--font-mono); color:#4a7aaa; letter-spacing:0.12em; margin-bottom:7px; font-weight:700;">✦ BUDDYBOT — PREMIUM</div>
-                  <p style="color:var(--text); font-size:0.73rem; line-height:1.65; margin:0 0 6px; opacity:0.85;">
-                      <strong style="color:#4a7aaa;">Fully uncensored.</strong> Answers anything. Zero guardrails.<br>
-                      Still 100% local — responses are computed and delivered privately, never logged.<br>
-                      Understands your full life context. Deep reasoning, not just answers.
-                  </p>
-                  <div style="font-size:0.63rem; color:#4a7aaa; opacity:0.5; font-family:var(--font-mono);">Coming soon.</div>
-              </div>
-
-              <button id="blinkStartBtn" style="margin-top:auto; font-size:0.78rem; padding:10px 0; cursor:pointer; border-radius:8px; background:#4a7aaa; color:#fff; border:none; font-family:var(--font-mono); font-weight:600; letter-spacing:0.06em; width:100%;">
-                  Start with BlinkBot &rarr;
+          <div class="note-items-container" id="noteItemsContainer"></div>
+        </div>
+        <div class="notes-view-editor hidden" id="notesEditorScreen">
+          <div class="editor-top-bar">
+            <button class="icon-btn back-btn" id="backToListBtn">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div style="display:flex;align-items:center;gap:15px;">
+              <span id="saveStatus" class="save-status">Saved</span>
+              <button class="icon-btn" id="deleteNoteBtn" style="color:#c85a2a;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
               </button>
+            </div>
           </div>
-
-          <!-- State B: chat active -->
-          <div id="blinkChatState" style="display:none; flex:1; flex-direction:column;">
-              <div style="font-size:0.6rem; font-family:var(--font-mono); color:var(--text-dim); opacity:0.35; padding:0 2px 6px; letter-spacing:0.05em;" id="blinkModeLabel">mode: server</div>
-              <div class="chat-window" id="blinkChatWindow">
-                  <div class="chat-message msg-ai">Online. Context loaded. What do you need?</div>
-              </div>
-              <div class="chat-input-pill">
-                  <input type="text" id="blinkInput" placeholder="Talk to BlinkBot..." autocomplete="off">
-                  <button class="send-ai-btn" id="sendBlinkBtn" style="background:#4a7aaa;">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                  </button>
-              </div>
+          <div class="editor-header">
+            <input type="text" id="noteTitle" placeholder="Entry Title..." autocomplete="off" spellcheck="false">
           </div>
-      </div>
-      
-      <div class="card goal" id="sec-goals" style="display: flex; flex-direction: column;">
-          <span class="card-label" style="display: none;">Goal</span>
-          
-          <div class="gap-bar span-row">
-              <span class="quote-text random-quote">Loading wisdom...</span>
+          <div id="noteBody" class="infinite-canvas" contenteditable="true" data-placeholder="Start your flow (Text, Image, Video)..."></div>
+          <div class="editor-media-actions">
+            <input type="date" id="noteDateInput" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;padding:4px;outline:none;font-family:var(--font-mono);font-size:0.8rem;margin-right:10px;cursor:pointer;">
+            <label class="media-btn" style="cursor:pointer;overflow:hidden;position:relative;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <input type="file" id="imageInput" accept="image/*" style="opacity:0;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;">
+            </label>
+            <label class="media-btn" style="cursor:pointer;overflow:hidden;position:relative;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+              <input type="file" id="videoInput" accept="video/mp4,video/webm" style="opacity:0;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;">
+            </label>
           </div>
-
-          <div class="card-top-bar">
-              <h2 class="card-title">Goals</h2>
-          </div>
-          
-          <div class="goals-list-container" id="activeGoalsList" style="flex-grow: 1; margin-bottom: 15px;"></div>
-
-          <div class="goal-input-pill">
-              <input type="text" id="newGoalInput" placeholder="What's the next move?" autocomplete="off">
-              <button class="add-goal-btn" id="addGoalBtn" title="Set Goal">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </button>
-          </div>
+        </div>
       </div>
 
-      <div class="card finished">
-          <span class="card-label" style="display: none;">Finished</span>
-          
-          <div class="card-top-bar">
-              <h2 class="card-title" style="color: var(--green);">Finished</h2>
+      <div class="card buddybot-main" id="sec-blinkbot" style="display:flex;flex-direction:column;">
+        <div class="card-top-bar">
+          <h2 class="card-title" style="color:#4a7aaa;">BlinkBot</h2>
+        </div>
+        <div id="blinkDownloadState" style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:11px;padding:18px 20px;overflow-y:auto;">
+          <div style="font-size:1.25rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">BLINK<span style="color:var(--text);">BOT</span></div>
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;">
+            <div style="font-size:0.62rem;font-family:var(--font-mono);color:var(--text);letter-spacing:0.1em;margin-bottom:7px;font-weight:600;">FREE</div>
+            <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0;opacity:0.85;">
+              Runs <strong>100% on your device.</strong> Your data never leaves your machine.<br>
+              Server is used for responses, but only anonymised context is sent.<br>
+              <span style="opacity:0.55;font-size:0.68rem;">Uncensored answers not guaranteed on free tier.</span>
+            </p>
           </div>
-          <div class="goals-list-container" id="finishedGoalsList"></div>
+          <div style="background:rgba(74,122,170,0.08);border:1px solid rgba(74,122,170,0.25);border-left:3px solid #4a7aaa;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:0.62rem;font-family:var(--font-mono);color:#4a7aaa;letter-spacing:0.12em;margin-bottom:7px;font-weight:700;">✦ BUDDYBOT — PREMIUM</div>
+            <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0 0 6px;opacity:0.85;">
+              <strong style="color:#4a7aaa;">Fully uncensored.</strong> Deep reasoning, not just answers.<br>
+              Understands your full life context. Zero guardrails.
+            </p>
+            <div style="font-size:0.63rem;color:#4a7aaa;opacity:0.5;font-family:var(--font-mono);">Coming soon.</div>
+          </div>
+          <button id="blinkStartBtn" style="margin-top:auto;font-size:0.78rem;padding:10px 0;cursor:pointer;border-radius:8px;background:#4a7aaa;color:#fff;border:none;font-family:var(--font-mono);font-weight:600;letter-spacing:0.06em;width:100%;">Start with BlinkBot &rarr;</button>
+        </div>
+        <div id="blinkChatState" style="display:none;flex:1;flex-direction:column;">
+          <div style="font-size:0.6rem;font-family:var(--font-mono);color:var(--text-dim);opacity:0.35;padding:0 2px 6px;letter-spacing:0.05em;" id="blinkModeLabel">mode: server</div>
+          <div class="chat-window" id="blinkChatWindow">
+            <div class="chat-message msg-ai">Online. Context loaded. What do you need?</div>
+          </div>
+          <div class="chat-input-pill">
+            <input type="text" id="blinkInput" placeholder="Talk to BlinkBot..." autocomplete="off">
+            <button class="send-ai-btn" id="sendBlinkBtn" style="background:#4a7aaa;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+          </div>
+        </div>
       </div>
-      
+
+      <!-- Skills Card (replaces Goals) -->
+      <div class="card skills-main" id="sec-skills">
+        <div class="gap-bar span-row">
+          <span class="quote-text random-quote">Loading wisdom...</span>
+        </div>
+        <div class="card-top-bar">
+          <h2 class="card-title">Skills</h2>
+          <button id="statsBtn2" class="icon-btn" title="Generate character sheet" style="font-size:0.7rem;font-family:var(--font-mono);padding:4px 10px;border:1px solid var(--border);border-radius:6px;color:var(--text-dim);">analyze ↗</button>
+        </div>
+        <div class="skills-main-list" id="skillsMainList">
+          <div class="skill-loading" style="margin-top:30px;">Click <strong>analyze</strong> or open STATS to detect your skills.</div>
+        </div>
+      </div>
+
+      <!-- Achievements Card (replaces Finished) -->
+      <div class="card achievements-main" id="sec-achievements">
+        <div class="card-top-bar">
+          <h2 class="card-title">Work</h2>
+          <button class="icon-btn" id="newAchievementBtn" title="Add achievement">+</button>
+        </div>
+        <div class="achievements-list" id="achievementsList">
+          <div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>
+        </div>
+      </div>
+
       <div class="card dms" id="sec-social">
-          <div class="gap-bar span-row">
-              <span class="quote-text random-quote">Loading wisdom...</span>
-          </div>
-          <span class="card-label">DMs</span>
+        <div class="gap-bar span-row">
+          <span class="quote-text random-quote">Loading wisdom...</span>
+        </div>
+        <span class="card-label">DMs</span>
       </div>
-      
-      <div class="card comms">
-          <span class="card-label">Comms</span>
-      </div>
-      
-      <div class="card consistency full-row" id="sec-growth">
-          <span class="card-label" style="display: none;">Consistency</span>
-          
-          <div class="gap-bar span-self">
-              <span class="quote-text random-quote">Loading wisdom...</span>
-          </div>
 
-          <div class="card-top-bar" style="margin-bottom: 5px;">
-              <h2 class="card-title">Consistency</h2>
-          </div>
-          
-          <div style="position: relative; height: 85%; width: 100%;">
-              <canvas id="consistencyChart"></canvas>
-          </div>
+      <div class="card comms">
+        <span class="card-label">Comms</span>
       </div>
+
+      <div class="card consistency full-row" id="sec-growth">
+        <div class="gap-bar span-self">
+          <span class="quote-text random-quote">Loading wisdom...</span>
+        </div>
+        <div class="card-top-bar" style="margin-bottom:5px;">
+          <h2 class="card-title">Consistency</h2>
+        </div>
+        <div style="position:relative;height:85%;width:100%;">
+          <canvas id="consistencyChart"></canvas>
+        </div>
+      </div>
+
     </main>
 
     <aside class="r-bar">
-      <div class="r-card streak">
-        <span class="card-label">Streak 🔥</span>
-      </div>
-      <div class="r-card ask-sidebar" id="sec-ask-sidebar">
-        <span class="card-label" style="position:static; margin-bottom:10px; display:block;">Knowledge Engine</span>
-        
-        <div class="chat-window mini-chat" id="chatWindow">
-            <div class="chat-message msg-ai" style="font-size: 0.8rem;">Fact-retrieval mode active. 10-prompt cache ready.</div>
-        </div>
 
-        <div class="chat-input-pill mini-pill">
-            <input type="text" id="aiInput" placeholder="Quick Knowledge Search..." autocomplete="off">
-            <button class="send-ai-btn" id="sendAiBtn" style="width:28px; height:28px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-    </div>
+      <!-- Calendar — always first -->
       <div class="r-card calender" id="calendarCard">
-    <div class="calendar-header">
-        <button id="prevMonth">&lt;</button>
-        <span id="monthDisplay">Month Year</span>
-        <button id="nextMonth">&gt;</button>
-    </div>
-    <div class="calendar-weekdays">
-        <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
-    </div>
-    <div class="calendar-days" id="calendarDays"></div>
-    
-    <span class="card-label">Silo Calendar</span>
-</div>
+        <div class="calendar-header">
+          <button id="prevMonth">&lt;</button>
+          <span id="monthDisplay">Month Year</span>
+          <button id="nextMonth">&gt;</button>
+        </div>
+        <div class="calendar-weekdays">
+          <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+        </div>
+        <div class="calendar-days" id="calendarDays"></div>
+        <span class="card-label">Silo Calendar</span>
+      </div>
+
+      <!-- Goals (active + planned) -->
+      <div class="r-card r-goals-card">
+        <span class="card-label">Goals</span>
+        <div class="r-goals-sections">
+          <div class="r-goals-section-label">In Progress</div>
+          <div class="r-goals-list" id="rActiveGoalsList"></div>
+          <div class="r-goals-section-label r-planned-label">Planned</div>
+          <div class="r-goals-list" id="rPlannedGoalsList"></div>
+        </div>
+        <div class="r-goal-input-row">
+          <input type="text" id="rNewGoalInput" placeholder="New goal..." autocomplete="off">
+          <button id="rAddGoalBtn">+</button>
+        </div>
+      </div>
+
+      <!-- Finished / Cancelled — two columns -->
+      <div class="r-card r-done-card">
+        <div class="r-done-cols">
+          <div class="r-done-col">
+            <div class="r-done-label" style="color:var(--green);">Finished</div>
+            <div id="rFinishedList" class="r-done-list"></div>
+          </div>
+          <div class="r-done-col">
+            <div class="r-done-label" style="color:var(--text-dim);">Cancelled</div>
+            <div id="rCancelledList" class="r-done-list"></div>
+          </div>
+        </div>
+      </div>
+
     </aside>
 
   </div>
+
+  <!-- Stats Modal -->
   <div id="statsModal" class="custom-modal hidden">
     <div class="modal-content stats-sheet">
-
-      <!-- Header -->
-      <div class="stats-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-        <h2 class="logo">PUG<span>_OS</span> // STATS</h2>
-        <button class="icon-btn close-modal" style="border:none;font-size:1.5rem;background:transparent;cursor:pointer;color:var(--text-dim);">&times;</button>
+      <div class="stats-header">
+        <h2 class="logo">{{ username }}<span> // STATS</span></h2>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button id="refreshStatsBtn" class="refresh-stats-btn" title="Regenerate character sheet">↺</button>
+          <button class="icon-btn close-modal" style="border:none;font-size:1.5rem;background:transparent;cursor:pointer;color:var(--text-dim);">&times;</button>
+        </div>
       </div>
-
-      <!-- Character Class -->
       <div class="char-class-section">
         <div class="char-class-label">CLASS</div>
         <div class="char-class-name" id="statClassName">Analyzing...</div>
@@ -282,86 +263,57 @@
           <button class="class-mode-btn" id="classModePlayful">Playful</button>
         </div>
       </div>
-
-      <!-- Bio -->
       <div class="char-bio" id="statBio"></div>
-
-      <!-- Skills -->
       <div class="char-skills">
         <div class="char-skills-header">DETECTED SKILLS</div>
         <div id="statSkillsList" class="skills-list">
           <div class="skill-loading">Scanning data...</div>
         </div>
       </div>
-
-      <!-- Real Stats Row -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-label-text">Archive</span>
-          <div class="stat-value" id="stat-notes">--</div>
-          <div class="stat-sub">Flows Synced</div>
-        </div>
-        <div class="stat-card accent">
-          <span class="stat-label-text">The Grind</span>
-          <div class="stat-value" id="stat-streak">--</div>
-          <div class="stat-sub">Day Streak</div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label-text">Vault</span>
-          <div class="stat-value" id="stat-media">--</div>
-          <div class="stat-sub">Media Objects</div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-label-text">Recalibrate</span>
-          <div class="stat-value">
-            <button id="refreshStatsBtn" class="refresh-stats-btn" title="Regenerate character sheet">↺</button>
-          </div>
-          <div class="stat-sub">Refresh Sheet</div>
-        </div>
-      </div>
-
     </div>
   </div>
+
+  <!-- Modals -->
   <div id="deleteModal" class="custom-modal hidden">
-      <div class="modal-content">
-          <h3 style="margin-bottom: 10px; color: var(--text); font-weight: 600; font-size: 1.4rem;">Delete Flow?</h3>
-          <p style="color: var(--text-dim); margin-bottom: 25px; line-height: 1.5;">This will permanently erase this flow and any media attached to it. This cannot be undone.</p>
-          <div class="modal-actions">
-              <button id="cancelDeleteBtn" class="nav-pill btn-ghost">Cancel</button>
-              <button id="confirmDeleteBtn" class="nav-pill btn-danger">Delete Forever</button>
-          </div>
+    <div class="modal-content">
+      <h3 style="margin-bottom:10px;color:var(--text);font-weight:600;font-size:1.4rem;">Delete Flow?</h3>
+      <p style="color:var(--text-dim);margin-bottom:25px;line-height:1.5;">This will permanently erase this flow and any media attached to it.</p>
+      <div class="modal-actions">
+        <button id="cancelDeleteBtn" class="nav-pill btn-ghost">Cancel</button>
+        <button id="confirmDeleteBtn" class="nav-pill btn-danger">Delete Forever</button>
       </div>
+    </div>
   </div>
+
   <div id="achieveModal" class="custom-modal hidden">
-      <div class="modal-content">
-          <h3 style="margin-bottom: 10px; color: var(--green); font-weight: 600; font-size: 1.4rem;">Crushed It?</h3>
-          <p style="color: var(--text-dim); margin-bottom: 25px; line-height: 1.5;">Move this goal to your Finished list? You can't undo this.</p>
-          <div class="modal-actions">
-              <button id="cancelAchieveBtn" class="nav-pill btn-ghost">Wait, no</button>
-              <button id="confirmAchieveBtn" class="nav-pill btn-danger" style="background: var(--green); color: #111;">Hell Yeah</button>
-          </div>
+    <div class="modal-content">
+      <h3 style="margin-bottom:10px;color:var(--green);font-weight:600;font-size:1.4rem;">Crushed It?</h3>
+      <p style="color:var(--text-dim);margin-bottom:25px;line-height:1.5;">Move this goal to your Finished list?</p>
+      <div class="modal-actions">
+        <button id="cancelAchieveBtn" class="nav-pill btn-ghost">Wait, no</button>
+        <button id="confirmAchieveBtn" class="nav-pill btn-danger" style="background:var(--green);color:#111;">Hell Yeah</button>
       </div>
+    </div>
   </div>
 
   <div id="dreamModal" class="custom-modal hidden">
-      <div class="modal-content">
-          <h3 style="margin-bottom: 10px; color: var(--blue); font-weight: 600; font-size: 1.4rem;">Lock In Dream?</h3>
-          <p style="color: var(--text-dim); margin-bottom: 25px; line-height: 1.5;">Are you absolutely sure? Once set, this is your locked trajectory.</p>
-          <div class="modal-actions">
-              <button id="cancelDreamBtn" class="nav-pill btn-ghost">Let me think</button>
-              <button id="confirmDreamBtn" class="nav-pill btn-danger" style="background: var(--blue); color: #111;">Lock It In</button>
-          </div>
+    <div class="modal-content">
+      <h3 style="margin-bottom:10px;color:var(--blue);font-weight:600;font-size:1.4rem;">Lock In Dream?</h3>
+      <p style="color:var(--text-dim);margin-bottom:25px;line-height:1.5;">Are you absolutely sure? Once set, this is your locked trajectory.</p>
+      <div class="modal-actions">
+        <button id="cancelDreamBtn" class="nav-pill btn-ghost">Let me think</button>
+        <button id="confirmDreamBtn" class="nav-pill btn-danger" style="background:var(--blue);color:#111;">Lock It In</button>
       </div>
+    </div>
   </div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('pug.static', filename='ani.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='notes.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='goals.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='consistency.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='clock.js') }}"></script> 
-  <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script> 
+  <script src="{{ url_for('pug.static', filename='clock.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

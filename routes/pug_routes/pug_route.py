@@ -688,6 +688,17 @@ def delete_goal(goal_id):
     return jsonify({'status': 'success'})
 
 
+@pug_bp.route('/pug/api/goals/cancelled', methods=['GET'])
+def get_cancelled_goals():
+    err = login_required_api()
+    if err: return err
+    goals = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='goal',
+        is_deleted=True, is_finished=False
+    ).order_by(Note.updated_at.desc()).limit(20).all()
+    return jsonify([g.to_dict() for g in goals])
+
+
 @pug_bp.route('/pug/api/dream', methods=['GET'])
 def get_dream():
     err = login_required_api()
@@ -953,8 +964,9 @@ def get_stats_sheet():
     err = login_required_api()
     if err: return err
 
-    user_id = session['user_id']
-    refresh = request.args.get('refresh', 'false').lower() == 'true'
+    user_id    = session['user_id']
+    refresh    = request.args.get('refresh',    'false').lower() == 'true'
+    cache_only = request.args.get('cache_only', 'false').lower() == 'true'
 
     notes_count = Note.query.filter_by(
         user_id=user_id, entry_type='note', is_deleted=False
@@ -963,7 +975,9 @@ def get_stats_sheet():
     media_count = _count_media(user_id)
 
     cached = _stats_cache.get(user_id)
-    if not refresh and cached and (time.time() - cached['ts']) < 86400:
+    if cache_only:
+        sheet = cached['sheet'] if cached else None
+    elif not refresh and cached and (time.time() - cached['ts']) < 86400:
         sheet = cached['sheet']
     else:
         user_context = _assemble_user_context(user_id, session.get('username', ''))
