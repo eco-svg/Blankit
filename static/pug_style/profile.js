@@ -123,6 +123,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('[data-app-lang]').forEach(b => {
             b.classList.toggle('active', b.dataset.appLang === code);
         });
+        // Apply translations immediately
+        if (window.applyI18n) window.applyI18n(code);
     }
 
     // ── First-launch language prompt ──────────────────────────────────────────

@@ -1830,7 +1830,7 @@ div.infinite-canvas video {
   top: calc(100% + 10px);
   left: 0;
   z-index: 300;
-  min-width: 230px;
+  min-width: 320px;
   background: rgba(18,16,13,0.97);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
@@ -2122,19 +2122,19 @@ div.infinite-canvas video {
 /* ── Dream — standalone compact first card ────────────── */
 /* Reserve a small first row in the playground for the dream card */
 .playground {
-  grid-template-rows: 72px;    /* first row: dream card */
-  grid-auto-rows: 800px;       /* all other rows: 800px */
+  grid-template-rows: 60px;    /* first row: dream card */
+  grid-auto-rows: 800px;
+  gap: 0 var(--gap);           /* no row gap — dream sits flush above content */
 }
 
 .dream-standalone {
   grid-row: 1;
   grid-column: 1 / -1;
-  height: 72px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  margin-bottom: calc(-1 * var(--gap));
 }
 
 .dream-inner {
