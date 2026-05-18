@@ -1,6 +1,5 @@
 from shared.models import db
 from datetime import datetime, timedelta
-import random
 import secrets
 
 class VerifyToken(db.Model):
@@ -16,7 +15,7 @@ class VerifyToken(db.Model):
 
     def __init__(self, user_id):
         self.user_id    = user_id
-        self.otp        = str(random.randint(100000, 999999))
+        self.otp        = str(secrets.randbelow(900000) + 100000)
         self.token      = secrets.token_urlsafe(32)
         self.expires_at = datetime.utcnow() + timedelta(minutes=10)
 

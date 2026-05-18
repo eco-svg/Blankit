@@ -30,7 +30,7 @@ def _hf_download(repo_id, filename, dest_path, token):
 
 def _ensure_blinkbot_model():
     """Download BlinkBot GGUF to /data so the proxy can serve it directly to the browser."""
-    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'modals', 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
+    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
     model_path   = os.environ.get('BLINKBOT_PATH', default_path)
     if os.path.exists(model_path):
         print(f'[startup] BlinkBot found: {model_path}')
@@ -43,7 +43,7 @@ def _ensure_blinkbot_model():
 
 
 def _ensure_buddybot_model():
-    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'modals', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
+    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
     model_path   = os.environ.get('BUDDYBOT_PATH', default_path)
     if os.path.exists(model_path):
         print(f'[startup] BuddyBot found: {model_path}')
@@ -110,7 +110,7 @@ def create_app():
 
     from distro.svg.routes.svg_route import svg
     from distro.svg.routes.api_route import api
-    from shared.auth_route import auth, init_mail
+    from shared.auth.auth_route import auth, init_mail
 
     init_mail(mail)
 

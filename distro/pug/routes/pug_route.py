@@ -25,7 +25,7 @@ except ImportError:
     _LLAMA_OK = False
 
 _DATA_DIR   = '/data' if os.path.isdir('/data') else os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
-_MODELS_DIR = os.path.join(_DATA_DIR, 'distro', 'pug', 'modals')
+_MODELS_DIR = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm')
 _BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf'))
 _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf'))
 
@@ -64,7 +64,7 @@ def _get_buddybot():
 
 
 def _assemble_user_context(user_id, username):
-    from shared.models.user import User
+    from shared.auth.user import User
     user = User.query.get(user_id)
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
 
@@ -1055,6 +1055,8 @@ def save_location():
         lng = float(data['lng'])
     except (KeyError, ValueError, TypeError):
         return jsonify({'error': 'lat and lng required'}), 400
+    if not (-90 <= lat <= 90) or not (-180 <= lng <= 180):
+        return jsonify({'error': 'coordinates out of range'}), 400
     existing = Note.query.filter_by(
         user_id=session['user_id'], entry_type='user_location', is_deleted=False
     ).first()
@@ -1075,7 +1077,7 @@ def save_location():
 def get_user_profile(uid):
     err = login_required_api()
     if err: return err
-    from shared.models.user import User
+    from shared.auth.user import User
     u = User.query.get(uid)
     if not u or u.distro != 'thepug':
         return jsonify({'error': 'Not found'}), 404
@@ -1216,8 +1218,9 @@ def buddybot_endpoint():
         return jsonify({'error': 'No context packet'}), 400
 
     try:
+        # Always use server-side session username — never trust client-supplied value
         user_context = {
-            'username':           ctx_data.get('username', session.get('username', '')),
+            'username':           session.get('username', ''),
             'member_since':       ctx_data.get('member_since', ''),
             'dream':              ctx_data.get('dream'),
             'active_goals':       ctx_data.get('active_goals', []),
@@ -1280,7 +1283,7 @@ def get_stats_sheet():
 
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
-    from shared.models.user import User
+    from shared.auth.user import User
     err = login_required_api()
     if err: return err
     data     = request.get_json(force=True) or {}
@@ -1298,15 +1301,15 @@ def update_username():
 
 @pug_bp.route('/pug/api/profile/password', methods=['PATCH'])
 def update_password():
-    from shared.models.user import User
+    from shared.auth.user import User
     from werkzeug.security import check_password_hash, generate_password_hash
     err = login_required_api()
     if err: return err
     data         = request.get_json(force=True) or {}
     current      = data.get('current', '')
     new_password = data.get('new', '')
-    if not new_password or len(new_password) < 6:
-        return jsonify({'error': 'Password too short (min 6 chars)'}), 400
+    if not new_password or len(new_password) < 8:
+        return jsonify({'error': 'Password too short (min 8 chars)'}), 400
     user = User.query.get(session['user_id'])
     if not check_password_hash(user.password_hash, current):
         return jsonify({'error': 'Current password is wrong'}), 403
@@ -1317,7 +1320,7 @@ def update_password():
 
 @pug_bp.route('/pug/api/profile/delete', methods=['DELETE'])
 def delete_account():
-    from shared.models.user import User
+    from shared.auth.user import User
     from werkzeug.security import check_password_hash
     err = login_required_api()
     if err: return err
@@ -1412,7 +1415,7 @@ def _user_has_skill(uid, skill_name):
 def get_community_feed():
     err = login_required_api()
     if err: return err
-    from shared.models.user import User
+    from shared.auth.user import User
     me = session['user_id']
 
     # Optional location filter
@@ -1525,7 +1528,7 @@ def delete_community_post(pid):
 def search_users():
     err = login_required_api()
     if err: return err
-    from shared.models.user import User
+    from shared.auth.user import User
     from sqlalchemy import or_
     q = (request.args.get('q') or '').strip()
     if len(q) < 2:
@@ -1543,7 +1546,7 @@ def search_users():
 def list_dms():
     err = login_required_api()
     if err: return err
-    from shared.models.user import User
+    from shared.auth.user import User
     me = session['user_id']
     # mood stores receiver_id; get all messages I sent or received
     sent     = Note.query.filter_by(user_id=me,   entry_type='dm', is_deleted=False).all()
@@ -1615,9 +1618,12 @@ def get_dm_thread(other_id):
 def send_dm(other_id):
     err = login_required_api()
     if err: return err
-    from shared.models.user import User
+    from shared.auth.user import User
     me = session['user_id']
-    if not User.query.get(other_id):
+    if other_id == me:
+        return jsonify({'error': 'Cannot DM yourself'}), 400
+    recipient = User.query.filter_by(id=other_id, distro='thepug').first()
+    if not recipient:
         return jsonify({'error': 'User not found'}), 404
     data      = request.get_json(force=True) or {}
     body      = (data.get('body') or '').strip()
@@ -1757,6 +1763,8 @@ def verify_achievement(aid):
         file_data = file.read()
         if len(file_data) > 50 * 1024 * 1024:
             return jsonify({'error': 'File too large (max 50 MB)'}), 400
+        if not _valid_magic(file_data, ext):
+            return jsonify({'error': 'File content does not match extension'}), 400
         if ext in {'mp3', 'wav', 'ogg', 'flac'}:
             ct = f'audio/{ext}'
         elif ext in {'mp4', 'webm', 'mov', 'avi'}:

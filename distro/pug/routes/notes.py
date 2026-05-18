@@ -1,7 +1,7 @@
 from datetime import datetime
 from distro.pug.extensions import encrypt, decrypt
 from shared.models import db
-from shared.models.user import User  # noqa: F401  (re-exported for callers)
+from shared.auth.user import User  # noqa: F401  (re-exported for callers)
 
 
 class Note(db.Model):

@@ -11,7 +11,7 @@ instance/
 *.db
 
 #pug_specific:
-distro/pug/modals/
+distro/pug/llm/
 distro/pug/datasets/
 distro/pug/chat_logs/
 distro/pug/tools/

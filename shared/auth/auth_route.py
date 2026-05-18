@@ -1,9 +1,10 @@
+import re
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 from shared.models import db
-from shared.models.user import User
-from shared.models.reset_token import VerifyToken, ResetToken
+from shared.auth.user import User
+from shared.auth.reset_token import VerifyToken, ResetToken
 from shared.extensions import limiter
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
@@ -97,14 +98,20 @@ def send_otp_email(user, otp):
 @auth.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
 def register():
-    data     = request.get_json()
+    data     = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
-    email    = data.get('email', '').strip()
+    email    = data.get('email', '').strip().lower()
     password = data.get('password', '')
     distro   = data.get('distro', 'ecosvg')
 
     if distro not in DISTRO_REDIRECTS:
         return jsonify({'error': 'invalid distro'}), 400
+    if len(username) < 2 or len(username) > 50:
+        return jsonify({'error': 'username must be 2–50 characters'}), 400
+    if len(password) < 8:
+        return jsonify({'error': 'password must be at least 8 characters'}), 400
+    if '@' not in email or '.' not in email.split('@')[-1]:
+        return jsonify({'error': 'invalid email address'}), 400
 
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'username already taken'}), 409
@@ -234,9 +241,8 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'invalid credentials'}), 401
 
-    # Block cross-distro login
     if user.distro != distro:
-        return jsonify({'error': f'this account belongs to {user.distro}, not {distro}'}), 403
+        return jsonify({'error': 'invalid credentials'}), 401
 
     if not user.is_verified:
         VerifyToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
@@ -280,7 +286,8 @@ def forgot_password():
         token_obj = ResetToken(user_id=user.id)
         db.session.add(token_obj)
         db.session.commit()
-        reset_url = f"{request.url_root}?reset_token={token_obj.token}"
+        safe_host = re.sub(r'[^a-zA-Z0-9.\-:_]', '', request.host)
+        reset_url = f"{request.scheme}://{safe_host}/?reset_token={token_obj.token}"
         try:
             send_reset_email(user, reset_url)
         except Exception as e:
@@ -326,14 +333,17 @@ def logout():
 # ══════════════════════════════
 @auth.route('/delete-account', methods=['DELETE'])
 def delete_account():
+    from werkzeug.security import check_password_hash
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'not logged in'}), 401
-
+    data     = request.get_json(silent=True) or {}
+    password = data.get('password', '')
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'user not found'}), 404
-
+    if not check_password_hash(user.password_hash, password):
+        return jsonify({'error': 'wrong password'}), 403
     try:
         db.session.delete(user)
         db.session.commit()

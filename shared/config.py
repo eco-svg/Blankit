@@ -8,6 +8,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DISTRO                      = os.getenv('DISTRO', 'ecosvg')
 
+    # Session cookie hardening
+    SESSION_COOKIE_HTTPONLY  = True
+    SESSION_COOKIE_SAMESITE  = 'Lax'
+    SESSION_COOKIE_SECURE    = os.getenv('FLASK_ENV', 'production') != 'development'
+
     # Flask-Mail
     MAIL_SERVER                 = 'smtp.gmail.com'
     MAIL_PORT                   = 587
