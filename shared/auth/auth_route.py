@@ -137,10 +137,30 @@ def register():
     if '@' not in email or '.' not in email.split('@')[-1]:
         return jsonify({'error': 'invalid email address'}), 400
 
+    # If email exists but unverified — update credentials and resend OTP
+    existing = User.query.filter_by(email=email).first()
+    if existing:
+        if existing.is_verified:
+            return jsonify({'error': 'email already registered'}), 409
+        existing.username      = username
+        existing.password_hash = generate_password_hash(password)
+        existing.distro        = distro
+        VerifyToken.query.filter_by(user_id=existing.id, used=False).update({'used': True})
+        db.session.commit()
+        token_obj = VerifyToken(user_id=existing.id)
+        db.session.add(token_obj)
+        db.session.commit()
+        session['pending_user_id'] = existing.id
+        session['pending_email']   = email
+        try:
+            send_otp_email(existing, token_obj.otp)
+        except Exception as e:
+            current_app.logger.error(f'Mail error: {e}')
+        return jsonify({'message': 'otp_sent', 'email': email}), 200
+
+    # Username check only after email is confirmed fresh
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'username already taken'}), 409
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'email already registered'}), 409
 
     new_user = User(
         username      = username,
