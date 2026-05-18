@@ -1,25 +1,4 @@
-import os
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from cryptography.fernet import Fernet
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# ── Rate limiter ──────────────────────────────────────────
 limiter = Limiter(key_func=get_remote_address, storage_uri="memory://", default_limits=[])
-
-# ── Encryption (Fernet) ───────────────────────────────────
-_raw_key = os.environ.get('BLANKIT_KEY')
-if not _raw_key:
-    raise RuntimeError("BLANKIT_KEY environment variable not set.")
-
-_fernet = Fernet(_raw_key.encode())
-
-
-def encrypt(text: str) -> str:
-    return _fernet.encrypt(text.encode()).decode()
-
-
-def decrypt(token: str) -> str:
-    return _fernet.decrypt(token.encode()).decode()

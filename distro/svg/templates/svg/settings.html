@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEYRA — settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('svg.static', filename='settings.css') }}" />
+</head>
+
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">{{ username }}</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item active" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+    </nav>
+  </div>
+
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="/" style="text-decoration:none">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">{{ username }}</span>
+    </a>
+    <div class="topbar-right">
+      <span class="streak-badge">🔥 9 day streak</span>
+      <div class="avatar">{{ username[:2].upper() }}</div>
+    </div>
+  </header>
+
+  <!-- SETTINGS CONTENT -->
+  <main class="settings-main">
+    <div class="settings-page-header">
+      <h1 class="settings-page-title">Settings</h1>
+      <p class="settings-page-sub">Customize your VEYRA experience</p>
+    </div>
+
+    <div class="settings-grid">
+
+      <!-- THEME -->
+      <section class="settings-section">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Theme</h2>
+          <p class="settings-section-desc">Choose the look and feel of your tracker</p>
+        </div>
+        <div class="theme-cards" id="themeCards">
+          <button class="theme-card active" data-theme="forest">
+            <div class="theme-card-preview theme-preview-forest">
+              <div class="preview-topbar"></div><div class="preview-hero"></div><div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Forest</span><span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="cyber">
+            <div class="theme-card-preview theme-preview-cyber">
+              <div class="preview-topbar"></div><div class="preview-hero"></div><div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Cyber</span><span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="ember">
+            <div class="theme-card-preview theme-preview-ember">
+              <div class="preview-topbar"></div><div class="preview-hero"></div><div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">Ember</span><span class="theme-card-check">✓</span>
+          </button>
+          <button class="theme-card" data-theme="void">
+            <div class="theme-card-preview theme-preview-void">
+              <div class="preview-topbar"></div><div class="preview-hero"></div><div class="preview-card"></div>
+            </div>
+            <span class="theme-card-name">◻ Void</span><span class="theme-card-check">✓</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- APPEARANCE -->
+      <section class="settings-section">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Appearance</h2>
+          <p class="settings-section-desc">Visual effects and animations</p>
+        </div>
+        <div class="settings-toggle-row">
+          <div class="settings-toggle-info">
+            <span class="settings-toggle-label">Background animation</span>
+            <span class="settings-toggle-desc">The subtle grid texture behind the UI</span>
+          </div>
+          <button class="settings-toggle-btn" id="animToggle" aria-pressed="true">
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- NOTIFICATIONS locked -->
+      <section class="settings-section settings-section--locked">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Notifications <span class="settings-soon-tag">soon</span></h2>
+          <p class="settings-section-desc">Reminders and habit nudges</p>
+        </div>
+      </section>
+
+      <!-- DATA & PRIVACY locked -->
+      <section class="settings-section settings-section--locked">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Data & Privacy <span class="settings-soon-tag">soon</span></h2>
+          <p class="settings-section-desc">Export, reset, or delete your data</p>
+        </div>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section class="settings-section">
+        <div class="settings-section-header">
+          <h2 class="settings-section-title">Account</h2>
+          <p class="settings-section-desc">Manage your session and account</p>
+        </div>
+
+        <!-- logout row -->
+        <div class="settings-toggle-row" style="margin-bottom:0.75rem">
+          <div class="settings-toggle-info">
+            <span class="settings-toggle-label">{{ username }}</span>
+            <span class="settings-toggle-desc">Currently signed in</span>
+          </div>
+          <button class="logout-btn" id="logoutBtn">⏻ logout</button>
+        </div>
+
+        <!-- delete row -->
+        <div class="settings-toggle-row" style="border-top:1px solid var(--border);padding-top:0.75rem">
+          <div class="settings-toggle-info">
+            <span class="settings-toggle-label" style="color:#d95252">Delete account</span>
+            <span class="settings-toggle-desc">Permanently removes your account and all data</span>
+          </div>
+          <button class="delete-btn" id="deleteAccountBtn">✕ delete</button>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- DELETE CONFIRM MODAL -->
+  <div class="delete-modal hidden" id="deleteModal">
+    <div class="delete-modal-box">
+      <div class="delete-modal-icon">⚠</div>
+      <h3 class="delete-modal-title">Delete account?</h3>
+      <p class="delete-modal-desc">
+        This will permanently delete your account, all habits, history,
+        achievements and todos. This cannot be undone.
+      </p>
+      <p class="delete-modal-confirm-label">
+        Type <strong>delete my account</strong> to confirm
+      </p>
+      <input class="delete-modal-input" type="text" id="deleteConfirmInput"
+             placeholder="delete my account" />
+      <div class="delete-modal-actions">
+        <button class="delete-modal-cancel" id="deleteModalCancel">Cancel</button>
+        <button class="delete-modal-confirm" id="deleteModalConfirm" disabled>
+          Delete permanently
+        </button>
+      </div>
+      <div class="delete-modal-flash hidden" id="deleteFlash"></div>
+    </div>
+  </div>
+  <div class="delete-modal-backdrop hidden" id="deleteModalBackdrop"></div>
+
+  <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
+  <script src="{{ url_for('svg.static', filename='settings.js') }}"></script>
+</body>
+</html>

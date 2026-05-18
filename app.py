@@ -4,7 +4,7 @@ from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from svg_config import Config
 from svg_models import db
-from svg_services.badge_service import seed_badges
+from distro.svg.services.badge_service import seed_badges
 from extensions import limiter
 
 # /data is the HF persistent bucket mount; fall back to /app for local dev
@@ -30,7 +30,7 @@ def _hf_download(repo_id, filename, dest_path, token):
 
 def _ensure_blinkbot_model():
     """Download BlinkBot GGUF to /data so the proxy can serve it directly to the browser."""
-    default_path = os.path.join(_DATA_DIR, 'pug_modals', 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
+    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'modals', 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
     model_path   = os.environ.get('BLINKBOT_PATH', default_path)
     if os.path.exists(model_path):
         print(f'[startup] BlinkBot found: {model_path}')
@@ -43,7 +43,7 @@ def _ensure_blinkbot_model():
 
 
 def _ensure_buddybot_model():
-    default_path = os.path.join(_DATA_DIR, 'pug_modals', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
+    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'modals', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
     model_path   = os.environ.get('BUDDYBOT_PATH', default_path)
     if os.path.exists(model_path):
         print(f'[startup] BuddyBot found: {model_path}')
@@ -57,8 +57,8 @@ def _ensure_buddybot_model():
 
 
 # Blueprints
-from routes.divyanshu_routes.droute import divyanshu_bp
-from routes.pug_routes.pug_route import pug_bp
+from distro.divyanshu.routes.droute import divyanshu_bp
+from distro.pug.routes.pug_route import pug_bp
 
 mail = Mail()
 
@@ -84,7 +84,7 @@ def _migrate_schema():
 def create_app():
     app = Flask(
         __name__,
-        template_folder='templates',
+        template_folder='shared/templates',
         static_folder='static',
     )
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -108,9 +108,9 @@ def create_app():
     mail.init_app(app)
     limiter.init_app(app)
 
-    from routes.svg_routes.svg_route import svg
-    from routes.svg_routes.api_route import api
-    from routes.auth_route import auth, init_mail
+    from distro.svg.routes.svg_route import svg
+    from distro.svg.routes.api_route import api
+    from shared.auth_route import auth, init_mail
 
     init_mail(mail)
 

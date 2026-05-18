@@ -15,6 +15,6 @@ tools/
 
 
 #pug_specific:
-pug_modals/
+distro/pug/modals/
+distro/pug/datasets/
 chat_logs/
-datasets/
