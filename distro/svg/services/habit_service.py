@@ -1,6 +1,6 @@
 from datetime import date, timedelta
-from shared.models.habit import Habit
-from shared.models.habit_log import HabitLog
+from distro.svg.models.habit import Habit
+from distro.svg.models.habit_log import HabitLog
 from shared.models import db
 
 

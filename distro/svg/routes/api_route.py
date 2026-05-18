@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request, session
 from datetime import date
 from shared.models import db
-from shared.models.habit import Habit
-from shared.models.habit_log import HabitLog
-from shared.models.todo import Todo
+from distro.svg.models.habit import Habit
+from distro.svg.models.habit_log import HabitLog
+from distro.svg.models.todo import Todo
 from distro.svg.services import habit_service, badge_service
 
 api = Blueprint('api', __name__, url_prefix='/api')
