@@ -4,7 +4,7 @@
  *
  * FIX: Storage key is now per-user so different logged-in users
  *      don't overwrite each other's data in the same browser.
- * FIX: Default userName reads from window.SERVER_USERNAME injected
+ * FIX: Default userName reads from document.querySelector('meta[name="app-user"]')?.content injected
  *      by the Flask template instead of the hardcoded 'Divyanshu'.
  */
 const DataManager = {
@@ -15,13 +15,13 @@ const DataManager = {
      * @returns {string}
      */
     getStorageKey() {
-        const username = (window.SERVER_USERNAME || 'default').toLowerCase().trim();
+        const username = (document.querySelector('meta[name="app-user"]')?.content || 'default').toLowerCase().trim();
         return `habitTrackerData_${username}`;
     },
 
     /**
      * Default data structure.
-     * userName is seeded from the Flask-injected window.SERVER_USERNAME.
+     * userName is seeded from the Flask-injected document.querySelector('meta[name="app-user"]')?.content.
      */
     getDefaultData() {
         return {
@@ -36,7 +36,7 @@ const DataManager = {
             streakEnabled: true,
             theme: 'dark',
             history: [],
-            userName: window.SERVER_USERNAME || 'User'
+            userName: document.querySelector('meta[name="app-user"]')?.content || 'User'
         };
     },
 
@@ -51,7 +51,7 @@ const DataManager = {
             if (saved) {
                 const data = JSON.parse(saved);
                 // Always keep userName in sync with the current session
-                data.userName = window.SERVER_USERNAME || data.userName || 'User';
+                data.userName = document.querySelector('meta[name="app-user"]')?.content || data.userName || 'User';
                 return { ...this.getDefaultData(), ...data };
             }
         } catch (error) {

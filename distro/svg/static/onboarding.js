@@ -3,7 +3,7 @@
    Shows once per user, stored in localStorage
    ═══════════════════════════════════════ */
 
-const ONBOARDING_KEY = 'blankit-onboarded-' + (window.__blankit_user || 'user');
+const ONBOARDING_KEY = 'blankit-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
 
 const STEPS = [
   {

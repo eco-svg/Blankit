@@ -6,10 +6,8 @@
     <title>AI Habit Architect</title>
     <link rel="stylesheet" href="{{ url_for('divyanshu.static', filename='dstyle.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        window.SERVER_USERNAME = "{{ username | e }}";
-        window.SERVER_EMAIL    = "{{ email | e }}";
-    </script>
+    <meta name="app-user"  content="{{ username | e }}">
+    <meta name="app-email" content="{{ email | e }}">
 </head>
 <body>
 

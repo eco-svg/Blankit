@@ -316,7 +316,7 @@ function initAI() {
 /* ══════════════════════════════
    ONE-TIME ONBOARDING TOUR
    ══════════════════════════════ */
-const ONBOARDING_KEY = 'blankit-onboarded-' + (window.__blankit_user || 'user');
+const ONBOARDING_KEY = 'blankit-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
 
 const TOUR_STEPS = [
   { target: '#sidebarToggle', title: 'Navigation',     text: 'Open the sidebar to move between Home, History, Achievements and more.', pos: 'right' },

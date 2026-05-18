@@ -5,7 +5,7 @@
  * FIX: updateUI() now also refreshes the email element.
  * FIX: logout() redirects to /logout instead of reloading the page.
  * FIX: Profile name and email are always kept in sync with the
- *      current session user (window.SERVER_USERNAME).
+ *      current session user (document.querySelector('meta[name="app-user"]')?.content).
  */
 
 const Profile = {
@@ -151,12 +151,12 @@ const Profile = {
      */
     updateUI() {
         // Name: prefer data.userName (editable display name), fall back to session
-        const displayName = this.data.userName || window.SERVER_USERNAME || 'User';
+        const displayName = this.data.userName || document.querySelector('meta[name="app-user"]')?.content || 'User';
         this.elements.name.textContent = displayName;
 
         // Email: always derived from the actual session username
         if (this.elements.email) {
-            const sessionUser = (window.SERVER_USERNAME || displayName).toLowerCase();
+            const sessionUser = (document.querySelector('meta[name="app-user"]')?.content || displayName).toLowerCase();
             this.elements.email.textContent = `${sessionUser}@habittracker.com`;
         }
 
