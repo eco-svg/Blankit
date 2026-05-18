@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from shared.models import db
+from shared.extensions import db
 from distro.svg.models.badge import Badge, UserBadge, BADGE_DEFINITIONS
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.habit import Habit

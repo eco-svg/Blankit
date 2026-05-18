@@ -1,6 +1,6 @@
 from datetime import datetime
 from distro.pug.extensions import encrypt, decrypt
-from shared.models import db
+from shared.extensions import db
 from shared.auth.user import User  # noqa: F401  (re-exported for callers)
 
 

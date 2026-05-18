@@ -13,7 +13,7 @@ from flask import (
 from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
-from shared.models import db
+from shared.extensions import db
 from .notes import Note
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
@@ -732,12 +732,14 @@ def get_notes():
 def save_note():
     err = login_required_api()
     if err: return err
-    data = request.get_json()
-    if not data:
-        return jsonify({'status': 'error'}), 400
+    data = request.get_json(silent=True) or {}
     note_id      = data.get('id')
     title        = data.get('title', '')
     body         = data.get('body', '')
+    if len(title) > 500:
+        return jsonify({'status': 'error', 'message': 'Title too long'}), 400
+    if len(body) > 100_000:
+        return jsonify({'status': 'error', 'message': 'Body too long'}), 400
     start_dt_str = data.get('start_datetime')
     start_dt = None
     if start_dt_str:
@@ -1103,10 +1105,12 @@ def get_user_profile(uid):
 def ask():
     err = login_required_api()
     if err: return err
-    data  = request.get_json()
+    data  = request.get_json(silent=True) or {}
     query = data.get('query', '').strip()
     if not query:
         return jsonify({'error': 'Empty query'}), 400
+    if len(query) > 2000:
+        return jsonify({'error': 'Query too long'}), 400
     import requests as req
     api_key = os.environ.get('GROQ_API_KEY', '')
     if not api_key:
@@ -1145,13 +1149,24 @@ def blinkbot_chat():
     err = login_required_api()
     if err: return err
 
-    data     = request.get_json()
+    data     = request.get_json(silent=True) or {}
     message  = data.get('message', '').strip()
-    history  = data.get('history', [])
+    raw_hist = data.get('history', [])
     user_id  = session['user_id']
 
     if not message:
         return jsonify({'error': 'Empty message'}), 400
+    if len(message) > 2000:
+        return jsonify({'error': 'Message too long'}), 400
+
+    # Sanitize history: only keep well-formed role/content pairs, cap at 20 entries
+    history = []
+    if isinstance(raw_hist, list):
+        for entry in raw_hist[:20]:
+            if (isinstance(entry, dict)
+                    and entry.get('role') in ('user', 'assistant')
+                    and isinstance(entry.get('content'), str)):
+                history.append({'role': entry['role'], 'content': entry['content'][:2000]})
 
     try:
         user_context = _assemble_user_context(user_id, session.get('username', ''))

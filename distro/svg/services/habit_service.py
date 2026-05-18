@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
-from shared.models import db
+from shared.extensions import db
 
 
 def get_today_habits(user_id):

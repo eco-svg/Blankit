@@ -1,4 +1,4 @@
-from shared.models import db
+from shared.extensions import db
 from datetime import datetime
 
 class User(db.Model):

@@ -3,7 +3,7 @@ from flask import Flask
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from shared.config import Config
-from shared.models import db
+from shared.extensions import db
 from distro.svg.services.badge_service import seed_badges
 from shared.extensions import limiter
 

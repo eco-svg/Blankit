@@ -2,7 +2,7 @@ import re
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
-from shared.models import db
+from shared.extensions import db
 from shared.auth.user import User
 from shared.auth.reset_token import VerifyToken, ResetToken
 from shared.extensions import limiter
