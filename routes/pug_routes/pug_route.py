@@ -16,6 +16,7 @@ from werkzeug.utils import secure_filename
 from svg_models import db
 from .notes import Note
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
+from extensions import limiter
 
 try:
     from llama_cpp import Llama
@@ -919,6 +920,9 @@ def upload_file():
 def serve_media(object_name):
     err = login_required_api()
     if err: return err
+    if ('..' in object_name or '\x00' in object_name
+            or object_name != object_name.replace('\\', '')):
+        return jsonify({'error': 'Forbidden'}), 403
     if not object_name.startswith(f"user_{session['user_id']}/"):
         return jsonify({'error': 'Forbidden'}), 403
     try:
@@ -939,6 +943,7 @@ def serve_media(object_name):
 
 
 @pug_bp.route('/pug/api/upload_shared', methods=['POST'])
+@limiter.limit("30 per minute")
 def upload_shared():
     err = login_required_api()
     if err: return err
@@ -987,6 +992,12 @@ def upload_shared():
 def serve_media_shared(object_name):
     err = login_required_api()
     if err: return err
+    # Block path traversal and enforce shared/ prefix
+    if (not object_name.startswith('shared/')
+            or '..' in object_name
+            or '\x00' in object_name
+            or object_name != object_name.replace('\\', '')):
+        return jsonify({'error': 'Forbidden'}), 403
     try:
         response = minio_client.get_object(MINIO_BUCKET, object_name)
         return Response(
@@ -1056,6 +1067,7 @@ def get_user_profile(uid):
 
 
 @pug_bp.route('/pug/api/ask', methods=['POST'])
+@limiter.limit("30 per minute")
 def ask():
     err = login_required_api()
     if err: return err
@@ -1096,6 +1108,7 @@ def ask():
 
 
 @pug_bp.route('/pug/api/blinkbot', methods=['POST'])
+@limiter.limit("20 per minute")
 def blinkbot_chat():
     err = login_required_api()
     if err: return err
@@ -1190,6 +1203,7 @@ def buddybot_endpoint():
 
 
 @pug_bp.route('/pug/api/stats', methods=['GET'])
+@limiter.limit("10 per minute")
 def get_stats_sheet():
     err = login_required_api()
     if err: return err
@@ -1675,6 +1689,11 @@ def verify_achievement(aid):
         link = (request.form.get('link') or '').strip()
 
     if link:
+        # Only allow http/https URLs to block javascript: and data: URIs
+        if not re.match(r'^https?://', link):
+            return jsonify({'error': 'Link must be an http/https URL'}), 400
+        if len(link) > 2048:
+            return jsonify({'error': 'Link too long'}), 400
         existing['vl'] = link
         existing['vs'] = 'link'
 
@@ -1723,12 +1742,10 @@ def blinkbot_debug():
     hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
     token  = os.environ.get('HF_TOKEN', '')
     return jsonify({
-        'BLINKBOT_MODEL_URL': hf_url[:60] + '...' if len(hf_url) > 60 else (hf_url or 'NOT SET'),
+        'BLINKBOT_MODEL_URL': ('SET (' + hf_url[:40] + '...)') if hf_url else 'NOT SET',
         'HF_TOKEN':           'SET' if token else 'NOT SET',
         'BLINK_PATH_exists':  os.path.exists(_BLINK_PATH),
-        'BLINK_PATH':         _BLINK_PATH,
         'BUDDY_PATH_exists':  os.path.exists(_BUDDY_PATH),
-        'BUDDY_PATH':         _BUDDY_PATH,
     })
 
 
@@ -1869,6 +1886,8 @@ def install_blinkbot_model():
     Ranges let wllama chunk the download — each chunk is a short request that
     won't get killed by the HF Space proxy timeout.
     """
+    err = login_required_page()
+    if err: return err
     from flask import request as flask_request, send_file
 
     if not os.path.exists(_BLINK_PATH):

@@ -141,6 +141,7 @@ def register():
 #  VERIFY OTP
 # ══════════════════════════════
 @auth.route('/verify-otp', methods=['POST'])
+@limiter.limit("5 per minute")
 def verify_otp():
     data = request.get_json()
     otp  = data.get('otp', '').strip()
@@ -164,10 +165,8 @@ def verify_otp():
     token_obj.used   = True
     db.session.commit()
 
-    session.pop('pending_user_id', None)
-    session.pop('pending_email', None)
-
-    # Log the user in immediately after verification
+    # Regenerate session to prevent session fixation, then log in
+    session.clear()
     session['user_id']  = user.id
     session['username'] = user.username
     session['distro']   = user.distro
@@ -183,6 +182,7 @@ def verify_otp():
 #  RESEND OTP
 # ══════════════════════════════
 @auth.route('/resend-otp', methods=['POST'])
+@limiter.limit("3 per minute")
 def resend_otp():
     data    = request.get_json()
     email   = data.get('email', '').strip()
@@ -252,6 +252,8 @@ def login():
             pass
         return jsonify({'error': 'email_not_verified', 'email': user.email}), 403
 
+    # Regenerate session to prevent session fixation
+    session.clear()
     session.permanent   = remember
     session['user_id']  = user.id
     session['username'] = user.username
