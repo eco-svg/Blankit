@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=15">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=16">
 </head>
 <body>
 
@@ -30,12 +30,15 @@
           <div class="pp-rank-legend">
             <div class="pp-label" style="margin-bottom:4px;" data-i18n="pp_rank_guide">Rank Guide</div>
             <div class="pp-rank-row"><span style="color:#ffd700;font-weight:700;">S+</span> <span data-i18n="pp_rank_s_plus">Beyond world record</span></div>
-            <div class="pp-rank-row"><span style="color:#ffb700;">S</span> / <span style="color:#ffa500;">S-</span> <span data-i18n="pp_rank_s_sm">Top 0.01 – 0.1%</span></div>
+            <div class="pp-rank-row"><span style="color:#ffb700;">S</span> <span data-i18n="pp_rank_s">Top 0.001%</span></div>
+            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span> <span data-i18n="pp_rank_s_sm">Top 0.01–0.1%</span></div>
             <div class="pp-rank-row"><span style="color:#ff8c42;">A+/A/A-</span> <span data-i18n="pp_rank_a">Top 1–10%</span></div>
-            <div class="pp-rank-row"><span style="color:#4a7aaa;">B+/B/B-</span> <span data-i18n="pp_rank_b">Top 10–50%</span></div>
-            <div class="pp-rank-row"><span style="color:#78b878;">C+/C/C-</span> <span data-i18n="pp_rank_c">Average range</span></div>
-            <div class="pp-rank-row"><span style="color:#888;">D+/D/D-</span> <span data-i18n="pp_rank_d">Below average</span></div>
-            <div class="pp-rank-row"><span style="color:#c06030;">E</span> <span data-i18n="pp_rank_ef">Beginner · Not started</span> <span style="color:#803010;">F</span></div>
+            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span> <span data-i18n="pp_rank_bplus">Top 10–20%</span></div>
+            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span> <span data-i18n="pp_rank_b">Top 20–40%</span></div>
+            <div class="pp-rank-row"><span style="color:#78b878;">C+/C/C-</span> <span data-i18n="pp_rank_c">Top 40–70%</span></div>
+            <div class="pp-rank-row"><span style="color:#888;">D+/D/D-</span> <span data-i18n="pp_rank_d">Top 70–99%</span></div>
+            <div class="pp-rank-row"><span style="color:#c06030;">E</span> <span data-i18n="pp_rank_e">Beginner in field</span></div>
+            <div class="pp-rank-row"><span style="color:#803010;">F</span> <span data-i18n="pp_rank_f">Not started</span></div>
           </div>
           <div class="pp-divider"></div>
           <div class="pp-item" id="ppChangeAvatar">
@@ -471,7 +474,7 @@
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=2"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>

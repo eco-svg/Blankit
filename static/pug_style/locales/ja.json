@@ -38,12 +38,11 @@
   "stats_scanning": "データをスキャン中...",
   "pp_rank_guide": "ランクガイド",
   "pp_rank_s_plus": "世界記録を超える",
-  "pp_rank_s_sm": "上位0.01〜0.1%",
+  "pp_rank_s_sm": "上位 0.01–0.1%",
   "pp_rank_a": "上位1〜10%",
-  "pp_rank_b": "上位10〜50%",
-  "pp_rank_c": "平均レベル",
-  "pp_rank_d": "平均以下",
-  "pp_rank_ef": "初心者 · 未開始",
+  "pp_rank_b": "上位 20–40%",
+  "pp_rank_c": "上位 40–70%",
+  "pp_rank_d": "上位 70–99%",
   "pp_change_avatar": "アバター変更",
   "pp_change_username": "ユーザー名変更",
   "pp_change_password": "パスワード変更",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "何を作成 / 出荷 / 完了しましたか？",
   "modal_work_desc_ph": "1行の説明（任意）",
   "modal_work_proof_ph": "証拠 / リンク — GitHub、デモ、動画（任意）",
-  "modal_welcome_sub": "どの言語でアプリを使用しますか？"
+  "modal_welcome_sub": "どの言語でアプリを使用しますか？",
+  "pp_rank_s": "上位 0.001%",
+  "pp_rank_bplus": "上位 10–20%",
+  "pp_rank_e": "分野の初心者",
+  "pp_rank_f": "未開始"
 }

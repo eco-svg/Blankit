@@ -38,12 +38,11 @@
   "stats_scanning": "데이터 스캔 중...",
   "pp_rank_guide": "랭크 가이드",
   "pp_rank_s_plus": "세계 기록 초월",
-  "pp_rank_s_sm": "상위 0.01 – 0.1%",
+  "pp_rank_s_sm": "상위 0.01–0.1%",
   "pp_rank_a": "상위 1–10%",
-  "pp_rank_b": "상위 10–50%",
-  "pp_rank_c": "평균 수준",
-  "pp_rank_d": "평균 이하",
-  "pp_rank_ef": "입문자 · 미시작",
+  "pp_rank_b": "상위 20–40%",
+  "pp_rank_c": "상위 40–70%",
+  "pp_rank_d": "상위 70–99%",
   "pp_change_avatar": "아바타 변경",
   "pp_change_username": "사용자명 변경",
   "pp_change_password": "비밀번호 변경",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "무엇을 만들었 / 출시 / 완료했나요?",
   "modal_work_desc_ph": "한 줄 설명 (선택사항)",
   "modal_work_proof_ph": "증거 / 링크 — GitHub, 데모, 동영상 (선택사항)",
-  "modal_welcome_sub": "어떤 언어로 앱을 사용하시겠습니까?"
+  "modal_welcome_sub": "어떤 언어로 앱을 사용하시겠습니까?",
+  "pp_rank_s": "상위 0.001%",
+  "pp_rank_bplus": "상위 10–20%",
+  "pp_rank_e": "분야 초보자",
+  "pp_rank_f": "시작 안 함"
 }

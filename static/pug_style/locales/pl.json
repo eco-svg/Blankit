@@ -38,12 +38,11 @@
   "stats_scanning": "Skanowanie danych...",
   "pp_rank_guide": "Przewodnik po rangach",
   "pp_rank_s_plus": "Poza rekordem świata",
-  "pp_rank_s_sm": "Top 0.01 – 0.1%",
+  "pp_rank_s_sm": "Top 0,01–0,1%",
   "pp_rank_a": "Top 1–10%",
-  "pp_rank_b": "Top 10–50%",
-  "pp_rank_c": "Poziom średni",
-  "pp_rank_d": "Poniżej średniej",
-  "pp_rank_ef": "Początkujący · Nie zaczął",
+  "pp_rank_b": "Top 20–40%",
+  "pp_rank_c": "Top 40–70%",
+  "pp_rank_d": "Top 70–99%",
   "pp_change_avatar": "Zmień awatar",
   "pp_change_username": "Zmień nazwę użytkownika",
   "pp_change_password": "Zmień hasło",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "Co zbudowałeś / wysłałeś / ukończyłeś?",
   "modal_work_desc_ph": "Jednowierszowy opis (opcjonalnie)",
   "modal_work_proof_ph": "Dowód / link — GitHub, demo, wideo (opcjonalnie)",
-  "modal_welcome_sub": "W jakim języku chcesz używać aplikacji?"
+  "modal_welcome_sub": "W jakim języku chcesz używać aplikacji?",
+  "pp_rank_s": "Top 0,001%",
+  "pp_rank_bplus": "Top 10–20%",
+  "pp_rank_e": "Początkujący w dziedzinie",
+  "pp_rank_f": "Nie zaczął"
 }

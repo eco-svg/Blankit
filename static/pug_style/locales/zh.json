@@ -38,12 +38,11 @@
   "stats_scanning": "正在扫描数据...",
   "pp_rank_guide": "排名指南",
   "pp_rank_s_plus": "超越世界纪录",
-  "pp_rank_s_sm": "前0.01–0.1%",
+  "pp_rank_s_sm": "前 0.01–0.1%",
   "pp_rank_a": "前1–10%",
-  "pp_rank_b": "前10–50%",
-  "pp_rank_c": "平均水平",
-  "pp_rank_d": "低于平均",
-  "pp_rank_ef": "初学者 · 未开始",
+  "pp_rank_b": "前 20–40%",
+  "pp_rank_c": "前 40–70%",
+  "pp_rank_d": "前 70–99%",
   "pp_change_avatar": "更换头像",
   "pp_change_username": "更改用户名",
   "pp_change_password": "更改密码",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "您构建 / 发布 / 完成了什么？",
   "modal_work_desc_ph": "一行描述（可选）",
   "modal_work_proof_ph": "证明 / 链接 — GitHub、演示、视频（可选）",
-  "modal_welcome_sub": "您希望使用哪种语言？"
+  "modal_welcome_sub": "您希望使用哪种语言？",
+  "pp_rank_s": "前 0.001%",
+  "pp_rank_bplus": "前 10–20%",
+  "pp_rank_e": "领域新手",
+  "pp_rank_f": "尚未开始"
 }

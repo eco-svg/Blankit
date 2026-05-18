@@ -83,7 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<div class="skill-loading">No skill data yet.</div>';
             return;
         }
-        container.innerHTML = skills.map(s => skillRowHTML(s)).join('');
+        const sorted = [...skills].sort((a, b) =>
+            RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
+        container.innerHTML = sorted.map(s => skillRowHTML(s)).join('');
     }
 
     function netRank(skills) {
@@ -139,7 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
             skillsMainList.innerHTML = '<div class="skill-loading" style="margin-top:30px;">Click <strong>analyze</strong> or open STATS to detect your skills.</div>';
             return;
         }
-        skillsMainList.innerHTML = sheet.skills.map(s => skillRowHTML(s)).join('');
+        const sorted = [...sheet.skills].sort((a, b) =>
+            RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
+        skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s)).join('');
     }
 
     // ── Fetch stats ─────────────────────────────────────────────────────────

@@ -38,12 +38,11 @@
   "stats_scanning": "Veriler taranıyor...",
   "pp_rank_guide": "Rütbe Rehberi",
   "pp_rank_s_plus": "Dünya rekorunun ötesinde",
-  "pp_rank_s_sm": "İlk %0.01 – 0.1",
+  "pp_rank_s_sm": "İlk %0.01–0.1",
   "pp_rank_a": "İlk %1–10",
-  "pp_rank_b": "İlk %10–50",
-  "pp_rank_c": "Ortalama düzey",
-  "pp_rank_d": "Ortalamanın altı",
-  "pp_rank_ef": "Başlangıç · Henüz başlamadı",
+  "pp_rank_b": "İlk %20–40",
+  "pp_rank_c": "İlk %40–70",
+  "pp_rank_d": "İlk %70–99",
   "pp_change_avatar": "Avatar Değiştir",
   "pp_change_username": "Kullanıcı Adı Değiştir",
   "pp_change_password": "Şifre Değiştir",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "Ne inşa ettiniz / gönderdikiz / tamamladınız?",
   "modal_work_desc_ph": "Tek satır açıklama (isteğe bağlı)",
   "modal_work_proof_ph": "Kanıt / bağlantı — GitHub, demo, video (isteğe bağlı)",
-  "modal_welcome_sub": "Uygulamayı hangi dilde kullanmak istersiniz?"
+  "modal_welcome_sub": "Uygulamayı hangi dilde kullanmak istersiniz?",
+  "pp_rank_s": "İlk %0.001",
+  "pp_rank_bplus": "İlk %10–20",
+  "pp_rank_e": "Alanda yeni başlayan",
+  "pp_rank_f": "Başlamadı"
 }

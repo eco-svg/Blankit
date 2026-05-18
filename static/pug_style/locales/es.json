@@ -38,12 +38,11 @@
   "stats_scanning": "Escaneando datos...",
   "pp_rank_guide": "Guía de Rango",
   "pp_rank_s_plus": "Más allá del récord mundial",
-  "pp_rank_s_sm": "Top 0.01 – 0.1%",
+  "pp_rank_s_sm": "Top 0.01–0.1%",
   "pp_rank_a": "Top 1–10%",
-  "pp_rank_b": "Top 10–50%",
-  "pp_rank_c": "Rango promedio",
-  "pp_rank_d": "Por debajo del promedio",
-  "pp_rank_ef": "Principiante · No iniciado",
+  "pp_rank_b": "Top 20–40%",
+  "pp_rank_c": "Top 40–70%",
+  "pp_rank_d": "Top 70–99%",
   "pp_change_avatar": "Cambiar Avatar",
   "pp_change_username": "Cambiar Usuario",
   "pp_change_password": "Cambiar Contraseña",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "¿Qué construiste / lanzaste / terminaste?",
   "modal_work_desc_ph": "Descripción en una línea (opcional)",
   "modal_work_proof_ph": "Prueba / enlace — GitHub, demo, video (opcional)",
-  "modal_welcome_sub": "¿En qué idioma deseas usar la app?"
+  "modal_welcome_sub": "¿En qué idioma deseas usar la app?",
+  "pp_rank_s": "Top 0.001%",
+  "pp_rank_bplus": "Top 10–20%",
+  "pp_rank_e": "Principiante en el campo",
+  "pp_rank_f": "Sin empezar"
 }

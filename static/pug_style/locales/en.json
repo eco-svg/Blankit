@@ -38,12 +38,11 @@
   "stats_scanning": "Scanning data...",
   "pp_rank_guide": "Rank Guide",
   "pp_rank_s_plus": "Beyond world record",
-  "pp_rank_s_sm": "Top 0.01 – 0.1%",
+  "pp_rank_s_sm": "Top 0.01–0.1%",
   "pp_rank_a": "Top 1–10%",
-  "pp_rank_b": "Top 10–50%",
-  "pp_rank_c": "Average range",
-  "pp_rank_d": "Below average",
-  "pp_rank_ef": "Beginner · Not started",
+  "pp_rank_b": "Top 20–40%",
+  "pp_rank_c": "Top 40–70%",
+  "pp_rank_d": "Top 70–99%",
   "pp_change_avatar": "Change Avatar",
   "pp_change_username": "Change Username",
   "pp_change_password": "Change Password",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "What did you build / ship / finish?",
   "modal_work_desc_ph": "One-line description (optional)",
   "modal_work_proof_ph": "Proof / link — GitHub, demo, video (optional)",
-  "modal_welcome_sub": "Which language would you like to use?"
+  "modal_welcome_sub": "Which language would you like to use?",
+  "pp_rank_s": "Top 0.001%",
+  "pp_rank_bplus": "Top 10–20%",
+  "pp_rank_e": "Beginner in field",
+  "pp_rank_f": "Not started"
 }

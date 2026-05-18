@@ -38,12 +38,11 @@
   "stats_scanning": "Gegevens scannen...",
   "pp_rank_guide": "Ranggids",
   "pp_rank_s_plus": "Voorbij het wereldrecord",
-  "pp_rank_s_sm": "Top 0.01 – 0.1%",
+  "pp_rank_s_sm": "Top 0,01–0,1%",
   "pp_rank_a": "Top 1–10%",
-  "pp_rank_b": "Top 10–50%",
-  "pp_rank_c": "Gemiddeld niveau",
-  "pp_rank_d": "Onder gemiddeld",
-  "pp_rank_ef": "Beginner · Nog niet begonnen",
+  "pp_rank_b": "Top 20–40%",
+  "pp_rank_c": "Top 40–70%",
+  "pp_rank_d": "Top 70–99%",
   "pp_change_avatar": "Avatar wijzigen",
   "pp_change_username": "Gebruikersnaam wijzigen",
   "pp_change_password": "Wachtwoord wijzigen",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "Wat heb je gebouwd / verzonden / afgerond?",
   "modal_work_desc_ph": "Eénregelige beschrijving (optioneel)",
   "modal_work_proof_ph": "Bewijs / link — GitHub, demo, video (optioneel)",
-  "modal_welcome_sub": "In welke taal wil je de app gebruiken?"
+  "modal_welcome_sub": "In welke taal wil je de app gebruiken?",
+  "pp_rank_s": "Top 0,001%",
+  "pp_rank_bplus": "Top 10–20%",
+  "pp_rank_e": "Beginner in het veld",
+  "pp_rank_f": "Nog niet begonnen"
 }

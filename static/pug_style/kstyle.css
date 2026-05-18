@@ -1391,6 +1391,11 @@ div.infinite-canvas video {
 /* Notes card: clip overflowing images so they don't bleed into adjacent cards */
 .card.notes {
     overflow: hidden !important;
+    margin-top: 10px;
+}
+
+.card.buddybot-main {
+    margin-top: 10px;
 }
 
 .buddybot-main .msg-ai {

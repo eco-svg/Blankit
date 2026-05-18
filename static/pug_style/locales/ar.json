@@ -38,12 +38,11 @@
   "stats_scanning": "جاري فحص البيانات...",
   "pp_rank_guide": "دليل الرتب",
   "pp_rank_s_plus": "يتجاوز الرقم القياسي العالمي",
-  "pp_rank_s_sm": "أفضل 0.01 – 0.1%",
+  "pp_rank_s_sm": "أعلى 0.01–0.1%",
   "pp_rank_a": "أفضل 1–10%",
-  "pp_rank_b": "أفضل 10–50%",
-  "pp_rank_c": "المستوى المتوسط",
-  "pp_rank_d": "دون المتوسط",
-  "pp_rank_ef": "مبتدئ · لم يبدأ",
+  "pp_rank_b": "أعلى 20–40%",
+  "pp_rank_c": "أعلى 40–70%",
+  "pp_rank_d": "أعلى 70–99%",
   "pp_change_avatar": "تغيير الصورة",
   "pp_change_username": "تغيير اسم المستخدم",
   "pp_change_password": "تغيير كلمة المرور",
@@ -83,5 +82,9 @@
   "modal_work_title_ph": "ماذا بنيت / أطلقت / أنجزت؟",
   "modal_work_desc_ph": "وصف بسطر واحد (اختياري)",
   "modal_work_proof_ph": "دليل / رابط — GitHub، عرض، فيديو (اختياري)",
-  "modal_welcome_sub": "بأي لغة تريد استخدام التطبيق؟"
+  "modal_welcome_sub": "بأي لغة تريد استخدام التطبيق؟",
+  "pp_rank_s": "أعلى 0.001%",
+  "pp_rank_bplus": "أعلى 10–20%",
+  "pp_rank_e": "مبتدئ في المجال",
+  "pp_rank_f": "لم يبدأ بعد"
 }
