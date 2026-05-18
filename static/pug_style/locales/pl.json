@@ -86,5 +86,8 @@
   "pp_rank_s": "Top 0,001%",
   "pp_rank_bplus": "Top 10–20%",
   "pp_rank_e": "Początkujący w dziedzinie",
-  "pp_rank_f": "Nie zaczął"
+  "pp_rank_f": "Nie zaczął",
+  "chart_goals_set": "Cele",
+  "chart_crushed": "Ukończono",
+  "chart_dropped": "Porzucono"
 }

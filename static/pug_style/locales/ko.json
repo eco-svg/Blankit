@@ -86,5 +86,8 @@
   "pp_rank_s": "상위 0.001%",
   "pp_rank_bplus": "상위 10–20%",
   "pp_rank_e": "분야 초보자",
-  "pp_rank_f": "시작 안 함"
+  "pp_rank_f": "시작 안 함",
+  "chart_goals_set": "목표",
+  "chart_crushed": "달성",
+  "chart_dropped": "포기"
 }

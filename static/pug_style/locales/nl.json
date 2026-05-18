@@ -86,5 +86,8 @@
   "pp_rank_s": "Top 0,001%",
   "pp_rank_bplus": "Top 10–20%",
   "pp_rank_e": "Beginner in het veld",
-  "pp_rank_f": "Nog niet begonnen"
+  "pp_rank_f": "Nog niet begonnen",
+  "chart_goals_set": "Doelen",
+  "chart_crushed": "Behaald",
+  "chart_dropped": "Opgegeven"
 }

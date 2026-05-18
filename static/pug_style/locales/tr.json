@@ -86,5 +86,8 @@
   "pp_rank_s": "İlk %0.001",
   "pp_rank_bplus": "İlk %10–20",
   "pp_rank_e": "Alanda yeni başlayan",
-  "pp_rank_f": "Başlamadı"
+  "pp_rank_f": "Başlamadı",
+  "chart_goals_set": "Hedefler",
+  "chart_crushed": "Tamamlandı",
+  "chart_dropped": "Bırakıldı"
 }

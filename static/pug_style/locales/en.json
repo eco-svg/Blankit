@@ -86,5 +86,8 @@
   "pp_rank_s": "Top 0.001%",
   "pp_rank_bplus": "Top 10–20%",
   "pp_rank_e": "Beginner in field",
-  "pp_rank_f": "Not started"
+  "pp_rank_f": "Not started",
+  "chart_goals_set": "Goals Set",
+  "chart_crushed": "Crushed",
+  "chart_dropped": "Dropped"
 }

@@ -86,5 +86,8 @@
   "pp_rank_s": "শীর্ষ 0.001%",
   "pp_rank_bplus": "শীর্ষ 10–20%",
   "pp_rank_e": "ক্ষেত্রে নতুন",
-  "pp_rank_f": "শুরু করেননি"
+  "pp_rank_f": "শুরু করেননি",
+  "chart_goals_set": "লক্ষ্য",
+  "chart_crushed": "সম্পন্ন",
+  "chart_dropped": "বাতিল"
 }

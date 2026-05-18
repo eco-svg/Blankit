@@ -86,5 +86,8 @@
   "pp_rank_s": "Топ 0,001%",
   "pp_rank_bplus": "Топ 10–20%",
   "pp_rank_e": "Новичок в области",
-  "pp_rank_f": "Не начинал"
+  "pp_rank_f": "Не начинал",
+  "chart_goals_set": "Цели",
+  "chart_crushed": "Выполнено",
+  "chart_dropped": "Брошено"
 }

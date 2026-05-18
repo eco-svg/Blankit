@@ -86,5 +86,8 @@
   "pp_rank_s": "أعلى 0.001%",
   "pp_rank_bplus": "أعلى 10–20%",
   "pp_rank_e": "مبتدئ في المجال",
-  "pp_rank_f": "لم يبدأ بعد"
+  "pp_rank_f": "لم يبدأ بعد",
+  "chart_goals_set": "أهداف",
+  "chart_crushed": "أنجز",
+  "chart_dropped": "متروك"
 }

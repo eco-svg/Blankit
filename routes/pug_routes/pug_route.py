@@ -470,11 +470,15 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     ).order_by(Note.created_at.desc()).limit(20).all()
     work_items = []
     for w in all_work:
-        desc, proof, *_ = _parse_ach_body(w.body)
+        desc, proof, vs, vlink = _parse_ach_body(w.body)
         entry = w.title
         if desc:
             entry += f' ({desc})'
-        if proof:
+        if vs == 'link':
+            entry += f' [VERIFIED via link: {vlink}]'
+        elif vs == 'pending':
+            entry += ' [VERIFIED: media/screenshot uploaded as evidence]'
+        elif proof:
             entry += f' [proof: {proof}]'
         work_items.append(entry)
     work_str = ', '.join(work_items) or 'none'

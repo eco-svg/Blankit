@@ -86,5 +86,8 @@
   "pp_rank_s": "前 0.001%",
   "pp_rank_bplus": "前 10–20%",
   "pp_rank_e": "领域新手",
-  "pp_rank_f": "尚未开始"
+  "pp_rank_f": "尚未开始",
+  "chart_goals_set": "目标",
+  "chart_crushed": "完成",
+  "chart_dropped": "放弃"
 }

@@ -37,12 +37,16 @@
         });
     }
 
+    // Public: get a single translated string (fallback to key)
+    window.i18nGet = function (key) { return _t[key] !== undefined ? _t[key] : null; };
+
     // Public: call when language changes without page reload
     window.applyI18n = async function (lang) {
         await loadLocale(lang);
         applyAll();
         // RTL support
         document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+        window.dispatchEvent(new Event('langChanged'));
     };
 
     // Auto-run on DOMContentLoaded

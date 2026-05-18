@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = document.getElementById('consistencyChart').getContext('2d');
     let consistencyChart;
 
+    function t(key, fallback) { return (window.i18nGet && window.i18nGet(key)) || fallback; }
+
     function renderChart() {
         fetch('/pug/api/consistency')
             .then(res => res.json())
@@ -19,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         labels,
                         datasets: [
                             {
-                                label: 'Goals Set',
+                                label: t('chart_goals_set', 'Goals Set'),
                                 data: addedData,
                                 borderColor: '#e8a020',
                                 backgroundColor: 'rgba(232,160,32,0.08)',
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 fill: true,
                             },
                             {
-                                label: 'Crushed',
+                                label: t('chart_crushed', 'Crushed'),
                                 data: finishedData,
                                 borderColor: '#78b878',
                                 backgroundColor: 'rgba(120,184,120,0.08)',
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 fill: true,
                             },
                             {
-                                label: 'Dropped',
+                                label: t('chart_dropped', 'Dropped'),
                                 data: droppedData,
                                 borderColor: '#c85a2a',
                                 backgroundColor: 'rgba(200,90,42,0.06)',
@@ -109,4 +111,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderChart();
     window.addEventListener('goalUpdated', renderChart);
+    window.addEventListener('langChanged', renderChart);
 });

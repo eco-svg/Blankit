@@ -86,5 +86,8 @@
   "pp_rank_s": "Top 0.001%",
   "pp_rank_bplus": "Top 10–20%",
   "pp_rank_e": "Débutant dans le domaine",
-  "pp_rank_f": "Pas commencé"
+  "pp_rank_f": "Pas commencé",
+  "chart_goals_set": "Objectifs",
+  "chart_crushed": "Accompli",
+  "chart_dropped": "Abandonné"
 }

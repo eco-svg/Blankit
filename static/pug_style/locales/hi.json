@@ -86,5 +86,8 @@
   "pp_rank_s": "शीर्ष 0.001%",
   "pp_rank_bplus": "शीर्ष 10–20%",
   "pp_rank_e": "शुरुआती — क्षेत्र में नया",
-  "pp_rank_f": "शुरू नहीं किया"
+  "pp_rank_f": "शुरू नहीं किया",
+  "chart_goals_set": "लक्ष्य",
+  "chart_crushed": "पूरा किया",
+  "chart_dropped": "छोड़ा"
 }

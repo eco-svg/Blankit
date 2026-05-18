@@ -86,5 +86,8 @@
   "pp_rank_s": "Top 0.001%",
   "pp_rank_bplus": "Top 10–20%",
   "pp_rank_e": "Principiante en el campo",
-  "pp_rank_f": "Sin empezar"
+  "pp_rank_f": "Sin empezar",
+  "chart_goals_set": "Metas",
+  "chart_crushed": "Logrado",
+  "chart_dropped": "Abandonado"
 }
