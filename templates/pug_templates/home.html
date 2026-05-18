@@ -184,24 +184,30 @@
         <div class="card-top-bar">
           <h2 class="card-title" style="color:#4a7aaa;">BlinkBot</h2>
         </div>
-        <div id="blinkDownloadState" style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:11px;padding:18px 20px;overflow-y:auto;">
-          <div style="font-size:1.25rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">BLINK<span style="color:var(--text);">BOT</span></div>
-          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px 14px;">
-            <div style="font-size:0.62rem;font-family:var(--font-mono);color:var(--text);letter-spacing:0.1em;margin-bottom:7px;font-weight:600;">FREE</div>
-            <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0;opacity:0.85;">
+        <div id="blinkDownloadState" style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:10px;padding:16px 18px;overflow-y:auto;">
+          <div style="font-size:1.2rem;font-family:var(--font-mono);font-weight:700;letter-spacing:0.1em;color:#4a7aaa;">BLINK<span style="color:var(--text);">BOT</span></div>
+          <!-- FREE tier -->
+          <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:11px 13px;">
+            <div style="font-size:0.60rem;font-family:var(--font-mono);color:var(--text-muted);letter-spacing:0.12em;margin-bottom:6px;font-weight:700;">FREE</div>
+            <p style="color:var(--text);font-size:0.74rem;line-height:1.65;margin:0;">
               Runs <strong>100% on your device.</strong> Your data never leaves your machine.<br>
-              Server is used for responses, but only anonymised context is sent.<br>
-              <span style="opacity:0.55;font-size:0.68rem;">Uncensored answers not guaranteed on free tier.</span>
+              Server fallback used only when device can't handle it — only anonymised context sent.
+            </p>
+            <p style="color:var(--text-dim);font-size:0.68rem;margin:5px 0 0;line-height:1.5;">
+              Uncensored answers not guaranteed on free tier.
             </p>
           </div>
-          <div style="background:rgba(74,122,170,0.08);border:1px solid rgba(74,122,170,0.25);border-left:3px solid #4a7aaa;border-radius:8px;padding:12px 14px;">
-            <div style="font-size:0.62rem;font-family:var(--font-mono);color:#4a7aaa;letter-spacing:0.12em;margin-bottom:7px;font-weight:700;">✦ BUDDYBOT — PREMIUM</div>
-            <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0 0 6px;opacity:0.85;">
-              <strong style="color:#4a7aaa;">Fully uncensored.</strong> Deep reasoning, not just answers.<br>
-              Understands your full life context. Zero guardrails.<br>
-              <span style="color:var(--text);opacity:0.7;">Automates your dashboard — adds goals, logs achievements, keeps you focused on the work instead of typing.</span>
+          <!-- PREMIUM tier -->
+          <div style="background:rgba(74,122,170,0.10);border:1px solid rgba(74,122,170,0.30);border-left:3px solid #4a7aaa;border-radius:8px;padding:11px 13px;">
+            <div style="font-size:0.60rem;font-family:var(--font-mono);color:#7aafdd;letter-spacing:0.12em;margin-bottom:6px;font-weight:700;">✦ BUDDYBOT — PREMIUM</div>
+            <p style="color:var(--text);font-size:0.74rem;line-height:1.65;margin:0 0 5px;">
+              <strong style="color:#7aafdd;">Fully uncensored.</strong> Deep reasoning, not just answers.<br>
+              Understands your full life context. Zero guardrails.
             </p>
-            <div style="font-size:0.63rem;color:#4a7aaa;opacity:0.5;font-family:var(--font-mono);">Coming soon.</div>
+            <p style="color:var(--text-muted);font-size:0.72rem;line-height:1.55;margin:0 0 8px;">
+              Automates your dashboard — adds goals, logs achievements, keeps you focused on the work instead of typing.
+            </p>
+            <div style="font-size:0.64rem;color:#7aafdd;font-family:var(--font-mono);letter-spacing:0.06em;opacity:0.75;">Coming soon.</div>
           </div>
           <button id="blinkStartBtn" style="margin-top:auto;font-size:0.78rem;padding:10px 0;cursor:pointer;border-radius:8px;background:#4a7aaa;color:#fff;border:none;font-family:var(--font-mono);font-weight:600;letter-spacing:0.06em;width:100%;">Start with BlinkBot →</button>
         </div>
@@ -588,7 +594,7 @@
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=6"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=7"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=3"></script>

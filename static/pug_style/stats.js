@@ -138,6 +138,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function reapplyStatsLabels() {
+        // Re-translate static data-i18n labels inside the stats popup after JS renders
+        const popup = document.getElementById('statsModal');
+        if (!popup || !window.i18nGet) return;
+        popup.querySelectorAll('[data-i18n]').forEach(el => {
+            const v = window.i18nGet(el.dataset.i18n);
+            if (v !== null) el.textContent = v;
+        });
+    }
+
     function renderModal() {
         if (!sheet) return;
         if (classNameEl)     classNameEl.textContent     = sheet.class_official || '—';
@@ -145,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (personalityDesc) personalityDesc.textContent = sheet.personality_desc || '';
         if (bioEl)           bioEl.textContent           = sheet.bio || '';
         renderSkills(sheet.skills, skillsListEl);
+        reapplyStatsLabels();
     }
 
     function renderMainCard() {
@@ -207,5 +218,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
         .catch(() => {});
+
+    // ── Re-translate when user switches language ─────────────────────────────
+    window.addEventListener('langChanged', () => {
+        reapplyStatsLabels();
+        if (sheet && modal.classList.contains('visible')) {
+            renderModal();
+        }
+    });
 
 });
