@@ -5,7 +5,7 @@ class Habit(db.Model):
     __tablename__ = 'habits'
 
     id          = db.Column(db.Integer, primary_key=True)
-    user_id     = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ← ADD THIS
+    user_id     = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     name        = db.Column(db.String(120), nullable=False)
     track_type  = db.Column(db.String(20), default='manual')
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)

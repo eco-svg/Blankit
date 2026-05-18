@@ -5,7 +5,7 @@ class Todo(db.Model):
     __tablename__ = 'todos'
 
     id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # ← ADD THIS
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     text       = db.Column(db.String(300), nullable=False)
     date       = db.Column(db.Date, nullable=False, default=date.today)
     done       = db.Column(db.Boolean, default=False)

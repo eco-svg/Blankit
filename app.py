@@ -81,6 +81,39 @@ def _migrate_schema():
             pass  # SQLite doesn't support this; PostgreSQL does
 
 
+def _migrate_fk_cascades():
+    """Idempotent: add ON DELETE CASCADE to all FK constraints referencing users.id (and habits.id)."""
+    from sqlalchemy import text
+    if 'postgresql' not in str(db.engine.url):
+        return
+    try:
+        with db.engine.begin() as conn:
+            already = conn.execute(text("""
+                SELECT COUNT(*) FROM information_schema.referential_constraints
+                WHERE constraint_name = 'verify_tokens_user_id_fkey'
+                AND delete_rule = 'CASCADE'
+            """)).scalar()
+            if already:
+                return
+            for table, constraint, col, ref_table in [
+                ('verify_tokens', 'verify_tokens_user_id_fkey', 'user_id',  'users'),
+                ('reset_tokens',  'reset_tokens_user_id_fkey',  'user_id',  'users'),
+                ('habits',        'habits_user_id_fkey',         'user_id',  'users'),
+                ('todos',         'todos_user_id_fkey',          'user_id',  'users'),
+                ('user_badges',   'user_badges_user_id_fkey',    'user_id',  'users'),
+                ('notes',         'notes_user_id_fkey',          'user_id',  'users'),
+                ('habit_logs',    'habit_logs_habit_id_fkey',    'habit_id', 'habits'),
+            ]:
+                conn.execute(text(f'ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {constraint}'))
+                conn.execute(text(
+                    f'ALTER TABLE {table} ADD CONSTRAINT {constraint} '
+                    f'FOREIGN KEY ({col}) REFERENCES {ref_table}(id) ON DELETE CASCADE'
+                ))
+    except Exception as e:
+        import warnings
+        warnings.warn(f'[startup] FK cascade migration failed: {e}')
+
+
 def _sync_sequences():
     """Re-align PostgreSQL serial sequences with actual max IDs to prevent UniqueViolation on insert."""
     from sqlalchemy import text
@@ -161,6 +194,7 @@ def create_app():
     with app.app_context():
         db.create_all()
         _migrate_schema()
+        _migrate_fk_cascades()
         _sync_sequences()
         seed_badges()
 

@@ -6,7 +6,7 @@ class VerifyToken(db.Model):
     __tablename__ = 'verify_tokens'
 
     id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     otp        = db.Column(db.String(6),  nullable=False)
     token      = db.Column(db.String(64), unique=True, nullable=False)  # kept for compatibility
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -27,7 +27,7 @@ class ResetToken(db.Model):
     __tablename__ = 'reset_tokens'
 
     id         = db.Column(db.Integer, primary_key=True)
-    user_id    = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     token      = db.Column(db.String(64), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     expires_at = db.Column(db.DateTime, nullable=False)

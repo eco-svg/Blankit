@@ -12,8 +12,8 @@ class User(db.Model):
     is_verified     = db.Column(db.Boolean, default=False)
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)
 
-    habits  = db.relationship('Habit', backref='user', lazy=True)
-    todos   = db.relationship('Todo',  backref='user', lazy=True)
+    habits  = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)
+    todos   = db.relationship('Todo',  backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)
 
     def __repr__(self):
         return f'<User {self.username} [{self.distro}] verified={self.is_verified}>'
