@@ -2,10 +2,10 @@ import os
 from flask import Flask
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
-from svg_config import Config
-from svg_models import db
+from shared.config import Config
+from shared.models import db
 from distro.svg.services.badge_service import seed_badges
-from extensions import limiter
+from shared.extensions import limiter
 
 # /data is the HF persistent bucket mount; fall back to /app for local dev
 _DATA_DIR = '/data' if os.path.isdir('/data') else '/app'
@@ -85,7 +85,7 @@ def create_app():
     app = Flask(
         __name__,
         template_folder='shared/templates',
-        static_folder='static',
+        static_folder='shared/static',
     )
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 

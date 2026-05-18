@@ -1,4 +1,4 @@
-from svg_models import db
+from shared.models import db
 from datetime import datetime, date
 
 class HabitLog(db.Model):

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap">
-  <link rel="stylesheet" href="{{ url_for('static', filename='shared/login.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}" />
 </head>
 
 <body>
@@ -18,7 +18,7 @@
   <div class="bg-layer" id="bg-divyanhu"></div>
   <div class="bg-layer" id="bg-thepug">
     <video autoplay muted loop playsinline>
-      <source src="{{ url_for('static', filename='shared/pug_background.mp4') }}" type="video/mp4">
+      <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
   </div>
 
@@ -253,7 +253,7 @@
     Signed in as <strong id="lockedName">ecosvg</strong> — distro switching disabled.
   </div>
 
-  <script src="{{ url_for('static', filename='shared/login.js') }}"></script>
+  <script src="{{ url_for('static', filename='login.js') }}"></script>
 </body>
 
 </html>

@@ -1,8 +1,8 @@
 from datetime import date, timedelta
-from svg_models import db
-from svg_models.badge import Badge, UserBadge, BADGE_DEFINITIONS
-from svg_models.habit_log import HabitLog
-from svg_models.habit import Habit
+from shared.models import db
+from shared.models.badge import Badge, UserBadge, BADGE_DEFINITIONS
+from shared.models.habit_log import HabitLog
+from shared.models.habit import Habit
 from distro.svg.services.habit_service import get_streak, get_discipline_score
 
 

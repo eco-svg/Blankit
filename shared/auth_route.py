@@ -1,10 +1,10 @@
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
-from svg_models import db
-from svg_models.user import User
-from svg_models.reset_token import VerifyToken, ResetToken
-from extensions import limiter
+from shared.models import db
+from shared.models.user import User
+from shared.models.reset_token import VerifyToken, ResetToken
+from shared.extensions import limiter
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 

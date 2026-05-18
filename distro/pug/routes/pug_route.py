@@ -13,10 +13,10 @@ from flask import (
 from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
-from svg_models import db
+from shared.models import db
 from .notes import Note
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
-from extensions import limiter
+from shared.extensions import limiter
 
 try:
     from llama_cpp import Llama
@@ -64,7 +64,7 @@ def _get_buddybot():
 
 
 def _assemble_user_context(user_id, username):
-    from svg_models.user import User
+    from shared.models.user import User
     user = User.query.get(user_id)
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
 
@@ -1075,7 +1075,7 @@ def save_location():
 def get_user_profile(uid):
     err = login_required_api()
     if err: return err
-    from svg_models.user import User
+    from shared.models.user import User
     u = User.query.get(uid)
     if not u or u.distro != 'thepug':
         return jsonify({'error': 'Not found'}), 404
@@ -1280,7 +1280,7 @@ def get_stats_sheet():
 
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
-    from svg_models.user import User
+    from shared.models.user import User
     err = login_required_api()
     if err: return err
     data     = request.get_json(force=True) or {}
@@ -1298,7 +1298,7 @@ def update_username():
 
 @pug_bp.route('/pug/api/profile/password', methods=['PATCH'])
 def update_password():
-    from svg_models.user import User
+    from shared.models.user import User
     from werkzeug.security import check_password_hash, generate_password_hash
     err = login_required_api()
     if err: return err
@@ -1317,7 +1317,7 @@ def update_password():
 
 @pug_bp.route('/pug/api/profile/delete', methods=['DELETE'])
 def delete_account():
-    from svg_models.user import User
+    from shared.models.user import User
     from werkzeug.security import check_password_hash
     err = login_required_api()
     if err: return err
@@ -1412,7 +1412,7 @@ def _user_has_skill(uid, skill_name):
 def get_community_feed():
     err = login_required_api()
     if err: return err
-    from svg_models.user import User
+    from shared.models.user import User
     me = session['user_id']
 
     # Optional location filter
@@ -1525,7 +1525,7 @@ def delete_community_post(pid):
 def search_users():
     err = login_required_api()
     if err: return err
-    from svg_models.user import User
+    from shared.models.user import User
     from sqlalchemy import or_
     q = (request.args.get('q') or '').strip()
     if len(q) < 2:
@@ -1543,7 +1543,7 @@ def search_users():
 def list_dms():
     err = login_required_api()
     if err: return err
-    from svg_models.user import User
+    from shared.models.user import User
     me = session['user_id']
     # mood stores receiver_id; get all messages I sent or received
     sent     = Note.query.filter_by(user_id=me,   entry_type='dm', is_deleted=False).all()
@@ -1615,7 +1615,7 @@ def get_dm_thread(other_id):
 def send_dm(other_id):
     err = login_required_api()
     if err: return err
-    from svg_models.user import User
+    from shared.models.user import User
     me = session['user_id']
     if not User.query.get(other_id):
         return jsonify({'error': 'User not found'}), 404

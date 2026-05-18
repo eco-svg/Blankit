@@ -10,11 +10,8 @@ __pycache__/
 instance/
 *.db
 
-# Tools
-tools/
-
-
 #pug_specific:
 distro/pug/modals/
 distro/pug/datasets/
-chat_logs/
+distro/pug/chat_logs/
+distro/pug/tools/
