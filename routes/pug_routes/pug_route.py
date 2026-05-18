@@ -1177,6 +1177,117 @@ def _parse_ach_body(raw):
     return raw, '', None, ''
 
 
+@pug_bp.route('/pug/api/users/search')
+def search_users():
+    err = login_required_api()
+    if err: return err
+    from svg_models.user import User
+    from sqlalchemy import or_
+    q = (request.args.get('q') or '').strip()
+    if len(q) < 2:
+        return jsonify([])
+    me = session['user_id']
+    users = User.query.filter(
+        User.username.ilike(f'%{q}%'),
+        User.id != me
+    ).limit(10).all()
+    return jsonify([{'id': u.id, 'username': u.username} for u in users])
+
+
+@pug_bp.route('/pug/api/dms', methods=['GET'])
+def list_dms():
+    err = login_required_api()
+    if err: return err
+    from svg_models.user import User
+    me = session['user_id']
+    # mood stores receiver_id; get all messages I sent or received
+    sent     = Note.query.filter_by(user_id=me,   entry_type='dm', is_deleted=False).all()
+    received = Note.query.filter_by(mood=str(me),  entry_type='dm', is_deleted=False).all()
+    all_msgs = sent + received
+    all_msgs.sort(key=lambda m: m.created_at or datetime.min, reverse=True)
+    seen = {}
+    for m in all_msgs:
+        other_id = int(m.mood) if m.user_id == me else m.user_id
+        if other_id not in seen:
+            seen[other_id] = m
+    result = []
+    for other_id, last_msg in seen.items():
+        u = User.query.get(other_id)
+        if not u: continue
+        unread_count = Note.query.filter_by(
+            user_id=other_id, mood=str(me), entry_type='dm',
+            is_deleted=False, is_finished=False
+        ).count()
+        result.append({
+            'other_id':  other_id,
+            'username':  u.username,
+            'last_msg':  (last_msg.body or '')[:60],
+            'unread':    unread_count > 0,
+        })
+    return jsonify(result)
+
+
+@pug_bp.route('/pug/api/dms/<int:other_id>', methods=['GET'])
+def get_dm_thread(other_id):
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    sent     = Note.query.filter_by(user_id=me,       mood=str(other_id), entry_type='dm', is_deleted=False).all()
+    received = Note.query.filter_by(user_id=other_id, mood=str(me),       entry_type='dm', is_deleted=False).all()
+    msgs = sorted(sent + received, key=lambda m: m.created_at or datetime.min)
+    return jsonify([{
+        'id':         m.id,
+        'body':       m.body or '',
+        'is_mine':    m.user_id == me,
+        'created_at': m.created_at.isoformat() if m.created_at else None,
+    } for m in msgs])
+
+
+@pug_bp.route('/pug/api/dms/<int:other_id>', methods=['POST'])
+def send_dm(other_id):
+    err = login_required_api()
+    if err: return err
+    from svg_models.user import User
+    me = session['user_id']
+    if not User.query.get(other_id):
+        return jsonify({'error': 'User not found'}), 404
+    data = request.get_json(force=True) or {}
+    body = (data.get('body') or '').strip()
+    if not body:
+        return jsonify({'error': 'Empty message'}), 400
+    if len(body) > 2000:
+        return jsonify({'error': 'Message too long'}), 400
+    m = Note(
+        user_id    = me,
+        entry_type = 'dm',
+        is_deleted = False,
+        is_finished= False,
+    )
+    m.body  = body
+    m.mood  = str(other_id)   # receiver_id stored unencrypted in mood
+    db.session.add(m)
+    db.session.commit()
+    return jsonify({
+        'id':         m.id,
+        'body':       body,
+        'is_mine':    True,
+        'created_at': m.created_at.isoformat() if m.created_at else None,
+    }), 201
+
+
+@pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
+def mark_dms_read(other_id):
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    Note.query.filter_by(
+        user_id=other_id, mood=str(me), entry_type='dm',
+        is_deleted=False, is_finished=False
+    ).update({'is_finished': True})
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/achievements', methods=['GET'])
 def get_achievements():
     err = login_required_api()

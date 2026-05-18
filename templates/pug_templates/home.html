@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=18">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=19">
 </head>
 <body>
 
@@ -199,7 +199,7 @@
             <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0 0 6px;opacity:0.85;">
               <strong style="color:#4a7aaa;">Fully uncensored.</strong> Deep reasoning, not just answers.<br>
               Understands your full life context. Zero guardrails.<br>
-              <span style="color:#4a7aaa;opacity:0.75;">Automates your dashboard — adds goals, logs achievements, keeps you focused on the work instead of typing.</span>
+              <span style="color:var(--text);opacity:0.7;">Automates your dashboard — adds goals, logs achievements, keeps you focused on the work instead of typing.</span>
             </p>
             <div style="font-size:0.63rem;color:#4a7aaa;opacity:0.5;font-family:var(--font-mono);">Coming soon.</div>
           </div>
@@ -246,9 +246,21 @@
       <div class="card dms" id="sec-social">
         <div class="card-top-bar">
           <h2 class="card-title" data-i18n="card_dms">DMs</h2>
+          <button class="icon-btn" id="newDmBtn" title="New message">+</button>
         </div>
-        <div class="gap-bar span-row">
-          <span class="quote-text random-quote">Loading wisdom...</span>
+        <!-- Conversation list -->
+        <div id="dmConvList" class="dm-conv-list"></div>
+        <!-- Chat view -->
+        <div id="dmChatView" class="dm-chat-view hidden">
+          <div class="dm-chat-header">
+            <button id="dmBackBtn" class="icon-btn" title="Back">←</button>
+            <span id="dmChatName" class="dm-chat-name"></span>
+          </div>
+          <div id="dmMessages" class="dm-messages"></div>
+          <div class="dm-input-row">
+            <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
+            <button id="dmSendBtn">→</button>
+          </div>
         </div>
       </div>
 
@@ -323,10 +335,11 @@
   <div id="statsModal" class="stats-popup">
     <div class="stats-popup-inner stats-sheet">
       <div class="stats-header">
-        <h2 class="logo" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+        <h2 class="logo" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;flex:1;">
           <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.75rem;padding:1px 6px;border-radius:4px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
           {{ username }}
         </h2>
+        <button id="reanalyzeBtn" title="Re-analyze (force refresh)" style="background:transparent;border:none;cursor:pointer;color:var(--text-dim);font-size:1rem;padding:2px 6px;opacity:0.45;transition:opacity 0.15s;line-height:1;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.45'">↻</button>
       </div>
 
       <div class="char-class-section">
@@ -457,6 +470,19 @@
     </div>
   </div>
 
+  <!-- New DM modal -->
+  <div id="newDmModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:320px;">
+      <h3 style="margin-bottom:12px;font-size:1.0rem;color:var(--text);font-weight:600;">New Message</h3>
+      <input id="dmUserSearch" type="text" placeholder="Search username..." autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:8px;">
+      <div id="dmUserResults" style="max-height:200px;overflow-y:auto;"></div>
+      <div class="modal-actions" style="margin-top:12px;">
+        <button id="cancelNewDmBtn" class="nav-pill btn-ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Verify work item modal -->
   <div id="verifyWorkModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:400px;">
@@ -514,9 +540,10 @@
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=5"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='dms.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 
 </body>

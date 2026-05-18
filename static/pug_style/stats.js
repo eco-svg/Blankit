@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rankBadgeEl        = document.getElementById('headerRankBadge');
     const statsPopupRankBadge = document.getElementById('statsPopupRankBadge');
     const skillsMainList     = document.getElementById('skillsMainList');
+    const reanalyzeBtn       = document.getElementById('reanalyzeBtn');
 
     let sheet = null;
 
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeStats() { modal.classList.remove('visible'); }
 
     btn?.addEventListener('click', e => { e.stopPropagation(); openStats(); });
+    reanalyzeBtn?.addEventListener('click', e => { e.stopPropagation(); fetchStats(true); });
     closeBtn?.addEventListener('click', closeStats);
 
     // Click outside the popup to close
