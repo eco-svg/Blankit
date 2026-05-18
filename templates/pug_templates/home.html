@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=19">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=20">
 </head>
 <body>
 
@@ -264,10 +264,21 @@
         </div>
       </div>
 
-      <div class="card comms">
+      <div class="card comms" id="sec-comms">
         <div class="card-top-bar">
           <h2 class="card-title" data-i18n="card_comms">Comms</h2>
+          <span class="comm-range-label" id="commRangeLabel" style="font-size:0.62rem;font-family:var(--font-mono);color:var(--text-dim);opacity:0.5;">all · global</span>
         </div>
+        <!-- Composer -->
+        <div class="comm-composer">
+          <div id="commInput" class="comm-input" contenteditable="true" data-placeholder="What's on your mind..."></div>
+          <div class="comm-composer-actions">
+            <span class="comm-char-count" id="commCharCount">0 / 500</span>
+            <button id="commPostBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);padding:4px 14px;font-size:0.72rem;">Post</button>
+          </div>
+        </div>
+        <!-- Feed -->
+        <div class="comm-feed" id="commFeed"></div>
       </div>
 
       <div class="card consistency full-row" id="sec-growth">
@@ -544,6 +555,7 @@
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 
 </body>

@@ -1177,6 +1177,94 @@ def _parse_ach_body(raw):
     return raw, '', None, ''
 
 
+_RANK_COLORS = {
+    'S+':'#ffd700','S':'#ffb700','S-':'#ffa500',
+    'A+':'#ff7c4d','A':'#ff8c42','A-':'#e8854a',
+    'B+':'#5a8fc8','B':'#4a7aaa','B-':'#4070a0',
+    'C+':'#8ac888','C':'#78b878','C-':'#68a068',
+    'D+':'#a0a0a0','D':'#888888','D-':'#707070',
+    'E':'#c06030','F':'#803010',
+}
+
+def _net_rank_for_user(uid):
+    """Return (rank_str, color) from that user's stats cache, or (None, None)."""
+    n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
+    if not n or not n.body:
+        return None, None
+    try:
+        sheet = json.loads(n.body)
+        skills = sheet.get('skills', [])
+        order = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F']
+        for r in order:
+            if any(s.get('rank','').upper() == r and s.get('verified', True) for s in skills):
+                return r, _RANK_COLORS.get(r, '#888')
+    except Exception:
+        pass
+    return None, None
+
+
+@pug_bp.route('/pug/api/community', methods=['GET'])
+def get_community_feed():
+    err = login_required_api()
+    if err: return err
+    from svg_models.user import User
+    me = session['user_id']
+    posts = Note.query.filter_by(
+        entry_type='community_post', is_deleted=False
+    ).order_by(Note.created_at.desc()).limit(50).all()
+    result = []
+    for p in posts:
+        u = User.query.get(p.user_id)
+        if not u: continue
+        rank, color = _net_rank_for_user(p.user_id)
+        result.append({
+            'id':         p.id,
+            'text':       p.body or '',
+            'username':   u.username,
+            'distro':     p.mood or 'thepug',
+            'rank':       rank,
+            'rank_color': color,
+            'is_mine':    p.user_id == me,
+            'created_at': p.created_at.isoformat() if p.created_at else None,
+        })
+    return jsonify(result)
+
+
+@pug_bp.route('/pug/api/community', methods=['POST'])
+def create_community_post():
+    err = login_required_api()
+    if err: return err
+    data = request.get_json(force=True) or {}
+    text = (data.get('text') or '').strip()
+    if not text:
+        return jsonify({'error': 'Empty post'}), 400
+    if len(text) > 500:
+        return jsonify({'error': 'Too long (max 500 chars)'}), 400
+    p = Note(
+        user_id    = session['user_id'],
+        entry_type = 'community_post',
+        is_deleted = False,
+        is_finished= False,
+    )
+    p.body = text
+    p.mood = session.get('distro', 'thepug')
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({'id': p.id, 'ok': True}), 201
+
+
+@pug_bp.route('/pug/api/community/<int:pid>', methods=['DELETE'])
+def delete_community_post(pid):
+    err = login_required_api()
+    if err: return err
+    p = Note.query.filter_by(id=pid, user_id=session['user_id'], entry_type='community_post').first()
+    if not p:
+        return jsonify({'error': 'Not found'}), 404
+    p.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/users/search')
 def search_users():
     err = login_required_api()
