@@ -40,7 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Popup open/close ────────────────────────────────────────────────────
     function openStats() {
         modal.classList.add('visible');
-        if (!sheet) fetchStats(false);
+        if (sheet) { renderModal(); }
+        else { fetchStats(false); }
     }
     function closeStats() { modal.classList.remove('visible'); }
 
