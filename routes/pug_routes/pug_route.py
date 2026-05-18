@@ -385,7 +385,36 @@ def _call_blinkbot_server(message, session_history, user_context, user_id=None):
     return clean
 
 
-_stats_cache = {}  # {user_id: {'ts': float, 'sheet': dict}}
+_stats_cache = {}  # in-memory fallback only
+
+
+def _get_cached_sheet(user_id):
+    """Read stats sheet persisted in DB (entry_type='stats_cache')."""
+    n = Note.query.filter_by(
+        user_id=user_id, entry_type='stats_cache', is_deleted=False
+    ).first()
+    if n and n.body:
+        try:
+            return json.loads(n.body)
+        except Exception:
+            pass
+    return None
+
+
+def _save_cached_sheet(user_id, sheet):
+    """Persist stats sheet to DB so it survives server restarts."""
+    n = Note.query.filter_by(
+        user_id=user_id, entry_type='stats_cache', is_deleted=False
+    ).first()
+    if not n:
+        n = Note(user_id=user_id, entry_type='stats_cache',
+                 is_deleted=False, is_finished=False)
+        db.session.add(n)
+    n.title = 'stats_cache'
+    n.body  = json.dumps(sheet)
+    # manually bump updated_at so midnight check works
+    n.updated_at = datetime.utcnow()
+    db.session.commit()
 
 
 def _calc_streak(user_id):
@@ -493,28 +522,33 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Coding E → 'In Notes, log: Coding — hours/week, language, project size. We'll rank next scan.' "
         "   Strength E → 'In Notes, log: Lifting — max squat/bench/deadlift in kg. We'll rank next scan.' "
         "   Use the actual app section names: Notes (for logs/journals), Work (for completed projects), Goals (for targets).\n"
-        "4. RANKING — use world population benchmarks for each skill domain:\n"
-        "   S+ = Beyond world record / no one on earth can match\n"
-        "   S  = Top 0.01% worldwide (elite of elite)\n"
-        "   S- = Top 0.1% worldwide\n"
-        "   A+ = Top 1% worldwide\n"
-        "   A  = Top 1–5% worldwide\n"
-        "   A- = Top 5–10% worldwide\n"
-        "   B+ = Top 10–20% worldwide\n"
-        "   B  = Top 20–35% worldwide\n"
-        "   B- = Top 35–50% worldwide (above median)\n"
-        "   C+ = 50–65th percentile\n"
-        "   C  = Average / median (around 50th percentile)\n"
-        "   C- = Below average\n"
-        "   D+ = Noticeably below average\n"
-        "   D  = Low\n"
-        "   D- = Very low\n"
-        "   E  = Just started / beginner (< ~3 months or very little evidence)\n"
+        "4. RANKING — CRITICAL RULE: rank relative to people who ACTUALLY PRACTISE that skill, "
+        "   NOT the total world population. Most people have never coded, lifted weights, or run a 5K — "
+        "   comparing against them is meaningless. Always ask: 'Among people who do this regularly, where does this person stand?'\n"
+        "   S+ = Beyond any known record in that skill's community\n"
+        "   S  = Top 0.01% of active practitioners (world-class, pro-level)\n"
+        "   S- = Top 0.1% of active practitioners\n"
+        "   A+ = Top 1% of active practitioners\n"
+        "   A  = Top 1–5% of active practitioners\n"
+        "   A- = Top 5–10% of active practitioners\n"
+        "   B+ = Top 10–20% of active practitioners\n"
+        "   B  = Top 20–35% of active practitioners (solid, above most hobbyists)\n"
+        "   B- = Top 35–50% of active practitioners (above median hobbyist)\n"
+        "   C+ = 50–65th percentile among practitioners\n"
+        "   C  = Average / median among people who do this\n"
+        "   C- = Below average among practitioners\n"
+        "   D+ = Noticeably below average among practitioners\n"
+        "   D  = Low skill relative to others who practise\n"
+        "   D- = Very low — barely functional\n"
+        "   E  = Just started / beginner (< ~3 months or minimal evidence)\n"
         "   F  = No real evidence — skill barely exists yet\n"
-        "   RANKING EXAMPLES: Running — world average 5K is ~30 min. Sub-20 = A+. "
-        "   Sub-25 = A. Sub-30 = B. Sub-40 = C. Just started (<3 months, no pace data) = E.\n"
+        "   EXAMPLES:\n"
+        "   Running: among regular runners, average 5K ~27 min. Sub-18 = A+. Sub-22 = A. Sub-27 = C. Just started = E.\n"
+        "   Software Dev: among working developers, ships real projects with proof = B+. Has finished goals only = B. "
+        "   No shipped code = E. Senior/published OSS = A.\n"
+        "   Cooking: among people who cook regularly, makes varied dishes consistently = B. Just started = E.\n"
         "   If you cannot determine rank from available data, use E and add a note asking "
-        "   for the data needed (pace, time, distance, frequency, etc.).\n"
+        "   for the data needed.\n"
         "   DO NOT give high ranks because a goal sounds ambitious. Only evidence counts.\n"
         "5. Simple English throughout. Common words only.\n\n"
         "Output ONLY valid JSON:\n"
@@ -1036,16 +1070,27 @@ def get_stats_sheet():
     streak      = _calc_streak(user_id)
     media_count = _count_media(user_id)
 
-    cached = _stats_cache.get(user_id)
+    # DB-backed cache — survives server restarts
+    db_sheet = _get_cached_sheet(user_id)
+
     if cache_only:
-        sheet = cached['sheet'] if cached else None
-    elif not refresh and cached and (time.time() - cached['ts']) < 86400:
-        sheet = cached['sheet']
-    else:
+        # Page-load silent fetch: only return what's already stored, never generate
+        sheet = db_sheet
+    elif refresh:
+        # Midnight forced refresh — always regenerate
         user_context = _assemble_user_context(user_id, session.get('username', ''))
         sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
         if sheet:
-            _stats_cache[user_id] = {'ts': time.time(), 'sheet': sheet}
+            _save_cached_sheet(user_id, sheet)
+    elif db_sheet:
+        # Cache exists — return it regardless of age; midnight refresh handles updates
+        sheet = db_sheet
+    else:
+        # No cache at all (first use) — generate once
+        user_context = _assemble_user_context(user_id, session.get('username', ''))
+        sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
+        if sheet:
+            _save_cached_sheet(user_id, sheet)
 
     return jsonify({
         'notes_count': notes_count,

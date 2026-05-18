@@ -583,8 +583,8 @@ body.header-hidden .l-bar {
   padding: 16px 16px 36px;
   position: relative;
   
-  height: 700px; /* RESTORED TO 700px! */
-  align-self: end;
+  height: 700px;
+  align-self: start;
   
   scroll-margin-top: calc(var(--header-h) + 40px); 
   overflow: visible !important; 
