@@ -41,6 +41,8 @@ def add_habit():
     name    = (data.get('name') or '').strip()
     if not name:
         return jsonify({'error': 'Name is required'}), 400
+    if len(name) > 120:
+        return jsonify({'error': 'Name too long (max 120 chars)'}), 400
 
     habit = Habit(
         user_id    = user_id,
@@ -131,6 +133,8 @@ def add_todo(date_str):
     text = (data.get('text') or '').strip()
     if not text:
         return jsonify({'error': 'Text is required'}), 400
+    if len(text) > 300:
+        return jsonify({'error': 'Text too long (max 300 chars)'}), 400
     todo = Todo(text=text, date=d, priority=data.get('priority', 'medium'), user_id=user_id)
     db.session.add(todo)
     db.session.commit()

@@ -785,10 +785,12 @@ def get_goals():
 def add_goal():
     err = login_required_api()
     if err: return err
-    data  = request.get_json()
+    data  = request.get_json(silent=True) or {}
     title = data.get('title', '').strip()
     if not title:
         return jsonify({'status': 'error'}), 400
+    if len(title) > 500:
+        return jsonify({'status': 'error', 'message': 'Title too long'}), 400
     goal = Note(user_id=session['user_id'], entry_type='goal')
     goal.title = title
     db.session.add(goal)
