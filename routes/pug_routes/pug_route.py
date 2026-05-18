@@ -470,7 +470,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     ).order_by(Note.created_at.desc()).limit(20).all()
     work_items = []
     for w in all_work:
-        desc, proof = _parse_ach_body(w.body)
+        desc, proof, *_ = _parse_ach_body(w.body)
         entry = w.title
         if desc:
             entry += f' ({desc})'
@@ -1157,16 +1157,16 @@ def delete_account():
 
 
 def _parse_ach_body(raw):
-    """Return (desc, proof_url) from stored body. Handles plain text and JSON."""
+    """Return (desc, proof_url, verified_status, verify_link). Handles plain text and JSON."""
     if not raw:
-        return '', ''
+        return '', '', None, ''
     if raw.startswith('{'):
         try:
             d = json.loads(raw)
-            return d.get('d', ''), d.get('p', '')
+            return d.get('d', ''), d.get('p', ''), d.get('vs'), d.get('vl', '')
         except Exception:
             pass
-    return raw, ''
+    return raw, '', None, ''
 
 
 @pug_bp.route('/pug/api/achievements', methods=['GET'])
@@ -1178,8 +1178,9 @@ def get_achievements():
     ).order_by(Note.created_at.desc()).all()
     result = []
     for n in items:
-        desc, proof = _parse_ach_body(n.body)
+        desc, proof, verified, vlink = _parse_ach_body(n.body)
         result.append({'id': n.id, 'title': n.title, 'desc': desc, 'proof': proof,
+                       'verified': verified, 'vlink': vlink,
                        'created_at': n.created_at.isoformat() if n.created_at else None})
     return jsonify(result)
 
@@ -1218,6 +1219,73 @@ def delete_achievement(aid):
     n.is_deleted = True
     db.session.commit()
     return jsonify({'ok': True})
+
+
+ALLOWED_VERIFY_MEDIA = {'mp3', 'wav', 'ogg', 'flac', 'mp4', 'webm', 'mov', 'avi',
+                        'jpg', 'jpeg', 'png', 'gif', 'webp'}
+
+@pug_bp.route('/pug/api/achievements/<int:aid>/verify', methods=['PATCH'])
+def verify_achievement(aid):
+    err = login_required_api()
+    if err: return err
+    n = Note.query.filter_by(id=aid, user_id=session['user_id'], entry_type='achievement').first()
+    if not n:
+        return jsonify({'error': 'Not found'}), 404
+
+    existing = {}
+    if n.body and n.body.startswith('{'):
+        try:
+            existing = json.loads(n.body)
+        except Exception:
+            pass
+
+    link = ''
+    if request.is_json:
+        data = request.get_json(force=True) or {}
+        link = (data.get('link') or '').strip()
+    elif request.form:
+        link = (request.form.get('link') or '').strip()
+
+    if link:
+        existing['vl'] = link
+        existing['vs'] = 'link'
+
+    file = request.files.get('media') if request.files else None
+    if file and file.filename:
+        ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+        if ext not in ALLOWED_VERIFY_MEDIA:
+            return jsonify({'error': f'.{ext} not supported'}), 400
+        file_data = file.read()
+        if len(file_data) > 50 * 1024 * 1024:
+            return jsonify({'error': 'File too large (max 50 MB)'}), 400
+        if ext in {'mp3', 'wav', 'ogg', 'flac'}:
+            ct = f'audio/{ext}'
+        elif ext in {'mp4', 'webm', 'mov', 'avi'}:
+            ct = f'video/{ext}'
+        else:
+            ct = f'image/{"jpeg" if ext == "jpg" else ext}'
+        object_name = f"user_{session['user_id']}/verify_{uuid.uuid4().hex}.{ext}"
+        try:
+            ensure_bucket()
+            minio_client.put_object(MINIO_BUCKET, object_name, io.BytesIO(file_data),
+                                    length=len(file_data), content_type=ct)
+        except Exception as e:
+            current_app.logger.warning(f"MinIO verify upload failed: {e}")
+            local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            with open(local_path, 'wb') as fh:
+                fh.write(file_data)
+        existing['vm'] = object_name
+        existing['vs'] = 'pending'
+
+    if not link and not (file and file.filename):
+        return jsonify({'error': 'Provide a link or upload media'}), 400
+
+    n.body = json.dumps(existing)
+    db.session.commit()
+    desc, proof, verified, vlink = _parse_ach_body(n.body)
+    return jsonify({'id': n.id, 'title': n.title, 'desc': desc, 'proof': proof,
+                    'verified': verified, 'vlink': vlink})
 
 
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])

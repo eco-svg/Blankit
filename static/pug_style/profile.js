@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const ppChangeUsername = document.getElementById('ppChangeUsername');
-    const ppChangePassword = document.getElementById('ppChangePassword');
-    const ppDeleteAccount  = document.getElementById('ppDeleteAccount');
-    const ppChangeAvatar   = document.getElementById('ppChangeAvatar');
-    const avatarFileInput  = document.getElementById('avatarFileInput');
-    const profilePopup     = document.getElementById('profilePopup');
-    const langBtns         = document.querySelectorAll('.pp-lang-btn');
-    const statusDot        = document.getElementById('statusDot');
-    const ppAppLangRow     = document.getElementById('ppAppLangRow');
+    const ppChangeUsername  = document.getElementById('ppChangeUsername');
+    const ppChangePassword  = document.getElementById('ppChangePassword');
+    const ppDeleteAccount   = document.getElementById('ppDeleteAccount');
+    const ppChangeAvatar    = document.getElementById('ppChangeAvatar');
+    const avatarFileInput   = document.getElementById('avatarFileInput');
+    const profilePopup      = document.getElementById('profilePopup');
+    const langBtns          = document.querySelectorAll('.pp-lang-btn');
+    const statusDot         = document.getElementById('statusDot');
+    const ppAppLangSelect   = document.getElementById('ppAppLangSelect');
 
     function closePopup() { profilePopup?.classList.add('hidden'); }
 
@@ -91,40 +91,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedAppLang = localStorage.getItem(APP_LANG_KEY);
     const detectedCode = detectLangCode();
 
-    // Build app language buttons in popup
-    if (ppAppLangRow) {
-        const codes = detectedCode !== 'en'
-            ? ['en', detectedCode]
-            : ['en'];
-
-        codes.forEach(code => {
-            const btn = document.createElement('button');
-            btn.className = 'pp-lang-btn' + (savedAppLang === code || (!savedAppLang && code === 'en') ? ' active' : '');
-            btn.dataset.appLang = code;
-            btn.textContent = code === 'en' ? 'English' : getLangName(code);
-            btn.addEventListener('click', () => setAppLang(code));
-            ppAppLangRow.appendChild(btn);
-        });
-
-        // "More" placeholder for future
-        if (codes.length < 2) {
-            const span = document.createElement('span');
-            span.style.cssText = 'font-size:0.68rem;color:var(--text-dim);padding:4px 2px;font-family:var(--font-mono);';
-            span.textContent = 'English only';
-            ppAppLangRow.appendChild(span);
-        }
-    }
-
     function setAppLang(code) {
         localStorage.setItem(APP_LANG_KEY, code);
         document.documentElement.lang = code === 'en' ? 'en' : code;
         document.documentElement.dataset.appLang = code;
-        // Update button states
-        document.querySelectorAll('[data-app-lang]').forEach(b => {
-            b.classList.toggle('active', b.dataset.appLang === code);
-        });
-        // Apply translations immediately
+        if (ppAppLangSelect) ppAppLangSelect.value = code;
         if (window.applyI18n) window.applyI18n(code);
+    }
+
+    if (ppAppLangSelect) {
+        ppAppLangSelect.value = savedAppLang || 'en';
+        ppAppLangSelect.addEventListener('change', () => setAppLang(ppAppLangSelect.value));
     }
 
     // ── First-launch language prompt ──────────────────────────────────────────
