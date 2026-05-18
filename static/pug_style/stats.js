@@ -66,15 +66,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const rank  = normaliseRank(s.rank);
         const color = RANK_COLORS[rank] || '#888';
         const glow  = rank === 'S+' ? `text-shadow:0 0 10px ${color};` : '';
+        const isVerified = s.verified !== false;
         const note  = s.note
             ? `<span class="skill-note">${s.note}</span>` : '';
+        const rankHtml = isVerified
+            ? `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`
+            : `<span class="rank-badge rank-unverified" title="Verify an achievement to unlock rank">?</span>`;
         return `
             <div class="skill-row">
                 <span class="skill-name-wrap">
                     <span class="skill-name">${s.name || '—'}</span>
                     ${note}
                 </span>
-                <span class="rank-badge" style="color:${color};${glow}">${rank}</span>
+                ${rankHtml}
             </div>`;
     }
 
@@ -84,15 +88,20 @@ document.addEventListener('DOMContentLoaded', () => {
             container.innerHTML = '<div class="skill-loading">No skill data yet.</div>';
             return;
         }
-        const sorted = [...skills].sort((a, b) =>
-            RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
+        const sorted = [...skills].sort((a, b) => {
+            const av = a.verified !== false, bv = b.verified !== false;
+            if (av !== bv) return av ? -1 : 1;
+            return RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank));
+        });
         container.innerHTML = sorted.map(s => skillRowHTML(s)).join('');
     }
 
     function netRank(skills) {
         if (!skills || !skills.length) return null;
+        const verified = skills.filter(s => s.verified !== false);
+        if (!verified.length) return null;
         for (const r of RANK_ORDER) {
-            if (skills.some(s => normaliseRank(s.rank) === r)) return r;
+            if (verified.some(s => normaliseRank(s.rank) === r)) return r;
         }
         return null;
     }

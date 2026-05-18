@@ -508,20 +508,24 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Use real-world role names (e.g. 'Runner', 'Writer', 'Developer'), NOT game titles.\n"
         "2. PERSONALITY is inferred from chat patterns, written goals, notes, behavior — "
         "   who they seem to be, what drives them. Short archetype name + one sentence.\n"
-        "3. SKILLS come ONLY from Work/shipped projects, finished goals, and real logged output. "
-        "   Work entries with proof URLs are the strongest evidence — weight these highest. "
+        "3. SKILLS come ONLY from Achievements/shipped projects, finished goals, and real logged output. "
+        "   Achievements with verified evidence are the strongest signal — weight these highest. "
         "   Never infer skills from active goals. "
         "   Return only skills with evidence — 0 to 5 max. "
         "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'.\n"
-        "   For each skill, add an optional 'note' field (1 sentence, max 15 words) when the rank is E or F. "
-        "   The note must tell the user EXACTLY what to enter in this app and WHERE, so we can rank them properly. "
-        "   Format: 'In Notes, add a log: [skill name] — [specific metric 1], [metric 2]. We'll rank you next scan.' "
+        "   VERIFIED field: set 'verified': true ONLY if there is a concrete Achievement entry with measurable, "
+        "   specific proof (a time, a shipped product, a Strava/NRC export, a GitHub repo, a real output). "
+        "   Set 'verified': false for skills inferred from goals, vague notes, or unconfirmed claims. "
+        "   Unverified skills will show '?' rank to the user until they submit evidence.\n"
+        "   For each skill, add an optional 'note' field (1 sentence, max 15 words) when the rank is E or F or verified is false. "
+        "   The note must tell the user EXACTLY what to enter and WHERE to verify. "
+        "   Format: 'In Achievements, log: [skill] — [specific metric]. We'll rank next scan.' "
         "   Examples: "
-        "   Running E → 'In Notes, log: Running — 5K time (MM:SS), weekly km, pace (min/km). We'll rank next scan.' "
-        "   Cooking E → 'In Work, add an entry for each dish you cook. Mark finished goals. We'll count them.' "
-        "   Coding E → 'In Notes, log: Coding — hours/week, language, project size. We'll rank next scan.' "
-        "   Strength E → 'In Notes, log: Lifting — max squat/bench/deadlift in kg. We'll rank next scan.' "
-        "   Use the actual app section names: Notes (for logs/journals), Work (for completed projects), Goals (for targets).\n"
+        "   Running unverified → 'In Achievements, add a run with 5K time, pace, weekly km, or upload Strava screenshot.' "
+        "   Cooking unverified → 'In Achievements, add dishes you cook. Verify with a photo or video.' "
+        "   Coding unverified → 'In Achievements, add a shipped project. Verify with a GitHub link.' "
+        "   Strength unverified → 'In Achievements, log: max squat/bench/deadlift in kg. Verify with a video.' "
+        "   Use the actual app section names: Notes (logs/journals), Achievements (completed projects/work), Goals (targets).\n"
         "4. RANKING — CRITICAL RULE: rank ONLY relative to people who actively practise that skill. "
         "   Never compare against the general public — most people never run, code, cook, etc. "
         "   Use real-world census/stats data for each field to calibrate benchmarks. "
@@ -559,7 +563,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         '"personality_desc":"One sentence about their mindset.",'
         '"bio":"One sentence. Who they actually are right now.",'
         '"skills":['
-        '{"name":"plain skill name","rank":"E","note":"optional — what data would improve this rank"}'
+        '{"name":"plain skill name","rank":"E","verified":false,"note":"optional — what to add to unlock rank"}'
         ']}'
     )
 

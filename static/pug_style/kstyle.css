@@ -1902,6 +1902,16 @@ div.infinite-canvas video {
   color: var(--accent);
 }
 
+/* ── Unverified rank badge ────────────────────────────── */
+.rank-unverified {
+  color: var(--text-dim) !important;
+  border: 1px dashed rgba(255,255,255,0.18) !important;
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 0.70rem;
+  cursor: default;
+}
+
 /* ── App Language Select ──────────────────────────────── */
 .pp-lang-select {
   width: 100%;

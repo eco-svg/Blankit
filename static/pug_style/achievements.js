@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmBtn= document.getElementById('confirmAchievementBtn');
     const titleInput= document.getElementById('achievementTitleInput');
     const descInput = document.getElementById('achievementDescInput');
-    const proofInput= document.getElementById('achievementProofInput');
     const list      = document.getElementById('achievementsList');
 
     // ── Verify modal ──────────────────────────────────────────────────────────
@@ -158,7 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addBtn?.addEventListener('click', () => {
         titleInput.value = '';
         descInput.value  = '';
-        if (proofInput) proofInput.value = '';
         modal.classList.remove('hidden');
         setTimeout(() => titleInput.focus(), 50);
     });
@@ -170,9 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') descInput.focus();
     });
     descInput?.addEventListener('keydown', e => {
-        if (e.key === 'Enter') proofInput ? proofInput.focus() : submit();
-    });
-    proofInput?.addEventListener('keydown', e => {
         if (e.key === 'Enter') submit();
     });
 
@@ -181,11 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function submit() {
         const title = titleInput.value.trim();
         if (!title) { titleInput.focus(); return; }
-        const proof = proofInput?.value.trim() || '';
         fetch('/pug/api/achievements', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ title, description: descInput.value.trim(), proof })
+            body:    JSON.stringify({ title, description: descInput.value.trim() })
         })
         .then(r => r.json())
         .then(data => {

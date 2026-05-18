@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=17">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=18">
 </head>
 <body>
 
@@ -55,12 +55,6 @@
             <span data-i18n="pp_change_password">Change Password</span>
           </div>
           <div class="pp-divider"></div>
-          <div class="pp-label" data-i18n="pp_lang_style">Language Style</div>
-          <div class="pp-lang-row">
-            <button class="pp-lang-btn active" data-lang="plain" data-i18n="pp_lang_plain">Plain</button>
-            <button class="pp-lang-btn" data-lang="advanced" data-i18n="pp_lang_advanced">Advanced</button>
-            <button class="pp-lang-btn" data-lang="pro" data-i18n="pp_lang_pro">Pro</button>
-          </div>
           <div class="pp-label" style="margin-top:6px;" data-i18n="pp_app_lang">App Language</div>
           <div style="padding:2px 16px 8px;">
             <select id="ppAppLangSelect" class="pp-lang-select">
@@ -101,7 +95,7 @@
     <nav class="header-nav">
       <a href="#sec-notes"        class="nav-pill" data-i18n="nav_notes">Notes</a>
       <a href="#sec-skills"       class="nav-pill" data-i18n="nav_skills">Skills</a>
-      <a href="#sec-achievements" class="nav-pill" data-i18n="nav_work">Work</a>
+      <a href="#sec-achievements" class="nav-pill" data-i18n="nav_work">Achievements</a>
       <a href="#sec-social"       class="nav-pill" data-i18n="nav_social">Social</a>
       <a href="#sec-growth"       class="nav-pill" data-i18n="nav_growth">Growth</a>
     </nav>
@@ -147,7 +141,7 @@
 
       <div class="card notes" id="sec-notes">
         <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_notes">Notes</h2>
+          <h2 class="card-title" data-i18n="card_notes">Notes / Diary</h2>
         </div>
         <div class="notes-view-list" id="notesListScreen">
           <div class="list-header">
@@ -204,7 +198,8 @@
             <div style="font-size:0.62rem;font-family:var(--font-mono);color:#4a7aaa;letter-spacing:0.12em;margin-bottom:7px;font-weight:700;" data-i18n="blinkbot_premium_label">✦ BUDDYBOT — PREMIUM</div>
             <p style="color:var(--text);font-size:0.73rem;line-height:1.65;margin:0 0 6px;opacity:0.85;">
               <strong style="color:#4a7aaa;">Fully uncensored.</strong> Deep reasoning, not just answers.<br>
-              Understands your full life context. Zero guardrails.
+              Understands your full life context. Zero guardrails.<br>
+              <span style="color:#4a7aaa;opacity:0.75;">Automates your dashboard — adds goals, logs achievements, keeps you focused on the work instead of typing.</span>
             </p>
             <div style="font-size:0.63rem;color:#4a7aaa;opacity:0.5;font-family:var(--font-mono);" data-i18n="blinkbot_coming_soon">Coming soon.</div>
           </div>
@@ -240,7 +235,7 @@
       <!-- Achievements Card (replaces Finished) -->
       <div class="card achievements-main" id="sec-achievements">
         <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_work">Work</h2>
+          <h2 class="card-title" data-i18n="card_work">Achievements</h2>
           <button class="icon-btn" id="newAchievementBtn" title="Add achievement">+</button>
         </div>
         <div class="achievements-list" id="achievementsList">
@@ -481,7 +476,7 @@
           <input type="file" id="verifyMediaInput" accept="audio/*,video/*,image/*" style="display:none;">
           <span id="verifyUploadText">Choose audio / video / image</span>
         </label>
-        <p style="font-size:0.70rem;color:var(--text-dim);margin-top:5px;">Your recorded performance, demo, or work sample. Max 50 MB.</p>
+        <p style="font-size:0.70rem;color:var(--text-dim);margin-top:5px;">Performance recording, Strava/NRC screenshot, run data export, project demo, or any work sample. Max 50 MB.</p>
         <p style="font-size:0.68rem;color:var(--accent);margin-top:4px;opacity:0.65;">AI voice + face anti-cheat matching — coming soon.</p>
       </div>
       <div id="verifyError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
@@ -499,9 +494,7 @@
       <p style="color:var(--text-muted);font-size:0.80rem;margin-bottom:18px;" data-i18n="modal_add_work_sub">Projects, releases, real results. No certs.</p>
       <input id="achievementTitleInput" type="text" placeholder="What did you build / ship / finish?" data-i18n-ph="modal_work_title_ph" autocomplete="off"
         style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
-      <input id="achievementDescInput" type="text" placeholder="One-line description (optional)" data-i18n-ph="modal_work_desc_ph" autocomplete="off"
-        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
-      <input id="achievementProofInput" type="url" placeholder="Proof / link — GitHub, demo, video (optional)" data-i18n-ph="modal_work_proof_ph" autocomplete="off"
+      <input id="achievementDescInput" type="text" placeholder="One-line description — Strava run data, notes, context..." autocomplete="off"
         style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:18px;">
       <div class="modal-actions">
         <button id="cancelAchievementBtn" class="nav-pill btn-ghost" data-i18n="modal_cancel">Cancel</button>
@@ -521,7 +514,7 @@
   <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=4"></script>
+  <script src="{{ url_for('pug.static', filename='stats.js') }}?v=5"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>

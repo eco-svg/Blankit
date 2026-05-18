@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const ppChangeAvatar    = document.getElementById('ppChangeAvatar');
     const avatarFileInput   = document.getElementById('avatarFileInput');
     const profilePopup      = document.getElementById('profilePopup');
-    const langBtns          = document.querySelectorAll('.pp-lang-btn');
     const statusDot         = document.getElementById('statusDot');
     const ppAppLangSelect   = document.getElementById('ppAppLangSelect');
 
@@ -136,19 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (savedAppLang) {
         setAppLang(savedAppLang);
     }
-
-    // ── Language Style toggle ──────────────────────────────────────────────────
-    const STYLE_KEY = 'pug_lang';
-    const savedStyle = localStorage.getItem(STYLE_KEY) || 'plain';
-
-    function setLangStyle(lang) {
-        langBtns.forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-        localStorage.setItem(STYLE_KEY, lang);
-        document.documentElement.dataset.langStyle = lang;
-    }
-
-    setLangStyle(savedStyle);
-    langBtns.forEach(b => b.addEventListener('click', () => setLangStyle(b.dataset.lang)));
 
     // ── Change Username modal ──────────────────────────────────────────────────
     const unModal       = document.getElementById('changeUsernameModal');
