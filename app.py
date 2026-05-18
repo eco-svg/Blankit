@@ -6,9 +6,9 @@ from shared.config import Config
 from shared.extensions import db
 from distro.svg.services.badge_service import seed_badges
 from shared.extensions import limiter
-
+_DATA_DIR = '/data' if os.path.isdir('/data') else os.path.dirname(os.path.abspath(__file__))
 # /data is the HF persistent bucket mount; fall back to /app for local dev
-_DATA_DIR = '/data' if os.path.isdir('/data') else '/app'
+
 
 
 def _hf_download(repo_id, filename, dest_path, token):
@@ -53,7 +53,6 @@ def _ensure_buddybot_model():
     token    = os.environ.get('HF_TOKEN')
     print(f'[startup] BuddyBot not found — downloading from {repo_id}/{filename} ...')
     _hf_download(repo_id, filename, model_path, token)
-
 
 
 # Blueprints
@@ -154,6 +153,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB upload cap
+
     db.init_app(app)
 
     mail.init_app(app)
@@ -161,12 +161,14 @@ def create_app():
 
     from distro.svg.routes.svg_route import svg
     from distro.svg.routes.api_route import api
+    from distro.svg.routes.ai_route  import ai
     from shared.auth.auth_route import auth, init_mail
 
     init_mail(mail)
 
     app.register_blueprint(svg)
     app.register_blueprint(api)
+    app.register_blueprint(ai)
     app.register_blueprint(auth)
     app.register_blueprint(divyanshu_bp)
     app.register_blueprint(pug_bp)
