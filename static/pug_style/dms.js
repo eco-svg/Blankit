@@ -1,26 +1,141 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const convList       = document.getElementById('dmConvList');
-    const chatView       = document.getElementById('dmChatView');
-    const newDmBtn       = document.getElementById('newDmBtn');
-    const dmBackBtn      = document.getElementById('dmBackBtn');
-    const dmChatName     = document.getElementById('dmChatName');
-    const dmMessages     = document.getElementById('dmMessages');
-    const dmInput        = document.getElementById('dmInput');
-    const dmSendBtn      = document.getElementById('dmSendBtn');
-    const newDmModal     = document.getElementById('newDmModal');
-    const cancelNewDmBtn = document.getElementById('cancelNewDmBtn');
-    const dmUserSearch   = document.getElementById('dmUserSearch');
-    const dmUserResults  = document.getElementById('dmUserResults');
-    const dmAttachBtn    = document.getElementById('dmAttachBtn');
-    const dmFileInput    = document.getElementById('dmFileInput');
-    const dmMediaPreview = document.getElementById('dmMediaPreview');
+    const convList        = document.getElementById('dmConvList');
+    const chatView        = document.getElementById('dmChatView');
+    const newDmBtn        = document.getElementById('newDmBtn');
+    const dmBackBtn       = document.getElementById('dmBackBtn');
+    const dmChatName      = document.getElementById('dmChatName');
+    const dmMessages      = document.getElementById('dmMessages');
+    const dmInput         = document.getElementById('dmInput');
+    const dmSendBtn       = document.getElementById('dmSendBtn');
+    const newDmModal      = document.getElementById('newDmModal');
+    const cancelNewDmBtn  = document.getElementById('cancelNewDmBtn');
+    const dmUserSearch    = document.getElementById('dmUserSearch');
+    const dmUserResults   = document.getElementById('dmUserResults');
+    const dmAttachBtn     = document.getElementById('dmAttachBtn');
+    const dmFileInput     = document.getElementById('dmFileInput');
+    const dmMediaPreview  = document.getElementById('dmMediaPreview');
+    const dmVoiceBtn      = document.getElementById('dmVoiceBtn');
+    const dmVoiceTimer    = document.getElementById('dmVoiceTimer');
+    const dmUploadProgress= document.getElementById('dmUploadProgress');
+    const dmProgressBar   = document.getElementById('dmProgressBar');
 
     let currentOtherId   = null;
     let currentOtherName = '';
     let pollTimer        = null;
     let lastMsgCount     = 0;
-    let pendingMedia     = null;   // { key, url, type }
+    let pendingMedia     = null;
+
+    // ── Voice recording ───────────────────────────────────────────────────────
+    let mediaRecorder   = null;
+    let voiceChunks     = [];
+    let voiceClockTimer = null;
+    let voiceSeconds    = 0;
+
+    dmVoiceBtn?.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            stopVoiceRecording();
+        } else {
+            startVoiceRecording();
+        }
+    });
+
+    async function startVoiceRecording() {
+        if (!currentOtherId) return;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            voiceChunks  = [];
+            voiceSeconds = 0;
+            if (dmVoiceTimer) { dmVoiceTimer.style.display = 'inline'; dmVoiceTimer.textContent = '0:00'; }
+
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+            mediaRecorder = new MediaRecorder(stream, { mimeType });
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) voiceChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                stream.getTracks().forEach(t => t.stop());
+                const ext  = mimeType.includes('webm') ? 'webm' : 'ogg';
+                const blob = new Blob(voiceChunks, { type: mimeType });
+                if (blob.size < 500) return;
+                uploadAndSendVoice(blob, ext);
+            };
+            mediaRecorder.start();
+            dmVoiceBtn.classList.add('recording');
+            dmVoiceBtn.textContent = '⏹';
+            voiceClockTimer = setInterval(() => {
+                voiceSeconds++;
+                if (dmVoiceTimer) dmVoiceTimer.textContent = fmtTime(voiceSeconds);
+                if (voiceSeconds >= 120) stopVoiceRecording();
+            }, 1000);
+        } catch (e) {
+            alert('Microphone access is required for voice messages.');
+        }
+    }
+
+    function stopVoiceRecording() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        mediaRecorder = null;
+        clearInterval(voiceClockTimer); voiceClockTimer = null;
+        if (dmVoiceBtn) { dmVoiceBtn.classList.remove('recording'); dmVoiceBtn.textContent = '🎙'; }
+        if (dmVoiceTimer) { dmVoiceTimer.style.display = 'none'; dmVoiceTimer.textContent = '0:00'; }
+    }
+
+    function uploadAndSendVoice(blob, ext) {
+        const fd = new FormData();
+        fd.append('file', blob, `voice_${Date.now()}.${ext}`);
+        if (dmInput) dmInput.placeholder = 'Sending voice…';
+        uploadWithProgress('/pug/api/upload_shared', fd, dmUploadProgress, dmProgressBar)
+            .then(data => {
+                if (dmInput) dmInput.placeholder = 'Message...';
+                if (!data || data.error) return;
+                // Auto-send immediately (WhatsApp style)
+                fetch(`/pug/api/dms/${currentOtherId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ body: '', media_key: data.key })
+                })
+                .then(r => r.json())
+                .then(m => {
+                    if (!m.error) {
+                        lastMsgCount++;
+                        dmMessages.appendChild(makeMsg({ ...m, is_mine: true, media_url: data.url, media_key: data.key }));
+                        dmMessages.scrollTop = dmMessages.scrollHeight;
+                    }
+                })
+                .catch(() => {});
+            });
+    }
+
+    function fmtTime(s) {
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+    }
+
+    // ── XHR upload with progress ──────────────────────────────────────────────
+    function uploadWithProgress(url, formData, progressEl, barEl) {
+        return new Promise(resolve => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            if (progressEl && barEl) {
+                progressEl.classList.remove('hidden');
+                barEl.style.width = '0%';
+            }
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable && barEl) {
+                    barEl.style.width = `${Math.round(e.loaded / e.total * 100)}%`;
+                }
+            };
+            xhr.onload = () => {
+                if (progressEl) progressEl.classList.add('hidden');
+                if (barEl) barEl.style.width = '0%';
+                try { resolve(JSON.parse(xhr.responseText)); }
+                catch (e) { resolve({}); }
+            };
+            xhr.onerror = () => {
+                if (progressEl) progressEl.classList.add('hidden');
+                resolve({});
+            };
+            xhr.send(formData);
+        });
+    }
 
     // ── Conversation list ─────────────────────────────────────────────────────
     function loadConvs() {
@@ -63,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeChat() {
         stopPolling();
+        stopVoiceRecording();
         currentOtherId = null;
         pendingMedia   = null;
         clearMediaPreview();
@@ -100,9 +216,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let mediaHtml = '';
         if (m.media_url) {
             const ext = (m.media_key || '').split('.').pop().toLowerCase();
-            if (['mp3','wav','ogg','m4a','flac'].includes(ext)) {
+            if (['mp3','wav','ogg','m4a','flac','webm'].includes(ext) || m.type === 'audio') {
                 mediaHtml = `<audio class="dm-bubble-audio" controls src="${m.media_url}"></audio>`;
-            } else if (['mp4','webm'].includes(ext)) {
+            } else if (['mp4'].includes(ext)) {
                 mediaHtml = `<video class="dm-bubble-video" controls src="${m.media_url}" playsinline></video>`;
             } else {
                 mediaHtml = `<img class="dm-bubble-img" src="${m.media_url}" loading="lazy">`;
@@ -114,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return el;
     }
 
-    // ── Send ──────────────────────────────────────────────────────────────────
+    // ── Send text/file message ────────────────────────────────────────────────
     function sendMsg() {
         const body = dmInput?.value.trim();
         if (!body && !pendingMedia) return;
@@ -122,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const mediaKey = pendingMedia?.key || '';
         dmInput.value = '';
         clearMediaPreview();
-        const captured = pendingMedia;
         pendingMedia = null;
 
         fetch(`/pug/api/dms/${currentOtherId}`, {
@@ -152,16 +267,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
         const fd = new FormData();
         fd.append('file', file);
-        if (dmInput) dmInput.placeholder = 'Uploading...';
-        fetch('/pug/api/upload_shared', { method: 'POST', body: fd })
-            .then(r => r.json())
+        uploadWithProgress('/pug/api/upload_shared', fd, dmUploadProgress, dmProgressBar)
             .then(data => {
-                if (dmInput) dmInput.placeholder = 'Message...';
-                if (data.error) return;
+                if (!data || data.error) return;
                 pendingMedia = data;
                 renderMediaPreview(dmMediaPreview, data);
-            })
-            .catch(() => { if (dmInput) dmInput.placeholder = 'Message...'; });
+            });
         dmFileInput.value = '';
     });
 

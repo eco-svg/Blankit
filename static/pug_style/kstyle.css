@@ -1215,15 +1215,23 @@ div.infinite-canvas video {
 /* The text that gaps.js injects into dreamContainer */
 .dream-text {
   font-family: var(--font-display) !important;
-  font-size: 1.4rem !important;
-  font-weight: 700 !important;       /* bold */
-  text-transform: uppercase !important;   /* all caps */
-  letter-spacing: 0.12em !important;
-  color: var(--blue) !important;
+  font-size: 1.55rem !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.16em !important;
+  background: linear-gradient(110deg, #d4a574 0%, #f0c890 35%, #c85a2a 65%, #d4a574 100%) !important;
+  background-size: 300% 300% !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  animation: dreamShimmer 7s ease-in-out infinite !important;
+  filter: drop-shadow(0 0 18px rgba(212,165,116,0.45)) !important;
   text-align: center;
   line-height: 1.4;
-  text-shadow: 0 0 20px rgba(74, 122, 170, 0.35);
-  /* The glow effect — spreads 20px around the text */
+}
+@keyframes dreamShimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
 }
  
 /* The dream input (before it's locked) */
@@ -2546,6 +2554,9 @@ button.nav-pill:not(.btn-ghost):hover {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  background: linear-gradient(90deg, transparent 0%, rgba(212,165,116,0.05) 30%, rgba(212,165,116,0.07) 50%, rgba(212,165,116,0.05) 70%, transparent 100%);
+  border-bottom: 1px solid rgba(212,165,116,0.10);
+  border-top: 1px solid rgba(212,165,116,0.05);
 }
 
 .dream-inner {
@@ -2902,4 +2913,80 @@ button.nav-pill:not(.btn-ghost):hover {
 /* ── Public profile modal ─────────────────────────────── */
 #pubProfileModal .modal-content {
   padding: 18px 20px 16px;
+}
+
+/* ── Community compose modal — themed ────────────────── */
+#commComposeModal .modal-content {
+  background: rgba(20, 17, 12, 0.97);
+  border: 1px solid rgba(212,165,116,0.20);
+  box-shadow: 0 28px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(212,165,116,0.06), inset 0 1px 0 rgba(212,165,116,0.08);
+  max-width: 540px;
+  width: 92vw;
+  text-align: left;
+  padding: 22px 24px 18px;
+}
+#commComposeModal h3 {
+  background: linear-gradient(110deg, #d4a574, #f0c890, #c85a2a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+}
+#commComposeModal .comm-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(212,165,116,0.15);
+  min-height: 90px;
+}
+#commComposeModal .comm-input:focus {
+  border-color: rgba(212,165,116,0.40);
+  box-shadow: 0 0 0 2px rgba(212,165,116,0.07);
+}
+
+/* ── Upload progress bar ──────────────────────────────── */
+.upload-progress {
+  height: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.upload-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #f0c890);
+  width: 0%;
+  transition: width 0.15s;
+  border-radius: 2px;
+}
+
+/* ── Voice message button ─────────────────────────────── */
+.dm-voice-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1.05rem;
+  padding: 0 3px;
+  flex-shrink: 0;
+  opacity: 0.55;
+  transition: all 0.15s;
+  line-height: 1;
+}
+.dm-voice-btn:hover { opacity: 0.9; color: var(--text); }
+.dm-voice-btn.recording {
+  color: #e87a5a;
+  opacity: 1;
+  animation: voicePulse 1s ease-in-out infinite;
+}
+@keyframes voicePulse {
+  0%, 100% { opacity: 1; transform: scale(1.05); }
+  50%       { opacity: 0.45; transform: scale(0.95); }
+}
+.dm-voice-timer {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: #e87a5a;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  display: none;
 }

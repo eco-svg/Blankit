@@ -8,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalInput     = document.getElementById('commModalInput');
     const modalCharCount = document.getElementById('commModalCharCount');
     const modalError     = document.getElementById('commModalError');
-    const fileInput      = document.getElementById('commFileInput');
-    const attachLabel    = document.getElementById('commAttachLabel');
-    const mediaPreview   = document.getElementById('commModalMediaPreview');
-    const rangeLabel     = document.getElementById('commRangeLabel');
+    const fileInput       = document.getElementById('commFileInput');
+    const attachLabel     = document.getElementById('commAttachLabel');
+    const mediaPreview    = document.getElementById('commModalMediaPreview');
+    const rangeLabel      = document.getElementById('commRangeLabel');
+    const uploadProgress  = document.getElementById('commUploadProgress');
+    const progressBar     = document.getElementById('commProgressBar');
 
     const MAX_LEN = 500;
     let lastPostCount = 0;
@@ -147,22 +149,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── XHR upload with progress ──────────────────────────────────────────────
+    function uploadWithProgress(url, formData, progressEl, barEl) {
+        return new Promise(resolve => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            if (progressEl && barEl) {
+                progressEl.classList.remove('hidden');
+                barEl.style.width = '0%';
+            }
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable && barEl) {
+                    barEl.style.width = `${Math.round(e.loaded / e.total * 100)}%`;
+                }
+            };
+            xhr.onload = () => {
+                if (progressEl) progressEl.classList.add('hidden');
+                if (barEl) barEl.style.width = '0%';
+                try { resolve(JSON.parse(xhr.responseText)); }
+                catch (e) { resolve({}); }
+            };
+            xhr.onerror = () => { if (progressEl) progressEl.classList.add('hidden'); resolve({}); };
+            xhr.send(formData);
+        });
+    }
+
     // ── Media attach (compose modal) ──────────────────────────────────────────
     fileInput?.addEventListener('change', () => {
         const file = fileInput.files[0];
         if (!file) return;
         const fd = new FormData();
         fd.append('file', file);
-        if (modalError) modalError.textContent = 'Uploading...';
-        fetch('/pug/api/upload_shared', { method: 'POST', body: fd })
-            .then(r => r.json())
+        if (modalError) modalError.textContent = '';
+        uploadWithProgress('/pug/api/upload_shared', fd, uploadProgress, progressBar)
             .then(data => {
-                if (data.error) { if (modalError) modalError.textContent = data.error; return; }
+                if (!data || data.error) { if (modalError) modalError.textContent = data?.error || 'Upload failed.'; return; }
                 pendingMedia = data;
-                if (modalError) modalError.textContent = '';
                 renderMediaPreview(mediaPreview, data);
-            })
-            .catch(() => { if (modalError) modalError.textContent = 'Upload failed.'; });
+            });
         fileInput.value = '';
     });
 

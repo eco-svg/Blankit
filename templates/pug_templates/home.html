@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=21">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=22">
 </head>
 <body>
 
@@ -260,9 +260,12 @@
           <div class="dm-input-row">
             <button class="dm-attach-btn" id="dmAttachBtn" title="Attach file">📎</button>
             <input type="file" id="dmFileInput" accept="image/*,video/*,audio/*" style="display:none;">
+            <button class="dm-voice-btn" id="dmVoiceBtn" title="Voice message">🎙</button>
+            <span class="dm-voice-timer" id="dmVoiceTimer">0:00</span>
             <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
             <button id="dmSendBtn">→</button>
           </div>
+          <div id="dmUploadProgress" class="upload-progress hidden"><div class="upload-progress-bar" id="dmProgressBar"></div></div>
           <div id="dmMediaPreview" class="dm-media-preview hidden"></div>
         </div>
       </div>
@@ -547,6 +550,7 @@
         </label>
         <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
       </div>
+      <div id="commUploadProgress" class="upload-progress hidden" style="margin-top:6px;"><div class="upload-progress-bar" id="commProgressBar"></div></div>
       <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
       <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:6px;"></div>
       <div class="modal-actions" style="margin-top:14px;">
@@ -587,8 +591,8 @@
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=2"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=3"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 
 </body>
