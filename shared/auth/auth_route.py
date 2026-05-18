@@ -1,4 +1,6 @@
+import os
 import re
+import requests as _http
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
@@ -15,6 +17,30 @@ def init_mail(mail_instance):
     global mail
     mail = mail_instance
 
+
+def _send_email(to_email, subject, html):
+    """Send email via Brevo HTTP API if BREVO_API_KEY is set, otherwise fall back to Flask-Mail SMTP."""
+    brevo_key = os.environ.get('BREVO_API_KEY')
+    if brevo_key:
+        sender = os.environ.get('MAIL_USERNAME', 'veyrasupportus@gmail.com')
+        r = _http.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'api-key': brevo_key, 'Content-Type': 'application/json'},
+            json={
+                'sender':      {'name': 'VEYRA', 'email': sender},
+                'to':          [{'email': to_email}],
+                'subject':     subject,
+                'htmlContent': html,
+            },
+            timeout=10,
+        )
+        if not r.ok:
+            raise Exception(f'Brevo {r.status_code}: {r.text}')
+    else:
+        msg = Message(subject=subject, recipients=[to_email], html=html)
+        mail.send(msg)
+
+
 DISTRO_REDIRECTS = {
     'ecosvg':   '/home',
     'divyanhu': '/d/home',
@@ -23,10 +49,10 @@ DISTRO_REDIRECTS = {
 
 
 def send_reset_email(user, reset_url):
-    msg = Message(
-        subject    = 'Reset your VEYRA password',
-        recipients = [user.email],
-        html       = f'''
+    _send_email(
+        to_email = user.email,
+        subject  = 'Reset your VEYRA password',
+        html     = f'''
 <!DOCTYPE html>
 <html>
 <body style="font-family:monospace;background:#f4f7ee;padding:2rem;color:#2d4a35;margin:0">
@@ -53,16 +79,15 @@ def send_reset_email(user, reset_url):
     </p>
   </div>
 </body>
-</html>'''
+</html>''',
     )
-    mail.send(msg)
 
 
 def send_otp_email(user, otp):
-    msg = Message(
-        subject    = f'{otp} is your VEYRA verification code',
-        recipients = [user.email],
-        html       = f'''
+    _send_email(
+        to_email = user.email,
+        subject  = f'{otp} is your VEYRA verification code',
+        html     = f'''
 <!DOCTYPE html>
 <html>
 <body style="font-family:monospace;background:#f4f7ee;padding:2rem;color:#2d4a35;margin:0">
@@ -87,9 +112,8 @@ def send_otp_email(user, otp):
     </p>
   </div>
 </body>
-</html>'''
+</html>''',
     )
-    mail.send(msg)
 
 
 # ══════════════════════════════
@@ -132,14 +156,13 @@ def register():
     db.session.add(token_obj)
     db.session.commit()
 
+    session['pending_user_id'] = new_user.id
+    session['pending_email']   = email
+
     try:
         send_otp_email(new_user, token_obj.otp)
     except Exception as e:
         current_app.logger.error(f'Mail error: {e}')
-        return jsonify({'error': 'account created but email failed — contact support'}), 500
-
-    session['pending_user_id'] = new_user.id
-    session['pending_email']   = email
 
     return jsonify({'message': 'otp_sent', 'email': email}), 200
 

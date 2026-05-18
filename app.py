@@ -81,6 +81,24 @@ def _migrate_schema():
             pass  # SQLite doesn't support this; PostgreSQL does
 
 
+def _sync_sequences():
+    """Re-align PostgreSQL serial sequences with actual max IDs to prevent UniqueViolation on insert."""
+    from sqlalchemy import text
+    if 'postgresql' not in str(db.engine.url):
+        return
+    tables = ['users', 'verify_tokens', 'reset_tokens']
+    try:
+        with db.engine.begin() as conn:
+            for table in tables:
+                conn.execute(text(
+                    f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), "
+                    f"GREATEST(COALESCE((SELECT MAX(id) FROM {table}), 1), 1))"
+                ))
+    except Exception as e:
+        import warnings
+        warnings.warn(f'[startup] Sequence sync failed: {e}')
+
+
 def create_app():
     app = Flask(
         __name__,
@@ -143,6 +161,7 @@ def create_app():
     with app.app_context():
         db.create_all()
         _migrate_schema()
+        _sync_sequences()
         seed_badges()
 
     return app
