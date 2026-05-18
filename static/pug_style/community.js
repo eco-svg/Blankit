@@ -37,6 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let pendingQuick   = null;
     let activeTab      = 'write';
     let myLat = null, myLng = null;
+    let activeSkill    = '';
+
+    // ── Skill filter chips ──────────────────────────────────────────────────────
+    document.querySelectorAll('.comm-skill-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.comm-skill-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            activeSkill = chip.dataset.skill || '';
+            lastPostCount = 0;
+            loadFeed();
+        });
+    });
 
     // ── Geolocation ────────────────────────────────────────────────────────────
     if (navigator.geolocation) {
@@ -56,7 +68,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Feed ───────────────────────────────────────────────────────────────────
     function loadFeed() {
         let url = '/pug/api/community';
-        if (myLat !== null && myLng !== null) url += `?lat=${myLat}&lng=${myLng}`;
+        const params = [];
+        if (myLat !== null && myLng !== null) { params.push(`lat=${myLat}`); params.push(`lng=${myLng}`); }
+        if (activeSkill) params.push(`skill=${encodeURIComponent(activeSkill)}`);
+        if (params.length) url += '?' + params.join('&');
         fetch(url)
             .then(r => r.json())
             .then(data => {

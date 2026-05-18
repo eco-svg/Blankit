@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from .extensions import encrypt, decrypt
+from extensions import encrypt, decrypt
 
 # Stored outside the project root so Flask's file watcher never triggers a reload
 _LOGS_DIR = os.environ.get(

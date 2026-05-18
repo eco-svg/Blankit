@@ -3167,3 +3167,35 @@ button.nav-pill:not(.btn-ghost):hover {
   opacity: 0.55;
   letter-spacing: 0.05em;
 }
+
+/* ── Community skill filter chips ────────────────────────── */
+.comm-skill-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 6px 14px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.comm-skill-chip {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 20px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.comm-skill-chip:hover {
+  border-color: rgba(212,165,116,0.35);
+  color: var(--text);
+}
+.comm-skill-chip.active {
+  background: rgba(212,165,116,0.13);
+  border-color: rgba(212,165,116,0.45);
+  color: var(--accent);
+  font-weight: 600;
+}

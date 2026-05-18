@@ -91,7 +91,12 @@ def create_app():
 
     # Config
     app.config.from_object(Config)
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-only-change-in-prod')
+    secret = os.environ.get('SECRET_KEY')
+    if not secret:
+        import warnings
+        warnings.warn("SECRET_KEY not set — using insecure fallback. Set it in production!", stacklevel=2)
+        secret = 'dev-only-change-in-prod'
+    app.config['SECRET_KEY'] = secret
     db_url = os.environ.get('DATABASE_URL', 'sqlite:///blankit.db')
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
@@ -114,6 +119,26 @@ def create_app():
     app.register_blueprint(auth)
     app.register_blueprint(divyanshu_bp)
     app.register_blueprint(pug_bp)
+
+    # ── Security response headers ─────────────────────────
+    @app.after_request
+    def security_headers(response):
+        response.headers['X-Frame-Options']        = 'DENY'
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' https://cdn.jsdelivr.net; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: blob:; "
+            "media-src 'self' blob:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'; "
+            "object-src 'none'; "
+            "base-uri 'self';"
+        )
+        return response
 
     with app.app_context():
         db.create_all()

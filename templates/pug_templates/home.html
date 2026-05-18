@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=23">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=24">
 </head>
 <body>
 
@@ -283,6 +283,16 @@
             <span class="comm-field-label" id="commRangeLabel">🌐 global</span>
           </div>
           <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
+        </div>
+        <!-- Skill filter chips -->
+        <div class="comm-skill-filter" id="commSkillFilter">
+          <button class="comm-skill-chip active" data-skill="">All</button>
+          <button class="comm-skill-chip" data-skill="running">Running</button>
+          <button class="comm-skill-chip" data-skill="coding">Coding</button>
+          <button class="comm-skill-chip" data-skill="writing">Writing</button>
+          <button class="comm-skill-chip" data-skill="art">Art</button>
+          <button class="comm-skill-chip" data-skill="cooking">Cooking</button>
+          <button class="comm-skill-chip" data-skill="music">Music</button>
         </div>
         <!-- Feed -->
         <div class="comm-feed" id="commFeed"></div>

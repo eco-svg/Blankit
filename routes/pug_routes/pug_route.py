@@ -882,6 +882,7 @@ def get_events():
 
 
 @pug_bp.route('/pug/api/upload', methods=['POST'])
+@limiter.limit("30 per minute")
 def upload_file():
     err = login_required_api()
     if err: return err
@@ -900,6 +901,8 @@ def upload_file():
         return jsonify({'error': f'.{ext} not allowed'}), 400
     object_name = f"user_{session['user_id']}/{uuid.uuid4().hex}.{ext}"
     file_data   = file.read()
+    if len(file_data) > 50 * 1024 * 1024:
+        return jsonify({'error': 'File too large (max 50 MB)'}), 400
     try:
         ensure_bucket()
         minio_client.put_object(
@@ -1047,7 +1050,7 @@ def get_user_profile(uid):
     if err: return err
     from svg_models.user import User
     u = User.query.get(uid)
-    if not u:
+    if not u or u.distro != 'thepug':
         return jsonify({'error': 'Not found'}), 404
     n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
     sheet = None
@@ -1363,6 +1366,21 @@ def _user_location(uid):
         return None, None
 
 
+def _user_has_skill(uid, skill_name):
+    """Return True if the user has a verified skill whose name contains skill_name (case-insensitive)."""
+    n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
+    if not n or not n.body:
+        return False
+    try:
+        sheet = json.loads(n.body)
+        return any(
+            s.get('verified', False) and skill_name in (s.get('name') or '').lower()
+            for s in sheet.get('skills', [])
+        )
+    except Exception:
+        return False
+
+
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     err = login_required_api()
@@ -1378,8 +1396,10 @@ def get_community_feed():
     except (KeyError, ValueError):
         use_location = False
 
+    skill_filter = (request.args.get('skill') or '').strip().lower()
+
     posts = Note.query.filter_by(
-        entry_type='community_post', is_deleted=False
+        entry_type='community_post', is_deleted=False, mood='thepug'
     ).order_by(Note.created_at.desc()).limit(200).all()
 
     def _build_row(p, u):
@@ -1418,6 +1438,8 @@ def get_community_feed():
                     plat, plng = _user_location(p.user_id)
                     if plat is None or _haversine_km(my_lat, my_lng, plat, plng) > radius_km:
                         continue
+                if skill_filter and not _user_has_skill(p.user_id, skill_filter):
+                    continue
                 result.append(_build_row(p, u))
             if len(result) >= 5 or radius_km is None:
                 return jsonify({'posts': result, 'radius_km': radius_km})
@@ -1427,6 +1449,8 @@ def get_community_feed():
     for p in posts:
         u = User.query.get(p.user_id)
         if not u: continue
+        if skill_filter and not _user_has_skill(p.user_id, skill_filter):
+            continue
         result.append(_build_row(p, u))
     return jsonify({'posts': result, 'radius_km': None})
 
@@ -1482,7 +1506,8 @@ def search_users():
     me = session['user_id']
     users = User.query.filter(
         User.username.ilike(f'%{q}%'),
-        User.id != me
+        User.id != me,
+        User.distro == 'thepug'
     ).limit(10).all()
     return jsonify([{'id': u.id, 'username': u.username} for u in users])
 

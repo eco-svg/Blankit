@@ -1,9 +1,7 @@
 from datetime import datetime
-from .extensions import db, encrypt, decrypt
-
-# User model lives in svg_models/user.py — do NOT redefine it here.
-# Importing it so any code that did `from .notes import User` still works.
-from svg_models.user import User  # noqa: F401
+from extensions import encrypt, decrypt
+from svg_models import db
+from svg_models.user import User  # noqa: F401  (re-exported for callers)
 
 
 class Note(db.Model):
