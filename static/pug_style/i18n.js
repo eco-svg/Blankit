@@ -20,20 +20,21 @@
     }
 
     function applyAll() {
-        // text content
+        // text content — store original English on first pass so we can restore it
         document.querySelectorAll('[data-i18n]').forEach(el => {
+            if (!('i18nEn' in el.dataset)) el.dataset.i18nEn = el.textContent;
             const v = _t[el.dataset.i18n];
-            if (v !== undefined) el.textContent = v;
+            el.textContent = (v !== undefined) ? v : el.dataset.i18nEn;
         });
-        // placeholder attribute
         document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+            if (!('i18nEnPh' in el.dataset)) el.dataset.i18nEnPh = el.placeholder;
             const v = _t[el.dataset.i18nPh];
-            if (v !== undefined) el.placeholder = v;
+            el.placeholder = (v !== undefined) ? v : el.dataset.i18nEnPh;
         });
-        // data-placeholder attribute (used on contenteditable divs)
         document.querySelectorAll('[data-i18n-dp]').forEach(el => {
+            if (!('i18nEnDp' in el.dataset)) el.dataset.i18nEnDp = el.dataset.placeholder || '';
             const v = _t[el.dataset.i18nDp];
-            if (v !== undefined) el.dataset.placeholder = v;
+            el.dataset.placeholder = (v !== undefined) ? v : el.dataset.i18nEnDp;
         });
     }
 

@@ -1508,6 +1508,7 @@ def list_dms():
             'other_id':  other_id,
             'username':  u.username,
             'last_msg':  raw_body[:60],
+            'last_time': last_msg.created_at.isoformat() if last_msg.created_at else None,
             'unread':    unread_count > 0,
         })
     return jsonify(result)

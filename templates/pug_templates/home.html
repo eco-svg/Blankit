@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=22">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=23">
 </head>
 <body>
 
@@ -278,8 +278,10 @@
 
       <div class="card comms" id="sec-comms">
         <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_comms">Comms</h2>
-          <span class="comm-range-label" id="commRangeLabel" style="font-size:0.62rem;font-family:var(--font-mono);color:var(--text-dim);opacity:0.5;">all · global</span>
+          <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;">
+            <h2 class="card-title" data-i18n="card_comms">Community Posts</h2>
+            <span class="comm-field-label" id="commRangeLabel">🌐 global</span>
+          </div>
           <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
         </div>
         <!-- Feed -->
@@ -547,18 +549,43 @@
 
   <!-- Community compose modal -->
   <div id="commComposeModal" class="custom-modal hidden">
-    <div class="modal-content" style="max-width:440px;">
-      <h3 style="margin-bottom:12px;font-size:1.05rem;color:var(--text);font-weight:600;">New Post</h3>
-      <div id="commModalInput" class="comm-input" contenteditable="true" data-placeholder="What's on your mind..." style="min-height:80px;max-height:160px;"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-        <label class="dm-attach-btn" id="commAttachLabel" title="Attach media" style="cursor:pointer;">📎
-          <input type="file" id="commFileInput" accept="image/*,video/*,audio/*" style="display:none;">
-        </label>
-        <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
+    <div class="comm-compose-content">
+      <!-- Tab switcher -->
+      <div class="comm-modal-tabs">
+        <button class="comm-modal-tab active" id="commTabWrite">✏ Write</button>
+        <button class="comm-modal-tab" id="commTabQuick">⚡ Quick</button>
       </div>
-      <div id="commUploadProgress" class="upload-progress hidden" style="margin-top:6px;"><div class="upload-progress-bar" id="commProgressBar"></div></div>
-      <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
-      <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:6px;"></div>
+
+      <!-- Write tab -->
+      <div id="commWritePane" style="margin-top:12px;">
+        <div id="commModalInput" class="comm-modal-textarea" contenteditable="true" data-placeholder="What's on your mind..."></div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+          <label class="dm-attach-btn" id="commAttachLabel" title="Attach media" style="cursor:pointer;font-size:1.0rem;">📎
+            <input type="file" id="commFileInput" accept="image/*,video/*,audio/*" style="display:none;">
+          </label>
+          <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
+        </div>
+        <div id="commUploadProgress" class="upload-progress hidden" style="margin-top:6px;"><div class="upload-progress-bar" id="commProgressBar"></div></div>
+        <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Quick tab -->
+      <div id="commQuickPane" class="hidden" style="margin-top:12px;">
+        <label class="comm-quick-zone" id="commQuickZone">
+          <input type="file" id="commQuickFileInput" accept="image/*,video/*,audio/*" style="display:none;">
+          <div id="commQuickPlaceholder">
+            <div style="font-size:2.8rem;line-height:1;margin-bottom:10px;">📷</div>
+            <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim);letter-spacing:0.06em;">Photo · Video · Audio</div>
+            <div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;margin-top:4px;">tap to choose</div>
+          </div>
+          <div id="commQuickPreview" class="hidden"></div>
+        </label>
+        <div id="commQuickProgress" class="upload-progress hidden" style="margin-top:8px;"><div class="upload-progress-bar" id="commQuickProgressBar"></div></div>
+        <input type="text" id="commQuickCaption" class="comm-quick-caption" placeholder="Caption (optional)..." maxlength="150" autocomplete="off">
+        <span class="comm-char-count" id="commQuickCaptionCount">0 / 150</span>
+      </div>
+
+      <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
       <div class="modal-actions" style="margin-top:14px;">
         <button id="cancelCommPostBtn" class="nav-pill btn-ghost">Cancel</button>
         <button id="confirmCommPostBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Post</button>

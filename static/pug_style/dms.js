@@ -109,6 +109,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     }
 
+    function fmtTimeAgo(iso) {
+        if (!iso) return '';
+        const d = (Date.now() - new Date(iso + 'Z')) / 1000;
+        if (d < 60)    return 'now';
+        if (d < 3600)  return `${Math.floor(d / 60)}m`;
+        if (d < 86400) return `${Math.floor(d / 3600)}h`;
+        return `${Math.floor(d / 86400)}d`;
+    }
+
     // ── XHR upload with progress ──────────────────────────────────────────────
     function uploadWithProgress(url, formData, progressEl, barEl) {
         return new Promise(resolve => {
@@ -149,14 +158,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 convs.forEach(c => {
-                    const el = document.createElement('div');
-                    el.className = 'dm-conv-item' + (c.unread ? ' dm-unread' : '');
+                    const el       = document.createElement('div');
+                    el.className   = 'dm-conv-item' + (c.unread ? ' dm-unread' : '');
+                    const initials = (c.username || '?')[0].toUpperCase();
+                    const timeStr  = c.last_time ? fmtTimeAgo(c.last_time) : '';
                     el.innerHTML = `
-                        <div class="dm-conv-row">
-                            <span class="dm-conv-name">${esc(c.username)}</span>
-                            ${c.unread ? '<span class="dm-unread-dot"></span>' : ''}
-                        </div>
-                        <div class="dm-conv-preview">${esc(c.last_msg)}</div>`;
+                        <div class="dm-conv-avatar">${initials}</div>
+                        <div class="dm-conv-body">
+                            <div class="dm-conv-row">
+                                <span class="dm-conv-name">${esc(c.username)}</span>
+                                ${c.unread ? '<span class="dm-unread-dot"></span>' : ''}
+                                <span class="dm-conv-time">${timeStr}</span>
+                            </div>
+                            <div class="dm-conv-preview">${esc(c.last_msg)}</div>
+                        </div>`;
                     el.addEventListener('click', () => openChat(c.other_id, c.username));
                     convList.appendChild(el);
                 });

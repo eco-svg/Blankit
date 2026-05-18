@@ -1,27 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const feed           = document.getElementById('commFeed');
-    const composeBtn     = document.getElementById('commComposeBtn');
-    const composeModal   = document.getElementById('commComposeModal');
-    const cancelPostBtn  = document.getElementById('cancelCommPostBtn');
-    const confirmPostBtn = document.getElementById('confirmCommPostBtn');
-    const modalInput     = document.getElementById('commModalInput');
-    const modalCharCount = document.getElementById('commModalCharCount');
-    const modalError     = document.getElementById('commModalError');
-    const fileInput       = document.getElementById('commFileInput');
-    const attachLabel     = document.getElementById('commAttachLabel');
-    const mediaPreview    = document.getElementById('commModalMediaPreview');
+    const feed            = document.getElementById('commFeed');
+    const composeBtn      = document.getElementById('commComposeBtn');
+    const composeModal    = document.getElementById('commComposeModal');
+    const cancelPostBtn   = document.getElementById('cancelCommPostBtn');
+    const confirmPostBtn  = document.getElementById('confirmCommPostBtn');
+    const modalError      = document.getElementById('commModalError');
     const rangeLabel      = document.getElementById('commRangeLabel');
+
+    // Write tab
+    const tabWrite        = document.getElementById('commTabWrite');
+    const tabQuick        = document.getElementById('commTabQuick');
+    const writePane       = document.getElementById('commWritePane');
+    const quickPane       = document.getElementById('commQuickPane');
+    const modalInput      = document.getElementById('commModalInput');
+    const modalCharCount  = document.getElementById('commModalCharCount');
+    const fileInput       = document.getElementById('commFileInput');
+    const mediaPreview    = document.getElementById('commModalMediaPreview');
     const uploadProgress  = document.getElementById('commUploadProgress');
     const progressBar     = document.getElementById('commProgressBar');
 
+    // Quick tab
+    const quickZone       = document.getElementById('commQuickZone');
+    const quickFileInput  = document.getElementById('commQuickFileInput');
+    const quickPlaceholder= document.getElementById('commQuickPlaceholder');
+    const quickPreview    = document.getElementById('commQuickPreview');
+    const quickProgress   = document.getElementById('commQuickProgress');
+    const quickProgressBar= document.getElementById('commQuickProgressBar');
+    const quickCaption    = document.getElementById('commQuickCaption');
+    const quickCaptionCount = document.getElementById('commQuickCaptionCount');
+
     const MAX_LEN = 500;
-    let lastPostCount = 0;
-    let posting       = false;
-    let pendingMedia  = null;   // { key, url, type }
+    let lastPostCount  = 0;
+    let posting        = false;
+    let pendingMedia   = null;
+    let pendingQuick   = null;
+    let activeTab      = 'write';
     let myLat = null, myLng = null;
 
-    // ── Geolocation (opt-in) ─────────────────────────────────────────────────
+    // ── Geolocation ────────────────────────────────────────────────────────────
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
             myLat = pos.coords.latitude;
@@ -36,25 +53,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, () => {}, { timeout: 5000 });
     }
 
-    // ── Feed ──────────────────────────────────────────────────────────────────
+    // ── Feed ───────────────────────────────────────────────────────────────────
     function loadFeed() {
         let url = '/pug/api/community';
-        if (myLat !== null && myLng !== null) {
-            url += `?lat=${myLat}&lng=${myLng}`;
-        }
+        if (myLat !== null && myLng !== null) url += `?lat=${myLat}&lng=${myLng}`;
         fetch(url)
             .then(r => r.json())
             .then(data => {
-                // API returns {posts:[...], radius_km:...} or legacy array
-                const posts = Array.isArray(data) ? data : (data.posts || []);
+                const posts  = Array.isArray(data) ? data : (data.posts || []);
                 const radius = Array.isArray(data) ? null : data.radius_km;
-
                 if (rangeLabel) {
-                    rangeLabel.textContent = radius
-                        ? `within ${radius} km`
-                        : 'all · global';
+                    if (radius) {
+                        rangeLabel.textContent = `📍 within ${radius} km`;
+                    } else if (myLat !== null) {
+                        rangeLabel.textContent = '🌐 global';
+                    } else {
+                        rangeLabel.textContent = '🌐 global';
+                    }
                 }
-
                 if (posts.length === lastPostCount) return;
                 lastPostCount = posts.length;
                 feed.innerHTML = '';
@@ -68,29 +84,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function makePost(p) {
-        const el = document.createElement('div');
-        el.className = 'comm-post';
-        el.dataset.id = p.id;
-
-        const initials  = (p.username || '?')[0].toUpperCase();
-        const ago       = timeAgo(p.created_at);
-        const rankHtml  = p.rank
-            ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>`
-            : '';
+        const el       = document.createElement('div');
+        el.className   = 'comm-post';
+        el.dataset.id  = p.id;
+        const initials = (p.username || '?')[0].toUpperCase();
+        const ago      = timeAgo(p.created_at);
+        const rankHtml = p.rank
+            ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
         const deleteBtn = p.is_mine
-            ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>`
-            : '';
+            ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>` : '';
 
         let mediaHtml = '';
         if (p.media_url) {
             const ext = (p.media_key || '').split('.').pop().toLowerCase();
-            if (['mp3','wav','ogg','m4a','flac'].includes(ext)) {
+            if (['mp3','wav','ogg','m4a','flac'].includes(ext))
                 mediaHtml = `<audio class="comm-media-audio" controls src="${p.media_url}"></audio>`;
-            } else if (['mp4','webm'].includes(ext)) {
+            else if (['mp4','webm'].includes(ext))
                 mediaHtml = `<video class="comm-media-video" controls src="${p.media_url}" playsinline></video>`;
-            } else {
+            else
                 mediaHtml = `<img class="comm-media-img" src="${p.media_url}" loading="lazy">`;
-            }
         }
 
         const usernameHtml = p.is_mine
@@ -108,8 +120,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="comm-ago">${ago}</span>
                 ${deleteBtn}
             </div>
-            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
-            ${mediaHtml}`;
+            ${mediaHtml}
+            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
@@ -118,27 +130,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function deletePost(id) {
         fetch(`/pug/api/community/${id}`, { method: 'DELETE' })
-            .then(() => { lastPostCount = 0; loadFeed(); })
-            .catch(() => {});
+            .then(() => { lastPostCount = 0; loadFeed(); }).catch(() => {});
     }
 
-    // ── Compose modal ─────────────────────────────────────────────────────────
-    composeBtn?.addEventListener('click', () => {
-        pendingMedia = null;
+    // ── XHR upload with progress ───────────────────────────────────────────────
+    function uploadWithProgress(url, formData, progressEl, barEl) {
+        return new Promise(resolve => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            if (progressEl && barEl) { progressEl.classList.remove('hidden'); barEl.style.width = '0%'; }
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable && barEl) barEl.style.width = `${Math.round(e.loaded/e.total*100)}%`;
+            };
+            xhr.onload = () => {
+                if (progressEl) progressEl.classList.add('hidden');
+                if (barEl) barEl.style.width = '0%';
+                try { resolve(JSON.parse(xhr.responseText)); } catch { resolve({}); }
+            };
+            xhr.onerror = () => { if (progressEl) progressEl.classList.add('hidden'); resolve({}); };
+            xhr.send(formData);
+        });
+    }
+
+    // ── Tab switcher ───────────────────────────────────────────────────────────
+    tabWrite?.addEventListener('click', () => switchTab('write'));
+    tabQuick?.addEventListener('click', () => switchTab('quick'));
+
+    function switchTab(tab) {
+        activeTab = tab;
+        tabWrite?.classList.toggle('active', tab === 'write');
+        tabQuick?.classList.toggle('active', tab === 'quick');
+        writePane?.classList.toggle('hidden', tab !== 'write');
+        quickPane?.classList.toggle('hidden', tab !== 'quick');
+    }
+
+    // ── Compose modal open/close ───────────────────────────────────────────────
+    composeBtn?.addEventListener('click', openModal);
+    cancelPostBtn?.addEventListener('click', closeModal);
+    window.addEventListener('click', e => { if (e.target === composeModal) closeModal(); });
+
+    function openModal() {
+        pendingMedia = null; pendingQuick = null;
         if (modalInput) modalInput.textContent = '';
         if (modalCharCount) modalCharCount.textContent = `0 / ${MAX_LEN}`;
         if (modalError) modalError.textContent = '';
         if (mediaPreview) { mediaPreview.innerHTML = ''; mediaPreview.classList.add('hidden'); }
+        if (quickPreview) { quickPreview.innerHTML = ''; quickPreview.classList.add('hidden'); }
+        if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
+        if (quickCaption) quickCaption.value = '';
+        if (quickCaptionCount) quickCaptionCount.textContent = '0 / 150';
+        switchTab('write');
         composeModal?.classList.remove('hidden');
-        setTimeout(() => modalInput?.focus(), 50);
-    });
-
-    cancelPostBtn?.addEventListener('click', closeModal);
-    window.addEventListener('click', e => { if (e.target === composeModal) closeModal(); });
+        setTimeout(() => modalInput?.focus(), 60);
+    }
 
     function closeModal() {
         composeModal?.classList.add('hidden');
-        pendingMedia = null;
+        pendingMedia = null; pendingQuick = null;
     }
 
     modalInput?.addEventListener('input', () => {
@@ -149,138 +197,144 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ── XHR upload with progress ──────────────────────────────────────────────
-    function uploadWithProgress(url, formData, progressEl, barEl) {
-        return new Promise(resolve => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', url);
-            if (progressEl && barEl) {
-                progressEl.classList.remove('hidden');
-                barEl.style.width = '0%';
-            }
-            xhr.upload.onprogress = e => {
-                if (e.lengthComputable && barEl) {
-                    barEl.style.width = `${Math.round(e.loaded / e.total * 100)}%`;
-                }
-            };
-            xhr.onload = () => {
-                if (progressEl) progressEl.classList.add('hidden');
-                if (barEl) barEl.style.width = '0%';
-                try { resolve(JSON.parse(xhr.responseText)); }
-                catch (e) { resolve({}); }
-            };
-            xhr.onerror = () => { if (progressEl) progressEl.classList.add('hidden'); resolve({}); };
-            xhr.send(formData);
-        });
-    }
+    quickCaption?.addEventListener('input', () => {
+        const len = quickCaption.value.length;
+        if (quickCaptionCount) quickCaptionCount.textContent = `${len} / 150`;
+    });
 
-    // ── Media attach (compose modal) ──────────────────────────────────────────
+    // ── Write tab media attach ─────────────────────────────────────────────────
     fileInput?.addEventListener('change', () => {
-        const file = fileInput.files[0];
-        if (!file) return;
-        const fd = new FormData();
-        fd.append('file', file);
+        const file = fileInput.files[0]; if (!file) return;
+        const fd = new FormData(); fd.append('file', file);
         if (modalError) modalError.textContent = '';
         uploadWithProgress('/pug/api/upload_shared', fd, uploadProgress, progressBar)
             .then(data => {
                 if (!data || data.error) { if (modalError) modalError.textContent = data?.error || 'Upload failed.'; return; }
                 pendingMedia = data;
-                renderMediaPreview(mediaPreview, data);
+                renderMediaPreview(mediaPreview, data, () => { pendingMedia = null; });
             });
         fileInput.value = '';
     });
 
-    function renderMediaPreview(container, media) {
-        if (!container) return;
-        container.classList.remove('hidden');
-        container.innerHTML = '';
+    // ── Quick tab media ────────────────────────────────────────────────────────
+    quickZone?.addEventListener('click', () => quickFileInput?.click());
+    quickFileInput?.addEventListener('change', () => {
+        const file = quickFileInput.files[0]; if (!file) return;
+        const fd = new FormData(); fd.append('file', file);
+        if (modalError) modalError.textContent = '';
+        if (quickPlaceholder) quickPlaceholder.classList.add('hidden');
+        uploadWithProgress('/pug/api/upload_shared', fd, quickProgress, quickProgressBar)
+            .then(data => {
+                if (!data || data.error) {
+                    if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
+                    if (modalError) modalError.textContent = data?.error || 'Upload failed.';
+                    return;
+                }
+                pendingQuick = data;
+                renderQuickPreview(data);
+            });
+        quickFileInput.value = '';
+    });
+
+    function renderQuickPreview(media) {
+        if (!quickPreview) return;
+        quickPreview.innerHTML = '';
         let el;
         if (media.type === 'image') {
             el = document.createElement('img');
             el.src = media.url;
-            el.className = 'dm-media-preview-img';
+            el.className = 'comm-quick-preview-img';
         } else if (media.type === 'video') {
             el = document.createElement('video');
-            el.src = media.url;
-            el.controls = true;
-            el.className = 'dm-media-preview-video';
+            el.src = media.url; el.controls = true;
+            el.className = 'comm-quick-preview-video';
         } else {
             el = document.createElement('audio');
-            el.src = media.url;
-            el.controls = true;
-            el.className = 'dm-media-preview-audio';
+            el.src = media.url; el.controls = true;
+            el.className = 'comm-quick-preview-audio';
         }
         const removeBtn = document.createElement('button');
-        removeBtn.className = 'dm-media-remove';
-        removeBtn.textContent = '×';
-        removeBtn.addEventListener('click', () => {
-            pendingMedia = null;
-            container.innerHTML = '';
-            container.classList.add('hidden');
+        removeBtn.className = 'dm-media-remove'; removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            pendingQuick = null;
+            quickPreview.innerHTML = ''; quickPreview.classList.add('hidden');
+            if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
         });
         const wrap = document.createElement('div');
-        wrap.className = 'dm-media-preview-wrap';
-        wrap.appendChild(el);
-        wrap.appendChild(removeBtn);
+        wrap.className = 'dm-media-preview-wrap comm-quick-preview-wrap';
+        wrap.appendChild(el); wrap.appendChild(removeBtn);
+        quickPreview.appendChild(wrap);
+        quickPreview.classList.remove('hidden');
+    }
+
+    function renderMediaPreview(container, media, onRemove) {
+        if (!container) return;
+        container.classList.remove('hidden'); container.innerHTML = '';
+        let el;
+        if (media.type === 'image') { el = document.createElement('img'); el.src = media.url; el.className = 'dm-media-preview-img'; }
+        else if (media.type === 'video') { el = document.createElement('video'); el.src = media.url; el.controls = true; el.className = 'dm-media-preview-video'; }
+        else { el = document.createElement('audio'); el.src = media.url; el.controls = true; el.className = 'dm-media-preview-audio'; }
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'dm-media-remove'; removeBtn.textContent = '×';
+        removeBtn.addEventListener('click', () => { onRemove?.(); container.innerHTML = ''; container.classList.add('hidden'); });
+        const wrap = document.createElement('div'); wrap.className = 'dm-media-preview-wrap';
+        wrap.appendChild(el); wrap.appendChild(removeBtn);
         container.appendChild(wrap);
     }
 
-    // ── Submit post ───────────────────────────────────────────────────────────
+    // ── Submit ─────────────────────────────────────────────────────────────────
     confirmPostBtn?.addEventListener('click', submitPost);
-    modalInput?.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitPost();
-    });
+    modalInput?.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) submitPost(); });
 
     function submitPost() {
         if (posting) return;
-        const text = (modalInput?.textContent || '').trim();
-        if (!text && !pendingMedia) {
-            if (modalError) modalError.textContent = 'Write something or attach media.';
-            return;
+        let text = '', media_key = '';
+
+        if (activeTab === 'quick') {
+            if (!pendingQuick) { if (modalError) modalError.textContent = 'Choose a photo, video, or audio first.'; return; }
+            text      = quickCaption?.value.trim() || '';
+            media_key = pendingQuick.key;
+        } else {
+            text = (modalInput?.textContent || '').trim();
+            if (!text && !pendingMedia) { if (modalError) modalError.textContent = 'Write something or attach media.'; return; }
+            if (text.length > MAX_LEN) { if (modalError) modalError.textContent = 'Too long.'; return; }
+            media_key = pendingMedia?.key || '';
         }
-        if (text.length > MAX_LEN) {
-            if (modalError) modalError.textContent = 'Too long.';
-            return;
-        }
+
         posting = true;
         if (confirmPostBtn) confirmPostBtn.disabled = true;
         fetch('/pug/api/community', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, media_key: pendingMedia?.key || '' })
+            body: JSON.stringify({ text, media_key })
         })
         .then(r => r.json())
         .then(data => {
-            posting = false;
-            if (confirmPostBtn) confirmPostBtn.disabled = false;
+            posting = false; if (confirmPostBtn) confirmPostBtn.disabled = false;
             if (data.error) { if (modalError) modalError.textContent = data.error; return; }
-            closeModal();
-            lastPostCount = 0;
-            loadFeed();
+            closeModal(); lastPostCount = 0; loadFeed();
         })
-        .catch(() => {
-            posting = false;
-            if (confirmPostBtn) confirmPostBtn.disabled = false;
-        });
+        .catch(() => { posting = false; if (confirmPostBtn) confirmPostBtn.disabled = false; });
     }
 
-    // ── Public profile popup ──────────────────────────────────────────────────
-    const pubModal        = document.getElementById('pubProfileModal');
-    const pubAvatar       = document.getElementById('pubProfileAvatar');
-    const pubName         = document.getElementById('pubProfileName');
-    const pubRank         = document.getElementById('pubProfileRank');
-    const pubClass        = document.getElementById('pubProfileClass');
-    const pubSkills       = document.getElementById('pubProfileSkills');
-    const pubEmpty        = document.getElementById('pubProfileEmpty');
-    const closePubProfile = document.getElementById('closePubProfileBtn');
+    // ── Public profile popup ───────────────────────────────────────────────────
+    const pubModal     = document.getElementById('pubProfileModal');
+    const pubAvatar    = document.getElementById('pubProfileAvatar');
+    const pubName      = document.getElementById('pubProfileName');
+    const pubRank      = document.getElementById('pubProfileRank');
+    const pubClass     = document.getElementById('pubProfileClass');
+    const pubSkills    = document.getElementById('pubProfileSkills');
+    const pubEmpty     = document.getElementById('pubProfileEmpty');
+    const closePub     = document.getElementById('closePubProfileBtn');
 
-    closePubProfile?.addEventListener('click', () => pubModal?.classList.add('hidden'));
+    closePub?.addEventListener('click', () => pubModal?.classList.add('hidden'));
     window.addEventListener('click', e => { if (e.target === pubModal) pubModal?.classList.add('hidden'); });
 
     function openProfile(uid, username) {
         if (!pubModal) return;
         pubModal.classList.remove('hidden');
-        if (pubAvatar) pubAvatar.textContent = (username || '?')[0].toUpperCase();
+        if (pubAvatar) pubAvatar.textContent = (username||'?')[0].toUpperCase();
         if (pubName)   pubName.textContent   = username;
         if (pubRank)   pubRank.textContent   = '';
         if (pubClass)  pubClass.textContent  = '';
@@ -289,54 +343,36 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`/pug/api/users/${uid}/profile`)
             .then(r => r.json())
             .then(data => {
-                if (data.rank && pubRank) {
-                    pubRank.textContent = data.rank;
-                    pubRank.style.color = data.rank_color || '#888';
-                }
+                if (data.rank && pubRank) { pubRank.textContent = data.rank; pubRank.style.color = data.rank_color||'#888'; }
                 const sheet = data.sheet;
                 if (!sheet) { pubEmpty?.classList.remove('hidden'); return; }
-                if (pubClass && sheet.class_official) {
-                    pubClass.textContent = sheet.class_official;
-                }
+                if (pubClass && sheet.class_official) pubClass.textContent = sheet.class_official;
                 const skills = sheet.skills || [];
                 if (!skills.length) { pubEmpty?.classList.remove('hidden'); return; }
-                const _RANK_COLORS = {
-                    'S+':'#ffd700','S':'#ffb700','S-':'#ffa500',
-                    'A+':'#ff7c4d','A':'#ff8c42','A-':'#e8854a',
-                    'B+':'#5a8fc8','B':'#4a7aaa','B-':'#4070a0',
-                    'C+':'#8ac888','C':'#78b878','C-':'#68a068',
-                    'D+':'#a0a0a0','D':'#888888','D-':'#707070',
-                    'E':'#c06030','F':'#803010',
-                };
+                const RC = {'S+':'#ffd700','S':'#ffb700','S-':'#ffa500','A+':'#ff7c4d','A':'#ff8c42','A-':'#e8854a','B+':'#5a8fc8','B':'#4a7aaa','B-':'#4070a0','C+':'#8ac888','C':'#78b878','C-':'#68a068','D+':'#a0a0a0','D':'#888888','D-':'#707070','E':'#c06030','F':'#803010'};
                 skills.forEach(s => {
                     const row = document.createElement('div');
                     row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
-                    const color = _RANK_COLORS[s.rank] || '#888';
-                    const verified = s.verified !== false;
-                    row.innerHTML = `
-                        <span style="font-size:0.82rem;color:var(--text);">${esc(s.name)}</span>
-                        <span style="font-family:var(--font-mono);font-size:0.72rem;font-weight:700;color:${verified ? color : 'var(--text-dim)'};">${verified ? s.rank : '?'}</span>`;
+                    const ok = s.verified !== false;
+                    row.innerHTML = `<span style="font-size:0.82rem;color:var(--text);">${esc(s.name)}</span><span style="font-family:var(--font-mono);font-size:0.72rem;font-weight:700;color:${ok ? (RC[s.rank]||'#888') : 'var(--text-dim)'};">${ok ? s.rank : '?'}</span>`;
                     pubSkills.appendChild(row);
                 });
             })
             .catch(() => { pubEmpty?.classList.remove('hidden'); });
     }
 
-    // ── Utils ─────────────────────────────────────────────────────────────────
-    function esc(s) {
-        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
+    // ── Utils ──────────────────────────────────────────────────────────────────
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function timeAgo(iso) {
         if (!iso) return '';
-        const diff = (Date.now() - new Date(iso + 'Z')) / 1000;
-        if (diff < 60)    return 'just now';
-        if (diff < 3600)  return `${Math.floor(diff / 60)}m`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)}h`;
-        return `${Math.floor(diff / 86400)}d`;
+        const d = (Date.now() - new Date(iso+'Z')) / 1000;
+        if (d < 60) return 'now';
+        if (d < 3600) return `${Math.floor(d/60)}m`;
+        if (d < 86400) return `${Math.floor(d/3600)}h`;
+        return `${Math.floor(d/86400)}d`;
     }
 
-    // ── Init ──────────────────────────────────────────────────────────────────
+    // ── Init ───────────────────────────────────────────────────────────────────
     loadFeed();
     setInterval(loadFeed, 15000);
 });
