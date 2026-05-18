@@ -4,6 +4,7 @@ import uuid
 import io
 import time
 import json
+import math
 from datetime import datetime, timedelta
 from flask import (
     Blueprint, render_template, request,
@@ -517,9 +518,14 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Never infer skills from active goals. "
         "   Return only skills with evidence — 0 to 5 max. "
         "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'.\n"
-        "   VERIFIED field: set 'verified': true ONLY if there is a concrete Achievement entry with measurable, "
-        "   specific proof (a time, a shipped product, a Strava/NRC export, a GitHub repo, a real output). "
-        "   Set 'verified': false for skills inferred from goals, vague notes, or unconfirmed claims. "
+        "   OVERRIDE RULE — VERIFIED EVIDENCE: Any achievement tagged '[VERIFIED: media/screenshot uploaded as evidence]' "
+        "   or '[VERIFIED via link: ...]' means the user HAS ALREADY submitted proof. "
+        "   You MUST set 'verified': true for the skill matching that achievement. This is unconditional — do not override it. "
+        "   If the evidence references running (Strava/NRC screenshot, run data), rank it as Running. "
+        "   If the evidence is a GitHub repo/link, rank it as the relevant code skill. Etc.\n"
+        "   VERIFIED field: set 'verified': true if there is a concrete Achievement entry with measurable proof "
+        "   (a time, shipped product, Strava/NRC export, GitHub repo, real output) OR any '[VERIFIED...]' tag above. "
+        "   Set 'verified': false ONLY for skills inferred purely from goals, vague notes, or zero evidence. "
         "   Unverified skills will show '?' rank to the user until they submit evidence.\n"
         "   For each skill, add an optional 'note' field (1 sentence, max 15 words) when the rank is E or F or verified is false. "
         "   The note must tell the user EXACTLY what to enter and WHERE to verify. "
@@ -650,8 +656,10 @@ minio_client = Minio(
     secure=MINIO_SECURE
 )
 
-ALLOWED_IMAGE = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-ALLOWED_VIDEO = {'mp4', 'webm'}
+ALLOWED_IMAGE  = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+ALLOWED_VIDEO  = {'mp4', 'webm'}
+ALLOWED_AUDIO  = {'mp3', 'wav', 'ogg', 'm4a', 'flac'}
+ALLOWED_SHARED = ALLOWED_IMAGE | ALLOWED_VIDEO | ALLOWED_AUDIO
 
 
 def ensure_bucket():
@@ -930,6 +938,123 @@ def serve_media(object_name):
     return jsonify({'error': 'File not found'}), 404
 
 
+@pug_bp.route('/pug/api/upload_shared', methods=['POST'])
+def upload_shared():
+    err = login_required_api()
+    if err: return err
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file'}), 400
+    file     = request.files['file']
+    filename = secure_filename(file.filename)
+    if not filename:
+        return jsonify({'error': 'Empty filename'}), 400
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else ''
+    if ext in ALLOWED_IMAGE:
+        content_type = f'image/{ext if ext != "jpg" else "jpeg"}'
+        ftype = 'image'
+    elif ext in ALLOWED_VIDEO:
+        content_type = f'video/{ext}'
+        ftype = 'video'
+    elif ext in ALLOWED_AUDIO:
+        content_type = f'audio/{ext}'
+        ftype = 'audio'
+    else:
+        return jsonify({'error': f'.{ext} not allowed'}), 400
+    file_data = file.read()
+    if len(file_data) > 50 * 1024 * 1024:
+        return jsonify({'error': 'File too large (max 50 MB)'}), 400
+    object_name = f"shared/{uuid.uuid4().hex}.{ext}"
+    try:
+        ensure_bucket()
+        minio_client.put_object(
+            MINIO_BUCKET, object_name, io.BytesIO(file_data),
+            length=len(file_data), content_type=content_type
+        )
+    except Exception as e:
+        current_app.logger.warning(f"MinIO shared upload failed: {e}")
+        local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        with open(local_path, 'wb') as fh:
+            fh.write(file_data)
+    return jsonify({
+        'key':  object_name,
+        'url':  url_for('pug.serve_media_shared', object_name=object_name),
+        'type': ftype,
+    })
+
+
+@pug_bp.route('/pug/api/media/shared/<path:object_name>')
+def serve_media_shared(object_name):
+    err = login_required_api()
+    if err: return err
+    try:
+        response = minio_client.get_object(MINIO_BUCKET, object_name)
+        return Response(
+            response.stream(32 * 1024),
+            content_type=response.headers.get('content-type', 'application/octet-stream')
+        )
+    except Exception:
+        pass
+    import mimetypes
+    local_path = os.path.join(_UPLOAD_LOCAL_DIR, object_name)
+    if os.path.exists(local_path):
+        ct = mimetypes.guess_type(local_path)[0] or 'application/octet-stream'
+        with open(local_path, 'rb') as f:
+            return Response(f.read(), content_type=ct)
+    return jsonify({'error': 'File not found'}), 404
+
+
+@pug_bp.route('/pug/api/location', methods=['POST'])
+def save_location():
+    err = login_required_api()
+    if err: return err
+    data = request.get_json(force=True) or {}
+    try:
+        lat = float(data['lat'])
+        lng = float(data['lng'])
+    except (KeyError, ValueError, TypeError):
+        return jsonify({'error': 'lat and lng required'}), 400
+    existing = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='user_location', is_deleted=False
+    ).first()
+    if not existing:
+        existing = Note(
+            user_id=session['user_id'], entry_type='user_location',
+            is_deleted=False, is_finished=False
+        )
+        existing.title = 'location'
+        db.session.add(existing)
+    existing.body = json.dumps({'lat': lat, 'lng': lng})
+    existing.updated_at = datetime.utcnow()
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/users/<int:uid>/profile')
+def get_user_profile(uid):
+    err = login_required_api()
+    if err: return err
+    from svg_models.user import User
+    u = User.query.get(uid)
+    if not u:
+        return jsonify({'error': 'Not found'}), 404
+    n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
+    sheet = None
+    if n and n.body:
+        try:
+            sheet = json.loads(n.body)
+        except Exception:
+            pass
+    rank, color = _net_rank_for_user(uid)
+    return jsonify({
+        'id':         uid,
+        'username':   u.username,
+        'rank':       rank,
+        'rank_color': color,
+        'sheet':      sheet,
+    })
+
+
 @pug_bp.route('/pug/api/ask', methods=['POST'])
 def ask():
     err = login_required_api()
@@ -1203,50 +1328,116 @@ def _net_rank_for_user(uid):
     return None, None
 
 
+def _haversine_km(lat1, lng1, lat2, lng2):
+    R = 6371
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lng2 - lng1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    return 2 * R * math.asin(math.sqrt(min(1.0, a)))
+
+
+def _user_location(uid):
+    """Return (lat, lng) from user_location note, or (None, None)."""
+    n = Note.query.filter_by(user_id=uid, entry_type='user_location', is_deleted=False).first()
+    if not n or not n.body:
+        return None, None
+    try:
+        d = json.loads(n.body)
+        return float(d['lat']), float(d['lng'])
+    except Exception:
+        return None, None
+
+
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     err = login_required_api()
     if err: return err
     from svg_models.user import User
     me = session['user_id']
+
+    # Optional location filter
+    try:
+        my_lat = float(request.args['lat'])
+        my_lng = float(request.args['lng'])
+        use_location = True
+    except (KeyError, ValueError):
+        use_location = False
+
     posts = Note.query.filter_by(
         entry_type='community_post', is_deleted=False
-    ).order_by(Note.created_at.desc()).limit(50).all()
-    result = []
-    for p in posts:
-        u = User.query.get(p.user_id)
-        if not u: continue
+    ).order_by(Note.created_at.desc()).limit(200).all()
+
+    def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
-        result.append({
+        body = p.body or ''
+        text, media_key = body, None
+        if body.startswith('{'):
+            try:
+                bd = json.loads(body)
+                text      = bd.get('t', '')
+                media_key = bd.get('m')
+            except Exception:
+                pass
+        media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
+        return {
             'id':         p.id,
-            'text':       p.body or '',
+            'text':       text,
+            'media_key':  media_key,
+            'media_url':  media_url,
             'username':   u.username,
+            'user_id':    p.user_id,
             'distro':     p.mood or 'thepug',
             'rank':       rank,
             'rank_color': color,
             'is_mine':    p.user_id == me,
             'created_at': p.created_at.isoformat() if p.created_at else None,
-        })
-    return jsonify(result)
+        }
+
+    if use_location:
+        for radius_km in (50, 100, 250, None):
+            result = []
+            for p in posts:
+                u = User.query.get(p.user_id)
+                if not u: continue
+                if radius_km is not None:
+                    plat, plng = _user_location(p.user_id)
+                    if plat is None or _haversine_km(my_lat, my_lng, plat, plng) > radius_km:
+                        continue
+                result.append(_build_row(p, u))
+            if len(result) >= 5 or radius_km is None:
+                return jsonify({'posts': result, 'radius_km': radius_km})
+        return jsonify({'posts': [], 'radius_km': None})
+
+    result = []
+    for p in posts:
+        u = User.query.get(p.user_id)
+        if not u: continue
+        result.append(_build_row(p, u))
+    return jsonify({'posts': result, 'radius_km': None})
 
 
 @pug_bp.route('/pug/api/community', methods=['POST'])
 def create_community_post():
     err = login_required_api()
     if err: return err
-    data = request.get_json(force=True) or {}
-    text = (data.get('text') or '').strip()
-    if not text:
+    data      = request.get_json(force=True) or {}
+    text      = (data.get('text') or '').strip()
+    media_key = (data.get('media_key') or '').strip()
+    if not text and not media_key:
         return jsonify({'error': 'Empty post'}), 400
     if len(text) > 500:
         return jsonify({'error': 'Too long (max 500 chars)'}), 400
+    if media_key and not media_key.startswith('shared/'):
+        return jsonify({'error': 'Invalid media key'}), 400
+    body_val = json.dumps({'t': text, 'm': media_key}) if media_key else text
     p = Note(
         user_id    = session['user_id'],
         entry_type = 'community_post',
         is_deleted = False,
         is_finished= False,
     )
-    p.body = text
+    p.body = body_val
     p.mood = session.get('distro', 'thepug')
     db.session.add(p)
     db.session.commit()
@@ -1306,10 +1497,17 @@ def list_dms():
             user_id=other_id, mood=str(me), entry_type='dm',
             is_deleted=False, is_finished=False
         ).count()
+        raw_body = last_msg.body or ''
+        if raw_body.startswith('{'):
+            try:
+                bd = json.loads(raw_body)
+                raw_body = bd.get('t', '') or ('[media]' if bd.get('m') else '')
+            except Exception:
+                pass
         result.append({
             'other_id':  other_id,
             'username':  u.username,
-            'last_msg':  (last_msg.body or '')[:60],
+            'last_msg':  raw_body[:60],
             'unread':    unread_count > 0,
         })
     return jsonify(result)
@@ -1323,12 +1521,27 @@ def get_dm_thread(other_id):
     sent     = Note.query.filter_by(user_id=me,       mood=str(other_id), entry_type='dm', is_deleted=False).all()
     received = Note.query.filter_by(user_id=other_id, mood=str(me),       entry_type='dm', is_deleted=False).all()
     msgs = sorted(sent + received, key=lambda m: m.created_at or datetime.min)
-    return jsonify([{
-        'id':         m.id,
-        'body':       m.body or '',
-        'is_mine':    m.user_id == me,
-        'created_at': m.created_at.isoformat() if m.created_at else None,
-    } for m in msgs])
+    rows = []
+    for m in msgs:
+        raw = m.body or ''
+        text, media_key = raw, None
+        if raw.startswith('{'):
+            try:
+                bd = json.loads(raw)
+                text      = bd.get('t', '')
+                media_key = bd.get('m')
+            except Exception:
+                pass
+        media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
+        rows.append({
+            'id':         m.id,
+            'body':       text,
+            'media_key':  media_key,
+            'media_url':  media_url,
+            'is_mine':    m.user_id == me,
+            'created_at': m.created_at.isoformat() if m.created_at else None,
+        })
+    return jsonify(rows)
 
 
 @pug_bp.route('/pug/api/dms/<int:other_id>', methods=['POST'])
@@ -1339,25 +1552,32 @@ def send_dm(other_id):
     me = session['user_id']
     if not User.query.get(other_id):
         return jsonify({'error': 'User not found'}), 404
-    data = request.get_json(force=True) or {}
-    body = (data.get('body') or '').strip()
-    if not body:
+    data      = request.get_json(force=True) or {}
+    body      = (data.get('body') or '').strip()
+    media_key = (data.get('media_key') or '').strip()
+    if not body and not media_key:
         return jsonify({'error': 'Empty message'}), 400
+    if media_key and not media_key.startswith('shared/'):
+        return jsonify({'error': 'Invalid media key'}), 400
     if len(body) > 2000:
         return jsonify({'error': 'Message too long'}), 400
+    body_val  = json.dumps({'t': body, 'm': media_key}) if media_key else body
+    media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
     m = Note(
         user_id    = me,
         entry_type = 'dm',
         is_deleted = False,
         is_finished= False,
     )
-    m.body  = body
-    m.mood  = str(other_id)   # receiver_id stored unencrypted in mood
+    m.body = body_val
+    m.mood = str(other_id)
     db.session.add(m)
     db.session.commit()
     return jsonify({
         'id':         m.id,
         'body':       body,
+        'media_key':  media_key or None,
+        'media_url':  media_url,
         'is_mine':    True,
         'created_at': m.created_at.isoformat() if m.created_at else None,
     }), 201

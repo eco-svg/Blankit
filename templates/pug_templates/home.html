@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blankit - The Pug's Route</title>
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=20">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=21">
 </head>
 <body>
 
@@ -258,9 +258,12 @@
           </div>
           <div id="dmMessages" class="dm-messages"></div>
           <div class="dm-input-row">
+            <button class="dm-attach-btn" id="dmAttachBtn" title="Attach file">📎</button>
+            <input type="file" id="dmFileInput" accept="image/*,video/*,audio/*" style="display:none;">
             <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
             <button id="dmSendBtn">→</button>
           </div>
+          <div id="dmMediaPreview" class="dm-media-preview hidden"></div>
         </div>
       </div>
 
@@ -268,14 +271,7 @@
         <div class="card-top-bar">
           <h2 class="card-title" data-i18n="card_comms">Comms</h2>
           <span class="comm-range-label" id="commRangeLabel" style="font-size:0.62rem;font-family:var(--font-mono);color:var(--text-dim);opacity:0.5;">all · global</span>
-        </div>
-        <!-- Composer -->
-        <div class="comm-composer">
-          <div id="commInput" class="comm-input" contenteditable="true" data-placeholder="What's on your mind..."></div>
-          <div class="comm-composer-actions">
-            <span class="comm-char-count" id="commCharCount">0 / 500</span>
-            <button id="commPostBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);padding:4px 14px;font-size:0.72rem;">Post</button>
-          </div>
+          <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
         </div>
         <!-- Feed -->
         <div class="comm-feed" id="commFeed"></div>
@@ -540,6 +536,43 @@
     </div>
   </div>
 
+  <!-- Community compose modal -->
+  <div id="commComposeModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:440px;">
+      <h3 style="margin-bottom:12px;font-size:1.05rem;color:var(--text);font-weight:600;">New Post</h3>
+      <div id="commModalInput" class="comm-input" contenteditable="true" data-placeholder="What's on your mind..." style="min-height:80px;max-height:160px;"></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+        <label class="dm-attach-btn" id="commAttachLabel" title="Attach media" style="cursor:pointer;">📎
+          <input type="file" id="commFileInput" accept="image/*,video/*,audio/*" style="display:none;">
+        </label>
+        <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
+      </div>
+      <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
+      <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:6px;"></div>
+      <div class="modal-actions" style="margin-top:14px;">
+        <button id="cancelCommPostBtn" class="nav-pill btn-ghost">Cancel</button>
+        <button id="confirmCommPostBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Public profile popup -->
+  <div id="pubProfileModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:340px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div class="comm-avatar" id="pubProfileAvatar" style="width:38px;height:38px;font-size:0.9rem;">?</div>
+        <div>
+          <div id="pubProfileName" style="font-weight:700;font-size:1.0rem;color:var(--text);"></div>
+          <div id="pubProfileRank" style="font-family:var(--font-mono);font-size:0.72rem;margin-top:2px;"></div>
+        </div>
+        <button class="icon-btn" id="closePubProfileBtn" style="margin-left:auto;">✕</button>
+      </div>
+      <div id="pubProfileClass" style="font-family:var(--font-mono);font-size:0.70rem;color:var(--text-dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.07em;"></div>
+      <div id="pubProfileSkills" style="display:flex;flex-direction:column;gap:4px;"></div>
+      <div id="pubProfileEmpty" class="hidden" style="font-family:var(--font-mono);font-size:0.76rem;color:var(--text-dim);opacity:0.45;text-align:center;margin-top:20px;">No public stats yet.</div>
+    </div>
+  </div>
+
   <script src="{{ url_for('pug.static', filename='i18n.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="{{ url_for('pug.static', filename='ani.js') }}"></script>
@@ -554,8 +587,8 @@
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='dms.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=2"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=2"></script>
 
 </body>
