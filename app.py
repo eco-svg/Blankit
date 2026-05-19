@@ -171,6 +171,15 @@ def create_app():
     app.register_blueprint(divyanshu_bp)
     app.register_blueprint(pug_bp)
 
+    # ── Invalidate sessions for deleted users ─────────────
+    @app.before_request
+    def validate_session_user():
+        user_id = session.get('user_id')
+        if user_id:
+            from shared.auth.user import User
+            if not db.session.get(User, user_id):
+                session.clear()
+
     # ── Security response headers ─────────────────────────
     @app.after_request
     def security_headers(response):
