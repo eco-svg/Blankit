@@ -446,6 +446,13 @@ document.addEventListener('keydown', e => {
   showResetPanel(resetToken);
 })();
 
+(function checkKicked() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.get('kicked')) return;
+  history.replaceState({}, '', window.location.pathname);
+  showFlash('loginFlash', 'Your session was ended — this account no longer exists.', 'error');
+})();
+
 function showResetPanel(token) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
 

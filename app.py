@@ -175,10 +175,16 @@ def create_app():
     @app.before_request
     def validate_session_user():
         user_id = session.get('user_id')
-        if user_id:
-            from shared.auth.user import User
-            if not db.session.get(User, user_id):
-                session.clear()
+        if not user_id:
+            return
+        from shared.auth.user import User
+        if db.session.get(User, user_id):
+            return
+        session.clear()
+        from flask import request as _req, redirect, url_for, jsonify
+        if _req.path.startswith('/api/') or _req.headers.get('Accept', '').startswith('application/json'):
+            return jsonify({'error': 'session_invalidated', 'message': 'Your account no longer exists.'}), 401
+        return redirect(url_for('svg.login') + '?kicked=1')
 
     # ── Security response headers ─────────────────────────
     @app.after_request
