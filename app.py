@@ -174,7 +174,7 @@ def create_app():
     # ── Security response headers ─────────────────────────
     @app.after_request
     def security_headers(response):
-        response.headers['X-Frame-Options']        = 'DENY'
+        response.headers['X-Frame-Options']        = 'SAMEORIGIN'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
         response.headers['Content-Security-Policy'] = (
@@ -185,7 +185,7 @@ def create_app():
             "img-src 'self' data: blob:; "
             "media-src 'self' blob:; "
             "connect-src 'self'; "
-            "frame-ancestors 'none'; "
+            "frame-ancestors 'self' https://huggingface.co; "
             "object-src 'none'; "
             "base-uri 'self';"
         )
