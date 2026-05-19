@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, session
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from shared.config import Config
