@@ -560,7 +560,7 @@ body.header-hidden .l-bar {
 
 .playground {
   margin-top: var(--header-h);
-  margin-left: var(--lbar-w);
+  margin-left: 0;
   margin-right: var(--rbar-w);
   padding: var(--gap);
   min-height: calc(100vh - var(--header-h));

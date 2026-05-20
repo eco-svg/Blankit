@@ -187,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) return;
             modal.classList.add('hidden');
             load();
+            fetch('/pug/api/stats?refresh=true').catch(() => {});
         })
         .catch(() => {});
     }
