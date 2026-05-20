@@ -36,4 +36,3 @@ SQLAlchemy==2.0.48
 typing_extensions==4.15.0
 urllib3==2.4.0
 Werkzeug==3.1.7
-quick question ...can i set u up in the way ..that u never die, v
