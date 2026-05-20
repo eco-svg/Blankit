@@ -254,7 +254,14 @@ body::after {
   overflow: hidden;
 }
 
-.add1, .add2, .add3 {
+.adbox-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: var(--gap);
+  height: 200px;
+}
+
+.add1, .add2, .add3, .add4 {
   flex: 1;
   border-radius: var(--radius);
   border: 1px dashed var(--border);
@@ -264,11 +271,11 @@ body::after {
   transition: border-color 0.2s;
 }
 
-.add1:hover, .add2:hover, .add3:hover {
+.add1:hover, .add2:hover, .add3:hover, .add4:hover {
   border-color: var(--text-dim);
 }
 
-.add1::after, .add2::after, .add3::after {
+.add1::after, .add2::after, .add3::after, .add4::after {
   content: 'AD';
   position: absolute;
   top: 50%; left: 50%;
