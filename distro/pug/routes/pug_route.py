@@ -1252,6 +1252,52 @@ def buddybot_endpoint():
         return jsonify({'error': 'BuddyBot unavailable'}), 503
 
 
+@pug_bp.route('/pug/api/desktop/chat', methods=['POST'])
+def desktop_buddybot_chat():
+    """Localhost-only endpoint for ArchPlay desktop shell scripts.
+    No session auth — only accepts connections from 127.0.0.1.
+    """
+    if request.remote_addr != '127.0.0.1':
+        return jsonify({'error': 'Forbidden'}), 403
+
+    data           = request.get_json(silent=True) or {}
+    message        = data.get('message', '').strip()
+    memory_context = data.get('memory_context', '')
+    mode           = data.get('mode', 'buddybot')
+
+    if not message:
+        return jsonify({'reply': ''}), 200
+
+    # Build context packet from shell-supplied memory snippets + message
+    packet = (
+        f"relevant_memory:\n{memory_context}\n\n"
+        f"question_core: {message}\n"
+        f"task: answer_directly"
+    ) if memory_context else (
+        f"question_core: {message}\ntask: answer_directly"
+    )
+
+    # Minimal user context — no DB lookup, desktop-mode user
+    user_context = {
+        'username':           'pug',
+        'member_since':       '',
+        'dream':              None,
+        'active_goals':       [],
+        'finished_this_week': [],
+        'recent_notes':       []
+    }
+
+    try:
+        if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
+            reply = _call_buddybot(packet, user_context)
+        else:
+            reply = _call_groq_chat(message, [], user_context)
+        return jsonify({'reply': reply})
+    except Exception as e:
+        current_app.logger.error(f"Desktop chat error: {e}")
+        return jsonify({'reply': 'BuddyBot unavailable right now.'}), 503
+
+
 @pug_bp.route('/pug/api/stats', methods=['GET'])
 @limiter.limit("10 per minute")
 def get_stats_sheet():
