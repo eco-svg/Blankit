@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ── RESTORE THEME ── */
-  const saved = localStorage.getItem('ecosvg-theme');
+  const saved = localStorage.getItem('Eco-Svg-theme');
   if (saved) {
     document.documentElement.setAttribute('data-theme', saved);
     document.querySelectorAll('.theme-card').forEach(c => {
@@ -21,27 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', theme);
     document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
     card.classList.add('active');
-    localStorage.setItem('ecosvg-theme', theme);
+    localStorage.setItem('Eco-Svg-theme', theme);
   });
 
   /* ── ANIMATION TOGGLE ── */
   const animToggle = document.getElementById('animToggle');
   if (animToggle) {
-    const noAnim = localStorage.getItem('ecosvg-no-anim') === 'true';
+    const noAnim = localStorage.getItem('Eco-Svg-no-anim') === 'true';
     document.body.classList.toggle('no-anim', noAnim);
     animToggle.setAttribute('aria-pressed', noAnim ? 'false' : 'true');
     animToggle.addEventListener('click', () => {
       const isOn = animToggle.getAttribute('aria-pressed') === 'true';
       animToggle.setAttribute('aria-pressed', isOn ? 'false' : 'true');
       document.body.classList.toggle('no-anim', isOn);
-      localStorage.setItem('ecosvg-no-anim', isOn ? 'true' : 'false');
+      localStorage.setItem('Eco-Svg-no-anim', isOn ? 'true' : 'false');
     });
   }
 
   /* ── LOGOUT ── */
   document.getElementById('logoutBtn').addEventListener('click', async () => {
     await fetch('/auth/logout', { method: 'POST' });
-    localStorage.removeItem('blankit-locked-distro');
+    localStorage.removeItem('veyra-locked-distro');
     window.location.href = '/';
   });
 

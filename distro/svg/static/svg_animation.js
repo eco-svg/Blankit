@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════
-   svg_animation.js — Blankit home
+   svg_animation.js — Veyra home
    ═══════════════════════════════════════ */
 
 /* ══════════════════════════════
    THEME RESTORE
    ══════════════════════════════ */
-const savedTheme = localStorage.getItem('ecosvg-theme');
+const savedTheme = localStorage.getItem('Eco-Svg-theme');
 if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
 
 /* ══════════════════════════════
@@ -316,13 +316,13 @@ function initAI() {
 /* ══════════════════════════════
    ONE-TIME ONBOARDING TOUR
    ══════════════════════════════ */
-const ONBOARDING_KEY = 'blankit-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
+const ONBOARDING_KEY = 'veyra-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
 
 const TOUR_STEPS = [
   { target: '#sidebarToggle', title: 'Navigation',     text: 'Open the sidebar to move between Home, History, Achievements and more.', pos: 'right' },
   { target: '#addHabitBtn',   title: 'Add a habit',    text: 'Tap + to create your first habit. Choose manual, GPS, Camera AI or Mic tracking.', pos: 'left' },
   { target: '.ring-wrap',     title: 'Daily progress', text: "This ring fills up as you complete habits. Aim for 100% every day!", pos: 'bottom' },
-  { target: '.ai-card',       title: 'AI insights',    text: 'Blankit watches your patterns and suggests smart schedule tweaks.', pos: 'left' },
+  { target: '.ai-card',       title: 'AI insights',    text: 'Veyra watches your patterns and suggests smart schedule tweaks.', pos: 'left' },
   { target: '#globalStreak',  title: 'Your streak',    text: "Complete all habits daily to grow your streak. Don't break the chain!", pos: 'bottom' },
 ];
 

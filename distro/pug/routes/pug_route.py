@@ -478,7 +478,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
             entry += f' ({desc})'
         if vs == 'link':
             entry += f' [VERIFIED via link: {vlink}]'
-        elif vs == 'pending':
+        elif vs in ('media', 'pending'):
             entry += ' [VERIFIED: media/screenshot uploaded as evidence]'
         elif proof:
             entry += f' [proof: {proof}]'
@@ -643,11 +643,11 @@ pug_bp = Blueprint(
 MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
 MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
-MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'blankit-media')
+MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'veyra-media')
 MINIO_SECURE     = os.environ.get('MINIO_SECURE',     'false').lower() == 'true'
 _UPLOAD_LOCAL_DIR = os.environ.get(
     'UPLOAD_DIR',
-    '/data/blankit_media' if os.path.isdir('/data') else '/tmp/blankit_media'
+    '/data/veyra_media' if os.path.isdir('/data') else '/tmp/veyra_media'
 )
 
 minio_client = Minio(
@@ -697,7 +697,7 @@ def ensure_bucket():
 def login_required_page():
     if not session.get('user_id'):
         return redirect(url_for('svg.login'))
-    if session.get('distro') != 'thepug':
+    if session.get('distro') != 'ThePug':
         return redirect(url_for('svg.login'))
     return None
 
@@ -705,7 +705,7 @@ def login_required_page():
 def login_required_api():
     if not session.get('user_id'):
         return jsonify({'error': 'Not authenticated'}), 401
-    if session.get('distro') != 'thepug':
+    if session.get('distro') != 'ThePug':
         return jsonify({'error': 'Forbidden'}), 403
     return None
 
@@ -1083,7 +1083,7 @@ def get_user_profile(uid):
     if err: return err
     from shared.auth.user import User
     u = User.query.get(uid)
-    if not u or u.distro != 'thepug':
+    if not u or u.distro != 'ThePug':
         return jsonify({'error': 'Not found'}), 404
     n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
     sheet = None
@@ -1446,7 +1446,7 @@ def get_community_feed():
     skill_filter = (request.args.get('skill') or '').strip().lower()
 
     posts = Note.query.filter_by(
-        entry_type='community_post', is_deleted=False, mood='thepug'
+        entry_type='community_post', is_deleted=False, mood='ThePug'
     ).order_by(Note.created_at.desc()).limit(200).all()
 
     def _build_row(p, u):
@@ -1468,7 +1468,7 @@ def get_community_feed():
             'media_url':  media_url,
             'username':   u.username,
             'user_id':    p.user_id,
-            'distro':     p.mood or 'thepug',
+            'distro':     p.mood or 'ThePug',
             'rank':       rank,
             'rank_color': color,
             'is_mine':    p.user_id == me,
@@ -1523,7 +1523,7 @@ def create_community_post():
         is_finished= False,
     )
     p.body = body_val
-    p.mood = session.get('distro', 'thepug')
+    p.mood = session.get('distro', 'ThePug')
     db.session.add(p)
     db.session.commit()
     return jsonify({'id': p.id, 'ok': True}), 201
@@ -1554,7 +1554,7 @@ def search_users():
     users = User.query.filter(
         User.username.ilike(f'%{q}%'),
         User.id != me,
-        User.distro == 'thepug'
+        User.distro == 'ThePug'
     ).limit(10).all()
     return jsonify([{'id': u.id, 'username': u.username} for u in users])
 
@@ -1639,7 +1639,7 @@ def send_dm(other_id):
     me = session['user_id']
     if other_id == me:
         return jsonify({'error': 'Cannot DM yourself'}), 400
-    recipient = User.query.filter_by(id=other_id, distro='thepug').first()
+    recipient = User.query.filter_by(id=other_id, distro='ThePug').first()
     if not recipient:
         return jsonify({'error': 'User not found'}), 404
     data      = request.get_json(force=True) or {}
@@ -1800,13 +1800,22 @@ def verify_achievement(aid):
             with open(local_path, 'wb') as fh:
                 fh.write(file_data)
         existing['vm'] = object_name
-        existing['vs'] = 'pending'
+        existing['vs'] = 'media'
 
     if not link and not (file and file.filename):
         return jsonify({'error': 'Provide a link or upload media'}), 400
 
     n.body = json.dumps(existing)
     db.session.commit()
+
+    # Bust the stats cache so rank judge re-runs on next stats fetch
+    cache = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='stats_cache', is_deleted=False
+    ).first()
+    if cache:
+        db.session.delete(cache)
+        db.session.commit()
+
     desc, proof, verified, vlink = _parse_ach_body(n.body)
     return jsonify({'id': n.id, 'title': n.title, 'desc': desc, 'proof': proof,
                     'verified': verified, 'vlink': vlink})
@@ -1921,7 +1930,7 @@ echo "Now start Ollama with browser access:"
 echo ""
 echo "  OLLAMA_ORIGINS=\\"*\\" ollama serve"
 echo ""
-echo "Then refresh the Blankit page — BlinkBot will activate automatically."
+echo "Then refresh the Veyra page — BlinkBot will activate automatically."
 echo ""
 """
     from flask import make_response
@@ -2083,13 +2092,13 @@ if [[ "$OS" == "Linux" ]] && command -v systemctl &>/dev/null; then
     echo "      Ollama systemd service started with CORS enabled"
 
 elif [[ "$OS" == "Darwin" ]]; then
-    PLIST="$HOME/Library/LaunchAgents/com.blankit.ollama-cors.plist"
+    PLIST="$HOME/Library/LaunchAgents/com.veyra.ollama-cors.plist"
     cat > "$PLIST" <<\'PLISTEOF\'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>Label</key><string>com.blankit.ollama-cors</string>
+    <key>Label</key><string>com.veyra.ollama-cors</string>
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/ollama</string>
@@ -2120,7 +2129,7 @@ fi
 echo ""
 echo "  ╔══════════════════════════════════════════════════╗"
 echo "  ║  BlinkBot is ready!                              ║"
-echo "  ║  Go back to the Blankit page — it will           ║"
+echo "  ║  Go back to the Veyra page — it will             ║"
 echo "  ║  activate automatically within a few seconds.    ║"
 echo "  ╚══════════════════════════════════════════════════╝"
 echo ""

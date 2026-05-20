@@ -42,9 +42,9 @@ def _send_email(to_email, subject, html):
 
 
 DISTRO_REDIRECTS = {
-    'ecosvg':   '/home',
-    'divyanhu': '/d/home',
-    'thepug':   '/pug/home',
+    'Eco-Svg':   '/home',
+    'CatalystCrew': '/d/home',
+    'ThePug':   '/pug/home',
 }
 
 
@@ -126,7 +126,7 @@ def register():
     username = data.get('username', '').strip()
     email    = data.get('email', '').strip().lower()
     password = data.get('password', '')
-    distro   = data.get('distro', 'ecosvg')
+    distro   = data.get('distro', 'Eco-Svg')
 
     if distro not in DISTRO_REDIRECTS:
         return jsonify({'error': 'invalid distro'}), 400
@@ -273,7 +273,7 @@ def login():
     identifier = data.get('identifier', '').strip()
     method     = data.get('method', 'email')
     password   = data.get('password', '')
-    distro     = data.get('distro', 'ecosvg')
+    distro     = data.get('distro', 'Eco-Svg')
     remember   = data.get('remember', False)
 
     if method == 'email':

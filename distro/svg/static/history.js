@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ══════════════════════════════
      THEME RESTORE
      ══════════════════════════════ */
-  const saved = localStorage.getItem('ecosvg-theme');
+  const saved = localStorage.getItem('Eco-Svg-theme');
   if (saved) document.documentElement.setAttribute('data-theme', saved);
 
   /* ══════════════════════════════

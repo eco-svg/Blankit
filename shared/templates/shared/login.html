@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-distro="ecosvg">
+<html lang="en" data-distro="Eco-Svg">
 
 <head>
   <meta charset="UTF-8" />
@@ -14,9 +14,9 @@
 <body>
 
   <!-- BACKGROUNDS -->
-  <div class="bg-layer active" id="bg-ecosvg"></div>
-  <div class="bg-layer" id="bg-divyanhu"></div>
-  <div class="bg-layer" id="bg-thepug">
+  <div class="bg-layer active" id="bg-Eco-Svg"></div>
+  <div class="bg-layer" id="bg-CatalystCrew"></div>
+  <div class="bg-layer" id="bg-ThePug">
     <video autoplay muted loop playsinline>
       <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
@@ -40,11 +40,11 @@
         <button class="swipe-arrow" id="arrowLeft">&#8592;</button>
         <div class="swiper" id="swiper">
 
-          <div class="distro-card active" data-distro="ecosvg" data-index="0">
+          <div class="distro-card active" data-distro="Eco-Svg" data-index="0">
             <span class="distro-index">01</span>
             <span class="distro-glyph">◈</span>
-            <span class="distro-name">ecosvg</span>
-            <span class="distro-handle">@eco-svg</span>
+            <span class="distro-name">Eco-Svg</span>
+            <span class="distro-handle">@Eco-Svg</span>
             <div class="distro-tags">
               <span class="tag">habits</span>
               <span class="tag">AI</span>
@@ -52,19 +52,19 @@
             </div>
           </div>
 
-          <div class="distro-card" data-distro="divyanhu" data-index="1">
+          <div class="distro-card" data-distro="CatalystCrew" data-index="1">
             <span class="distro-index">02</span>
             <span class="distro-glyph">◇</span>
             <span class="distro-name">Catalyst Crew</span>
-            <span class="distro-handle">@divyanhu</span>
+            <span class="distro-handle">@CatalystCrew</span>
             <div class="distro-tags"><span class="tag">—</span></div>
           </div>
 
-          <div class="distro-card" data-distro="thepug" data-index="2">
+          <div class="distro-card" data-distro="ThePug" data-index="2">
             <span class="distro-index">03</span>
             <span class="distro-glyph">◉</span>
-            <span class="distro-name">thepug</span>
-            <span class="distro-handle">@thepug</span>
+            <span class="distro-name">ThePug</span>
+            <span class="distro-handle">@ThePug</span>
             <div class="distro-tags"><span class="tag">—</span></div>
           </div>
 
@@ -81,7 +81,7 @@
       <div class="distro-info">
         <div class="info-line">
           <span class="info-key">maintainer</span>
-          <span class="info-val" id="infoMaintainer">eco-svg</span>
+          <span class="info-val" id="infoMaintainer">Eco-Svg</span>
         </div>
         <div class="info-line">
           <span class="info-key">focus</span>
@@ -94,9 +94,9 @@
         <div class="info-line">
           <span class="info-key">about</span>
           <span class="info-val info-muted" id="infoAbout">
-            <p><b>The first rule of ECO-SVG is — you don’t talk about ECO-SVG.</b></p>
+            <p><b>The first rule of Eco-Svg is — you don’t talk about Eco-Svg.</b></p>
 
-            <p><b>The second rule of ECO-SVG is — you don’t talk about ECO-SVG.</b></p>
+            <p><b>The second rule of Eco-Svg is — you don’t talk about Eco-Svg.</b></p>
 
             <p><b>Because the moment you start talking,<br>
                 you stop doing.</b></p>
@@ -108,7 +108,7 @@
                 The days you want to quit.<br>
                 The days nobody’s watching.</b></p>
 
-            <p><b>ECO-SVG doesn’t care how you feel.</b></p>
+            <p><b>Eco-Svg doesn’t care how you feel.</b></p>
 
             <p><b>It cares if you showed up.</b></p>
 
@@ -129,7 +129,7 @@
             <p><b>You eliminate the version of you<br>
                 that needed motivation in the first place.</b></p>
 
-            <p><b>ECO-SVG.</b></p>
+            <p><b>Eco-Svg.</b></p>
 
             <p><b>Stay silent.<br>
                 Stay consistent.</b></p>
@@ -179,7 +179,7 @@
             <button class="link-btn" data-tab="forgot">Forgot password?</button>
           </div>
           <button class="submit-btn" id="loginBtn">
-            Sign in to <span id="loginDistroLabel">ecosvg</span>
+            Sign in to <span id="loginDistroLabel">Eco-Svg</span>
             <span class="btn-loader hidden" id="loginLoader"></span>
           </button>
           <div class="flash hidden" id="loginFlash"></div>
@@ -222,7 +222,7 @@
             <span class="field-err" id="regConfirmErr"></span>
           </div>
           <button class="submit-btn" id="registerBtn">
-            Create account on <span id="registerDistroLabel">ecosvg</span>
+            Create account on <span id="registerDistroLabel">Eco-Svg</span>
             <span class="btn-loader hidden" id="registerLoader"></span>
           </button>
           <div class="flash hidden" id="registerFlash"></div>
@@ -250,7 +250,7 @@
   </main>
 
   <div class="locked-bar hidden" id="lockedBar">
-    Signed in as <strong id="lockedName">ecosvg</strong> — distro switching disabled.
+    Signed in as <strong id="lockedName">Eco-Svg</strong> — distro switching disabled.
   </div>
 
   <script src="{{ url_for('static', filename='login.js') }}"></script>

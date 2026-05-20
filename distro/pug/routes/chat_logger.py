@@ -4,8 +4,8 @@ from distro.pug.extensions import encrypt, decrypt
 
 # Stored outside the project root so Flask's file watcher never triggers a reload
 _LOGS_DIR = os.environ.get(
-    'BLANKIT_CHAT_LOGS',
-    os.path.expanduser('~/.blankit_logs')
+    'VEYRA_CHAT_LOGS',
+    os.path.expanduser('~/.veyra_logs')
 )
 
 

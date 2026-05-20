@@ -61,7 +61,7 @@ def parse_json_array(raw: str):
 def login_required_api():
     if not session.get('user_id'):
         return jsonify({'error': 'not logged in'}), 401
-    if session.get('distro') != 'ecosvg':
+    if session.get('distro') != 'Eco-Svg':
         return jsonify({'error': 'forbidden'}), 403
     return None
 
@@ -172,7 +172,7 @@ def chat():
     context = get_habit_context(session['user_id'])
 
     system = (
-        'You are VEYRA, a personal atomic habits coach inside the ecosvg app. '
+        'You are VEYRA, a personal atomic habits coach inside the Eco-Svg app. '
         'Your job is to help the user succeed at their habits — especially when they are struggling. '
         'When someone says they cannot do something (e.g. cannot run 3km), '
         'apply the 2-minute rule and habit scaling from Atomic Habits: '

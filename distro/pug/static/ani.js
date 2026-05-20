@@ -1,5 +1,5 @@
 /* ============================================
-   BLANKIT — kscript.js (Cleaned)
+   VEYRA — kscript.js (Cleaned)
    Auto-hide header · Active nav
    ============================================ */
 

@@ -1,9 +1,9 @@
 /* ═══════════════════════════════════════
-   onboarding.js — Blankit first-time guide
+   onboarding.js — Veyra first-time guide
    Shows once per user, stored in localStorage
    ═══════════════════════════════════════ */
 
-const ONBOARDING_KEY = 'blankit-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
+const ONBOARDING_KEY = 'veyra-onboarded-' + (document.querySelector('meta[name="app-user"]')?.content || 'user');
 
 const STEPS = [
   {
@@ -27,7 +27,7 @@ const STEPS = [
   {
     target:  '.ai-card',
     title:   'AI insights',
-    text:    'Blankit watches your patterns and suggests smart tweaks — like rescheduling habits you often skip.',
+    text:    'Veyra watches your patterns and suggests smart tweaks — like rescheduling habits you often skip.',
     pos:     'left',
   },
   {

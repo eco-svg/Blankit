@@ -56,7 +56,7 @@ def _ensure_buddybot_model():
 
 
 # Blueprints
-from distro.divyanshu.routes.droute import divyanshu_bp
+from distro.divyanshu.routes.droute import catalystcrew_bp
 from distro.pug.routes.pug_route import pug_bp
 
 mail = Mail()
@@ -147,7 +147,7 @@ def create_app():
         warnings.warn("SECRET_KEY not set — using insecure fallback. Set it in production!", stacklevel=2)
         secret = 'dev-only-change-in-prod'
     app.config['SECRET_KEY'] = secret
-    db_url = os.environ.get('DATABASE_URL', 'sqlite:///blankit.db')
+    db_url = os.environ.get('DATABASE_URL', 'sqlite:///veyra.db')
     if db_url.startswith('postgres://'):
         db_url = db_url.replace('postgres://', 'postgresql://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
@@ -170,7 +170,7 @@ def create_app():
     app.register_blueprint(api)
     app.register_blueprint(ai)
     app.register_blueprint(auth)
-    app.register_blueprint(divyanshu_bp)
+    app.register_blueprint(catalystcrew_bp)
     app.register_blueprint(pug_bp)
 
     # ── Invalidate sessions for deleted users ─────────────

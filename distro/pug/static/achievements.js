@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) { if (verifyError) verifyError.textContent = data.error; return; }
             verifyModal?.classList.add('hidden');
             load();
+            // bust cache and re-run rank judge in background
+            fetch('/pug/api/stats?refresh=true').catch(() => {});
         } catch {
             confirmVerifyBtn.disabled = false;
             if (verifyError) verifyError.textContent = 'Could not submit. Try again.';
@@ -108,9 +110,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function verifiedBadge(v) {
-        if (v === 'link')     return `<span class="ach-verified-badge link">✓ verified</span>`;
-        if (v === 'pending')  return `<span class="ach-verified-badge pending">⏳ pending</span>`;
-        if (v === 'approved') return `<span class="ach-verified-badge link">✓ approved</span>`;
+        if (v === 'link' || v === 'media' || v === 'approved' || v === 'pending')
+            return `<span class="ach-verified-badge link">✓ verified</span>`;
         return '';
     }
 

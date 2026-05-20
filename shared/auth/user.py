@@ -8,7 +8,7 @@ class User(db.Model):
     username        = db.Column(db.String(50),  unique=True, nullable=False)
     email           = db.Column(db.String(120), unique=True, nullable=False)
     password_hash   = db.Column(db.String(255), nullable=False)
-    distro          = db.Column(db.String(20),  nullable=False, default='ecosvg')
+    distro          = db.Column(db.String(20),  nullable=False, default='Eco-Svg')
     is_verified     = db.Column(db.Boolean, default=False)
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)
 

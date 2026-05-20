@@ -9,15 +9,15 @@ svg = Blueprint(
 )
 
 DISTRO_REDIRECTS = {
-    'ecosvg':   '/home',
-    'divyanhu': '/d/home',
-    'thepug':   '/pug/home',
+    'Eco-Svg':   '/home',
+    'CatalystCrew': '/d/home',
+    'ThePug':   '/pug/home',
 }
 
 def get_user():
     return {
         'username': session.get('username', ''),
-        'distro':   session.get('distro', 'ecosvg'),
+        'distro':   session.get('distro', 'Eco-Svg'),
         'user_id':  session.get('user_id'),
     }
 
@@ -27,7 +27,7 @@ def login_required(f):
         if not session.get('user_id'):
             return redirect(url_for('svg.login'))
         # Ecosvg-only pages — kick other distros back to login
-        if session.get('distro') != 'ecosvg':
+        if session.get('distro') != 'Eco-Svg':
             return redirect(url_for('svg.login'))
         return f(*args, **kwargs)
     return decorated
@@ -36,7 +36,7 @@ def login_required(f):
 @svg.route('/')
 def login():
     if session.get('user_id') and session.get('username'):
-        distro = session.get('distro', 'ecosvg')
+        distro = session.get('distro', 'Eco-Svg')
         return redirect(DISTRO_REDIRECTS.get(distro, '/home'))
     session.clear()
     return render_template('shared/login.html')

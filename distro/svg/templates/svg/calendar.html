@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ecosvg — calendar</title>
+  <title>Eco-Svg — calendar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
@@ -186,9 +186,9 @@
   <script src="{{ url_for('svg.static', filename='calendar.js') }}"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const saved = localStorage.getItem('ecosvg-theme');
+      const saved = localStorage.getItem('Eco-Svg-theme');
       if (saved) document.documentElement.setAttribute('data-theme', saved);
-      if (localStorage.getItem('ecosvg-no-anim') === 'true') document.body.classList.add('no-anim');
+      if (localStorage.getItem('Eco-Svg-no-anim') === 'true') document.body.classList.add('no-anim');
     });
   </script>
 

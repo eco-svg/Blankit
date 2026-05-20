@@ -5,7 +5,7 @@
  * FIX: Storage key is now per-user so different logged-in users
  *      don't overwrite each other's data in the same browser.
  * FIX: Default userName reads from document.querySelector('meta[name="app-user"]')?.content injected
- *      by the Flask template instead of the hardcoded 'Divyanshu'.
+ *      by the Flask template instead of the hardcoded 'CatalystCrew'.
  */
 const DataManager = {
 
