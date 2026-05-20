@@ -37,8 +37,9 @@ def login_required(f):
 def login():
     if session.get('user_id') and session.get('username'):
         distro = session.get('distro', 'Eco-Svg')
-        return redirect(DISTRO_REDIRECTS.get(distro, '/home'))
-    session.clear()
+        if distro in DISTRO_REDIRECTS:
+            return redirect(DISTRO_REDIRECTS[distro])
+        session.clear()  # stale session with old distro key — force re-login
     return render_template('shared/login.html')
 
 

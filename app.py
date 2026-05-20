@@ -113,6 +113,20 @@ def _migrate_fk_cascades():
         warnings.warn(f'[startup] FK cascade migration failed: {e}')
 
 
+def _migrate_distro_names():
+    """Rename old distro keys to new branded names (one-time, idempotent)."""
+    from sqlalchemy import text
+    mapping = {'ecosvg': 'Eco-Svg', 'thepug': 'ThePug', 'divyanhu': 'CatalystCrew'}
+    try:
+        with db.engine.begin() as conn:
+            for old, new in mapping.items():
+                conn.execute(text("UPDATE users SET distro = :new WHERE distro = :old"),
+                             {'old': old, 'new': new})
+    except Exception as e:
+        import warnings
+        warnings.warn(f'[startup] Distro name migration failed: {e}')
+
+
 def _sync_sequences():
     """Re-align PostgreSQL serial sequences with actual max IDs to prevent UniqueViolation on insert."""
     from sqlalchemy import text
@@ -212,6 +226,7 @@ def create_app():
         db.create_all()
         _migrate_schema()
         _migrate_fk_cascades()
+        _migrate_distro_names()
         _sync_sequences()
         seed_badges()
 
