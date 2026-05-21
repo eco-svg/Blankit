@@ -258,7 +258,7 @@ body::after {
   grid-column: 1 / -1;
   display: flex;
   gap: var(--gap);
-  height: 200px;
+  height: 210px;
 }
 
 .add1, .add2, .add3, .add4 {
@@ -567,7 +567,7 @@ body.header-hidden .l-bar {
 
 .playground {
   margin-top: var(--header-h);
-  margin-left: 0;
+  margin-left: var(--lbar-w);
   margin-right: var(--rbar-w);
   padding: var(--gap);
   min-height: calc(100vh - var(--header-h));
