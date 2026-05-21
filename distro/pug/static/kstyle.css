@@ -261,7 +261,7 @@ body::after {
   height: 210px;
 }
 
-.add1, .add2, .add3, .add4 {
+.add1, .add2, .add3, .add4, .add5 {
   flex: 1;
   border-radius: var(--radius);
   border: 1px dashed var(--border);
@@ -271,11 +271,11 @@ body::after {
   transition: border-color 0.2s;
 }
 
-.add1:hover, .add2:hover, .add3:hover, .add4:hover {
+.add1:hover, .add2:hover, .add3:hover, .add4:hover, .add5:hover {
   border-color: var(--text-dim);
 }
 
-.add1::after, .add2::after, .add3::after, .add4::after {
+.add1::after, .add2::after, .add3::after, .add4::after, .add5::after {
   content: 'AD';
   position: absolute;
   top: 50%; left: 50%;
@@ -567,17 +567,16 @@ body.header-hidden .l-bar {
 
 .playground {
   margin-top: var(--header-h);
-  margin-left: var(--lbar-w);
+  margin-left: 0;
   margin-right: var(--rbar-w);
-  padding: var(--gap);
-  min-height: calc(100vh - var(--header-h));
+  padding: 20px 20px 20px clamp(28px, calc(var(--lbar-w) * 0.35), 100px);
 
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 800px;
-  gap: var(--gap);
-  align-content: center;
-  
+  grid-auto-rows: auto;
+  column-gap: clamp(16px, 2.5vw, 40px);
+  row-gap: 24px;
+  align-content: start;
 }
 
 /* ── Card Base ── */
