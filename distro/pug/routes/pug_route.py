@@ -599,6 +599,25 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
                 pass
         return None
 
+    _TECH_KEYWORDS = ('development', 'engineering', 'programming', 'coding', 'software',
+                      'frontend', 'backend', 'fullstack', 'full-stack', 'devops',
+                      'machine learning', 'ml', 'ios', 'android', 'web dev')
+
+    def _enforce_rules(sheet):
+        """Post-process LLM output: unverified skills must be rank E."""
+        if not sheet or 'skills' not in sheet:
+            return sheet
+        for s in sheet['skills']:
+            if s.get('verified') is False:
+                s['rank'] = 'E'
+                # For tech skills specifically, keep the name generic until verified
+                name_lower = (s.get('name') or '').lower()
+                if any(kw in name_lower for kw in _TECH_KEYWORDS):
+                    s['name'] = 'Software Development'
+                    s['note'] = ('Verify with a GitHub link or live URL — '
+                                 'it reveals your stack and unlocks a real rank.')
+        return sheet
+
     # Primary: BuddyBot on-server (needs fast hardware)
     if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
         try:
@@ -614,7 +633,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
                 messages=messages, max_tokens=400, temperature=0.8,
                 stop=['<|im_end|>', '</s>']
             )
-            result = _parse_json(out['choices'][0]['message']['content'].strip())
+            result = _enforce_rules(_parse_json(out['choices'][0]['message']['content'].strip()))
             if result:
                 return result
         except Exception as e:
@@ -638,7 +657,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
             timeout=20
         )
         if r.ok:
-            return _parse_json(r.json()['choices'][0]['message']['content'].strip())
+            return _enforce_rules(_parse_json(r.json()['choices'][0]['message']['content'].strip()))
     except Exception as e:
         current_app.logger.error(f'Groq character sheet error: {e}')
     return None
