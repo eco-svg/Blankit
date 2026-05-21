@@ -46,7 +46,6 @@ html { scroll-behavior: smooth; }
 
 .page-layout {
   display: block;
-  min-height: 100vh;
   position: relative;
   z-index: 1;
 }
@@ -2583,14 +2582,14 @@ button.nav-pill:not(.btn-ghost):hover {
 /* Reserve a small first row in the playground for the dream card */
 .playground {
   grid-template-rows: 60px;    /* first row: dream card */
-  grid-auto-rows: 800px;
-  gap: 0 var(--gap);           /* no row gap — dream sits flush above content */
+  grid-auto-rows: auto;
 }
 
 .dream-standalone {
   grid-row: 1;
   grid-column: 1 / -1;
   height: 60px;
+  margin-bottom: -24px; /* cancel row-gap below dream card so it sits flush */
   display: flex;
   align-items: center;
   justify-content: center;
