@@ -267,7 +267,7 @@ def resend_otp():
 #  LOGIN
 # ══════════════════════════════
 @auth.route('/login', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("5 per 15 minute")
 def login():
     data       = request.get_json()
     identifier = data.get('identifier', '').strip()
@@ -366,6 +366,7 @@ def reset_password():
 #  LOGOUT
 # ══════════════════════════════
 @auth.route('/logout', methods=['POST'])
+@limiter.limit("5 per 15 minutes")
 def logout():
     session.clear()
     return jsonify({'redirect': '/'}), 200
@@ -375,6 +376,7 @@ def logout():
 #  DELETE ACCOUNT
 # ══════════════════════════════
 @auth.route('/delete-account', methods=['DELETE'])
+@limiter.limit("5 per 15 minutes")
 def delete_account():
     from werkzeug.security import check_password_hash
     user_id = session.get('user_id')
@@ -396,3 +398,5 @@ def delete_account():
         db.session.rollback()
         current_app.logger.error(f'Delete account error: {e}')
         return jsonify({'error': 'deletion failed'}), 500
+
+

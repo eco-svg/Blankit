@@ -5,6 +5,10 @@ from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.todo import Todo
 from distro.svg.services import habit_service, badge_service
+from datetime import date, timedelta  
+from shared.extensions import limiter
+
+
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -35,6 +39,7 @@ def get_habits():
 
 
 @api.route('/habits', methods=['POST'])
+@limiter.limit("30 per minute")
 def add_habit():
     user_id = require_user()
     data    = request.get_json()
@@ -52,6 +57,7 @@ def add_habit():
     db.session.add(habit)
     db.session.commit()
     return jsonify({**habit.to_dict(), 'done': False, 'streak': 0}), 201
+
 
 
 @api.route('/habits/<int:habit_id>', methods=['DELETE'])
@@ -180,3 +186,32 @@ def set_podium(badge_id):
     if not success:
         return jsonify({'error': 'Badge not earned yet'}), 400
     return jsonify({'success': True})
+
+
+@api.route('/streak', methods=['GET'])
+def get_streak():
+    user_id = session.get('user_id')
+    user_id = require_user()
+
+    habits = Habit.query.filter_by(user_id=user_id).all()
+    if not habits:
+        return jsonify({'streak': 0})
+
+    habit_ids = [h.id for h in habits]
+    streak     = 0
+    check_date = date.today()
+
+    while True:
+        completed = HabitLog.query.filter(
+            HabitLog.habit_id.in_(habit_ids),
+            HabitLog.date == check_date,
+            HabitLog.done == True
+        ).first()
+        if completed:
+            streak     += 1
+            check_date -= timedelta(days=1)
+        else:
+            break
+
+    return jsonify({'streak': streak})
+

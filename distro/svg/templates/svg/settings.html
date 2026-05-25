@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VEYRA — settings</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='settings.css') }}" />
+  <style>
+    .nav-soon-tag {
+      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent);
+      letter-spacing: 0.08em; margin-left: 4px;
+      display: inline-block; vertical-align: middle;
+    }
+    .nav-beta-tag {
+      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent);
+      letter-spacing: 0.08em; margin-left: 4px;
+      display: inline-block; vertical-align: middle;
+    }
+    .sidebar-nav-item { white-space: nowrap; }
+  </style>
 </head>
-
 <body>
 
   <!-- SIDEBAR -->
@@ -33,8 +45,16 @@
       <a class="sidebar-nav-item active" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
       <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">{{ username }}</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
+        </div>
+      </div>
+    </div>
   </div>
-
   <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
 
   <!-- TOPBAR -->
@@ -47,7 +67,7 @@
       <span class="brand-name">{{ username }}</span>
     </a>
     <div class="topbar-right">
-      <span class="streak-badge">🔥 9 day streak</span>
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
@@ -134,8 +154,6 @@
           <h2 class="settings-section-title">Account</h2>
           <p class="settings-section-desc">Manage your session and account</p>
         </div>
-
-        <!-- logout row -->
         <div class="settings-toggle-row" style="margin-bottom:0.75rem">
           <div class="settings-toggle-info">
             <span class="settings-toggle-label">{{ username }}</span>
@@ -143,8 +161,6 @@
           </div>
           <button class="logout-btn" id="logoutBtn">⏻ logout</button>
         </div>
-
-        <!-- delete row -->
         <div class="settings-toggle-row" style="border-top:1px solid var(--border);padding-top:0.75rem">
           <div class="settings-toggle-info">
             <span class="settings-toggle-label" style="color:#d95252">Delete account</span>
@@ -166,16 +182,11 @@
         This will permanently delete your account, all habits, history,
         achievements and todos. This cannot be undone.
       </p>
-      <p class="delete-modal-confirm-label">
-        Type <strong>delete my account</strong> to confirm
-      </p>
-      <input class="delete-modal-input" type="text" id="deleteConfirmInput"
-             placeholder="delete my account" />
+      <p class="delete-modal-confirm-label">Type <strong>delete my account</strong> to confirm</p>
+      <input class="delete-modal-input" type="text" id="deleteConfirmInput" placeholder="delete my account" />
       <div class="delete-modal-actions">
         <button class="delete-modal-cancel" id="deleteModalCancel">Cancel</button>
-        <button class="delete-modal-confirm" id="deleteModalConfirm" disabled>
-          Delete permanently
-        </button>
+        <button class="delete-modal-confirm" id="deleteModalConfirm" disabled>Delete permanently</button>
       </div>
       <div class="delete-modal-flash hidden" id="deleteFlash"></div>
     </div>
@@ -184,5 +195,21 @@
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='settings.js') }}"></script>
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1 = document.getElementById('globalStreak');
+        const s2 = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {}
+    })();
+  </script>
+
 </body>
 </html>

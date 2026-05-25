@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eco-Svg — community</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='community.css') }}" />
+  <style>
+    .nav-soon-tag {
+      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent);
+      letter-spacing: 0.08em; margin-left: 4px;
+      display: inline-block; vertical-align: middle;
+    }
+    .nav-beta-tag {
+      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
+      background: var(--accent-soft); color: var(--accent);
+      letter-spacing: 0.08em; margin-left: 4px;
+      display: inline-block; vertical-align: middle;
+    }
+    .sidebar-nav-item { white-space: nowrap; }
+  </style>
 </head>
-
 <body>
 
   <!-- SIDEBAR -->
@@ -31,14 +43,14 @@
       <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
       <a class="sidebar-nav-item active" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
       <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
-      <a class="sidebar-nav-item active" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
         <div class="avatar">{{ username[:2].upper() }}</div>
         <div class="sidebar-profile-info">
           <span class="sidebar-username">{{ username }}</span>
-          <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
         </div>
       </div>
     </div>
@@ -55,7 +67,7 @@
       <span class="brand-name">{{ username }}</span>
     </a>
     <div class="topbar-right">
-      <span class="streak-badge">🔥 9 day streak</span>
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
@@ -63,7 +75,6 @@
   <!-- MAIN -->
   <main class="cs-main">
 
-    <!-- HERO -->
     <div class="cs-hero">
       <div class="cs-glyph">⬡</div>
       <div class="cs-badge">Coming Soon</div>
@@ -71,7 +82,6 @@
       <p class="cs-sub">Build habits together. Share streaks, compete on leaderboards, and keep each other accountable.</p>
     </div>
 
-    <!-- BLOG CARDS -->
     <div class="cs-blog">
 
       <article class="cs-card cs-card--hero">
@@ -95,24 +105,17 @@
         <article class="cs-card">
           <div class="cs-card-tag">Distro Leaderboards</div>
           <h2 class="cs-card-title">Compete within your circle</h2>
-          <p class="cs-card-body">
-            Each distro gets its own leaderboard. See who has the longest streak,
-            most habits completed, and highest consistency score this week.
-          </p>
+          <p class="cs-card-body">Each distro gets its own leaderboard. See who has the longest streak, most habits completed, and highest consistency score this week.</p>
           <div class="cs-feature-list">
             <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Weekly & all-time rankings</div>
             <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Habit-specific leaderboards</div>
             <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Distro vs distro challenges</div>
           </div>
         </article>
-
         <article class="cs-card">
           <div class="cs-card-tag">Habit Challenges</div>
           <h2 class="cs-card-title">30-day challenges with friends</h2>
-          <p class="cs-card-body">
-            Create a challenge, invite your friends, and track everyone's progress together.
-            Miss a day? Everyone knows. Crush it? Everyone celebrates.
-          </p>
+          <p class="cs-card-body">Create a challenge, invite your friends, and track everyone's progress together. Miss a day? Everyone knows. Crush it? Everyone celebrates.</p>
           <div class="cs-feature-list">
             <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Public or private challenges</div>
             <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Live group progress feed</div>
@@ -125,22 +128,15 @@
         <article class="cs-card">
           <div class="cs-card-tag">Streak Sharing</div>
           <h2 class="cs-card-title">Share your wins, not just your goals</h2>
-          <p class="cs-card-body">
-            Hit a milestone? A 7-day, 30-day, or 100-day streak? Share it with your community
-            with one tap. Let them react, cheer you on, and stay inspired.
-          </p>
+          <p class="cs-card-body">Hit a milestone? A 7-day, 30-day, or 100-day streak? Share it with your community with one tap. Let them react, cheer you on, and stay inspired.</p>
           <div class="cs-oneclick">
             <div class="cs-oneclick-btn">🔥 Share my 30-day streak</div>
           </div>
         </article>
-
         <article class="cs-card">
           <div class="cs-card-tag">Accountability Pairs</div>
           <h2 class="cs-card-title">Find your habit partner</h2>
-          <p class="cs-card-body">
-            Get matched with someone chasing a similar goal. You check on each other daily —
-            a gentle nudge system that actually works because it's human, not just a notification.
-          </p>
+          <p class="cs-card-body">Get matched with someone chasing a similar goal. You check on each other daily — a gentle nudge system that actually works because it's human, not just a notification.</p>
           <div class="cs-regen-preview">
             <div class="cs-regen-icon">◎</div>
             <p class="cs-regen-label">Matched by goal similarity</p>
@@ -162,5 +158,21 @@
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='community.js') }}"></script>
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1 = document.getElementById('globalStreak');
+        const s2 = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {}
+    })();
+  </script>
+
 </body>
 </html>

@@ -1,17 +1,39 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Eco-Svg — achievements</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='achievements.css') }}" />
+  <style>
+    .nav-soon-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .nav-beta-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .sidebar-nav-item { white-space: nowrap; }
+  </style>
 </head>
-
 <body>
 
   <!-- ── SIDEBAR ── -->
@@ -24,37 +46,21 @@
       <button class="sidebar-close" id="sidebarClose">✕</button>
     </div>
     <nav class="sidebar-nav">
-      <a class="sidebar-nav-item" href="/">
-        <span class="sidebar-nav-icon">⬡</span> Home
-
-        <a class="sidebar-nav-item" href="/manifestation">
-          <span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-beta-tag">beta</span></a>
-        <a class="sidebar-nav-item active" href="/achievements">
-          <span class="sidebar-nav-icon">◎</span> Achievements
-        </a>
-
-        <a class="sidebar-nav-item" href="/calendar">
-          <span class="sidebar-nav-icon">▦</span> Calendar
-        </a>
-
-        <a class="sidebar-nav-item" href="/history">
-          <span class="sidebar-nav-icon">◷</span> History
-        </a>
-
-        <a>
-          <a class="sidebar-nav-item" href="/settings">
-            <span class="sidebar-nav-icon">⚙</span> Settings
-          </a>
-          <a class="sidebar-nav-item" href="/community">
-            <span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
-          <a class="sidebar-nav-item active" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+      <a class="sidebar-nav-item" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-beta-tag">beta</span></a>
+      <a class="sidebar-nav-item active" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
     <div class="sidebar-footer">
       <div class="sidebar-profile-row">
         <div class="avatar">{{ username[:2].upper() }}</div>
         <div class="sidebar-profile-info">
           <span class="sidebar-username">{{ username }}</span>
-          <span class="streak-badge" style="font-size:0.65rem">🔥 9 day streak</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
         </div>
       </div>
     </div>
@@ -97,7 +103,7 @@
     </a>
     <div class="topbar-right">
       <button class="ach-panel-trigger" id="achPanelTrigger" title="Sections">☰</button>
-      <span class="streak-badge">🔥 9 day streak</span>
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
@@ -116,9 +122,7 @@
         <span class="ach-section-label">Top Achievements</span>
         <span class="ach-section-hint">Click ⊕ on any badge below to place it here</span>
       </div>
-
       <div class="podium-wrap">
-        <!-- 2nd -->
         <div class="podium-slot" data-rank="2">
           <div class="podium-card rank-2" id="podium-2">
             <div class="podium-rank-num">II</div>
@@ -127,7 +131,6 @@
           </div>
           <div class="podium-base podium-base-2">2nd</div>
         </div>
-        <!-- 1st -->
         <div class="podium-slot" data-rank="1">
           <div class="podium-card rank-1" id="podium-1">
             <div class="podium-rank-num">I</div>
@@ -136,7 +139,6 @@
           </div>
           <div class="podium-base podium-base-1">1st</div>
         </div>
-        <!-- 3rd -->
         <div class="podium-slot" data-rank="3">
           <div class="podium-card rank-3" id="podium-3">
             <div class="podium-rank-num">III</div>
@@ -147,6 +149,7 @@
         </div>
       </div>
     </section>
+
     <!-- MY ACHIEVEMENTS -->
     <section class="ach-section" id="myAch">
       <div class="ach-section-head">
@@ -156,46 +159,39 @@
       <div class="ach-badges-list" id="achBadgesList">
         <div style="color:var(--clr-text-muted);font-size:0.8rem;padding:1rem 0">Loading badges…</div>
       </div>
-    </section>
 
-    <!-- LOCKED -->
-    <div class="ach-badge locked">
-      <div class="ach-badge-icon">💎</div>
-      <div class="ach-badge-body">
-        <div class="ach-badge-name">Diamond</div>
-        <div class="ach-badge-desc">100 day streak</div>
+      <div class="ach-badge locked">
+        <div class="ach-badge-icon">💎</div>
+        <div class="ach-badge-body">
+          <div class="ach-badge-name">Diamond</div>
+          <div class="ach-badge-desc">100 day streak</div>
+        </div>
+        <span class="ach-badge-lock">🔒</span>
       </div>
-      <span class="ach-badge-lock">🔒</span>
-    </div>
-
-    <div class="ach-badge locked">
-      <div class="ach-badge-icon">⚔️</div>
-      <div class="ach-badge-body">
-        <div class="ach-badge-name">Warrior</div>
-        <div class="ach-badge-desc">50 day streak</div>
+      <div class="ach-badge locked">
+        <div class="ach-badge-icon">⚔</div>
+        <div class="ach-badge-body">
+          <div class="ach-badge-name">Warrior</div>
+          <div class="ach-badge-desc">50 day streak</div>
+        </div>
+        <span class="ach-badge-lock">🔒</span>
       </div>
-      <span class="ach-badge-lock">🔒</span>
-    </div>
-
-    <div class="ach-badge locked">
-      <div class="ach-badge-icon">🎯</div>
-      <div class="ach-badge-body">
-        <div class="ach-badge-name">Sharpshooter</div>
-        <div class="ach-badge-desc">100% completion for a week</div>
+      <div class="ach-badge locked">
+        <div class="ach-badge-icon">🎯</div>
+        <div class="ach-badge-body">
+          <div class="ach-badge-name">Sharpshooter</div>
+          <div class="ach-badge-desc">100% completion for a week</div>
+        </div>
+        <span class="ach-badge-lock">🔒</span>
       </div>
-      <span class="ach-badge-lock">🔒</span>
-    </div>
-
-    <div class="ach-badge locked">
-      <div class="ach-badge-icon">🌙</div>
-      <div class="ach-badge-body">
-        <div class="ach-badge-name">Night Owl</div>
-        <div class="ach-badge-desc">Log habits after 10pm, 7 days</div>
+      <div class="ach-badge locked">
+        <div class="ach-badge-icon">🌙</div>
+        <div class="ach-badge-body">
+          <div class="ach-badge-name">Night Owl</div>
+          <div class="ach-badge-desc">Log habits after 10pm, 7 days</div>
+        </div>
+        <span class="ach-badge-lock">🔒</span>
       </div>
-      <span class="ach-badge-lock">🔒</span>
-    </div>
-
-    </div>
     </section>
 
   </main>
@@ -206,18 +202,9 @@
       <div class="rank-modal-title">Pin to Podium</div>
       <div class="rank-modal-sub" id="rankModalSub">Choose a rank for this achievement</div>
       <div class="rank-modal-options">
-        <button class="rank-option rank-opt-1" data-rank="1">
-          <span class="rank-opt-num">I</span>
-          <span class="rank-opt-label">1st Place</span>
-        </button>
-        <button class="rank-option rank-opt-2" data-rank="2">
-          <span class="rank-opt-num">II</span>
-          <span class="rank-opt-label">2nd Place</span>
-        </button>
-        <button class="rank-option rank-opt-3" data-rank="3">
-          <span class="rank-opt-num">III</span>
-          <span class="rank-opt-label">3rd Place</span>
-        </button>
+        <button class="rank-option rank-opt-1" data-rank="1"><span class="rank-opt-num">I</span><span class="rank-opt-label">1st Place</span></button>
+        <button class="rank-option rank-opt-2" data-rank="2"><span class="rank-opt-num">II</span><span class="rank-opt-label">2nd Place</span></button>
+        <button class="rank-option rank-opt-3" data-rank="3"><span class="rank-opt-num">III</span><span class="rank-opt-label">3rd Place</span></button>
       </div>
       <button class="rank-modal-cancel" id="rankModalCancel">Cancel</button>
     </div>
@@ -233,7 +220,21 @@
       if (localStorage.getItem('Eco-Svg-no-anim') === 'true') document.body.classList.add('no-anim');
     });
   </script>
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1 = document.getElementById('globalStreak');
+        const s2 = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {}
+    })();
+  </script>
 
 </body>
-
 </html>

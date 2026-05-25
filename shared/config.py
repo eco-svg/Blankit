@@ -11,7 +11,7 @@ class Config:
     # Session cookie hardening
     SESSION_COOKIE_HTTPONLY  = True
     SESSION_COOKIE_SAMESITE  = 'Lax'
-    SESSION_COOKIE_SECURE    = os.getenv('FLASK_ENV', 'production') != 'development'
+    SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV', 'development') != 'development'
 
     # Flask-Mail
     MAIL_SERVER                 = 'smtp.gmail.com'
