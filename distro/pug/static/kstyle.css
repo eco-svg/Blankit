@@ -2604,13 +2604,11 @@ button.nav-pill:not(.btn-ghost):hover {
   align-items: center;
   justify-content: center;
   overflow: hidden !important;
-  /* strip .card glass so only the golden gradient shows — no double-bar */
-  background: linear-gradient(90deg, transparent 0%, rgba(212,165,116,0.05) 30%, rgba(212,165,116,0.07) 50%, rgba(212,165,116,0.05) 70%, transparent 100%) !important;
+  background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: none !important;
   border-bottom: 1px solid rgba(212,165,116,0.10) !important;
-  border-top: 1px solid rgba(212,165,116,0.05) !important;
   border-radius: 0 !important;
   padding: 0 !important;
   box-shadow: none !important;
@@ -3231,6 +3229,9 @@ button.nav-pill:not(.btn-ghost):hover {
   overflow: hidden !important;
   padding: 0;
   height: 680px;
+  /* backdrop-filter on the 3D container breaks backface-visibility in Chrome/Safari */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 .habits-card:hover { transform: none; }
 
@@ -3250,6 +3251,12 @@ button.nav-pill:not(.btn-ghost):hover {
   -webkit-backface-visibility: hidden;
   display: flex;
   flex-direction: column;
+  /* glass effect on each face so the parent backdrop-filter doesn't break 3D */
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 .habit-back { transform: rotateY(180deg); }
 
@@ -3396,3 +3403,131 @@ button.nav-pill:not(.btn-ghost):hover {
   transition: background 0.2s;
 }
 .habit-flip-btn:hover { background: rgba(255,255,255,0.09); }
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   ═══════════════════════════════════════════════════════════ */
+
+/* Sidebar toggle — hidden on desktop */
+.rbar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s;
+}
+.rbar-toggle:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+/* Overlay backdrop */
+.rbar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 290;
+}
+.rbar-backdrop.active { display: block; }
+
+/* ── 1400px: trim sidebar so cards get ~80px more room ── */
+@media (max-width: 1400px) {
+  :root { --rbar-w: clamp(220px, 18vw, 300px); }
+}
+
+/* ── 1100px: further trim ── */
+@media (max-width: 1100px) {
+  :root { --rbar-w: clamp(200px, 20vw, 260px); }
+  .clock-widget { width: auto; }
+}
+
+/* ── 900px: sidebar becomes full-height overlay, playground takes all width ── */
+@media (max-width: 900px) {
+  :root {
+    --rbar-w: 0px;
+    --header-h: 76px;
+  }
+
+  .rbar-toggle { display: flex; }
+  .header-nav  { display: none; }
+  .clock-widget { width: auto; }
+
+  .r-bar {
+    width: min(340px, 86vw) !important;
+    top: 0 !important;
+    height: 100vh !important;
+    padding-top: 80px;
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1),
+                top 0.32s cubic-bezier(0.4,0,0.2,1),
+                height 0.32s cubic-bezier(0.4,0,0.2,1) !important;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.7);
+    z-index: 300;
+  }
+  .r-bar.open { transform: translateX(0); }
+
+  .playground {
+    margin-right: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .stats-popup { right: 10px; }
+}
+
+/* ── 768px: single column, compact header ── */
+@media (max-width: 768px) {
+  :root {
+    --rbar-w: 0px;
+    --header-h: 60px;
+  }
+
+  .main-header { padding: 0 12px; gap: 8px; }
+  .clock-widget { display: none; }
+  .greeting     { display: none; }
+  .pwa-install-btn { display: none !important; }
+
+  .playground {
+    margin-right: 0;
+    padding: 10px;
+    grid-template-columns: 1fr;
+    grid-template-rows: 50px repeat(8, auto);
+    grid-auto-rows: auto;
+    row-gap: 10px;
+    column-gap: 0;
+  }
+
+  .card {
+    height: auto;
+    min-height: 420px;
+  }
+  .card.full-row { grid-column: 1 !important; }
+
+  .dream-standalone {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    height: 50px !important;
+  }
+
+  .habits-card { height: 580px; }
+
+  .dream-input {
+    min-width: 0;
+    width: calc(100% - 40px);
+    font-size: 1.05rem;
+  }
+
+  .adbox-row { flex-wrap: wrap; height: auto; }
+  .add1,.add2,.add3,.add4,.add5 {
+    flex: 1 1 calc(50% - 6px);
+    height: 90px;
+    min-width: 100px;
+  }
+}

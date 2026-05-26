@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=32">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=34">
 </head>
 <body>
 
@@ -109,6 +109,9 @@
     </nav>
 
     <div class="header-right">
+      <button class="rbar-toggle" id="rBarToggle" aria-label="Show sidebar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+      </button>
       <button class="pwa-install-btn pwa-hidden" title="Install Veyra app">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Install
@@ -422,6 +425,7 @@
       </div>
 
     </aside>
+    <div class="rbar-backdrop" id="rBarBackdrop"></div>
 
   </div>
 
@@ -707,5 +711,18 @@
   <script src="{{ url_for('pug.static', filename='habits.js') }}"></script>
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
+  <script>
+  (function() {
+    var toggle = document.getElementById('rBarToggle');
+    var rbar   = document.querySelector('.r-bar');
+    var bd     = document.getElementById('rBarBackdrop');
+    if (!toggle || !rbar) return;
+    function open()  { rbar.classList.add('open');    if(bd) bd.classList.add('active');    document.body.style.overflow='hidden'; }
+    function close() { rbar.classList.remove('open'); if(bd) bd.classList.remove('active'); document.body.style.overflow=''; }
+    toggle.addEventListener('click', function() { rbar.classList.contains('open') ? close() : open(); });
+    if (bd) bd.addEventListener('click', close);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+  })();
+  </script>
 </body>
 </html>

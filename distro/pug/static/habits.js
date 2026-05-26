@@ -100,14 +100,17 @@
 
   // ── Toggle ────────────────────────────────────────────
   async function toggleHabit(id) {
+    const h = habits.find(x => x.id === id);
+    if (!h) return;
+    h.done_today = !h.done_today;
+    renderToday();
     try {
       const res = await fetch(`/pug/api/habits/${id}/toggle`, { method: 'POST' });
-      if (!res.ok) return;
+      if (!res.ok) { h.done_today = !h.done_today; renderToday(); return; }
       const data = await res.json();
-      const h = habits.find(x => x.id === id);
-      if (h) h.done_today = data.done;
+      h.done_today = data.done;
       renderToday();
-    } catch (e) {}
+    } catch (e) { h.done_today = !h.done_today; renderToday(); }
   }
 
   // ── Chart ─────────────────────────────────────────────
