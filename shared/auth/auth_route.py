@@ -1,5 +1,7 @@
 import os
 import re
+import json
+import base64
 import requests as _http
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -371,6 +373,121 @@ def reset_password():
     token_obj.used     = True
     db.session.commit()
     return jsonify({'message': 'password updated'}), 200
+
+
+# ══════════════════════════════
+#  STUDENT VERIFICATION
+# ══════════════════════════════
+@auth.route('/student-verify', methods=['POST'])
+@limiter.limit("3 per hour")
+def student_verify():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'not logged in'}), 401
+
+    if 'id_image' not in request.files:
+        return jsonify({'error': 'no image uploaded'}), 400
+
+    file    = request.files['id_image']
+    allowed = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
+    if file.content_type not in allowed:
+        return jsonify({'error': 'upload a JPEG, PNG, or WebP image'}), 400
+
+    img_bytes = file.read(4 * 1024 * 1024)  # cap at 4 MB
+    if len(img_bytes) == 0:
+        return jsonify({'error': 'empty file'}), 400
+
+    img_b64   = base64.b64encode(img_bytes).decode()
+    mime      = file.content_type
+    del img_bytes  # drop raw bytes immediately
+
+    api_key = (os.getenv('SVG_GROQ_API_KEY') or
+               os.getenv('PUG_GROQ_API_KEY') or
+               os.getenv('CC_GROQ_API_KEY', ''))
+    if not api_key:
+        del img_b64
+        return jsonify({'error': 'verification service unavailable'}), 503
+
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key.strip())
+        resp = client.chat.completions.create(
+            model='meta-llama/llama-4-scout-17b-16e-instruct',
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {
+                        'type': 'image_url',
+                        'image_url': {'url': f'data:{mime};base64,{img_b64}'}
+                    },
+                    {
+                        'type': 'text',
+                        'text': (
+                            'Is this a student ID card or school enrollment document? '
+                            'If yes, extract: school name, city/location, grade or year level. '
+                            'Return ONLY valid JSON: {"valid": true, "school": "...", "location": "...", "grade": "..."} '
+                            'If not a student ID, return: {"valid": false}'
+                        )
+                    }
+                ]
+            }],
+            max_tokens=200,
+            temperature=0.1,
+        )
+    except Exception as e:
+        del img_b64
+        current_app.logger.error(f'Student verify Groq error: {e}')
+        return jsonify({'error': 'verification service error — try again later'}), 503
+    finally:
+        del img_b64  # always delete base64 data
+
+    raw = resp.choices[0].message.content.strip()
+    # Extract JSON from the response
+    try:
+        start = raw.find('{')
+        end   = raw.rfind('}') + 1
+        data  = json.loads(raw[start:end])
+    except Exception:
+        return jsonify({'error': 'could not read ID — try a clearer photo'}), 422
+
+    if not data.get('valid'):
+        return jsonify({'error': 'this does not appear to be a valid student ID'}), 422
+
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'user not found'}), 404
+
+    user.student_status   = 'approved'
+    user.student_school   = (data.get('school')   or '')[:200]
+    user.student_location = (data.get('location') or '')[:200]
+    user.student_grade    = (data.get('grade')     or '')[:50]
+    db.session.commit()
+
+    return jsonify({
+        'message': 'verified',
+        'school':   user.student_school,
+        'location': user.student_location,
+        'grade':    user.student_grade,
+    }), 200
+
+
+# ══════════════════════════════
+#  STUDENT STATUS
+# ══════════════════════════════
+@auth.route('/student-status', methods=['GET'])
+def student_status():
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'not logged in'}), 401
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'not found'}), 404
+    return jsonify({
+        'status':   user.student_status,
+        'school':   user.student_school,
+        'location': user.student_location,
+        'grade':    user.student_grade,
+    }), 200
 
 
 # ══════════════════════════════

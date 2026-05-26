@@ -39,10 +39,8 @@
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
-  opacity: 0;
-  animation: bgVideoFadeIn 2s ease 1s forwards;
+  opacity: 0.55;
 }
-@keyframes bgVideoFadeIn { to { opacity: 0.55; } }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }

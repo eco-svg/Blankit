@@ -68,12 +68,20 @@ def _migrate_schema():
     inspector = inspect(db.engine)
     if 'user_badges' not in inspector.get_table_names():
         return  # table not yet created — db.create_all() will handle it correctly
-    # users.age
+    # users — age + student verification columns
     if 'users' in inspector.get_table_names():
         user_cols = {c['name'] for c in inspector.get_columns('users')}
-        if 'age' not in user_cols:
-            with db.engine.begin() as conn:
+        with db.engine.begin() as conn:
+            if 'age' not in user_cols:
                 conn.execute(text('ALTER TABLE users ADD COLUMN age INTEGER'))
+            if 'student_status' not in user_cols:
+                conn.execute(text("ALTER TABLE users ADD COLUMN student_status VARCHAR(20) DEFAULT 'none'"))
+            if 'student_school' not in user_cols:
+                conn.execute(text('ALTER TABLE users ADD COLUMN student_school VARCHAR(200)'))
+            if 'student_location' not in user_cols:
+                conn.execute(text('ALTER TABLE users ADD COLUMN student_location VARCHAR(200)'))
+            if 'student_grade' not in user_cols:
+                conn.execute(text('ALTER TABLE users ADD COLUMN student_grade VARCHAR(50)'))
 
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:
