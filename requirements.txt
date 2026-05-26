@@ -1,5 +1,6 @@
 alembic==1.18.4
 gunicorn==23.0.0
+groq==0.28.0
 annotated-types==0.7.0
 argon2-cffi==25.1.0
 argon2-cffi-bindings==25.1.0
