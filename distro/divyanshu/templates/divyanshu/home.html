@@ -11,8 +11,9 @@
 </head>
 <body>
 
-<!-- Profile Header — fixed top-left, never scrolls -->
-<div class="profile-header" id="profileHeader">
+<!-- Profile Header — fixed top-left -->
+<div class="profile-header" id="profileHeader"
+     style="position:fixed;top:20px;left:20px;z-index:9999;">
     <div class="profile-toggle" id="profileToggle">
         <div class="profile-avatar">👤</div>
         <div>
@@ -20,31 +21,69 @@
             <div style="font-size:0.75rem;color:var(--text-dim);">Click to view</div>
         </div>
     </div>
+
     <div class="profile-dropdown" id="profileDropdown">
-        <div class="profile-info">
-            <div class="profile-name"  id="profileName">{{ username }}</div>
-            <div class="profile-email" id="profileEmail">{{ email }}</div>
-        </div>
-        <div class="profile-stats">
-            <div class="profile-stat">
-                <div class="profile-stat-value" id="profileStreak">0</div>
-                <div class="profile-stat-label">Day Streak</div>
+
+        <!-- MAIN MENU -->
+        <div id="profileMainMenu">
+            <div class="profile-info">
+                <div class="profile-name"  id="profileName">{{ username }}</div>
+                <div class="profile-email" id="profileEmail">{{ email }}</div>
             </div>
-            <div class="profile-stat">
-                <div class="profile-stat-value" id="profileGoals">0</div>
-                <div class="profile-stat-label">Goals Done</div>
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileStreak">0</div>
+                    <div class="profile-stat-label">Day Streak</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileGoals">0</div>
+                    <div class="profile-stat-label">Goals Done</div>
+                </div>
+            </div>
+            <div class="profile-menu-item" id="viewHistoryBtn">
+                <span>📜</span> View History
+            </div>
+            <div class="profile-menu-item" id="editProfileBtn">
+                <span>✏️</span> Edit Profile
+            </div>
+            <div class="profile-menu-item" id="viewSettingsBtn">
+                <span>⚙️</span> Settings
+            </div>
+            <div class="profile-menu-item delete-account-item" id="deleteAccountBtn">
+                <span>🗑️</span> Delete Account
+            </div>
+            <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+        </div>
+
+        <!-- HISTORY PANEL -->
+        <div id="profileHistoryPanel" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;
+                        margin-bottom:12px;padding-bottom:12px;
+                        border-bottom:1px solid var(--border);">
+                <button onclick="Profile.showMainMenu()"
+                        style="background:var(--bg);color:var(--text);
+                               border:1px solid var(--border);
+                               padding:5px 12px;font-size:0.85rem;
+                               border-radius:6px;cursor:pointer;">
+                    ← Back
+                </button>
+                <span style="font-weight:600;font-size:1rem;">Activity History</span>
+            </div>
+            <div id="profileHistoryEntries"
+                 style="max-height:320px;overflow-y:auto;">
+                <div style="color:var(--text-dim);font-size:0.85rem;
+                            text-align:center;padding:20px 0;">
+                    Loading...
+                </div>
             </div>
         </div>
-        <div class="profile-menu-item" id="viewHistoryBtn"><span>📜</span> View History</div>
-        <div class="profile-menu-item" id="editProfileBtn"><span>✏️</span> Edit Profile</div>
-        <div class="profile-menu-item" id="viewSettingsBtn"><span>⚙️</span> Settings</div>
-        <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+
     </div>
 </div>
 
 <div class="main-dashboard">
 
-    <!-- ══════════════════ LEFT SIDEBAR ══════════════════ -->
+    <!-- LEFT SIDEBAR -->
     <div class="settings-sidebar">
 
         <div class="card">
@@ -73,7 +112,8 @@
             <div class="step-progress">
                 <div class="step-progress-bar" id="stepProgressBar"></div>
             </div>
-            <div style="text-align:center;color:var(--text-dim);font-size:0.9rem;margin-bottom:10px;">
+            <div style="text-align:center;color:var(--text-dim);
+                        font-size:0.9rem;margin-bottom:10px;">
                 <span id="stepGoalText">0 / 10,000 steps</span>
             </div>
             <div class="input-group step-input-group">
@@ -82,7 +122,7 @@
             </div>
         </div>
 
-        <!-- Water Intake — moved to left sidebar for balance -->
+        <!-- Water Intake -->
         <div class="card">
             <h3>💧 Water Intake</h3>
             <div style="text-align:center;margin-bottom:8px;">
@@ -90,19 +130,21 @@
                 <span style="color:var(--text-dim);font-size:0.9rem;"> / 8 glasses</span>
             </div>
             <div id="waterGlasses"
-                 style="display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:10px;"></div>
+                 style="display:flex;flex-wrap:wrap;gap:4px;
+                        justify-content:center;margin-bottom:10px;"></div>
             <div class="step-progress" style="margin-bottom:10px;">
                 <div id="waterBar" class="step-progress-bar"
                      style="background:linear-gradient(90deg,#58a6ff,#3fb950);width:0%"></div>
             </div>
             <div style="display:flex;gap:8px;">
                 <button id="removeWaterBtn"
-                        style="flex:1;background:var(--border);color:var(--text);">− Glass</button>
+                        style="flex:1;background:var(--border);
+                               color:var(--text);">− Glass</button>
                 <button id="addWaterBtn" style="flex:1;">+ Glass</button>
             </div>
         </div>
 
-        <!-- BMI Calculator — moved to left sidebar for balance -->
+        <!-- BMI Calculator -->
         <div class="card">
             <h3>⚖️ BMI Calculator</h3>
             <div style="text-align:center;margin-bottom:8px;">
@@ -112,11 +154,14 @@
             </div>
             <div class="step-progress" style="margin-bottom:10px;">
                 <div id="bmiBar" class="step-progress-bar"
-                     style="background:linear-gradient(90deg,var(--accent),var(--warning),var(--fire));width:0%"></div>
+                     style="background:linear-gradient(90deg,var(--accent),
+                            var(--warning),var(--fire));width:0%"></div>
             </div>
             <div class="input-group" style="margin-bottom:8px;">
-                <input type="number" id="heightInput" placeholder="Height (cm)" min="50" max="250">
-                <input type="number" id="weightInput" placeholder="Weight (kg)"  min="10" max="300">
+                <input type="number" id="heightInput"
+                       placeholder="Height (cm)" min="50" max="250">
+                <input type="number" id="weightInput"
+                       placeholder="Weight (kg)" min="10" max="300">
             </div>
             <button id="calcBmiBtn" style="width:100%;">Calculate BMI</button>
         </div>
@@ -138,9 +183,9 @@
             <button id="saveNotesBtn" style="margin-top:10px;">💾 Save Notes</button>
         </div>
 
-    </div><!-- /left sidebar -->
+    </div>
 
-    <!-- ══════════════════ MIDDLE SECTION ══════════════════ -->
+    <!-- MIDDLE SECTION -->
     <div class="middle-section">
 
         <div class="welcome-banner card">
@@ -150,14 +195,9 @@
             </div>
         </div>
 
-        <!-- Goal Tracker -->
+        <!-- FIX: Clean heading, no emoji, no recurring text -->
         <div class="card">
-            <h3>Goal Tracker
-                <span style="font-size:0.75rem;color:var(--text-dim);
-                             font-weight:400;margin-left:8px;">
-                    ↻ = recurring daily goal
-                </span>
-            </h3>
+            <h3>Goal</h3>
             <div class="goal-list" id="goalList"></div>
             <div class="input-group">
                 <input type="text" id="goalInput" placeholder="Add new goal...">
@@ -172,7 +212,7 @@
             <button id="newQuoteBtn" style="margin-top:10px;">🔄 New Quote</button>
         </div>
 
-        <!-- Analytics: Weekly vs Monthly -->
+        <!-- Analytics -->
         <div class="card">
             <div style="display:flex;align-items:center;
                         justify-content:space-between;margin-bottom:12px;">
@@ -250,12 +290,11 @@
             </div>
         </div>
 
-    </div><!-- /middle -->
+    </div>
 
-    <!-- ══════════════════ RIGHT SIDEBAR ══════════════════ -->
+    <!-- RIGHT SIDEBAR -->
     <div class="right-sidebar">
 
-        <!-- DateTime + Weather -->
         <div class="datetime-widget">
             <div class="time-display" id="timeDisplay">00:00</div>
             <div class="date-display" id="dateDisplay">Loading...</div>
@@ -266,7 +305,7 @@
             </div>
         </div>
 
-        <!-- Alarm — RIGHT BELOW WEATHER as requested -->
+        <!-- Alarm -->
         <div class="card">
             <h3>⏰ Set Reminder</h3>
             <div class="input-group">
@@ -327,12 +366,13 @@
             <input type="text" id="mealNameInput" placeholder="Meal name..."
                    style="width:100%;margin-bottom:6px;">
             <div class="input-group">
-                <input type="number" id="mealCalInput" placeholder="Calories" min="0">
+                <input type="number" id="mealCalInput"
+                       placeholder="Calories" min="0">
                 <button id="addMealBtn">Add</button>
             </div>
         </div>
 
-        <!-- Workout Log — fixed sets/reps boundary -->
+        <!-- Workout Log -->
         <div class="card">
             <h3>💪 Workout Log</h3>
             <div style="text-align:center;margin-bottom:8px;">
@@ -341,9 +381,9 @@
             </div>
             <div id="workoutList"
                  style="max-height:100px;overflow-y:auto;margin-bottom:8px;"></div>
-            <input type="text" id="workoutExInput" placeholder="Exercise name..."
+            <input type="text" id="workoutExInput"
+                   placeholder="Exercise name..."
                    style="width:100%;margin-bottom:6px;">
-            <!-- FIX: both inputs equal width, contained inside card -->
             <div class="workout-inputs">
                 <input type="number" id="workoutSetsInput"
                        placeholder="Sets" min="1">
@@ -374,9 +414,9 @@
             </div>
         </div>
 
-    </div><!-- /right sidebar -->
+    </div>
 
-</div><!-- /main-dashboard -->
+</div>
 
 <!-- JavaScript Modules -->
 <script src="{{ url_for('catalystcrew.static', filename='js/utils.js') }}"></script>

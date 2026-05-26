@@ -1,6 +1,7 @@
 /**
  * AI Coach
- * Handles motivational quotes and chat interactions
+ * Uses Groq API for real AI responses.
+ * Falls back to hardcoded replies if API is unavailable.
  */
 
 const Coach = {
@@ -18,7 +19,7 @@ const Coach = {
         "The best time to start was yesterday. The next best time is now."
     ],
 
-    responses: {
+    fallbackResponses: {
         'Energized': [
             "Perfect! Let's crush this. Which task are we tackling first?",
             "That energy is fire! Channel it into your hardest task right now.",
@@ -41,9 +42,6 @@ const Coach = {
         ]
     },
 
-    /**
-     * Initialize coach module
-     */
     init(habitData) {
         this.data = habitData;
         this.cacheElements();
@@ -52,137 +50,146 @@ const Coach = {
         this.addWelcomeMessage();
     },
 
-    /**
-     * Cache DOM elements
-     */
     cacheElements() {
         this.elements = {
-            quoteBox: document.getElementById('quoteBox'),
-            newQuoteBtn: document.getElementById('newQuoteBtn'),
-            chatHistory: document.getElementById('chatHistory'),
-            chatInput: document.getElementById('chatInput'),
-            sendBtn: document.getElementById('sendMessageBtn'),
-            moodSelect: document.getElementById('moodSelect'),
-            notesArea: document.getElementById('notesArea'),
+            quoteBox:     document.getElementById('quoteBox'),
+            newQuoteBtn:  document.getElementById('newQuoteBtn'),
+            chatHistory:  document.getElementById('chatHistory'),
+            chatInput:    document.getElementById('chatInput'),
+            sendBtn:      document.getElementById('sendMessageBtn'),
+            moodSelect:   document.getElementById('moodSelect'),
+            notesArea:    document.getElementById('notesArea'),
             saveNotesBtn: document.getElementById('saveNotesBtn')
         };
     },
 
-    /**
-     * Attach event listeners
-     */
     attachEvents() {
         this.elements.newQuoteBtn.addEventListener('click', () => {
             this.generateQuote();
         });
-
         this.elements.sendBtn.addEventListener('click', () => {
             this.sendMessage();
         });
-
         this.elements.chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.sendMessage();
-            }
+            if (e.key === 'Enter') this.sendMessage();
         });
-
         this.elements.saveNotesBtn.addEventListener('click', () => {
             this.saveNotes();
         });
     },
 
-    /**
-     * Generate random quote
-     */
     generateQuote() {
         const randomQuote = this.quotes[Math.floor(Math.random() * this.quotes.length)];
         this.elements.quoteBox.style.opacity = '0';
-        
         setTimeout(() => {
             this.elements.quoteBox.textContent = randomQuote;
             this.elements.quoteBox.style.opacity = '1';
         }, 200);
     },
 
-    /**
-     * Add welcome message
-     */
     addWelcomeMessage() {
-        this.addMessage('Coach', 'Ready to crush today? What\'s on your mind?');
+        this.addMessage('Coach', "Ready to crush today? What's on your mind?");
     },
 
     /**
-     * Send chat message
+     * Send message — calls Groq API, falls back to hardcoded
      */
     sendMessage() {
         const message = this.elements.chatInput.value.trim();
-        
         if (message === '') return;
 
         this.addMessage('You', message);
         this.elements.chatInput.value = '';
+        this.addTypingIndicator();
 
-        // Generate response based on mood
-        setTimeout(() => {
-            const mood = this.elements.moodSelect.value;
-            const moodResponses = this.responses[mood];
-            const response = moodResponses[Math.floor(Math.random() * moodResponses.length)];
-            this.addMessage('Coach', response);
-        }, 500);
+        const mood = this.elements.moodSelect?.value || 'Normal';
+
+        fetch('/d/api/coach', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, mood })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('API error');
+            return res.json();
+        })
+        .then(data => {
+            this.removeTypingIndicator();
+            this.addMessage('Coach', data.reply || this.getFallbackReply(mood));
+        })
+        .catch(() => {
+            this.removeTypingIndicator();
+            this.addMessage('Coach', this.getFallbackReply(mood));
+        });
     },
 
-    /**
-     * Add message to chat
-     * @param {string} sender - Sender name (You/Coach)
-     * @param {string} message - Message text
-     */
-    addMessage(sender, message) {
-        const div = document.createElement('div');
-        div.className = 'chat-message';
+    getFallbackReply(mood) {
+        const responses = this.fallbackResponses[mood] || this.fallbackResponses['Normal'];
+        return responses[Math.floor(Math.random() * responses.length)];
+    },
 
-        const senderClass = sender === 'You' ? 'chat-user' : 'chat-coach';
-        const span = document.createElement('span');
-        span.className = senderClass;
-        span.textContent = `${sender}:`;
+    addTypingIndicator() {
+        const div      = document.createElement('div');
+        div.className  = 'chat-message';
+        div.id         = 'typingIndicator';
+
+        const label       = document.createElement('span');
+        label.className   = 'chat-coach';
+        label.textContent = 'Coach:';
+
+        const dots        = document.createElement('span');
+        dots.textContent  = ' ●●●';
+        dots.style.cssText = 'color:var(--text-dim);animation:blink 1s infinite;';
+
+        div.appendChild(label);
+        div.appendChild(dots);
+        this.elements.chatHistory.appendChild(div);
+        this.elements.chatHistory.scrollTop =
+            this.elements.chatHistory.scrollHeight;
+
+        if (!document.getElementById('blinkStyle')) {
+            const style = document.createElement('style');
+            style.id = 'blinkStyle';
+            style.textContent = '@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}';
+            document.head.appendChild(style);
+        }
+    },
+
+    removeTypingIndicator() {
+        const el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+    },
+
+    addMessage(sender, message) {
+        const div         = document.createElement('div');
+        div.className     = 'chat-message';
+
+        const span        = document.createElement('span');
+        span.className    = sender === 'You' ? 'chat-user' : 'chat-coach';
+        span.textContent  = `${sender}:`;
 
         div.appendChild(span);
         div.appendChild(document.createTextNode(` ${message}`));
-
         this.elements.chatHistory.appendChild(div);
-        this.elements.chatHistory.scrollTop = this.elements.chatHistory.scrollHeight;
+        this.elements.chatHistory.scrollTop =
+            this.elements.chatHistory.scrollHeight;
     },
 
-    /**
-     * Save notes
-     */
     saveNotes() {
         const notes = this.elements.notesArea.value;
-        
-        if (notes.trim() === '') {
-            alert('No notes to save!');
-            return;
-        }
-
+        if (notes.trim() === '') { alert('No notes to save!'); return; }
         this.data.notes = notes;
         DataManager.saveData(this.data);
-
-        if (typeof History !== 'undefined') {
-            History.addEntry('Saved daily notes');
-        }
-
+        if (typeof History !== 'undefined') History.addEntry('Saved daily notes');
         alert('✅ Notes saved successfully!');
         this.addMessage('Coach', 'Notes locked in. Good to see you documenting the journey!');
     },
 
-    /**
-     * Load notes
-     */
     loadNotes() {
         this.elements.notesArea.value = this.data.notes || '';
     }
 };
 
-// Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = Coach;
 }

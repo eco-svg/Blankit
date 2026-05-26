@@ -640,3 +640,18 @@ iframe { border-radius: 8px; border: none; }
         padding-top: 100px;   /* leave room for fixed profile header */
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Delete Account menu item
+═══════════════════════════════════════════════════════════ */
+.delete-account-item {
+    color: var(--fire) !important;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.delete-account-item:hover {
+    background: rgba(255, 123, 114, 0.1) !important;
+    border-color: var(--fire) !important;
+    transform: translateX(5px);
+}
