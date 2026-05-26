@@ -53,18 +53,12 @@ def ai_coach():
     if not message:
         return jsonify({'error': 'No message provided'}), 400
 
-    # DEBUG — print key info to terminal
-    raw_key = os.getenv('GROQ_API_KEY', 'NOT FOUND')
-    print(f"DEBUG key starts with: {raw_key[:8]}")
-    print(f"DEBUG key length: {len(raw_key)}")
-    print(f"DEBUG first char: {repr(raw_key[0])}")
+    raw_key = os.getenv('CC_GROQ_API_KEY', '')
 
     try:
-        # Strip any accidental quotes from the key
-        clean_key = raw_key.strip().strip('"').strip("'")
-        print(f"DEBUG clean key starts with: {clean_key[:8]}")
-
-        client = Groq(api_key=clean_key)
+        if not raw_key:
+            raise ValueError("CC_GROQ_API_KEY not set")
+        client = Groq(api_key=raw_key.strip())
 
         response = client.chat.completions.create(
             model='llama-3.3-70b-versatile',
@@ -88,7 +82,6 @@ def ai_coach():
         )
 
         reply = response.choices[0].message.content.strip()
-        print(f"DEBUG Groq reply: {reply[:50]}")
         return jsonify({'reply': reply})
 
     except Exception as e:
