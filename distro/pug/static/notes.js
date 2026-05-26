@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentNoteId  = null;
     let savedRange     = null; // last known cursor position inside bodyInput
     const TYPING_DELAY = 1000; // ms to wait after user stops typing before saving
+    let notesCache     = [];   // avoid refetch on Back — update locally after save
 
     // --- Limits ---
     const MAX_IMAGE_MB    = 5;
@@ -36,39 +37,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // SECTION 1: NOTES LIST
     // =========================================================
 
+    function renderNotesList(notes) {
+        noteItemsContainer.innerHTML = '';
+        if (notes.length === 0) {
+            noteItemsContainer.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:20px;">No flows yet. Start one!</p>';
+            return;
+        }
+        notes.forEach(note => {
+            const date = new Date(note.updated_at).toLocaleDateString(undefined, {
+                month: 'short', day: 'numeric'
+            });
+            const rawText = note.body ? note.body.replace(/<[^>]*>/gm, '') : '';
+            const preview = rawText.substring(0, 40) || 'Empty flow...';
+            const el = document.createElement('div');
+            el.className = 'note-item';
+            el.innerHTML = `
+                <h4>${note.title || 'Untitled Flow'}</h4>
+                <p>${preview}...</p>
+                <span class="note-time">${date}</span>
+            `;
+            el.addEventListener('click', () => openNote(note));
+            noteItemsContainer.appendChild(el);
+        });
+    }
+
     function loadNotesList() {
         fetch('/pug/api/notes')
             .then(res => res.json())
             .then(notes => {
-                noteItemsContainer.innerHTML = '';
-
-                if (notes.length === 0) {
-                    noteItemsContainer.innerHTML = '<p style="text-align:center; color:var(--text-dim); margin-top:20px;">No flows yet. Start one!</p>';
-                    return;
-                }
-
-                notes.forEach(note => {
-                    const date = new Date(note.updated_at).toLocaleDateString(undefined, {
-                        month: 'short', day: 'numeric'
-                    });
-
-                    // Strip HTML tags for the preview line
-                    // replace(/<[^>]*>/gm, '') removes all HTML tags
-                    const rawText = note.body ? note.body.replace(/<[^>]*>/gm, '') : '';
-                    const preview = rawText.substring(0, 40) || 'Empty flow...';
-
-                    const el = document.createElement('div');
-                    el.className = 'note-item';
-                    el.innerHTML = `
-                        <h4>${note.title || 'Untitled Flow'}</h4>
-                        <p>${preview}...</p>
-                        <span class="note-time">${date}</span>
-                    `;
-
-                    // Clicking a note item opens it in the editor
-                    el.addEventListener('click', () => openNote(note));
-                    noteItemsContainer.appendChild(el);
-                });
+                notesCache = notes;
+                renderNotesList(notes);
             })
             .catch(err => console.error("Notes list error:", err));
     }
@@ -113,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnBack.addEventListener('click', () => {
         editorScreen.classList.add('hidden');
         listScreen.classList.remove('hidden');
-        loadNotesList(); // refresh list so updated title/preview shows
+        renderNotesList(notesCache); // instant — no server round-trip
     });
 
 
@@ -144,7 +142,16 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
-                currentNoteId = data.id; // important: update id after first save
+                currentNoteId = data.id;
+                // Keep cache in sync so Back renders correct preview instantly
+                const idx = notesCache.findIndex(n => n.id === data.id);
+                const now = new Date().toISOString();
+                if (idx !== -1) {
+                    notesCache[idx] = { ...notesCache[idx], title: titleInput.value, body: bodyInput.innerHTML, updated_at: now };
+                    notesCache.unshift(notesCache.splice(idx, 1)[0]); // bubble to top
+                } else {
+                    notesCache.unshift({ id: data.id, title: titleInput.value, body: bodyInput.innerHTML, updated_at: now });
+                }
                 setStatus('Saved', 'var(--text-dim)');
                 if (window.refreshNexusCalendar) window.refreshNexusCalendar();
             }
@@ -330,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.status === 'success') {
+                notesCache = notesCache.filter(n => n.id !== currentNoteId);
                 deleteModal.classList.add('hidden');
                 if (window.refreshNexusCalendar) window.refreshNexusCalendar();
                 btnBack.click();
