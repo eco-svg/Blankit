@@ -25,9 +25,13 @@
     (function(){
       var v = document.getElementById('bgVideo');
       if (!v) return;
-      function markReady(){ v.classList.add('ready'); }
-      v.addEventListener('canplay', markReady, { once: true });
-      if (v.readyState >= 3) markReady();
+      var done = false;
+      function markReady(){ if (done) return; done = true; v.classList.add('ready'); }
+      v.addEventListener('canplay',       markReady, { once: true });
+      v.addEventListener('canplaythrough',markReady, { once: true });
+      v.addEventListener('playing',       markReady, { once: true });
+      if (v.readyState >= 2) markReady();
+      setTimeout(markReady, 2500); // worst-case fallback
     })();
   </script>
 
