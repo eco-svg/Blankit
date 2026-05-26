@@ -24,7 +24,7 @@
   <div class="bg-layer active" id="bg-Eco-Svg"></div>
   <div class="bg-layer" id="bg-CatalystCrew"></div>
   <div class="bg-layer" id="bg-ThePug">
-    <video autoplay muted loop playsinline>
+    <video id="loginBgVideo" autoplay muted loop playsinline preload="auto">
       <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
   </div>
@@ -260,7 +260,78 @@
     Signed in as <strong id="lockedName">Eco-Svg</strong> — distro switching disabled.
   </div>
 
+  <!-- GET THE APP — permanent install strip -->
+  <div class="install-strip" id="installStrip">
+    <div class="install-row">
+      <span class="install-platform-icon" id="installIcon">⬇</span>
+      <span class="install-main-text" id="installMainText">Install Veyra as an app</span>
+      <button class="install-how-btn" id="installHowBtn">How to install ↓</button>
+    </div>
+    <div class="install-detail hidden" id="installDetail">
+      <div class="install-platform-item">
+        <span class="ipi-name">Android</span>
+        <span class="ipi-step">Chrome → tap ⋮ → "Add to Home Screen"</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">iPhone / iPad</span>
+        <span class="ipi-step">Safari → tap Share ⎙ → "Add to Home Screen"</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">Windows / Linux</span>
+        <span class="ipi-step">Chrome / Edge → click ⊕ in address bar → Install</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">Mac</span>
+        <span class="ipi-step">Chrome → click ⊕ in address bar, or Safari → File → Add to Dock</span>
+      </div>
+    </div>
+  </div>
+
   <script src="{{ url_for('static', filename='login.js') }}"></script>
+  <script>
+    // ThePug video fade-in
+    (function(){
+      var v = document.getElementById('loginBgVideo');
+      if (!v) return;
+      function markReady(){ v.classList.add('ready'); }
+      v.addEventListener('canplay', markReady, { once: true });
+      if (v.readyState >= 3) markReady();
+    })();
+
+    // Install strip toggle
+    (function(){
+      var btn    = document.getElementById('installHowBtn');
+      var detail = document.getElementById('installDetail');
+      var icon   = document.getElementById('installIcon');
+      var text   = document.getElementById('installMainText');
+      if (!btn) return;
+
+      // Detect platform and personalise the one-liner
+      var ua = navigator.userAgent;
+      var isAndroid = /android/i.test(ua);
+      var isIOS     = /ipad|iphone|ipod/i.test(ua) && !window.MSStream;
+      var isWindows = /windows/i.test(ua);
+      var isMac     = /macintosh|mac os x/i.test(ua) && !/ipad|iphone/i.test(ua);
+
+      if (isAndroid) {
+        icon.textContent = '🤖'; text.innerHTML = '<strong>Android</strong> — tap ⋮ in Chrome → Add to Home Screen';
+      } else if (isIOS) {
+        icon.textContent = '🍎'; text.innerHTML = '<strong>iPhone / iPad</strong> — tap Share ⎙ in Safari → Add to Home Screen';
+      } else if (isWindows) {
+        icon.textContent = '🪟'; text.innerHTML = '<strong>Windows</strong> — click ⊕ in Chrome/Edge address bar → Install';
+      } else if (isMac) {
+        icon.textContent = '🍏'; text.innerHTML = '<strong>Mac</strong> — click ⊕ in Chrome address bar, or Safari → File → Add to Dock';
+      } else {
+        icon.textContent = '💻'; text.innerHTML = '<strong>Linux</strong> — click ⊕ in Chrome address bar → Install Veyra';
+      }
+
+      btn.addEventListener('click', function(){
+        var open = !detail.classList.contains('hidden');
+        detail.classList.toggle('hidden', open);
+        btn.textContent = open ? 'How to install ↓' : 'Close ↑';
+      });
+    })();
+  </script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js', { scope: '/' });

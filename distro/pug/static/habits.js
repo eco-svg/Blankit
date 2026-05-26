@@ -147,49 +147,63 @@
     const canvas = document.getElementById('habitChart');
     if (!canvas || typeof Chart === 'undefined') return;
     if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    if (!history.length) return;
     const labels = history.map(d => {
       const dt = new Date(d.date + 'T00:00:00');
       return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
     });
     chartInstance = new Chart(canvas.getContext('2d'), {
-      type: 'bar',
+      type: 'line',
       data: {
         labels,
         datasets: [{
+          label: 'Daily Completion %',
           data: history.map(d => d.pct),
-          backgroundColor: history.map(d =>
-            d.pct >= 80 ? 'rgba(120,184,120,0.75)' :
-            d.pct >= 50 ? 'rgba(200,169,110,0.65)' :
-                          'rgba(100,100,130,0.4)'
-          ),
-          borderRadius: 4,
-          borderSkipped: false,
+          borderColor: '#d4a574',
+          backgroundColor: 'rgba(212,165,116,0.10)',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#d4a574',
+          pointBorderColor: '#1c1915',
+          pointBorderWidth: 2,
+          pointRadius: 4,
+          tension: 0.4,
+          fill: true,
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: ctx => `${ctx.raw}% completed` } }
+          tooltip: {
+            backgroundColor: 'rgba(28,25,21,0.92)',
+            titleColor: '#ede7d4',
+            bodyColor: '#ede7d4',
+            borderColor: '#2c2720',
+            borderWidth: 1,
+            padding: 10,
+            callbacks: { label: ctx => ` ${ctx.parsed.y}% habits done` },
+          },
         },
         scales: {
           x: {
+            grid: { display: false, drawBorder: false },
             ticks: {
-              color: 'rgba(200,200,200,0.4)',
+              color: 'rgba(200,200,200,0.35)',
               font: { size: 10, family: 'monospace' },
-              maxRotation: 45, autoSkip: true, maxTicksLimit: 10
+              autoSkip: true, maxTicksLimit: 10,
             },
-            grid: { color: 'rgba(255,255,255,0.04)' }
           },
           y: {
             min: 0, max: 100,
+            grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
             ticks: {
-              color: 'rgba(200,200,200,0.4)',
+              color: 'rgba(200,200,200,0.35)',
               font: { size: 10, family: 'monospace' },
-              callback: v => v + '%'
+              stepSize: 25,
+              callback: v => v + '%',
             },
-            grid: { color: 'rgba(255,255,255,0.04)' }
           }
         }
       }

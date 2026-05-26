@@ -66,11 +66,89 @@ body::after {
 .bg-layer.active { opacity: 1; }
 #bg-Eco-Svg   { background-image: url('eco-svg_background.jpg'); }
 #bg-CatalystCrew { background-image: url('catalystcrew_background.jpg'); }
-#bg-ThePug   { background: #0a0a0a; }
+#bg-ThePug {
+  background: radial-gradient(ellipse at 28% 25%, rgba(38,26,14,1) 0%, #0d0a07 55%, #080604 100%);
+}
 #bg-ThePug video {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.8s ease;
+}
+#bg-ThePug video.ready { opacity: 0.55; }
+
+/* ── GET THE APP STRIP ── */
+.install-strip {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 150;
+  background: rgba(10,8,5,0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-family: var(--font-mono);
+}
+.install-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+}
+.install-platform-icon {
+  font-size: 1rem;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.install-main-text {
+  flex: 1;
+  font-size: 0.7rem;
+  color: var(--text2);
+  letter-spacing: 0.04em;
+}
+.install-main-text strong { color: var(--text); font-weight: 500; }
+.install-how-btn {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.install-how-btn:hover { background: rgba(255,255,255,0.10); }
+.install-detail {
+  padding: 0 20px 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 0;
+}
+.install-detail.hidden { display: none; }
+.install-platform-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.install-platform-item .ipi-name {
+  font-size: 0.65rem;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.install-platform-item .ipi-step {
+  font-size: 0.62rem;
+  color: var(--text2);
+  line-height: 1.5;
 }
 
 /* ── TERMINAL BAR ── */
