@@ -47,7 +47,9 @@
     manageList.innerHTML = habits.map(h => `
       <li class="habit-manage-item">
         <span class="habit-name">${h.name}</span>
-        <button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>
+        ${h.id != null
+          ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
+          : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono)">saving…</span>`}
       </li>`).join('');
     manageList.querySelectorAll('.habit-del-btn').forEach(btn =>
       btn.addEventListener('click', () => deleteHabit(+btn.dataset.id))
@@ -56,12 +58,13 @@
 
   function renderToday() {
     if (!todayList) return;
-    if (!habits.length) {
+    const confirmed = habits.filter(h => h.id != null);
+    if (!confirmed.length) {
       todayList.innerHTML = '<li class="habit-empty">Add habits on the left.</li>';
       if (todayFooter) todayFooter.textContent = '';
       return;
     }
-    todayList.innerHTML = habits.map(h => `
+    todayList.innerHTML = confirmed.map(h => `
       <li class="habit-today-item${h.done_today ? ' done' : ''}" data-id="${h.id}">
         <span class="habit-check">${h.done_today ? '✓' : ''}</span>
         <span class="habit-name">${h.name}</span>
@@ -69,36 +72,54 @@
     todayList.querySelectorAll('.habit-today-item').forEach(li =>
       li.addEventListener('click', () => toggleHabit(+li.dataset.id))
     );
-    const done = habits.filter(h => h.done_today).length;
-    if (todayFooter) todayFooter.textContent = `${done} / ${habits.length} done today`;
+    const done = confirmed.filter(h => h.done_today).length;
+    if (todayFooter) todayFooter.textContent = `${done} / ${confirmed.length} done today`;
   }
 
-  // ── Add ───────────────────────────────────────────────
+  // ── Add (optimistic) ──────────────────────────────────
   async function addHabit() {
     const name = (habitInput?.value || '').trim();
     if (!name) return;
     habitInput.value = '';
+    const temp = { id: null, name, done_today: false };
+    habits.push(temp);
+    renderManage();
+    renderToday();
     try {
       const res = await fetch('/pug/api/habits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })
       });
-      if (res.ok) await loadHabits();
-    } catch (e) {}
+      if (res.ok) {
+        const data = await res.json();
+        temp.id = data.id;
+        temp.done_today = data.done_today ?? false;
+      } else {
+        habits = habits.filter(h => h !== temp);
+      }
+    } catch (e) {
+      habits = habits.filter(h => h !== temp);
+    }
+    renderManage();
+    renderToday();
   }
   if (habitAddBtn) habitAddBtn.addEventListener('click', addHabit);
   if (habitInput)  habitInput.addEventListener('keypress', e => { if (e.key === 'Enter') addHabit(); });
 
-  // ── Delete ────────────────────────────────────────────
+  // ── Delete (optimistic) ───────────────────────────────
   async function deleteHabit(id) {
+    habits = habits.filter(h => h.id !== id);
+    renderManage();
+    renderToday();
     try {
       await fetch(`/pug/api/habits/${id}`, { method: 'DELETE' });
-      await loadHabits();
-    } catch (e) {}
+    } catch (e) {
+      await loadHabits(); // revert on network failure
+    }
   }
 
-  // ── Toggle ────────────────────────────────────────────
+  // ── Toggle (already optimistic) ───────────────────────
   async function toggleHabit(id) {
     const h = habits.find(x => x.id === id);
     if (!h) return;

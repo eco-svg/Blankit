@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let verifyTargetId = null;
     let verifyActiveTab = 'link';
     let verifyFile = null;
+    let achCache = [];
 
     verifyTabs.forEach(t => t.addEventListener('click', () => {
         verifyActiveTab = t.dataset.tab;
@@ -85,8 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
             confirmVerifyBtn.disabled = false;
             if (data.error) { if (verifyError) verifyError.textContent = data.error; return; }
             verifyModal?.classList.add('hidden');
-            load();
-            // bust cache and re-run rank judge in background
+            // update verified badge in cache without full reload
+            const a = achCache.find(x => x.id === verifyTargetId);
+            if (a) { a.verified = data.verified || 'approved'; renderList(); }
+            else load();
             fetch('/pug/api/stats?refresh=true').catch(() => {});
         } catch {
             confirmVerifyBtn.disabled = false;
@@ -94,18 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ── Load ──────────────────────────────────────────────────────────────────
+    // ── Load & render ─────────────────────────────────────────────────────────
+    function renderList() {
+        list.innerHTML = '';
+        if (!achCache.length) {
+            list.innerHTML = '<div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>';
+            return;
+        }
+        achCache.forEach(a => list.appendChild(makeItem(a)));
+    }
+
     function load() {
         fetch('/pug/api/achievements')
             .then(r => r.json())
-            .then(items => {
-                list.innerHTML = '';
-                if (!items.length) {
-                    list.innerHTML = '<div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>';
-                    return;
-                }
-                items.forEach(a => list.appendChild(makeItem(a)));
-            })
+            .then(items => { achCache = items; renderList(); })
             .catch(() => {});
     }
 
@@ -149,9 +154,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function del(id) {
+        achCache = achCache.filter(a => a.id !== id);
+        renderList();
         fetch(`/pug/api/achievements/${id}`, { method: 'DELETE' })
-            .then(() => load())
-            .catch(() => {});
+            .catch(() => load()); // revert on failure
     }
 
     // ── Add modal ─────────────────────────────────────────────────────────────
@@ -186,7 +192,8 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             if (data.error) return;
             modal.classList.add('hidden');
-            load();
+            achCache.unshift({ id: data.id, title: data.title, desc: data.desc || '', proof: data.proof || '' });
+            renderList();
             fetch('/pug/api/stats?refresh=true').catch(() => {});
         })
         .catch(() => {});
