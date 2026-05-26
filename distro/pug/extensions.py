@@ -16,4 +16,7 @@ def encrypt(text: str) -> str:
 
 
 def decrypt(token: str) -> str:
-    return _fernet.decrypt(token.encode()).decode()
+    try:
+        return _fernet.decrypt(token.encode()).decode()
+    except Exception:
+        return ''
