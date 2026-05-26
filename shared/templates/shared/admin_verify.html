@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VEYRA Admin — Student Verification</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Courier New', monospace; background: #0d0b08; color: #f0ebe0; padding: 2rem; min-height: 100vh; }
+    h1   { font-size: 1.1rem; color: #e8b84b; margin-bottom: 0.4rem; letter-spacing: 0.06em; }
+    .sub { font-size: 0.72rem; color: #555; margin-bottom: 2rem; }
+    .sub a { color: #e87070; text-decoration: none; }
+    .error { color: #e87070; font-size: 0.8rem; margin-bottom: 1rem; }
+    input[type=password] {
+      background: #1a1612; border: 1px solid #333; color: #f0ebe0;
+      padding: 0.55rem 0.85rem; border-radius: 6px; font-family: inherit;
+      font-size: 0.9rem; width: 260px; outline: none;
+    }
+    input[type=password]:focus { border-color: #e8b84b; }
+    .btn {
+      padding: 0.45rem 1.1rem; border-radius: 6px; border: none;
+      cursor: pointer; font-family: inherit; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .btn-login   { background: #e8b84b; color: #111; margin-top: 0.75rem; display: block; }
+    .btn-approve { background: rgba(80,160,80,0.25); color: #8fca8f; border: 1px solid rgba(80,160,80,0.4); }
+    .btn-reject  { background: rgba(160,80,80,0.25); color: #e87070; border: 1px solid rgba(160,80,80,0.4); }
+    .btn-approve:hover { background: rgba(80,160,80,0.4); }
+    .btn-reject:hover  { background: rgba(160,80,80,0.4); }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 0.5rem 0.75rem; font-size: 0.62rem; color: #e8b84b; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid #222; }
+    td { padding: 0.65rem 0.75rem; font-size: 0.78rem; border-bottom: 1px solid #1a1612; vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    .dim { color: #444; }
+    .actions { display: flex; gap: 6px; }
+    .empty { color: #444; font-size: 0.82rem; margin-top: 2rem; }
+    .badge { display: inline-block; background: rgba(232,184,75,0.1); border: 1px solid rgba(232,184,75,0.3); color: #e8b84b; font-size: 0.62rem; padding: 1px 6px; border-radius: 4px; margin-left: 6px; }
+  </style>
+</head>
+<body>
+
+  <h1>VEYRA ◈ &nbsp; Student Verification</h1>
+
+  {% if not authenticated %}
+
+    <p class="sub">Admin access required.</p>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+    <form method="POST">
+      <input type="hidden" name="action" value="login">
+      <input type="password" name="password" placeholder="Admin password" autofocus>
+      <button type="submit" class="btn btn-login">Enter →</button>
+    </form>
+
+  {% else %}
+
+    <p class="sub">
+      <span class="badge">{{ pending|length }} pending</span>
+      &nbsp;&nbsp;
+      <a href="/auth/admin/verify/logout">logout</a>
+    </p>
+
+    {% if pending %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Username</th>
+          <th>Email</th>
+          <th>School</th>
+          <th>Grade</th>
+          <th>Location</th>
+          <th>Submitted</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in pending %}
+        <tr>
+          <td class="dim">{{ u.id }}</td>
+          <td>{{ u.username }}</td>
+          <td class="dim">{{ u.email }}</td>
+          <td>{{ u.student_school or '<span class="dim">—</span>' }}</td>
+          <td>{{ u.student_grade or '<span class="dim">—</span>' }}</td>
+          <td class="dim">{{ u.student_location or '—' }}</td>
+          <td class="dim">{{ u.student_submitted_at.strftime('%d %b %Y, %H:%M') if u.student_submitted_at else '—' }}</td>
+          <td>
+            <div class="actions">
+              <form method="POST">
+                <input type="hidden" name="action" value="approve">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button class="btn btn-approve">Approve</button>
+              </form>
+              <form method="POST">
+                <input type="hidden" name="action" value="reject">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <button class="btn btn-reject">Reject</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No pending verifications. Check back later.</p>
+    {% endif %}
+
+  {% endif %}
+
+</body>
+</html>

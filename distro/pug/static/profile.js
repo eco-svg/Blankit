@@ -263,4 +263,97 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(() => { delConfirmBtn.disabled = false; if (delError) delError.textContent = 'Could not delete. Try again.'; });
     }
 
+    // ── Student Verification ───────────────────────────────────────────────────
+    const ppStudentVerify = document.getElementById('ppStudentVerify');
+    const ppStudentLabel  = document.getElementById('ppStudentLabel');
+    const svModal         = document.getElementById('studentVerifyModal');
+    const svSchool        = document.getElementById('svSchool');
+    const svGrade         = document.getElementById('svGrade');
+    const svLocation      = document.getElementById('svLocation');
+    const svStatusEl      = document.getElementById('svStatus');
+    const svSubmitBtn     = document.getElementById('svSubmitBtn');
+    const svCancelBtn     = document.getElementById('svCancelBtn');
+
+    function showSvStatus(msg, ok) {
+        if (!svStatusEl) return;
+        svStatusEl.textContent  = msg;
+        svStatusEl.style.display    = 'block';
+        svStatusEl.style.background = ok ? 'rgba(80,200,80,0.1)' : 'rgba(200,80,80,0.1)';
+        svStatusEl.style.color      = ok ? '#8fca8f' : '#e87070';
+        svStatusEl.style.border     = ok ? '1px solid rgba(80,200,80,0.3)' : '1px solid rgba(200,80,80,0.3)';
+    }
+
+    function updateStudentLabel(status) {
+        if (!ppStudentLabel) return;
+        const map = {
+            none:     'Verify Student Status',
+            pending:  '⏳ Verification Pending',
+            approved: '✦ Student Verified',
+            rejected: 'Re-submit Verification',
+        };
+        ppStudentLabel.textContent = map[status] || 'Verify Student Status';
+    }
+
+    fetch('/auth/student-status')
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data) updateStudentLabel(data.status); })
+        .catch(() => {});
+
+    ppStudentVerify?.addEventListener('click', () => {
+        closePopup();
+        if (svStatusEl) svStatusEl.style.display = 'none';
+        if (svSubmitBtn) { svSubmitBtn.disabled = false; svSubmitBtn.textContent = 'Submit for review'; }
+
+        fetch('/auth/student-status')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                if (data.status === 'approved') {
+                    showSvStatus('✦ Your student status is already verified!', true);
+                    if (svSubmitBtn) svSubmitBtn.disabled = true;
+                } else if (data.status === 'pending') {
+                    showSvStatus('⏳ Pending review — we\'ll email you within 24h.', true);
+                    if (svSchool && data.school)    svSchool.value   = data.school;
+                    if (svGrade  && data.grade)     svGrade.value    = data.grade;
+                    if (svLocation && data.location) svLocation.value = data.location;
+                } else if (data.status === 'rejected') {
+                    showSvStatus('Previous submission wasn\'t approved. Re-submit with correct details.', false);
+                }
+            })
+            .catch(() => {});
+
+        svModal?.classList.remove('hidden');
+    });
+
+    svCancelBtn?.addEventListener('click', () => svModal?.classList.add('hidden'));
+    window.addEventListener('click', e => { if (e.target === svModal) svModal?.classList.add('hidden'); });
+
+    svSubmitBtn?.addEventListener('click', async () => {
+        const school   = svSchool?.value.trim();
+        const grade    = svGrade?.value.trim();
+        const location = svLocation?.value.trim() || '';
+        if (!school || !grade) { showSvStatus('School and grade are required.', false); return; }
+        svSubmitBtn.disabled     = true;
+        svSubmitBtn.textContent  = 'Submitting…';
+        try {
+            const res  = await fetch('/auth/student-verify', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify({ school, grade, location }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showSvStatus('✓ Submitted — we\'ll review and email you within 24h.', true);
+                updateStudentLabel('pending');
+            } else {
+                showSvStatus(data.error || 'Submission failed. Try again.', false);
+                svSubmitBtn.disabled = false;
+            }
+        } catch {
+            showSvStatus('Network error. Try again.', false);
+            svSubmitBtn.disabled = false;
+        }
+        svSubmitBtn.textContent = 'Submit for review';
+    });
+
 });

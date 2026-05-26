@@ -1,8 +1,7 @@
 import os
 import re
-import json
-import base64
 import requests as _http
+from datetime import datetime
 from flask import Blueprint, request, jsonify, session, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
@@ -118,6 +117,20 @@ def send_otp_email(user, otp):
     )
 
 
+def send_student_decision_email(user, approved: bool):
+    if approved:
+        subject = 'Student verification approved ✦ — VEYRA'
+        body    = f'<h2 style="color:#e8b84b">You\'re verified! ✦</h2><p>Hi {user.username}, your student status has been approved. Your verified badge is now active on your profile.</p><p>BlinkyBot AI access will unlock when available — we\'ll let you know.</p>'
+    else:
+        subject = 'Student verification update — VEYRA'
+        body    = f'<h2>Verification update</h2><p>Hi {user.username}, we couldn\'t verify your student status with the details provided. You can re-submit from your profile at any time.</p>'
+    _send_email(
+        to_email = user.email,
+        subject  = subject,
+        html     = f'<!DOCTYPE html><html><body style="font-family:monospace;background:#0d0b08;color:#f0ebe0;padding:2rem"><div style="max-width:460px;margin:0 auto;background:#1a1612;border:1px solid #333;border-radius:12px;padding:2rem">{body}<hr style="border:none;border-top:1px solid #333;margin:1.5rem 0"/><p style="color:#555;font-size:0.7rem">VEYRA — veyrasupportus@gmail.com</p></div></body></html>',
+    )
+
+
 # ══════════════════════════════
 #  REGISTER
 # ══════════════════════════════
@@ -191,6 +204,16 @@ def register():
 
     session['pending_user_id'] = new_user.id
     session['pending_email']   = email
+
+    # Apply pre-signup student verification if submitted
+    pre = session.pop('pre_student', None)
+    if pre:
+        new_user.student_status       = 'pending'
+        new_user.student_school       = (pre.get('school', '') or '')[:200]
+        new_user.student_location     = (pre.get('location', '') or '')[:200]
+        new_user.student_grade        = (pre.get('grade', '') or '')[:50]
+        new_user.student_submitted_at = datetime.utcnow()
+        db.session.commit()
 
     try:
         send_otp_email(new_user, token_obj.otp)
@@ -376,99 +399,48 @@ def reset_password():
 
 
 # ══════════════════════════════
-#  STUDENT VERIFICATION
+#  STUDENT VERIFICATION (post-login)
 # ══════════════════════════════
 @auth.route('/student-verify', methods=['POST'])
-@limiter.limit("3 per hour")
+@limiter.limit("5 per hour")
 def student_verify():
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'not logged in'}), 401
-
-    if 'id_image' not in request.files:
-        return jsonify({'error': 'no image uploaded'}), 400
-
-    file    = request.files['id_image']
-    allowed = {'image/jpeg', 'image/png', 'image/webp', 'image/heic'}
-    if file.content_type not in allowed:
-        return jsonify({'error': 'upload a JPEG, PNG, or WebP image'}), 400
-
-    img_bytes = file.read(4 * 1024 * 1024)  # cap at 4 MB
-    if len(img_bytes) == 0:
-        return jsonify({'error': 'empty file'}), 400
-
-    img_b64   = base64.b64encode(img_bytes).decode()
-    mime      = file.content_type
-    del img_bytes  # drop raw bytes immediately
-
-    api_key = (os.getenv('SVG_GROQ_API_KEY') or
-               os.getenv('PUG_GROQ_API_KEY') or
-               os.getenv('CC_GROQ_API_KEY', ''))
-    if not api_key:
-        del img_b64
-        return jsonify({'error': 'verification service unavailable'}), 503
-
-    try:
-        from groq import Groq
-        client = Groq(api_key=api_key.strip())
-        resp = client.chat.completions.create(
-            model='meta-llama/llama-4-scout-17b-16e-instruct',
-            messages=[{
-                'role': 'user',
-                'content': [
-                    {
-                        'type': 'image_url',
-                        'image_url': {'url': f'data:{mime};base64,{img_b64}'}
-                    },
-                    {
-                        'type': 'text',
-                        'text': (
-                            'Is this a student ID card or school enrollment document? '
-                            'If yes, extract: school name, city/location, grade or year level. '
-                            'Return ONLY valid JSON: {"valid": true, "school": "...", "location": "...", "grade": "..."} '
-                            'If not a student ID, return: {"valid": false}'
-                        )
-                    }
-                ]
-            }],
-            max_tokens=200,
-            temperature=0.1,
-        )
-    except Exception as e:
-        del img_b64
-        current_app.logger.error(f'Student verify Groq error: {e}')
-        return jsonify({'error': 'verification service error — try again later'}), 503
-    finally:
-        del img_b64  # always delete base64 data
-
-    raw = resp.choices[0].message.content.strip()
-    # Extract JSON from the response
-    try:
-        start = raw.find('{')
-        end   = raw.rfind('}') + 1
-        data  = json.loads(raw[start:end])
-    except Exception:
-        return jsonify({'error': 'could not read ID — try a clearer photo'}), 422
-
-    if not data.get('valid'):
-        return jsonify({'error': 'this does not appear to be a valid student ID'}), 422
-
+    data     = request.get_json(silent=True) or {}
+    school   = (data.get('school',   '') or '').strip()[:200]
+    grade    = (data.get('grade',    '') or '').strip()[:50]
+    location = (data.get('location', '') or '').strip()[:200]
+    if not school or not grade:
+        return jsonify({'error': 'school and grade are required'}), 400
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'user not found'}), 404
-
-    user.student_status   = 'approved'
-    user.student_school   = (data.get('school')   or '')[:200]
-    user.student_location = (data.get('location') or '')[:200]
-    user.student_grade    = (data.get('grade')     or '')[:50]
+    if user.student_status == 'approved':
+        return jsonify({'message': 'already_approved', 'status': 'approved'}), 200
+    user.student_status       = 'pending'
+    user.student_school       = school
+    user.student_location     = location
+    user.student_grade        = grade
+    user.student_submitted_at = datetime.utcnow()
     db.session.commit()
+    return jsonify({'message': 'pending', 'status': 'pending'}), 200
 
-    return jsonify({
-        'message': 'verified',
-        'school':   user.student_school,
-        'location': user.student_location,
-        'grade':    user.student_grade,
-    }), 200
+
+# ══════════════════════════════
+#  PRE-SIGNUP STUDENT VERIFY
+# ══════════════════════════════
+@auth.route('/pre-verify-student', methods=['POST'])
+@limiter.limit("10 per hour")
+def pre_verify_student():
+    data     = request.get_json(silent=True) or {}
+    school   = (data.get('school',   '') or '').strip()[:200]
+    grade    = (data.get('grade',    '') or '').strip()[:50]
+    location = (data.get('location', '') or '').strip()[:200]
+    if not school or not grade:
+        return jsonify({'error': 'school and grade are required'}), 400
+    session['pre_student'] = {'school': school, 'location': location, 'grade': grade}
+    return jsonify({'message': 'stored'}), 200
 
 
 # ══════════════════════════════
@@ -488,6 +460,59 @@ def student_status():
         'location': user.student_location,
         'grade':    user.student_grade,
     }), 200
+
+
+# ══════════════════════════════
+#  ADMIN — STUDENT REVIEW
+# ══════════════════════════════
+@auth.route('/admin/verify', methods=['GET', 'POST'])
+def admin_verify():
+    from flask import render_template
+    admin_pw = os.getenv('ADMIN_PASSWORD', '')
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'login':
+            if not admin_pw:
+                return 'ADMIN_PASSWORD env var not set.', 500
+            if request.form.get('password') == admin_pw:
+                session['admin_auth'] = True
+            else:
+                return render_template('shared/admin_verify.html',
+                                       authenticated=False, pending=[], error='Wrong password.')
+            return redirect(url_for('auth.admin_verify'))
+
+        if not session.get('admin_auth'):
+            return redirect(url_for('auth.admin_verify'))
+
+        if action in ('approve', 'reject'):
+            uid  = request.form.get('user_id', type=int)
+            user = db.session.get(User, uid) if uid else None
+            if user:
+                user.student_status = 'approved' if action == 'approve' else 'rejected'
+                db.session.commit()
+                try:
+                    send_student_decision_email(user, action == 'approve')
+                except Exception as e:
+                    current_app.logger.error(f'Student decision email: {e}')
+
+        return redirect(url_for('auth.admin_verify'))
+
+    # GET
+    if not session.get('admin_auth'):
+        return render_template('shared/admin_verify.html',
+                               authenticated=False, pending=[], error=None)
+    pending = User.query.filter_by(student_status='pending')\
+                        .order_by(User.student_submitted_at).all()
+    return render_template('shared/admin_verify.html',
+                           authenticated=True, pending=pending, error=None)
+
+
+@auth.route('/admin/verify/logout', methods=['GET'])
+def admin_verify_logout():
+    session.pop('admin_auth', None)
+    return redirect(url_for('auth.admin_verify'))
 
 
 # ══════════════════════════════

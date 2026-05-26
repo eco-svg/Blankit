@@ -11,10 +11,11 @@ class User(db.Model):
     distro          = db.Column(db.String(20),  nullable=False, default='Eco-Svg')
     is_verified      = db.Column(db.Boolean, default=False)
     age              = db.Column(db.Integer, nullable=True)
-    student_status   = db.Column(db.String(20), default='none')  # none | pending | approved | rejected
-    student_school   = db.Column(db.String(200), nullable=True)
-    student_location = db.Column(db.String(200), nullable=True)
-    student_grade    = db.Column(db.String(50),  nullable=True)
+    student_status       = db.Column(db.String(20), default='none')  # none | pending | approved | rejected
+    student_school       = db.Column(db.String(200), nullable=True)
+    student_location     = db.Column(db.String(200), nullable=True)
+    student_grade        = db.Column(db.String(50),  nullable=True)
+    student_submitted_at = db.Column(db.DateTime, nullable=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
 
     habits  = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)

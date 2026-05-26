@@ -82,6 +82,8 @@ def _migrate_schema():
                 conn.execute(text('ALTER TABLE users ADD COLUMN student_location VARCHAR(200)'))
             if 'student_grade' not in user_cols:
                 conn.execute(text('ALTER TABLE users ADD COLUMN student_grade VARCHAR(50)'))
+            if 'student_submitted_at' not in user_cols:
+                conn.execute(text('ALTER TABLE users ADD COLUMN student_submitted_at TIMESTAMP'))
 
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:
@@ -234,7 +236,7 @@ def create_app():
         response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' https://cdn.jsdelivr.net 'sha256-InLOt1hqEU7t95q2PAFs4Z3FjcsWV7FrMAlmIORPiEA='; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
