@@ -127,6 +127,7 @@ def register():
     email    = data.get('email', '').strip().lower()
     password = data.get('password', '')
     distro   = data.get('distro', 'Eco-Svg')
+    age_raw  = data.get('age')
 
     if distro not in DISTRO_REDIRECTS:
         return jsonify({'error': 'invalid distro'}), 400
@@ -136,6 +137,14 @@ def register():
         return jsonify({'error': 'password must be at least 8 characters'}), 400
     if '@' not in email or '.' not in email.split('@')[-1]:
         return jsonify({'error': 'invalid email address'}), 400
+    try:
+        age = int(age_raw)
+        if age < 1 or age > 120:
+            raise ValueError
+    except (TypeError, ValueError):
+        return jsonify({'error': 'please enter a valid age'}), 400
+    if age < 13:
+        return jsonify({'error': 'you must be 13 or older to create an account'}), 400
 
     # If email exists but unverified — update credentials and resend OTP
     existing = User.query.filter_by(email=email).first()
@@ -145,6 +154,7 @@ def register():
         existing.username      = username
         existing.password_hash = generate_password_hash(password)
         existing.distro        = distro
+        existing.age           = age
         VerifyToken.query.filter_by(user_id=existing.id, used=False).update({'used': True})
         db.session.commit()
         token_obj = VerifyToken(user_id=existing.id)
@@ -168,6 +178,7 @@ def register():
         password_hash = generate_password_hash(password),
         distro        = distro,
         is_verified   = False,
+        age           = age,
     )
     db.session.add(new_user)
     db.session.commit()

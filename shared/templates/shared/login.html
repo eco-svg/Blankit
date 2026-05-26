@@ -85,7 +85,7 @@
         <span class="s-dot" data-index="2"></span>
       </div>
 
-      <div class="distro-info">
+      <div class="distro-info" id="distroInfoPanel">
         <div class="info-line">
           <span class="info-key">maintainer</span>
           <span class="info-val" id="infoMaintainer">Eco-Svg</span>
@@ -143,6 +143,34 @@
           </span>
         </div>
       </div>
+      <!-- AGE + STUDENT CARD — shown only on Create Account tab -->
+      <div class="age-verify-card" id="ageVerifyCard" style="display:none">
+        <div class="avc-header">
+          <span class="avc-title">One thing first.</span>
+          <span class="avc-sub">takes 10 seconds — sets your experience</span>
+        </div>
+
+        <div class="avc-field">
+          <label class="avc-label" for="regAge">How old are you? <span class="avc-req">*</span></label>
+          <input class="field-input" type="number" id="regAge" min="1" max="120" placeholder="e.g. 17" />
+          <span class="field-err" id="regAgeErr"></span>
+        </div>
+
+        <div class="avc-perks">
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Peer matching with people your age</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Age-appropriate challenges &amp; streaks</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Your tier unlocks features as you grow</div>
+        </div>
+
+        <div class="avc-student-teaser">
+          <span class="avc-student-icon">✦</span>
+          <div>
+            <span class="avc-student-title">Are you a student?</span>
+            <span class="avc-student-desc">Verify after joining — unlock BlinkyBot free + member discount.</span>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <!-- RIGHT: AUTH -->

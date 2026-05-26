@@ -184,6 +184,14 @@ function switchTab(name) {
   positionTabLine(name);
   clearAllErrors();
   typeCmd(`auth --mode=${name}`);
+
+  const infoPanel = document.getElementById('distroInfoPanel');
+  const ageCard   = document.getElementById('ageVerifyCard');
+  if (infoPanel && ageCard) {
+    const reg = name === 'register';
+    infoPanel.style.display = reg ? 'none' : '';
+    ageCard.style.display   = reg ? ''     : 'none';
+  }
 }
 
 function positionTabLine(name) {
@@ -354,6 +362,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
   const confirm  = document.getElementById('regConfirm').value;
+  const ageVal   = document.getElementById('regAge').value.trim();
   let ok = true;
 
   if (!username || username.length < 3)        { setErr('regUsernameErr', 'min 3 chars'); ok = false; }
@@ -361,6 +370,9 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   if (!validEmail(email))                       { setErr('regEmailErr', 'invalid email'); ok = false; }
   if (!password || password.length < 8)         { setErr('regPasswordErr', 'min 8 chars'); ok = false; }
   if (password !== confirm)                     { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
+  const age = parseInt(ageVal, 10);
+  if (!ageVal || isNaN(age) || age < 1 || age > 120) { setErr('regAgeErr', 'please enter your age'); ok = false; }
+  else if (age < 13)                            { setErr('regAgeErr', 'you must be 13 or older'); ok = false; }
   if (!ok) return;
 
   setLoading('registerBtn', 'registerLoader', true);
@@ -371,7 +383,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const res    = await fetch('/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, distro }),
+      body: JSON.stringify({ username, email, password, distro, age }),
     });
     const data = await res.json();
 

@@ -290,6 +290,40 @@ body::after {
 .s-dot.active { background: var(--accent); width: 26px; }
 
 /* distro info */
+/* ══════════════════════════════
+   AGE + STUDENT VERIFY CARD
+   ══════════════════════════════ */
+.age-verify-card {
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.avc-header        { display: flex; flex-direction: column; gap: 3px; }
+.avc-title         { font-family: var(--font-serif); font-size: 1rem; color: var(--text); }
+.avc-sub           { font-family: var(--font-mono); font-size: 0.6rem; color: var(--text3); letter-spacing: 0.05em; }
+.avc-field         { display: flex; flex-direction: column; gap: 5px; }
+.avc-label         { font-family: var(--font-mono); font-size: 0.63rem; color: var(--text3); letter-spacing: 0.05em; }
+.avc-req           { color: var(--accent); }
+.avc-perks         { display: flex; flex-direction: column; gap: 6px; padding-top: 2px; }
+.avc-perk          { display: flex; align-items: center; gap: 8px; font-size: 0.68rem; color: var(--text2); font-family: var(--font-mono); }
+.avc-perk-dot      { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); flex-shrink: 0; opacity: 0.7; }
+.avc-student-teaser {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+.avc-student-icon  { color: var(--accent); font-size: 0.75rem; flex-shrink: 0; margin-top: 2px; }
+.avc-student-title { display: block; font-size: 0.7rem; color: var(--accent); font-family: var(--font-mono); letter-spacing: 0.04em; margin-bottom: 3px; }
+.avc-student-desc  { display: block; font-size: 0.62rem; color: var(--text3); line-height: 1.5; }
+
 .distro-info {
   background: rgba(0,0,0,0.35);
   backdrop-filter: blur(12px);

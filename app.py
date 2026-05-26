@@ -68,6 +68,13 @@ def _migrate_schema():
     inspector = inspect(db.engine)
     if 'user_badges' not in inspector.get_table_names():
         return  # table not yet created — db.create_all() will handle it correctly
+    # users.age
+    if 'users' in inspector.get_table_names():
+        user_cols = {c['name'] for c in inspector.get_columns('users')}
+        if 'age' not in user_cols:
+            with db.engine.begin() as conn:
+                conn.execute(text('ALTER TABLE users ADD COLUMN age INTEGER'))
+
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:
         return  # already migrated

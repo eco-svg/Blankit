@@ -10,6 +10,7 @@ class User(db.Model):
     password_hash   = db.Column(db.String(255), nullable=False)
     distro          = db.Column(db.String(20),  nullable=False, default='Eco-Svg')
     is_verified     = db.Column(db.Boolean, default=False)
+    age             = db.Column(db.Integer, nullable=True)
     created_at      = db.Column(db.DateTime, default=datetime.utcnow)
 
     habits  = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)
