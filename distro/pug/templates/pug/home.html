@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=38">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=39">
 </head>
 <body>
 
@@ -21,21 +21,6 @@
       <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
   </div>
-  <script>
-    (function(){
-      var v = document.getElementById('bgVideo');
-      if (!v) return;
-      var done = false;
-      function markReady(){ if (done) return; done = true; v.classList.add('ready'); }
-      v.addEventListener('canplay',       markReady, { once: true });
-      v.addEventListener('canplaythrough',markReady, { once: true });
-      v.addEventListener('playing',       markReady, { once: true });
-      v.addEventListener('error',         markReady, { once: true });
-      if (v.readyState >= 2) markReady();
-      setTimeout(markReady, 1500);
-    })();
-  </script>
-
   <header class="main-header" id="mainHeader">
     <div class="header-stars" id="headerStars"></div>
     <div class="header-left">
