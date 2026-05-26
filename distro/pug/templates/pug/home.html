@@ -11,13 +11,13 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=40">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=41">
 </head>
 <body>
 
   <!-- SPACE BACKGROUND -->
   <div class="pug-bg">
-    <video id="bgVideo" autoplay muted loop playsinline preload="auto">
+    <video id="bgVideo" autoplay muted loop playsinline preload="auto" style="opacity:0.55">
       <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
   </div>

@@ -208,6 +208,21 @@ document.querySelectorAll('[data-tab]').forEach(el => {
   if (el.classList.contains('tab')) return;
   el.addEventListener('click', () => switchTab(el.dataset.tab));
 });
+
+// Disable register button until a valid age (13+) is entered
+(function(){
+  var ageInput = document.getElementById('regAge');
+  var regBtn   = document.getElementById('registerBtn');
+  if (!ageInput || !regBtn) return;
+  function checkAge() {
+    var v = parseInt(ageInput.value, 10);
+    var ok = !isNaN(v) && v >= 13 && v <= 120;
+    regBtn.style.opacity = ok ? '' : '0.4';
+    regBtn.style.pointerEvents = ok ? '' : 'none';
+  }
+  checkAge();
+  ageInput.addEventListener('input', checkAge);
+})();
 setTimeout(() => positionTabLine('login'), 60);
 window.addEventListener('resize', () => {
   const active = document.querySelector('.tab.active');

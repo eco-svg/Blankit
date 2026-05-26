@@ -324,7 +324,10 @@ body::after {
 .avc-label         { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500; color: var(--text2); letter-spacing: 0.04em; }
 .avc-req           { color: var(--accent); }
 .avc-perks         { display: flex; flex-direction: column; gap: 7px; }
-.avc-perks-title   { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; }
+.avc-perks-title   { font-family: var(--font-mono); font-size: 0.62rem; color: var(--text2); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 2px; font-weight: 600; }
+#regAge::-webkit-inner-spin-button,
+#regAge::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#regAge { -moz-appearance: textfield; }
 .avc-perk          { display: flex; align-items: center; gap: 9px; font-size: 0.76rem; font-weight: 500; color: var(--text2); }
 .avc-perk-dot      { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; opacity: 0.8; }
 .avc-student-block {
