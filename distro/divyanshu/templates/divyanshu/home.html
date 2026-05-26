@@ -18,6 +18,14 @@
 </head>
 <body>
 
+<!-- PWA install button — fixed top-right -->
+<button class="pwa-install-btn pwa-hidden"
+        title="Install Veyra app"
+        style="position:fixed;top:20px;right:20px;z-index:9999;">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Install
+</button>
+
 <!-- Profile Header — fixed top-left -->
 <div class="profile-header" id="profileHeader"
      style="position:fixed;top:20px;left:20px;z-index:9999;">
@@ -441,5 +449,7 @@
 <script src="{{ url_for('catalystcrew.static', filename='js/analytics.js') }}"></script>
 <script src="{{ url_for('catalystcrew.static', filename='js/recurring.js') }}"></script>
 <script src="{{ url_for('catalystcrew.static', filename='js/app.js') }}"></script>
+<style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
+<script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
 </body>
 </html>
