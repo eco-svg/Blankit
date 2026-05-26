@@ -11,7 +11,9 @@ class Config:
     # Session cookie hardening
     SESSION_COOKIE_HTTPONLY  = True
     SESSION_COOKIE_SAMESITE  = 'Lax'
-    SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV', 'development') != 'development'
+    SESSION_COOKIE_SECURE    = os.getenv('FLASK_ENV', 'development') != 'development'
+    SESSION_COOKIE_NAME      = '__Host-session' if os.getenv('FLASK_ENV') != 'development' else 'session'
+    PERMANENT_SESSION_LIFETIME = 30 * 24 * 3600  # 30 days
 
     # Flask-Mail
     MAIL_SERVER                 = 'smtp.gmail.com'

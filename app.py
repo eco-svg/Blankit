@@ -187,6 +187,15 @@ def create_app():
     app.register_blueprint(catalystcrew_bp)
     app.register_blueprint(pug_bp)
 
+    # ── PWA service worker (must be served from root scope) ──
+    @app.route('/sw.js')
+    def service_worker():
+        from flask import send_from_directory
+        resp = send_from_directory(app.static_folder, 'sw.js')
+        resp.headers['Service-Worker-Allowed'] = '/'
+        resp.headers['Cache-Control'] = 'no-cache'
+        return resp
+
     # ── Invalidate sessions for deleted users ─────────────
     @app.before_request
     def validate_session_user():
@@ -222,6 +231,14 @@ def create_app():
         )
         return response
 
+    _ensure_blinkbot_model()
+    _ensure_buddybot_model()
+
+    if (os.environ.get('MINIO_ACCESS_KEY', 'minioadmin') == 'minioadmin'
+            and os.environ.get('FLASK_ENV') != 'development'):
+        import warnings
+        warnings.warn('MinIO is using default credentials in a non-dev environment!', stacklevel=2)
+
     with app.app_context():
         db.create_all()
         _migrate_schema()
@@ -234,8 +251,6 @@ def create_app():
 
 
 if __name__ == '__main__':
-    _ensure_blinkbot_model()
-    _ensure_buddybot_model()
     app = create_app()
     port = int(os.environ.get('PORT', 7860))
     debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'

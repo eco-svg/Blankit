@@ -19,4 +19,4 @@ COPY . .
 
 EXPOSE 7860
 
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:7860", "--workers", "2", "--timeout", "120", "--access-logfile", "-", "app:create_app()"]

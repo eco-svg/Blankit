@@ -217,7 +217,7 @@ def _format_memory_block(exchanges):
 
 def _groq_search(query):
     import requests as req
-    api_key = os.environ.get('GROQ_API_KEY', '')
+    api_key = os.environ.get('PUG_GROQ_API_KEY', '')
     if not api_key:
         return None
     try:
@@ -243,7 +243,7 @@ def _groq_search(query):
 
 def _call_groq_chat(message, session_history, user_context, user_id=None):
     import requests as req
-    api_key = os.environ.get('GROQ_API_KEY', '')
+    api_key = os.environ.get('PUG_GROQ_API_KEY', '')
     if not api_key:
         return None
 
@@ -641,7 +641,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
 
     # Fallback: Groq
     import requests as req
-    api_key = os.environ.get('GROQ_API_KEY', '')
+    api_key = os.environ.get('PUG_GROQ_API_KEY', '')
     if not api_key:
         return None
     try:
@@ -720,9 +720,11 @@ def _valid_magic(data: bytes, ext: str) -> bool:
 def ensure_bucket():
     try:
         if not minio_client.bucket_exists(MINIO_BUCKET):
-            minio_client.make_bucket(MINIO_BUCKET)
+            # R2 buckets must be created in the Cloudflare dashboard — skip auto-create
+            if 'r2.cloudflarestorage.com' not in MINIO_ENDPOINT:
+                minio_client.make_bucket(MINIO_BUCKET)
     except S3Error as e:
-        print(f"MinIO bucket error: {e}")
+        current_app.logger.warning(f'Storage bucket check failed: {e}')
 
 
 def login_required_page():
@@ -1145,7 +1147,7 @@ def ask():
     if len(query) > 2000:
         return jsonify({'error': 'Query too long'}), 400
     import requests as req
-    api_key = os.environ.get('GROQ_API_KEY', '')
+    api_key = os.environ.get('PUG_GROQ_API_KEY', '')
     if not api_key:
         return jsonify({'error': 'AI API key not configured'}), 503
     try:
