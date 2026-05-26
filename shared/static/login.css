@@ -73,10 +73,8 @@ body::after {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 1.8s ease;
+  opacity: 0.55;
 }
-#bg-ThePug video.ready { opacity: 0.55; }
 
 /* ── GET THE APP STRIP ── */
 .install-strip {
@@ -365,7 +363,9 @@ body::after {
 /* ══════════════════════════════
    AUTH CARD
    ══════════════════════════════ */
-.auth-section { display: flex; flex-direction: column; }
+.auth-section { display: flex; flex-direction: column; gap: 14px; }
+.auth-wordmark { font-family: var(--font-serif); font-size: 1.65rem; color: var(--text); line-height: 1.1; }
+.auth-sub      { font-size: 0.8rem; color: var(--text3); }
 
 .auth-card {
   background: rgba(8,6,4,0.6);
