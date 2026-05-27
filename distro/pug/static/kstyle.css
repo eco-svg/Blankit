@@ -804,7 +804,7 @@ body.header-hidden .l-bar {
   margin-top: var(--header-h);
   margin-left: 0;
   margin-right: var(--rbar-w);
-  padding: 20px 20px 20px clamp(28px, calc(var(--lbar-w) * 0.35), 100px);
+  padding: 10px 20px 20px clamp(28px, calc(var(--lbar-w) * 0.35), 100px);
 
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1432,14 +1432,14 @@ div.infinite-canvas video {
 /* Find and replace the .gap-bar block */
 .gap-bar {
     position: absolute;
-    top: -90px;
+    top: calc(100% + 15px);
     left: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    z-index: 100; /* Bumping this way up so it floats above everything */
-    pointer-events: none; /* Allows you to click the card through the gap bar space */
+    z-index: 100;
+    pointer-events: none;
 }
 
 .gap-bar > * {

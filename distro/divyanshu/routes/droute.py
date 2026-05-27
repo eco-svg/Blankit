@@ -53,15 +53,15 @@ def ai_coach():
     if not message:
         return jsonify({'error': 'No message provided'}), 400
 
-    raw_key = os.getenv('CC_GROQ_API_KEY', '')
+    raw_key = os.getenv('CC_GROQ_API_KEY') or os.getenv('GROQ_API_KEY', '')
 
     try:
         if not raw_key:
-            raise ValueError("CC_GROQ_API_KEY not set")
+            raise ValueError("No Groq API key set (tried CC_GROQ_API_KEY, GROQ_API_KEY)")
         client = Groq(api_key=raw_key.strip())
 
         response = client.chat.completions.create(
-            model='llama-3.3-70b-versatile',
+            model='llama-3.1-8b-instant',
             messages=[
                 {
                     'role': 'system',
