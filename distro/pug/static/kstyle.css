@@ -1984,6 +1984,14 @@ div.infinite-canvas video {
     max-height: 560px;
 }
 
+/* Skills/Achievements wrapper — transparent on desktop, flip card on mobile */
+.skills-wrap { display: contents; }
+.skills-flip-inner { display: contents; }
+.skills-flip-btn { display: none; }
+
+/* Habits flip buttons — hidden on desktop */
+.habit-flip-btn { display: none; }
+
 /* Notes card: clip overflowing images so they don't bleed into adjacent cards */
 .card.notes {
     overflow: hidden !important;
@@ -2481,6 +2489,16 @@ div.infinite-canvas video {
   text-transform: uppercase;
   color: var(--text-dim);
   padding: 4px 16px 2px;
+}
+
+.pp-label-section {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  color: var(--text);
+  padding: 10px 16px 4px;
 }
 
 .pp-lang-row {
@@ -4441,6 +4459,59 @@ button.nav-pill:not(.btn-ghost):hover {
     gap: 6px;
   }
   .infinite-canvas { padding-bottom: 70px; font-size: 1rem; }
+
+  /* ── Habits: flip card on mobile ── */
+  .habits-card { perspective: 1200px; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; }
+  .habits-inner {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+  }
+  .habits-inner.flipped { transform: rotateY(180deg); }
+  .habit-panel-front, .habit-panel-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    background: rgba(10,8,6,0.85);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .habit-panel-back { transform: rotateY(180deg); }
+  .habit-divider { display: none; }
+  .habit-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
+
+  /* ── Skills/Achievements: flip card on mobile ── */
+  .skills-wrap {
+    display: block;
+    height: 620px;
+    perspective: 1200px;
+  }
+  .skills-flip-inner {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .skills-flip-inner.flipped { transform: rotateY(180deg); }
+  #sec-skills, #sec-achievements {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+  #sec-achievements { transform: rotateY(180deg); }
+  .skills-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; margin-left: auto; }
 
   /* ── R-bar: end at the top of the bottom bar ── */
   .r-bar {

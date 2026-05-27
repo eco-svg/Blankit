@@ -1,7 +1,7 @@
 (function () {
   const ROUTES = {
     'notes':    ['sec-notes', 'sec-blinkbot'],
-    'skills':   ['sec-skills', 'sec-achievements'],
+    'skills':   ['sec-skills-wrapper'],
     'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],

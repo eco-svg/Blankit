@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=63">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=64">
 </head>
 <body>
 
@@ -236,7 +236,7 @@
 
           <!-- Request a Feature -->
           <div class="pp-divider"></div>
-          <div class="pp-label">Request a Feature</div>
+          <div class="pp-label pp-label-section">Request a Feature</div>
           <div style="padding:4px 16px 12px;">
             <p class="req-sub" style="padding:0;margin-bottom:8px;">Got an idea? Describe it — we read everything.</p>
             <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
@@ -248,7 +248,7 @@
 
           <!-- Report -->
           <div class="pp-divider"></div>
-          <div class="pp-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:16px;">
+          <div class="pp-label pp-label-section" style="display:flex;align-items:center;justify-content:space-between;padding-right:16px;">
             Report
             <div class="req-type-pills" id="reportTypePills" style="margin:0;">
               <button class="req-type-pill active" data-rtype="bug">Bug</button>
@@ -272,8 +272,6 @@
             <p class="req-sub" style="padding:0;margin-bottom:10px;">If Veyra has been useful, consider buying me a drink. It keeps the servers running.</p>
             <div class="support-donate-links" style="padding:0;">
               <a class="support-donate-btn" href="https://buymeacoffee.com" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
-              <a class="support-donate-btn" href="https://ko-fi.com" target="_blank" rel="noopener">Ko-fi</a>
-              <a class="support-donate-btn" href="https://upi://pay" target="_blank" rel="noopener">UPI</a>
             </div>
           </div>
 
@@ -348,23 +346,30 @@
       </div>
 
       <!-- Skills Card -->
-      <div class="card skills-main" id="sec-skills">
-        <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_skills">Skills</h2>
-        </div>
-        <div class="skills-main-list" id="skillsMainList">
-          <div class="skill-loading" style="margin-top:30px;" data-i18n="skills_empty">Open STATS to generate your skill sheet.</div>
-        </div>
-      </div>
+      <div class="skills-wrap page-hidden" id="sec-skills-wrapper">
+        <div class="skills-flip-inner" id="skillsFlipInner">
 
-      <!-- Achievements Card -->
-      <div class="card achievements-main" id="sec-achievements">
-        <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_work">Achievements</h2>
-          <button class="icon-btn" id="newAchievementBtn" title="Add achievement">+</button>
-        </div>
-        <div class="achievements-list" id="achievementsList">
-          <div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>
+          <div class="card skills-main" id="sec-skills">
+            <div class="card-top-bar">
+              <h2 class="card-title" data-i18n="card_skills">Skills</h2>
+              <button class="skills-flip-btn" id="skillsFlipBtn">Achievements →</button>
+            </div>
+            <div class="skills-main-list" id="skillsMainList">
+              <div class="skill-loading" style="margin-top:30px;" data-i18n="skills_empty">Open STATS to generate your skill sheet.</div>
+            </div>
+          </div>
+
+          <div class="card achievements-main" id="sec-achievements">
+            <div class="card-top-bar">
+              <h2 class="card-title" data-i18n="card_work">Achievements</h2>
+              <button class="skills-flip-btn" id="skillsFlipBackBtn">← Skills</button>
+              <button class="icon-btn" id="newAchievementBtn" title="Add achievement">+</button>
+            </div>
+            <div class="achievements-list" id="achievementsList">
+              <div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -461,12 +466,13 @@
 
       <!-- Habits card — flippable: front=manage+today, back=30-day graph -->
       <div class="card habits-card full-row" id="sec-habits">
-        <div class="habits-inner">
+        <div class="habits-inner" id="habitFlipInner">
 
-          <!-- Panel 1: Manage habits -->
-          <div class="habit-panel">
+          <!-- Front: Add & manage habits -->
+          <div class="habit-panel habit-panel-front habit-front">
             <div class="habit-panel-header">
               <span class="card-title" data-i18n="card_habits">Habits</span>
+              <button class="habit-flip-btn" id="habitFlipBtn">Today →</button>
             </div>
             <div class="habit-add-row">
               <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
@@ -477,10 +483,11 @@
 
           <div class="habit-divider"></div>
 
-          <!-- Panel 2: Today -->
-          <div class="habit-panel">
+          <!-- Back: Today's tracker -->
+          <div class="habit-panel habit-panel-back">
             <div class="habit-panel-header">
               <span class="card-title">Today</span>
+              <button class="habit-flip-btn" id="habitFlipBackBtn">← Back</button>
               <span class="habit-today-date" id="habitTodayDate"></span>
             </div>
             <ul class="habit-today-list" id="habitTodayList"></ul>
@@ -1016,6 +1023,16 @@
     });
   })();
 
+  // Skills / Achievements flip (mobile only — CSS controls 3D)
+  (function() {
+    var inner = document.getElementById('skillsFlipInner');
+    var btn   = document.getElementById('skillsFlipBtn');
+    var back  = document.getElementById('skillsFlipBackBtn');
+    if (!inner) return;
+    if (btn)  btn.addEventListener('click',  function() { inner.classList.add('flipped'); });
+    if (back) back.addEventListener('click', function() { inner.classList.remove('flipped'); });
+  })();
+
   // Goal card flip
   (function() {
     var inner   = document.getElementById('goalFlipInner');
@@ -1352,6 +1369,10 @@
     <button class="mbb-tab" data-route="social" aria-label="Social">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Social</span>
+    </button>
+    <button class="mbb-tab" data-route="skills" aria-label="Skills">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10l6-6 6 6v10"/><path d="M10 20v-5h4v5"/></svg>
+      <span>Skills</span>
     </button>
     <button class="mbb-menu" id="mbbMenuBtn" aria-label="Menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
