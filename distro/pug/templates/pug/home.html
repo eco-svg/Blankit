@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=64">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=65">
 </head>
 <body>
 
@@ -542,57 +542,72 @@
       </div>
 
       <!-- Request a Feature -->
-      <!-- Stats tab -->
-      <div class="card full-row sec-stats-card page-hidden" id="sec-stats">
-        <div class="stats-content">
+      <!-- Stats tab — wrapper: rank guide card + stat sheet card -->
+      <div class="stats-wrap page-hidden" id="sec-stats-wrapper">
+        <div class="stats-flip-inner" id="statsFlipInner">
 
-          <!-- Rank Guide -->
-          <div class="stats-rank-guide">
-            <div class="stats-skills-header">RANK GUIDE</div>
-            <div class="pp-rank-grid" style="padding:4px 0 12px;">
-              <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
-              <div class="pp-rank-row"><span style="color:#ffb700;">S</span><span>Top 0.001% globally</span></div>
-              <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
-              <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
-              <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
-              <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
-              <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
-              <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
-              <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
-              <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
+          <!-- Card 1 (desktop first / mobile back): Rank Guide -->
+          <div class="card sec-rank-card" id="sec-rank-guide">
+            <div class="card-top-bar">
+              <h2 class="card-title">Rank Guide</h2>
+              <button class="stats-flip-btn" id="statsFlipBackBtn">← Stats</button>
+            </div>
+            <div class="rank-guide-scroll">
+              <div class="pp-rank-grid" style="padding:8px 4px 16px;">
+                <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
+                <div class="pp-rank-row"><span style="color:#ffb700;">S</span><span>Top 0.001% globally</span></div>
+                <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
+                <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
+                <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
+                <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
+                <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
+                <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
+                <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
+                <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
+              </div>
             </div>
           </div>
 
-          <div class="stats-sheet-header">
-            <div class="stats-sheet-identity">
-              <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.8rem;padding:2px 9px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
-              <span class="stats-sheet-username logo">{{ username }}</span>
-            </div>
-            <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.72rem;padding:4px 12px;">↻ Re-analyze</button>
-          </div>
+          <!-- Card 2 (desktop second / mobile front): Stat Sheet -->
+          <div class="card sec-stats-card" id="sec-stats">
+            <div class="stats-content">
 
-          <div class="stats-field">
-            <span class="stats-field-label" data-i18n="stats_class">CLASS</span>
-            <span class="stats-field-value" id="statClassName">—</span>
-          </div>
+              <div class="stats-sheet-header">
+                <div class="stats-sheet-identity">
+                  <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.8rem;padding:2px 9px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
+                  <span class="stats-sheet-username logo">{{ username }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.72rem;padding:4px 12px;">↻ Re-analyze</button>
+                  <button class="stats-flip-btn" id="statsFlipBtn">Guide →</button>
+                </div>
+              </div>
 
-          <div class="stats-field">
-            <span class="stats-field-label" data-i18n="stats_personality">PERSONALITY</span>
-            <div>
-              <span class="stats-field-value" id="statPersonality">—</span>
-              <div class="stats-field-desc" id="statPersonalityDesc"></div>
-            </div>
-          </div>
+              <div class="stats-field">
+                <span class="stats-field-label" data-i18n="stats_class">CLASS</span>
+                <span class="stats-field-value" id="statClassName">—</span>
+              </div>
 
-          <div class="stats-field stats-field-bio">
-            <span class="stats-field-label">BIO</span>
-            <div class="stats-field-desc" id="statBio"></div>
-          </div>
+              <div class="stats-field">
+                <span class="stats-field-label" data-i18n="stats_personality">PERSONALITY</span>
+                <div>
+                  <span class="stats-field-value" id="statPersonality">—</span>
+                  <div class="stats-field-desc" id="statPersonalityDesc"></div>
+                </div>
+              </div>
 
-          <div class="stats-skills-section">
-            <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
-            <div id="statSkillsList" class="skills-list">
-              <div class="skill-loading">Scanning data...</div>
+              <div class="stats-field stats-field-bio">
+                <span class="stats-field-label">BIO</span>
+                <div class="stats-field-desc" id="statBio"></div>
+              </div>
+
+              <div class="stats-skills-section">
+                <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
+                <div id="statSkillsList" class="skills-list">
+                  <div class="skill-loading">Scanning data...</div>
+                </div>
+              </div>
+
             </div>
           </div>
 
@@ -1021,6 +1036,16 @@
         s.addEventListener('click', function() { applyTheme(s.dataset.theme); });
       });
     });
+  })();
+
+  // Stats / Rank Guide flip (mobile only — CSS controls 3D)
+  (function() {
+    var inner = document.getElementById('statsFlipInner');
+    var btn   = document.getElementById('statsFlipBtn');
+    var back  = document.getElementById('statsFlipBackBtn');
+    if (!inner) return;
+    if (btn)  btn.addEventListener('click',  function() { inner.classList.add('flipped'); });
+    if (back) back.addEventListener('click', function() { inner.classList.remove('flipped'); });
   })();
 
   // Skills / Achievements flip (mobile only — CSS controls 3D)

@@ -8,7 +8,7 @@
     'request':  ['sec-profile'],
     'support':  ['sec-profile'],
     'profile':  ['sec-profile'],
-    'stats':    ['sec-stats'],
+    'stats':    ['sec-stats-wrapper'],
   };
 
   const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);

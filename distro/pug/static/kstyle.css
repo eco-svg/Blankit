@@ -1984,6 +1984,21 @@ div.infinite-canvas video {
     max-height: 560px;
 }
 
+/* Stats wrapper — transparent on desktop, flip card on mobile */
+.stats-wrap { display: contents; }
+.stats-flip-inner { display: contents; }
+.stats-flip-btn { display: none; }
+
+/* Rank Guide card (desktop) */
+.sec-rank-card {
+  background: rgba(8,6,4,0.82) !important;
+  border-color: rgba(212,165,116,0.16) !important;
+  height: auto;
+  min-height: 460px;
+  overflow-y: auto;
+}
+.rank-guide-scroll { padding: 4px 16px 20px; }
+
 /* Skills/Achievements wrapper — transparent on desktop, flip card on mobile */
 .skills-wrap { display: contents; }
 .skills-flip-inner { display: contents; }
@@ -4459,6 +4474,35 @@ button.nav-pill:not(.btn-ghost):hover {
     gap: 6px;
   }
   .infinite-canvas { padding-bottom: 70px; font-size: 1rem; }
+
+  /* ── Stats: flip card on mobile ── */
+  .stats-wrap {
+    display: block;
+    height: 620px;
+    perspective: 1200px;
+  }
+  .stats-flip-inner {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .stats-flip-inner.flipped { transform: rotateY(180deg); }
+  #sec-stats, #sec-rank-guide {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow-y: auto;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+  #sec-rank-guide { transform: rotateY(180deg); }
+  .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
   /* ── Habits: flip card on mobile ── */
   .habits-card { perspective: 1200px; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; }
