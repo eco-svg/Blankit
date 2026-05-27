@@ -147,6 +147,8 @@ function updateDistroInfo(distro) {
 function updateDistroLabels(distro) {
   document.getElementById('loginDistroLabel').textContent    = distro;
   document.getElementById('registerDistroLabel').textContent = distro;
+  const mcd = document.getElementById('mobileConDistro');
+  if (mcd) mcd.textContent = distro;
 }
 
 /* ══════════════════════════════
@@ -169,6 +171,31 @@ if (savedLocked && DISTRO_KEYS.includes(savedLocked)) {
   showCard(idx, 1);
   lockDistro(savedLocked);
 }
+
+/* ══════════════════════════════
+   MOBILE TWO-STEP FLOW
+══════════════════════════════ */
+(function () {
+  const conBtn  = document.getElementById('mobileConBtn');
+  const backBtn = document.getElementById('mobileBackBtn');
+  const main    = document.querySelector('.main');
+  if (!conBtn || !backBtn || !main) return;
+
+  // Locked users skip straight to auth on mobile
+  if (isLocked) main.classList.add('step-auth');
+
+  conBtn.addEventListener('click', function () {
+    main.classList.add('step-auth');
+    typeCmd(`auth --mode=login distro=${DISTRO_KEYS[currentIndex]}`);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  backBtn.addEventListener('click', function () {
+    main.classList.remove('step-auth');
+    typeCmd('select_distro --interactive');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
 
 /* ══════════════════════════════
    TAB SWITCHER
