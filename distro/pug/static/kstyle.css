@@ -313,7 +313,7 @@ body.header-hidden .l-bar {
 .r-bar::-webkit-scrollbar { width: 0; }
 
 .r-card {
-  background: rgba(255,255,255,0.10);
+  background: rgba(10, 8, 6, 0.68);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255,255,255,0.08);
@@ -454,8 +454,7 @@ body.header-hidden .l-bar {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   animation: none !important;
-  flex: 1;
-  min-height: 200px;
+  flex: 0 0 300px;
 }
 .goal-flip-card:hover { transform: none; }
 
@@ -499,14 +498,12 @@ body.header-hidden .l-bar {
 
 /* ── Groq quick-ask card ────────────────────────────── */
 .r-groq-card {
-  flex: 0 0 auto;
-  min-height: 72px;
-  transition: min-height 0.25s ease;
+  flex: 1;
+  min-height: 80px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-.r-groq-card.r-groq-expanded { min-height: 160px; }
 
 .r-groq-response {
   flex: 1;

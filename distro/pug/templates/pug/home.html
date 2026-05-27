@@ -722,7 +722,6 @@
       if (!q) return;
       input.value = '';
       response.innerHTML = '<span class="r-groq-thinking">thinking…</span>';
-      if (card) card.classList.add('r-groq-expanded');
       fetch('/pug/api/blinkbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
