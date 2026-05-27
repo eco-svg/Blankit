@@ -514,16 +514,37 @@ body.header-hidden .l-bar {
   gap: 8px;
 }
 
-.r-groq-response {
+.r-groq-messages {
   flex: 1;
-  font-size: 0.74rem;
-  color: var(--text);
-  line-height: 1.5;
   overflow-y: auto;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 2px 0;
 }
-.r-groq-placeholder { color: var(--text-dim); opacity: 0.4; font-size: 0.72rem; }
-.r-groq-thinking { color: var(--text-dim); opacity: 0.55; font-style: italic; font-size: 0.72rem; }
+.r-groq-placeholder { color: var(--text-dim); opacity: 0.35; font-size: 0.72rem; padding: 2px 0; }
+.r-groq-bubble {
+  font-size: 0.74rem;
+  line-height: 1.5;
+  padding: 6px 9px;
+  border-radius: 10px;
+  max-width: 90%;
+  word-break: break-word;
+}
+.r-groq-user {
+  align-self: flex-end;
+  background: rgba(255,255,255,0.08);
+  color: var(--text);
+  border-bottom-right-radius: 3px;
+}
+.r-groq-ai {
+  align-self: flex-start;
+  background: rgba(74,122,170,0.15);
+  color: var(--text);
+  border-bottom-left-radius: 3px;
+}
+.r-groq-thinking { opacity: 0.5; font-style: italic; }
 
 .r-groq-input-row {
   display: flex;

@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=43">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=44">
 </head>
 <body>
 
@@ -409,8 +409,13 @@
 
       <!-- 2. Groq quick-ask card -->
       <div class="r-card r-groq-card" id="rGroqCard">
-        <div class="r-card-header">Quick Ask</div>
-        <div class="r-groq-response" id="rGroqResponse"><span class="r-groq-placeholder">Ask anything from the web…</span></div>
+        <div class="r-card-header">
+          Quick Ask
+          <button id="rGroqClearBtn" title="Clear chat" style="font-size:0.65rem;background:none;border:none;color:var(--text-dim);cursor:pointer;opacity:0.5;padding:0 2px;">✕ clear</button>
+        </div>
+        <div class="r-groq-messages" id="rGroqMessages">
+          <div class="r-groq-placeholder">Ask anything…</div>
+        </div>
         <div class="r-groq-input-row">
           <input type="text" id="rGroqInput" placeholder="Ask Groq…" autocomplete="off">
           <button id="rGroqSendBtn">↑</button>
@@ -710,31 +715,80 @@
     if (backBtn) backBtn.addEventListener('click', function() { inner.classList.remove('flipped'); });
   })();
 
-  // Groq quick-ask
+  // Quick Ask — chatbot with history
   (function() {
     var input    = document.getElementById('rGroqInput');
     var sendBtn  = document.getElementById('rGroqSendBtn');
-    var response = document.getElementById('rGroqResponse');
-    var card     = document.getElementById('rGroqCard');
-    if (!input || !sendBtn || !response) return;
+    var clearBtn = document.getElementById('rGroqClearBtn');
+    var messages = document.getElementById('rGroqMessages');
+    if (!input || !sendBtn || !messages) return;
+
+    var history = [];
+
+    function addBubble(text, role) {
+      var el = document.createElement('div');
+      el.className = 'r-groq-bubble r-groq-' + role;
+      el.textContent = text;
+      messages.appendChild(el);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function setThinking(on) {
+      var el = document.getElementById('rGroqThinking');
+      if (on && !el) {
+        el = document.createElement('div');
+        el.id = 'rGroqThinking';
+        el.className = 'r-groq-bubble r-groq-ai r-groq-thinking';
+        el.textContent = 'thinking…';
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight;
+      } else if (!on && el) {
+        el.remove();
+      }
+    }
 
     function ask() {
       var q = input.value.trim();
       if (!q) return;
       input.value = '';
-      response.innerHTML = '<span class="r-groq-thinking">thinking…</span>';
+
+      // Clear placeholder on first message
+      var ph = messages.querySelector('.r-groq-placeholder');
+      if (ph) ph.remove();
+
+      addBubble(q, 'user');
+      history.push({ role: 'user', content: q });
+      setThinking(true);
+      input.disabled = true;
+      sendBtn.disabled = true;
+
       fetch('/pug/api/blinkbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: q })
+        body: JSON.stringify({ message: q, history: history.slice(-10) })
       })
       .then(function(r) { return r.json(); })
       .then(function(d) {
+        setThinking(false);
         var text = d.answer || d.error || 'No response.';
-        response.textContent = text;
+        addBubble(text, 'ai');
+        history.push({ role: 'assistant', content: text });
       })
-      .catch(function() { response.textContent = 'Error — try again.'; });
+      .catch(function() {
+        setThinking(false);
+        addBubble('Error — try again.', 'ai');
+      })
+      .finally(function() {
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+      });
     }
+
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+      history = [];
+      messages.innerHTML = '<div class="r-groq-placeholder">Ask anything…</div>';
+    });
 
     sendBtn.addEventListener('click', ask);
     input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
