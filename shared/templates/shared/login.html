@@ -153,19 +153,7 @@
 
         <div class="avc-field">
           <label class="avc-label">Date of birth <span class="avc-req">*</span></label>
-          <div style="display:flex;gap:8px;align-items:stretch;">
-            <select id="regDobMonth" class="field-input" style="flex:2;">
-              <option value="">Month</option>
-              <option value="1">January</option><option value="2">February</option>
-              <option value="3">March</option><option value="4">April</option>
-              <option value="5">May</option><option value="6">June</option>
-              <option value="7">July</option><option value="8">August</option>
-              <option value="9">September</option><option value="10">October</option>
-              <option value="11">November</option><option value="12">December</option>
-            </select>
-            <input class="field-input" type="number" id="regDobDay" min="1" max="31" placeholder="Day" style="flex:1;min-width:0;">
-            <input class="field-input" type="number" id="regDobYear" min="1904" max="2099" placeholder="Year" style="flex:1.5;min-width:0;">
-          </div>
+          <input class="field-input" type="text" id="regDob" placeholder="MM / DD / YYYY" maxlength="14" inputmode="numeric" autocomplete="bday">
           <span class="field-err" id="regAgeErr"></span>
         </div>
 

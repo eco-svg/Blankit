@@ -210,21 +210,33 @@ document.querySelectorAll('[data-tab]').forEach(el => {
 });
 
 (function(){
-  var regBtn = document.getElementById('registerBtn');
-  if (!regBtn) return;
+  var regBtn   = document.getElementById('registerBtn');
+  var dobInput = document.getElementById('regDob');
+  if (!regBtn || !dobInput) return;
+
+  dobInput.addEventListener('input', function() {
+    var raw = this.value.replace(/\D/g, '').substring(0, 8);
+    var out = '';
+    if (raw.length > 0) out = raw.substring(0, 2);
+    if (raw.length > 2) out += ' / ' + raw.substring(2, 4);
+    if (raw.length > 4) out += ' / ' + raw.substring(4, 8);
+    this.value = out;
+    checkDob();
+  });
+
   function checkDob() {
-    var m = parseInt(document.getElementById('regDobMonth')?.value, 10);
-    var d = parseInt(document.getElementById('regDobDay')?.value, 10);
-    var y = parseInt(document.getElementById('regDobYear')?.value, 10);
-    if (!m || !d || !y || y < 1904 || y > 2099) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
+    var raw = dobInput.value.replace(/\D/g, '');
+    if (raw.length < 8) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
+    var m = parseInt(raw.substring(0, 2), 10);
+    var d = parseInt(raw.substring(2, 4), 10);
+    var y = parseInt(raw.substring(4, 8), 10);
+    if (!m || m > 12 || !d || d > 31 || y < 1904 || y > 2099) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
     var today = new Date(), born = new Date(y, m - 1, d);
     var age = today.getFullYear() - born.getFullYear() - ((today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) ? 1 : 0);
     var ok = age >= 13 && age <= 120;
     regBtn.style.opacity = ok ? '' : '0.4';
     regBtn.style.pointerEvents = ok ? '' : 'none';
   }
-  ['regDobMonth','regDobDay','regDobYear'].forEach(id => document.getElementById(id)?.addEventListener('change', checkDob));
-  ['regDobMonth','regDobDay','regDobYear'].forEach(id => document.getElementById(id)?.addEventListener('input', checkDob));
   checkDob();
 })();
 setTimeout(() => positionTabLine('login'), 60);
@@ -381,9 +393,10 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
   const confirm  = document.getElementById('regConfirm').value;
-  const dobMonth = parseInt(document.getElementById('regDobMonth')?.value, 10);
-  const dobDay   = parseInt(document.getElementById('regDobDay')?.value,   10);
-  const dobYear  = parseInt(document.getElementById('regDobYear')?.value,  10);
+  const dobRaw   = (document.getElementById('regDob')?.value || '').replace(/\D/g, '');
+  const dobMonth = parseInt(dobRaw.substring(0, 2), 10);
+  const dobDay   = parseInt(dobRaw.substring(2, 4), 10);
+  const dobYear  = parseInt(dobRaw.substring(4, 8), 10);
   const termsOk  = document.getElementById('regTermsCheck')?.checked;
   const ageOk    = document.getElementById('regAgeCheck')?.checked;
   let ok = true;
@@ -394,7 +407,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   if (!password || password.length < 8)         { setErr('regPasswordErr', 'min 8 chars'); ok = false; }
   if (password !== confirm)                     { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
 
-  if (!dobMonth || !dobDay || !dobYear || dobYear < 1904 || dobYear > 2099 || dobDay < 1 || dobDay > 31) {
+  if (dobRaw.length < 8 || !dobMonth || dobMonth > 12 || !dobDay || dobDay > 31 || dobYear < 1904 || dobYear > 2099) {
     setErr('regAgeErr', 'please enter your date of birth'); ok = false;
   } else {
     const born  = new Date(dobYear, dobMonth - 1, dobDay);
