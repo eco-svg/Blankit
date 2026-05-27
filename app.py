@@ -72,20 +72,13 @@ def _migrate_schema():
     if 'users' in inspector.get_table_names():
         user_cols = {c['name'] for c in inspector.get_columns('users')}
         with db.engine.begin() as conn:
-            if 'age' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN age INTEGER'))
-            if 'student_status' not in user_cols:
-                conn.execute(text("ALTER TABLE users ADD COLUMN student_status VARCHAR(20) DEFAULT 'none'"))
-            if 'student_school' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN student_school VARCHAR(200)'))
-            if 'student_location' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN student_location VARCHAR(200)'))
-            if 'student_grade' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN student_grade VARCHAR(50)'))
-            if 'student_submitted_at' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN student_submitted_at TIMESTAMP'))
-            if 'student_id_url' not in user_cols:
-                conn.execute(text('ALTER TABLE users ADD COLUMN student_id_url VARCHAR(500)'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER'))
+            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS student_status VARCHAR(20) DEFAULT 'none'"))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_school VARCHAR(200)'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_location VARCHAR(200)'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_grade VARCHAR(50)'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_submitted_at TIMESTAMP'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_id_url VARCHAR(500)'))
 
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:
