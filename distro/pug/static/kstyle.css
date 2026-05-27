@@ -1144,7 +1144,7 @@ body.header-hidden .l-bar {
   padding: 16px 16px 36px;
   position: relative;
   
-  height: 850px;
+  height: 700px;
   align-self: start;
   
   scroll-margin-top: calc(var(--header-h) + 40px); 
