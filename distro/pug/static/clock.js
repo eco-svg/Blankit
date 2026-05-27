@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Weather ──
     function fetchWeather(lat, lon) {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+        const url = `/pug/api/weather?lat=${lat}&lon=${lon}`;
 
         fetch(url)
         .then(res => res.json())

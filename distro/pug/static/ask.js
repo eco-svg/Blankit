@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const aiInput     = document.getElementById('aiInput');
     const sendBtn     = document.getElementById('sendAiBtn');
 
+    if (!chatWindow || !aiInput || !sendBtn) return;
+
     // How many prompts the user has used this session
     // This is the "10-prompt cache" mentioned in the UI
     let promptCount = 0;

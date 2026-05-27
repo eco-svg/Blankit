@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pollTimer = setInterval(() => {
             if (currentOtherId) loadMessages();
             else loadConvs();
-        }, 4000);
+        }, 15000);
     }
 
     function stopPolling() {

@@ -103,24 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     async function fetchWisdom(el) {
-        // Flip a coin: 50% chance for a quote, 50% chance for a fact
-        const isFact = Math.random() > 0.5;
-        
         try {
-            if (isFact) {
-                // Fetch a random fact
-                const res = await fetch('https://uselessfacts.jsph.pl/api/v2/facts/random');
-                const data = await res.json();
-                el.textContent = data.text;
-            } else {
-                // Fetch a random quote
-                const res = await fetch('https://dummyjson.com/quotes/random');
-                const data = await res.json();
-                el.textContent = `"${data.quote}" - ${data.author}`;
-            }
+            const res = await fetch('/pug/api/wisdom');
+            const data = await res.json();
+            if (data.text) { el.textContent = data.text; return; }
+            throw new Error('empty');
         } catch (err) {
-            // If the API fails or WiFi is down, pull a random entry from our offline mix
-            console.warn("Wisdom fetch failed, using built-in offline mix.");
             const fallback = offlineMix[Math.floor(Math.random() * offlineMix.length)];
             el.textContent = fallback;
         }

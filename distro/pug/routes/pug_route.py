@@ -2054,6 +2054,44 @@ def habits_history():
     return jsonify(result)
 
 
+@pug_bp.route('/pug/api/weather', methods=['GET'])
+def proxy_weather():
+    err = login_required_api()
+    if err: return err
+    import requests as req
+    lat = request.args.get('lat', '30.7333')
+    lon = request.args.get('lon', '76.7794')
+    try:
+        r = req.get(
+            f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true',
+            timeout=8
+        )
+        r.raise_for_status()
+        return jsonify(r.json())
+    except Exception:
+        return jsonify({'error': 'unavailable'}), 502
+
+
+@pug_bp.route('/pug/api/wisdom', methods=['GET'])
+def proxy_wisdom():
+    err = login_required_api()
+    if err: return err
+    import requests as req
+    import random
+    try:
+        if random.random() > 0.5:
+            r = req.get('https://uselessfacts.jsph.pl/api/v2/facts/random', timeout=8)
+            r.raise_for_status()
+            return jsonify({'text': r.json().get('text', '')})
+        else:
+            r = req.get('https://dummyjson.com/quotes/random', timeout=8)
+            r.raise_for_status()
+            d = r.json()
+            return jsonify({'text': f'"{d["quote"]}" — {d["author"]}'})
+    except Exception:
+        return jsonify({'error': 'unavailable'}), 502
+
+
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])
 def blinkbot_debug():
     err = login_required_api()
