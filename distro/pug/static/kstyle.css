@@ -4348,14 +4348,22 @@ button.nav-pill:not(.btn-ghost):hover {
 
   /* Mobile top bar: compact clock widget */
   .clock-widget.stats-integrated {
-    gap: 6px;
-    padding: 4px 8px;
+    width: auto;
+    height: 40px;
+    padding: 0;
   }
+  .cw-info { padding: 4px 10px; }
   .cw-row:last-child { display: none; }
   .cw-time  { font-size: 0.78rem; }
   .cw-weather { display: none; }
   .cw-sep   { display: none; }
-  .stats-btn-inner { padding: 4px 8px; font-size: 0.65rem; }
+  .stats-btn-inner {
+    width: 68px;
+    height: 100%;
+    font-size: 0.6rem;
+    gap: 2px;
+  }
+  .stats-btn-inner .stats-icon svg { width: 11px; height: 11px; }
 
   .playground {
     margin-right: 0;
@@ -4377,15 +4385,23 @@ button.nav-pill:not(.btn-ghost):hover {
     grid-column: 1 !important;
     grid-row: 1 !important;
     height: 50px !important;
+    min-height: 0 !important;
   }
-
-  .habits-card { height: 580px; }
 
   .dream-input {
     min-width: 0;
-    width: calc(100% - 40px);
-    font-size: 1.05rem;
+    width: 100%;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    letter-spacing: 0.08em;
   }
+
+  .dream-text {
+    font-size: 1rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  .habits-card { height: 580px; }
 
   .adbox-row { flex-wrap: wrap; height: auto; }
   .add1,.add2,.add3,.add4,.add5 {
