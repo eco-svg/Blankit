@@ -5,6 +5,8 @@
   const flipInner   = document.getElementById('habitFlipInner');
   const flipBtn     = document.getElementById('habitFlipBtn');
   const flipBackBtn = document.getElementById('habitFlipBackBtn');
+  const pulseBtn     = document.getElementById('habitPulseBtn');
+  const pulseBackBtn = document.getElementById('habitPulseBackBtn');
   const habitInput  = document.getElementById('habitNameInput');
   const habitAddBtn = document.getElementById('habitAddBtn');
   const manageList  = document.getElementById('habitManageList');
@@ -18,16 +20,23 @@
     });
   }
 
-  // ── Flip ─────────────────────────────────────────────
-  const habitFront = document.querySelector('.habit-front');
+  // ── Mobile flip: manage ↔ today inside front face ────
+  const faceFront = document.getElementById('habitFaceFront');
   function flip(toBack) {
-    if (!flipInner) return;
-    flipInner.classList.toggle('flipped', toBack);
-    if (habitFront) habitFront.style.visibility = toBack ? 'hidden' : '';
-    if (toBack) window.dispatchEvent(new Event('habitPulseFlipped'));
+    if (!faceFront) return;
+    faceFront.classList.toggle('flipped', toBack);
   }
   if (flipBtn)     flipBtn.addEventListener('click',     () => flip(true));
   if (flipBackBtn) flipBackBtn.addEventListener('click', () => flip(false));
+
+  // ── Desktop flip: front face ↔ pulse back face ───────
+  function flipToPulse(toBack) {
+    if (!flipInner) return;
+    flipInner.classList.toggle('pulse-flipped', toBack);
+    if (toBack) window.dispatchEvent(new Event('habitPulseFlipped'));
+  }
+  if (pulseBtn)     pulseBtn.addEventListener('click',     () => flipToPulse(true));
+  if (pulseBackBtn) pulseBackBtn.addEventListener('click', () => flipToPulse(false));
 
   // ── Load & render ─────────────────────────────────────
   async function loadHabits() {

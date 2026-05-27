@@ -2026,8 +2026,10 @@ div.infinite-canvas video {
 .skills-flip-inner > .card { flex: 1; min-width: 0; }
 .skills-flip-btn { display: none; }
 
-/* Habits flip buttons — hidden on desktop */
+/* Habits — flip buttons: hidden by default; selectively shown via desk/mob classes */
 .habit-flip-btn { display: none; }
+.habit-desk-only { display: inline-flex; }
+.habit-mob-only  { display: none; }
 
 /* Habit Pulse section — hidden on desktop, shown on mobile habits tab */
 .habit-pulse-section { display: none; }
@@ -4051,14 +4053,34 @@ button.nav-pill:not(.btn-ghost):hover {
   overflow: hidden !important;
   padding: 0;
   height: 680px;
+  perspective: 1200px;
 }
 .habits-card:hover { transform: none; }
 
 .habits-inner {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  position: relative;
   width: 100%;
   height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.habits-inner.pulse-flipped { transform: rotateY(180deg); }
+
+.habit-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+.habit-front { flex-direction: row; }
+.habit-back {
+  transform: rotateY(180deg);
+  flex-direction: column;
+  background: rgba(10,8,6,0.5);
 }
 
 .habit-panel {
@@ -4066,12 +4088,13 @@ button.nav-pill:not(.btn-ghost):hover {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
   min-height: 0;
 }
 
 .habit-divider {
-  width: 100%;
-  height: 1px;
+  width: 1px;
+  height: 100%;
   background: rgba(255,255,255,0.06);
   flex-shrink: 0;
 }
