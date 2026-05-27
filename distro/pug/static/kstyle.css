@@ -476,6 +476,7 @@ body.header-hidden .l-bar {
 }
 .profile-tab-rank {
   flex: 1;
+  max-width: 400px;
   padding: 8px 8px 16px 32px;
   overflow-y: auto;
 }
