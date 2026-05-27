@@ -262,8 +262,9 @@ def create_app():
     @app.route('/under13')
     def under13(): return render_template('shared/under13.html')
 
-    _ensure_blinkbot_model()
-    _ensure_buddybot_model()
+    if os.environ.get('ENABLE_LOCAL_INFERENCE', 'auto').lower() != 'false':
+        _ensure_blinkbot_model()
+        _ensure_buddybot_model()
 
     if (os.environ.get('MINIO_ACCESS_KEY', 'minioadmin') == 'minioadmin'
             and os.environ.get('FLASK_ENV') != 'development'):
