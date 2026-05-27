@@ -2059,8 +2059,13 @@ def proxy_weather():
     err = login_required_api()
     if err: return err
     import requests as req
-    lat = request.args.get('lat', '30.7333')
-    lon = request.args.get('lon', '76.7794')
+    try:
+        lat = float(request.args.get('lat', '30.7333'))
+        lon = float(request.args.get('lon', '76.7794'))
+        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+            raise ValueError('out of range')
+    except (ValueError, TypeError):
+        return jsonify({'error': 'invalid coordinates'}), 400
     try:
         r = req.get(
             f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true',
@@ -2087,7 +2092,10 @@ def proxy_wisdom():
             r = req.get('https://dummyjson.com/quotes/random', timeout=8)
             r.raise_for_status()
             d = r.json()
-            return jsonify({'text': f'"{d["quote"]}" — {d["author"]}'})
+            q, a = d.get('quote', ''), d.get('author', '')
+            if not q:
+                raise ValueError('empty quote')
+            return jsonify({'text': f'"{q}" — {a}'})
     except Exception:
         return jsonify({'error': 'unavailable'}), 502
 

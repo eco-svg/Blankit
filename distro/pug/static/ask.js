@@ -75,13 +75,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
             removeTyping();
 
-            console.log("Flask sent this back:", data);
-
-
             if (data.answer) {
                 addMessage(data.answer, 'ai');
             } else if (data.error) {
                 addMessage(`Error: ${data.error}`, 'ai');
+            } else {
+                addMessage('No response — try again.', 'ai');
             }
 
         } catch (err) {

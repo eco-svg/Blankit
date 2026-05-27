@@ -251,6 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!body && !pendingMedia) return;
         if (!currentOtherId) return;
         const mediaKey = pendingMedia?.key || '';
+        const savedBody = body;
         dmInput.value = '';
         clearMediaPreview();
         pendingMedia = null;
@@ -262,13 +263,17 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(r => r.json())
         .then(m => {
-            if (!m.error) {
+            if (m.error) {
+                if (dmInput) dmInput.value = savedBody;
+            } else {
                 lastMsgCount++;
                 dmMessages.appendChild(makeMsg({ ...m, is_mine: true }));
                 dmMessages.scrollTop = dmMessages.scrollHeight;
             }
         })
-        .catch(() => {});
+        .catch(() => {
+            if (dmInput) dmInput.value = savedBody;
+        });
     }
 
     dmSendBtn?.addEventListener('click', sendMsg);

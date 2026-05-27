@@ -266,14 +266,15 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         /* server fallback — Groq */
         showTyping();
-        const r    = await fetch('/pug/api/blinkbot', {
+        const r = await fetch('/pug/api/blinkbot', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
           body:    JSON.stringify({ message: msg, history: history.slice(-12) }),
         });
-        const data = await r.json();
         removeTyping();
-        reply  = data.answer || 'No response — try again.';
+        if (!r.ok) throw new Error(`Server error ${r.status}`);
+        const data = await r.json();
+        reply  = data.answer || data.error || 'No response — try again.';
         source = 'groq';
         addMsg(reply, 'ai', source);
       }
@@ -306,15 +307,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ── Boot sequence ────────────────────────────────────────────── */
   setMode('...');
 
-  const ctx = await fetchContext();
-  if (!ctx) {
-    downloadState.innerHTML = '<p style="padding:20px 0;color:var(--text-dim);font-size:0.75rem;font-family:var(--font-mono);">Could not connect. Refresh to retry.</p>';
+  let ctx, gpuOk, stored;
+  try {
+    ctx = await fetchContext();
+    if (!ctx) {
+      downloadState.innerHTML = '<p style="padding:20px 0;color:var(--text-dim);font-size:0.75rem;font-family:var(--font-mono);">Could not connect. Refresh to retry.</p>';
+      return;
+    }
+    systemPrompt = ctx.system_prompt || '';
+    gpuOk  = await hasWebGPU();
+    stored = store.get();
+  } catch (bootErr) {
+    console.error('[blinkbot] boot error:', bootErr);
+    if (downloadState) downloadState.innerHTML = S.loadError(bootErr?.message || 'Startup failed', 0);
     return;
   }
-  systemPrompt = ctx.system_prompt || '';
-
-  const gpuOk  = await hasWebGPU();
-  const stored = store.get();
 
   /* Case 1: no WebGPU — server only */
   if (!gpuOk) {
