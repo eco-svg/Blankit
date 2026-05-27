@@ -6,6 +6,7 @@
     'social':  ['sec-social', 'sec-comms'],
     'habits':  ['sec-habits'],
     'growth':  [],
+    'profile': ['sec-profile'],
   };
 
   const DEFAULT = 'notes';
@@ -45,6 +46,9 @@
 
     if (push) history.pushState({ route }, '', '#' + route);
   }
+
+  // Expose navigate globally so other scripts can trigger tab switches
+  window._veyraNavigate = navigate;
 
   document.addEventListener('DOMContentLoaded', function () {
     // Wire nav links

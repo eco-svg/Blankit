@@ -25,78 +25,14 @@
   <header class="main-header" id="mainHeader">
     <div class="header-stars" id="headerStars"></div>
     <div class="header-left">
-      <!-- Avatar triggers profile popup -->
+      <!-- Avatar navigates to profile tab -->
       <div class="avatar-wrap">
         <div class="user-avatar" id="profileTrigger">
           <span class="avatar-initial">{{ username[0]|upper }}</span>
           <span class="status-dot" id="statusDot" data-status="online" title="Online"></span>
         </div>
-        <!-- Profile popup -->
-        <div class="profile-popup hidden" id="profilePopup">
-          <!-- Rank ladder legend -->
-          <div class="pp-rank-legend">
-            <div class="pp-label" style="margin-bottom:4px;" data-i18n="pp_rank_guide">Rank Guide</div>
-            <div class="pp-rank-row"><span style="color:#ffd700;font-weight:700;">S+</span> <span data-i18n="pp_rank_s_plus">Beyond world record</span></div>
-            <div class="pp-rank-row"><span style="color:#ffb700;">S</span> <span data-i18n="pp_rank_s">Top 0.001%</span></div>
-            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span> <span data-i18n="pp_rank_s_sm">Top 0.01–0.1%</span></div>
-            <div class="pp-rank-row"><span style="color:#ff8c42;">A+/A/A-</span> <span data-i18n="pp_rank_a">Top 1–10%</span></div>
-            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span> <span data-i18n="pp_rank_bplus">Top 10–20%</span></div>
-            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span> <span data-i18n="pp_rank_b">Top 20–40%</span></div>
-            <div class="pp-rank-row"><span style="color:#78b878;">C+/C/C-</span> <span data-i18n="pp_rank_c">Top 40–70%</span></div>
-            <div class="pp-rank-row"><span style="color:#888;">D+/D/D-</span> <span data-i18n="pp_rank_d">Top 70–99%</span></div>
-            <div class="pp-rank-row"><span style="color:#c06030;">E</span> <span data-i18n="pp_rank_e">Beginner in field</span></div>
-            <div class="pp-rank-row"><span style="color:#803010;">F</span> <span data-i18n="pp_rank_f">Not started</span></div>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-item" id="ppChangeAvatar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"></circle><path d="M3 21v-1a9 9 0 0 1 18 0v1"></path></svg>
-            <span data-i18n="pp_change_avatar">Change Avatar</span>
-            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-          </div>
-          <div class="pp-item" id="ppChangeUsername">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span data-i18n="pp_change_username">Change Username</span>
-          </div>
-          <div class="pp-item" id="ppChangePassword">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span data-i18n="pp_change_password">Change Password</span>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-label" style="margin-top:6px;" data-i18n="pp_app_lang">App Language</div>
-          <div style="padding:2px 16px 8px;">
-            <select id="ppAppLangSelect" class="pp-lang-select">
-              <option value="en">English</option>
-              <option value="hi">हिन्दी</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="ja">日本語</option>
-              <option value="zh">中文</option>
-              <option value="ar">العربية</option>
-              <option value="pt">Português</option>
-              <option value="ru">Русский</option>
-              <option value="ko">한국어</option>
-              <option value="it">Italiano</option>
-              <option value="tr">Türkçe</option>
-              <option value="nl">Nederlands</option>
-              <option value="pl">Polski</option>
-              <option value="bn">বাংলা</option>
-            </select>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-item" id="ppStudentVerify">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            <span id="ppStudentLabel">Verify Student Status</span>
-          </div>
-          <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign Out</span>
-          </button>
-          <div class="pp-item pp-danger" id="ppDeleteAccount">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path></svg>
-            <span data-i18n="pp_delete_account">Delete Account</span>
-          </div>
-        </div>
+        <!-- Empty stub kept so profile.js closePopup() doesn't error -->
+        <div class="profile-popup hidden" id="profilePopup" style="display:none!important;"></div>
       </div>
       <div class="greeting">
         <span class="greeting-hey">Hey !</span>
@@ -151,6 +87,88 @@
 
     <main class="playground">
 
+      <!-- Profile tab — full-width, hidden by router until avatar clicked -->
+      <div class="card full-row sec-profile-card page-hidden" id="sec-profile">
+        <div class="profile-tab-cols">
+          <!-- Left: settings -->
+          <div class="profile-tab-settings">
+            <div class="profile-tab-avatar-row">
+              <div class="user-avatar profile-tab-avatar" id="profileTabAvatar">
+                <span class="avatar-initial">{{ username[0]|upper }}</span>
+              </div>
+              <div>
+                <div class="profile-tab-username">{{ username }}</div>
+                <div class="profile-tab-sub" id="headerRankBadge2"></div>
+              </div>
+            </div>
+            <div class="pp-divider"></div>
+            <div class="pp-item" id="ppChangeAvatar">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"></circle><path d="M3 21v-1a9 9 0 0 1 18 0v1"></path></svg>
+              <span data-i18n="pp_change_avatar">Change Avatar</span>
+              <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+            </div>
+            <div class="pp-item" id="ppChangeUsername">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span data-i18n="pp_change_username">Change Username</span>
+            </div>
+            <div class="pp-item" id="ppChangePassword">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              <span data-i18n="pp_change_password">Change Password</span>
+            </div>
+            <div class="pp-divider"></div>
+            <div class="pp-label" style="padding:6px 16px 4px;" data-i18n="pp_app_lang">App Language</div>
+            <div style="padding:2px 16px 10px;">
+              <select id="ppAppLangSelect" class="pp-lang-select" style="width:100%;max-width:220px;">
+                <option value="en">English</option>
+                <option value="hi">हिन्दी</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="ja">日本語</option>
+                <option value="zh">中文</option>
+                <option value="ar">العربية</option>
+                <option value="pt">Português</option>
+                <option value="ru">Русский</option>
+                <option value="ko">한국어</option>
+                <option value="it">Italiano</option>
+                <option value="tr">Türkçe</option>
+                <option value="nl">Nederlands</option>
+                <option value="pl">Polski</option>
+                <option value="bn">বাংলা</option>
+              </select>
+            </div>
+            <div class="pp-divider"></div>
+            <div class="pp-item" id="ppStudentVerify">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              <span id="ppStudentLabel">Verify Student Status</span>
+            </div>
+            <div class="pp-divider"></div>
+            <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Sign Out</span>
+            </button>
+            <div class="pp-item pp-danger" id="ppDeleteAccount">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path></svg>
+              <span data-i18n="pp_delete_account">Delete Account</span>
+            </div>
+          </div>
+          <!-- Right: rank guide -->
+          <div class="profile-tab-rank">
+            <div class="pp-label" style="margin-bottom:10px;" data-i18n="pp_rank_guide">Rank Guide</div>
+            <div class="pp-rank-row"><span style="color:#ffd700;font-weight:700;">S+</span> <span data-i18n="pp_rank_s_plus">Beyond world record</span></div>
+            <div class="pp-rank-row"><span style="color:#ffb700;">S</span> <span data-i18n="pp_rank_s">Top 0.001%</span></div>
+            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span> <span data-i18n="pp_rank_s_sm">Top 0.01–0.1%</span></div>
+            <div class="pp-rank-row"><span style="color:#ff8c42;">A+/A/A-</span> <span data-i18n="pp_rank_a">Top 1–10%</span></div>
+            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span> <span data-i18n="pp_rank_bplus">Top 10–20%</span></div>
+            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span> <span data-i18n="pp_rank_b">Top 20–40%</span></div>
+            <div class="pp-rank-row"><span style="color:#78b878;">C+/C/C-</span> <span data-i18n="pp_rank_c">Top 40–70%</span></div>
+            <div class="pp-rank-row"><span style="color:#888;">D+/D/D-</span> <span data-i18n="pp_rank_d">Top 70–99%</span></div>
+            <div class="pp-rank-row"><span style="color:#c06030;">E</span> <span data-i18n="pp_rank_e">Beginner in field</span></div>
+            <div class="pp-rank-row"><span style="color:#803010;">F</span> <span data-i18n="pp_rank_f">Not started</span></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Long-term Dream — compact full-row card -->
       <div class="card dream dream-standalone" id="sec-dream">
         <div id="dreamContainer" class="dream-inner"></div>
@@ -201,20 +219,20 @@
         </div>
       </div>
 
+      <!-- Quick Ask — main chat card (swapped from rbar) -->
       <div class="card buddybot-main" id="sec-blinkbot" style="display:flex;flex-direction:column;">
         <div class="card-top-bar">
-          <h2 class="card-title" style="color:#4a7aaa;">BlinkBot</h2>
-          <span id="blinkModeLabel" style="font-size:0.58rem;font-family:var(--font-mono);color:var(--text-dim);opacity:0.4;margin-left:auto;letter-spacing:0.05em;"></span>
+          <h2 class="card-title">Quick Ask</h2>
+          <button id="mainGroqClearBtn" style="margin-left:auto;font-size:0.68rem;font-family:var(--font-mono);background:none;border:none;color:var(--text-dim);opacity:0.45;cursor:pointer;">✕ clear</button>
         </div>
-        <div id="blinkDownloadState" style="flex:1;overflow-y:auto;padding:16px 18px;"></div>
-        <div id="blinkChatState" style="display:none;flex:1;flex-direction:column;">
-          <div class="chat-window" id="blinkChatWindow"></div>
-          <div class="chat-input-pill">
-            <input type="text" id="blinkInput" placeholder="Ask BlinkBot..." autocomplete="off">
-            <button class="send-ai-btn" id="sendBlinkBtn" style="background:#4a7aaa;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-          </div>
+        <div class="chat-window" id="mainGroqMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px 16px;">
+          <div style="color:var(--text-dim);opacity:0.35;font-size:0.74rem;">Ask anything…</div>
+        </div>
+        <div class="chat-input-pill">
+          <input type="text" id="mainGroqInput" placeholder="Ask Groq…" autocomplete="off">
+          <button class="send-ai-btn" id="mainGroqSendBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
         </div>
       </div>
 
@@ -407,18 +425,12 @@
         <div class="calendar-days" id="calendarDays"></div>
       </div>
 
-      <!-- 2. Groq quick-ask card -->
-      <div class="r-card r-groq-card" id="rGroqCard">
-        <div class="r-card-header">
-          Quick Ask
-          <button id="rGroqClearBtn" title="Clear chat" style="font-size:0.65rem;background:none;border:none;color:var(--text-dim);cursor:pointer;opacity:0.5;padding:0 2px;">✕ clear</button>
-        </div>
-        <div class="r-groq-messages" id="rGroqMessages">
-          <div class="r-groq-placeholder">Ask anything…</div>
-        </div>
-        <div class="r-groq-input-row">
-          <input type="text" id="rGroqInput" placeholder="Ask Groq…" autocomplete="off">
-          <button id="rGroqSendBtn">↑</button>
+      <!-- 2. BlinkBot — coming soon -->
+      <div class="r-card r-blinkbot-soon" id="rGroqCard">
+        <div class="r-blinkbot-soon-inner">
+          <div class="r-blinkbot-soon-name">BlinkBot</div>
+          <div class="r-blinkbot-soon-badge">Coming Soon</div>
+          <div class="r-blinkbot-soon-sub">On-device AI assistant</div>
         </div>
       </div>
 
@@ -703,6 +715,83 @@
     toggle.addEventListener('click', function() { rbar.classList.contains('open') ? close() : open(); });
     if (bd) bd.addEventListener('click', close);
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+  })();
+
+  // Profile trigger → navigate to profile tab (overrides ani.js popup toggle)
+  document.addEventListener('DOMContentLoaded', function() {
+    var trigger = document.getElementById('profileTrigger');
+    if (!trigger) return;
+    // Remove existing listeners by cloning
+    var fresh = trigger.cloneNode(true);
+    trigger.parentNode.replaceChild(fresh, trigger);
+    fresh.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (window._veyraNavigate) window._veyraNavigate('profile', true);
+    });
+  });
+
+  // Main Quick Ask chatbot
+  (function() {
+    var input    = document.getElementById('mainGroqInput');
+    var sendBtn  = document.getElementById('mainGroqSendBtn');
+    var clearBtn = document.getElementById('mainGroqClearBtn');
+    var messages = document.getElementById('mainGroqMessages');
+    if (!input || !sendBtn || !messages) return;
+
+    var history = [];
+
+    function addBubble(text, role) {
+      var el = document.createElement('div');
+      el.className = 'main-groq-bubble main-groq-' + role;
+      el.textContent = text;
+      messages.appendChild(el);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function setThinking(on) {
+      var el = document.getElementById('mainGroqThinking');
+      if (on && !el) {
+        el = document.createElement('div');
+        el.id = 'mainGroqThinking';
+        el.className = 'main-groq-bubble main-groq-ai main-groq-thinking';
+        el.textContent = 'thinking…';
+        messages.appendChild(el);
+        messages.scrollTop = messages.scrollHeight;
+      } else if (!on && el) { el.remove(); }
+    }
+
+    function ask() {
+      var q = input.value.trim();
+      if (!q) return;
+      input.value = '';
+      var ph = messages.querySelector('div[style]');
+      if (ph && ph.textContent === 'Ask anything…') ph.remove();
+      addBubble(q, 'user');
+      history.push({ role: 'user', content: q });
+      setThinking(true);
+      input.disabled = true; sendBtn.disabled = true;
+      fetch('/pug/api/blinkbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: q, history: history.slice(-10) })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        setThinking(false);
+        var text = d.answer || d.error || 'No response.';
+        addBubble(text, 'ai');
+        history.push({ role: 'assistant', content: text });
+      })
+      .catch(function() { setThinking(false); addBubble('Error — try again.', 'ai'); })
+      .finally(function() { input.disabled = false; sendBtn.disabled = false; input.focus(); });
+    }
+
+    if (clearBtn) clearBtn.addEventListener('click', function() {
+      history = [];
+      messages.innerHTML = '<div style="color:var(--text-dim);opacity:0.35;font-size:0.74rem;">Ask anything…</div>';
+    });
+    sendBtn.addEventListener('click', ask);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
   })();
 
   // Goal card flip
