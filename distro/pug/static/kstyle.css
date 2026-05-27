@@ -4367,10 +4367,6 @@ button.nav-pill:not(.btn-ghost):hover {
   }
   .mbb-profile-nav { display: none; }
 
-  /* Swap to profile sub-nav */
-  .mobile-bottom-bar.profile-mode .mbb-main-nav  { display: none; }
-  .mobile-bottom-bar.profile-mode .mbb-profile-nav { display: flex; }
-
   /* Profile sub-nav buttons (same shape as mbb-tab) */
   .mbb-profile-tab,
   .mbb-profile-back {

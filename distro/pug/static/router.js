@@ -69,9 +69,14 @@
       btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);
     });
 
-    // Swap bottom bar to profile sub-nav or back to main nav
-    const mbb = document.getElementById('mobileBottomBar');
-    if (mbb) mbb.classList.toggle('profile-mode', route === 'profile');
+    // Swap bottom bar: main nav ↔ profile sub-nav (direct style, no CSS class)
+    const mbbMain    = document.getElementById('mbbMainNav');
+    const mbbProfile = document.getElementById('mbbProfileNav');
+    if (mbbMain && mbbProfile) {
+      const onProfile = route === 'profile';
+      mbbMain.style.display    = onProfile ? 'none' : 'flex';
+      mbbProfile.style.display = onProfile ? 'flex' : 'none';
+    }
 
     // Reset to settings panel whenever profile tab is opened
     if (route === 'profile') switchProfilePanel('settings');
