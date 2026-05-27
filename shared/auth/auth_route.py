@@ -1,10 +1,12 @@
+import html
 import io
 import os
 import re
+import secrets
 import uuid
 import requests as _http
 from datetime import datetime, date
-from flask import Blueprint, request, jsonify, session, current_app, Response
+from flask import Blueprint, request, jsonify, session, current_app, Response, redirect, url_for, render_template
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 from shared.extensions import db
@@ -563,8 +565,8 @@ def student_status():
 #  ADMIN — STUDENT REVIEW
 # ══════════════════════════════
 @auth.route('/admin/verify', methods=['GET', 'POST'])
+@limiter.limit("20 per minute")
 def admin_verify():
-    from flask import render_template
     admin_pw = os.getenv('ADMIN_PASSWORD', '')
 
     if request.method == 'POST':
@@ -573,15 +575,28 @@ def admin_verify():
         if action == 'login':
             if not admin_pw:
                 return 'ADMIN_PASSWORD env var not set.', 500
+            # Validate CSRF token for login form too
+            submitted = request.form.get('csrf_token', '')
+            expected  = session.get('admin_csrf', '')
+            if not expected or not secrets.compare_digest(submitted, expected):
+                return render_template('shared/admin_verify.html',
+                                       authenticated=False, pending=[], error='Invalid request.', csrf_token=_admin_csrf())
             if request.form.get('password') == admin_pw:
                 session['admin_auth'] = True
+                session['admin_csrf'] = secrets.token_hex(32)  # rotate after login
             else:
                 return render_template('shared/admin_verify.html',
-                                       authenticated=False, pending=[], error='Wrong password.')
+                                       authenticated=False, pending=[], error='Wrong password.', csrf_token=_admin_csrf())
             return redirect(url_for('auth.admin_verify'))
 
         if not session.get('admin_auth'):
             return redirect(url_for('auth.admin_verify'))
+
+        # CSRF check for all authenticated POST actions
+        submitted = request.form.get('csrf_token', '')
+        expected  = session.get('admin_csrf', '')
+        if not expected or not secrets.compare_digest(submitted, expected):
+            return 'Forbidden', 403
 
         if action in ('approve', 'reject'):
             uid  = request.form.get('user_id', type=int)
@@ -596,14 +611,22 @@ def admin_verify():
 
         return redirect(url_for('auth.admin_verify'))
 
-    # GET
+    # GET — issue/refresh CSRF token
+    token = _admin_csrf()
     if not session.get('admin_auth'):
         return render_template('shared/admin_verify.html',
-                               authenticated=False, pending=[], error=None)
+                               authenticated=False, pending=[], error=None, csrf_token=token)
     pending = User.query.filter_by(student_status='pending')\
                         .order_by(User.student_submitted_at).all()
     return render_template('shared/admin_verify.html',
-                           authenticated=True, pending=pending, error=None)
+                           authenticated=True, pending=pending, error=None, csrf_token=token)
+
+
+def _admin_csrf():
+    """Return existing admin CSRF token, generating one if absent."""
+    if 'admin_csrf' not in session:
+        session['admin_csrf'] = secrets.token_hex(32)
+    return session['admin_csrf']
 
 
 @auth.route('/admin/verify/logout', methods=['GET'])

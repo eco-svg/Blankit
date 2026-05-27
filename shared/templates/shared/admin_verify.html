@@ -47,6 +47,7 @@
     {% if error %}<div class="error">{{ error }}</div>{% endif %}
     <form method="POST">
       <input type="hidden" name="action" value="login">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <input type="password" name="password" placeholder="Admin password" autofocus>
       <button type="submit" class="btn btn-login">Enter →</button>
     </form>
@@ -91,11 +92,13 @@
               <form method="POST">
                 <input type="hidden" name="action" value="approve">
                 <input type="hidden" name="user_id" value="{{ u.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button class="btn btn-approve">Approve</button>
               </form>
               <form method="POST">
                 <input type="hidden" name="action" value="reject">
                 <input type="hidden" name="user_id" value="{{ u.id }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <button class="btn btn-reject">Reject</button>
               </form>
             </div>

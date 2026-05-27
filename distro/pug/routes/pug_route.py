@@ -2118,6 +2118,8 @@ def submit_feedback():
     if not message:
         return jsonify({'error': 'Message is empty'}), 400
 
+    import html as _html
+
     user_id  = session.get('user_id')
     username = session.get('username', 'Unknown')
     distro   = session.get('distro', 'Unknown')
@@ -2125,6 +2127,12 @@ def submit_feedback():
     from shared.auth.user import User
     user       = db.session.get(User, user_id)
     user_email = user.email if user else 'unknown'
+
+    # Escape all user-controlled values before inserting into HTML email
+    s_username   = _html.escape(username)
+    s_user_email = _html.escape(user_email)
+    s_distro     = _html.escape(distro)
+    s_message    = _html.escape(message)
 
     if kind == 'feature':
         subject = f'[Veyra Feature Request] {username}'
@@ -2137,20 +2145,20 @@ def submit_feedback():
         subject = f'[Veyra Report{tag}] {username}'
         heading = f'Report{tag}'
 
-    html = f"""
+    email_html = f"""
     <h2 style="font-family:sans-serif;">{heading}</h2>
     <table style="font-family:sans-serif;font-size:14px;">
-      <tr><td><b>User</b></td><td>{username}</td></tr>
-      <tr><td><b>Email</b></td><td>{user_email}</td></tr>
-      <tr><td><b>Distro</b></td><td>{distro}</td></tr>
+      <tr><td><b>User</b></td><td>{s_username}</td></tr>
+      <tr><td><b>Email</b></td><td>{s_user_email}</td></tr>
+      <tr><td><b>Distro</b></td><td>{s_distro}</td></tr>
     </table>
     <hr>
-    <p style="font-family:sans-serif;font-size:15px;white-space:pre-wrap;">{message}</p>
+    <p style="font-family:sans-serif;font-size:15px;white-space:pre-wrap;">{s_message}</p>
     """
 
     try:
         from shared.auth.auth_route import _send_email
-        _send_email('veyrasupportus@gmail.com', subject, html)
+        _send_email('veyrasupportus@gmail.com', subject, email_html)
         return jsonify({'status': 'sent'})
     except Exception as e:
         print(f'[feedback] send error: {e}')
