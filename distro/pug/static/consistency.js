@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     renderChart();
-    window.addEventListener('habitUpdated', renderChart);
-    window.addEventListener('langChanged',  renderChart);
+    window.addEventListener('habitUpdated',    renderChart);
+    window.addEventListener('langChanged',     renderChart);
+    window.addEventListener('habitPulseFlipped', () => {
+        if (chart) chart.resize();
+        else renderChart();
+    });
 });

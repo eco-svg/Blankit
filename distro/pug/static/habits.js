@@ -19,10 +19,12 @@
   }
 
   // ── Flip ─────────────────────────────────────────────
+  const habitFront = document.querySelector('.habit-front');
   function flip(toBack) {
     if (!flipInner) return;
     flipInner.classList.toggle('flipped', toBack);
-    if (toBack) loadChart();
+    if (habitFront) habitFront.style.visibility = toBack ? 'hidden' : '';
+    if (toBack) window.dispatchEvent(new Event('habitPulseFlipped'));
   }
   if (flipBtn)     flipBtn.addEventListener('click',     () => flip(true));
   if (flipBackBtn) flipBackBtn.addEventListener('click', () => flip(false));
@@ -132,15 +134,6 @@
       h.done_today = data.done;
       renderToday();
     } catch (e) { h.done_today = !h.done_today; renderToday(); }
-  }
-
-  // ── Chart ─────────────────────────────────────────────
-  async function loadChart() {
-    try {
-      const res = await fetch('/pug/api/habits/history?days=30');
-      if (!res.ok) return;
-      renderChart(await res.json());
-    } catch (e) {}
   }
 
   function renderChart(history) {
