@@ -235,6 +235,13 @@
                 </div>
                 <div class="premium-soon-tag">Soon</div>
               </div>
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">Contextual Picks</div>
+                  <div class="premium-soon-desc">Gear and tools matched to your habits — guitar, running, whatever you're into</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
             </div>
           </div>
 
@@ -1038,7 +1045,11 @@
         .then(function(d) {
           if (d.status === 'sent') {
             ta.value = '';
-            status.textContent = '✓ Sent — thanks!';
+            status.textContent = '✓ Sent!';
+            setTimeout(function() {
+              btn.disabled = false;
+              status.textContent = '';
+            }, 2500);
           } else {
             status.textContent = d.error || 'Error.';
             btn.disabled = false;
