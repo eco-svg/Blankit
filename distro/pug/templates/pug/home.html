@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=50">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=51">
 </head>
 <body>
 
@@ -44,12 +44,10 @@
     </div>
 
     <nav class="header-nav">
-      <a href="#notes"          class="nav-pill">Home</a>
-      <a href="#buddybot"       class="nav-pill">BuddyBot</a>
-      <a href="#social"         class="nav-pill">Social</a>
-      <a href="#request"        class="nav-pill">Request</a>
-      <a href="#support"        class="nav-pill">Support</a>
-      <a href="#stats"          class="nav-pill">Stats</a>
+      <a href="#notes"    class="nav-pill">Home</a>
+      <a href="#buddybot" class="nav-pill">BuddyBot</a>
+      <a href="#social"   class="nav-pill">Social</a>
+      <a href="#request"  class="nav-pill">Request</a>
     </nav>
 
     <div class="header-right">
@@ -564,35 +562,45 @@
       </div>
 
       <!-- Stats tab -->
-      <div class="card full-row sec-stats-card stats-sheet page-hidden" id="sec-stats">
-        <div class="stats-tab-topbar">
-          <div class="stats-tab-identity">
-            <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.82rem;padding:2px 8px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
-            <h2 class="stats-tab-username logo">{{ username }}</h2>
-          </div>
-          <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.75rem;padding:5px 14px;gap:6px;display:flex;align-items:center;">↻ Re-analyze</button>
-        </div>
+      <div class="card full-row sec-stats-card page-hidden" id="sec-stats">
+        <div class="stats-sheet-wrap">
 
-        <div class="stats-tab-cols">
-          <div class="stats-tab-profile">
-            <div class="char-class-section">
-              <div class="char-class-label" data-i18n="stats_class">CLASS</div>
-              <div class="char-class-name" id="statClassName">—</div>
+          <!-- Header -->
+          <div class="stats-sheet-header">
+            <div class="stats-sheet-identity">
+              <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.8rem;padding:2px 9px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
+              <span class="stats-sheet-username logo">{{ username }}</span>
             </div>
-            <div class="char-class-section">
-              <div class="char-class-label" data-i18n="stats_personality">PERSONALITY</div>
-              <div class="char-class-name" id="statPersonality" style="font-size:1rem;">—</div>
-              <div class="char-bio" id="statPersonalityDesc"></div>
-            </div>
-            <div class="char-bio" id="statBio" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px;"></div>
+            <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.72rem;padding:4px 12px;">↻ Re-analyze</button>
           </div>
 
-          <div class="stats-tab-skills">
-            <div class="char-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
+          <!-- Fields -->
+          <div class="stats-field">
+            <span class="stats-field-label" data-i18n="stats_class">CLASS</span>
+            <span class="stats-field-value" id="statClassName">—</span>
+          </div>
+
+          <div class="stats-field">
+            <span class="stats-field-label" data-i18n="stats_personality">PERSONALITY</span>
+            <div>
+              <span class="stats-field-value" id="statPersonality">—</span>
+              <div class="stats-field-desc" id="statPersonalityDesc"></div>
+            </div>
+          </div>
+
+          <div class="stats-field stats-field-bio">
+            <span class="stats-field-label">BIO</span>
+            <div class="stats-field-desc" id="statBio"></div>
+          </div>
+
+          <!-- Skills -->
+          <div class="stats-skills-section">
+            <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
             <div id="statSkillsList" class="skills-list">
               <div class="skill-loading">Scanning data...</div>
             </div>
           </div>
+
         </div>
       </div>
 

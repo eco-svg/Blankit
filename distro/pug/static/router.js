@@ -5,14 +5,13 @@
     'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],
-    'request':  ['sec-req-feature'],
-    'support':  ['sec-report'],
+    'request':  ['sec-req-feature', 'sec-report'],
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats'],
   };
 
   // Routes that show the lbar (home tab only)
-  const LBAR_ROUTES = new Set(['notes']);
+  const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);
 
   const DEFAULT = 'notes';
 
