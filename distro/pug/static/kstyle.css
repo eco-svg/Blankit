@@ -573,9 +573,9 @@ body.header-hidden .l-bar {
 
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* row 1: dream banner (60px); rows 2-5: card pairs; row 6: habits full-row; row 7: view full-row; row 8: adboxes */
-  grid-template-rows: 60px repeat(4, 800px) 700px 700px 210px;
-  grid-auto-rows: 0;
+  /* row 1: dream banner (60px); rows 2-5: card pairs; row 6: habits full-row; row 7: adboxes */
+  grid-template-rows: 60px repeat(4, 800px) 700px 210px;
+  grid-auto-rows: auto;
   column-gap: clamp(16px, 2.5vw, 40px);
   row-gap: 0;
   align-content: start;
