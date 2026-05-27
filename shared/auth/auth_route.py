@@ -1,14 +1,87 @@
+import io
 import os
 import re
+import uuid
 import requests as _http
 from datetime import datetime
-from flask import Blueprint, request, jsonify, session, current_app
+from flask import Blueprint, request, jsonify, session, current_app, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
 from shared.extensions import db
 from shared.auth.user import User
 from shared.auth.reset_token import VerifyToken, ResetToken
 from shared.extensions import limiter
+import warnings
+from minio import Minio
+from minio.error import S3Error
+from PIL import Image, UnidentifiedImageError
+
+_MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
+_MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
+_MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
+_MINIO_BUCKET     = os.environ.get('MINIO_BUCKET',     'veyra-media')
+_MINIO_SECURE     = os.environ.get('MINIO_SECURE',     'false').lower() == 'true'
+_minio = Minio(_MINIO_ENDPOINT, access_key=_MINIO_ACCESS_KEY, secret_key=_MINIO_SECRET_KEY, secure=_MINIO_SECURE)
+
+_MAX_ID_BYTES  = 30 * 1024 * 1024   # 30 MB hard cap — streamed, never exceeded in RAM before check
+_MAX_ID_PIXELS = 20_000_000          # 20 MP (e.g. 5000×4000) — kills decompression bombs
+_ALLOWED_ID_EXT = {'png', 'jpg', 'jpeg', 'webp'}
+_MAGIC_ID = {
+    'jpg':  (b'\xff\xd8\xff',), 'jpeg': (b'\xff\xd8\xff',),
+    'png':  (b'\x89PNG',), 'webp': (b'RIFF',),
+}
+
+
+def _read_limited(f, max_bytes):
+    """Stream-read f in 64 KB chunks; return bytes or None if limit exceeded."""
+    chunks, total = [], 0
+    while True:
+        chunk = f.read(65536)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > max_bytes:
+            return None
+        chunks.append(chunk)
+    return b''.join(chunks)
+
+
+def _validate_id_file(f):
+    """
+    Validate uploaded student ID.  Returns (file_bytes, error_json, status_code).
+    error_json is None on success.
+    """
+    raw_name = (f.filename or '').replace('\\', '/').split('/')[-1]  # strip path traversal
+    if '.' not in raw_name:
+        return None, jsonify({'error': 'File has no extension.'}), 400
+    ext = raw_name.rsplit('.', 1)[-1].lower()
+    if ext not in _ALLOWED_ID_EXT:
+        return None, jsonify({'error': 'Unsupported type. Use JPG, PNG, WEBP, or PDF.'}), 400
+
+    file_data = _read_limited(f, _MAX_ID_BYTES)
+    if file_data is None:
+        return None, jsonify({'error': 'File too large (max 30 MB).'}), 400
+    if len(file_data) < 8:
+        return None, jsonify({'error': 'File is empty or corrupt.'}), 400
+
+    # Magic-byte check — reject spoofed extensions
+    sigs = _MAGIC_ID.get(ext)
+    if sigs and not any(file_data[:len(s)] == s for s in sigs):
+        return None, jsonify({'error': 'File content does not match its extension.'}), 400
+
+    # Decompression-bomb protection via Pillow
+    Image.MAX_IMAGE_PIXELS = _MAX_ID_PIXELS
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', Image.DecompressionBombWarning)
+            img = Image.open(io.BytesIO(file_data))
+            img.verify()
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning, Warning):
+        return None, jsonify({'error': 'Image resolution too high — upload a normal photo.'}), 400
+    except (UnidentifiedImageError, Exception):
+        return None, jsonify({'error': 'Could not read image. Upload a clear photo.'}), 400
+
+    return file_data, None, None
 
 auth = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -407,21 +480,32 @@ def student_verify():
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'not logged in'}), 401
-    data     = request.get_json(silent=True) or {}
-    school   = (data.get('school',   '') or '').strip()[:200]
-    grade    = (data.get('grade',    '') or '').strip()[:50]
-    location = (data.get('location', '') or '').strip()[:200]
-    if not school or not grade:
-        return jsonify({'error': 'school and grade are required'}), 400
     user = db.session.get(User, user_id)
     if not user:
         return jsonify({'error': 'user not found'}), 404
     if user.student_status == 'approved':
         return jsonify({'message': 'already_approved', 'status': 'approved'}), 200
+
+    f = request.files.get('id_image')
+    if not f or not f.filename:
+        return jsonify({'error': 'Please upload your student ID.'}), 400
+
+    file_data, err, code = _validate_id_file(f)
+    if err:
+        return err, code
+
+    import mimetypes
+    ext = (f.filename or '').rsplit('.', 1)[-1].lower()
+    object_name = f'student_ids/{user_id}_{uuid.uuid4().hex}.{ext}'
+    ct = mimetypes.guess_type(f'x.{ext}')[0] or 'application/octet-stream'
+    try:
+        _minio.put_object(_MINIO_BUCKET, object_name, io.BytesIO(file_data), len(file_data), content_type=ct)
+    except Exception as e:
+        current_app.logger.warning(f'MinIO student ID upload failed: {e}')
+        return jsonify({'error': 'Upload failed, try again.'}), 500
+
     user.student_status       = 'pending'
-    user.student_school       = school
-    user.student_location     = location
-    user.student_grade        = grade
+    user.student_id_url       = object_name
     user.student_submitted_at = datetime.utcnow()
     db.session.commit()
     return jsonify({'message': 'pending', 'status': 'pending'}), 200
@@ -513,6 +597,22 @@ def admin_verify():
 def admin_verify_logout():
     session.pop('admin_auth', None)
     return redirect(url_for('auth.admin_verify'))
+
+
+@auth.route('/admin/student-id/<path:object_name>', methods=['GET'])
+def admin_student_id(object_name):
+    if not session.get('admin_auth'):
+        return 'Unauthorized', 403
+    if not object_name.startswith('student_ids/') or '..' in object_name or '\x00' in object_name:
+        return 'Forbidden', 403
+    import mimetypes
+    try:
+        response = _minio.get_object(_MINIO_BUCKET, object_name)
+        return Response(response.stream(32 * 1024),
+                        content_type=response.headers.get('content-type', 'application/octet-stream'))
+    except Exception as e:
+        current_app.logger.warning(f'Admin student ID fetch failed: {e}')
+        return 'Not found', 404
 
 
 # ══════════════════════════════

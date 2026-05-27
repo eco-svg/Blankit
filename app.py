@@ -84,6 +84,8 @@ def _migrate_schema():
                 conn.execute(text('ALTER TABLE users ADD COLUMN student_grade VARCHAR(50)'))
             if 'student_submitted_at' not in user_cols:
                 conn.execute(text('ALTER TABLE users ADD COLUMN student_submitted_at TIMESTAMP'))
+            if 'student_id_url' not in user_cols:
+                conn.execute(text('ALTER TABLE users ADD COLUMN student_id_url VARCHAR(500)'))
 
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:

@@ -15,6 +15,7 @@ class User(db.Model):
     student_school       = db.Column(db.String(200), nullable=True)
     student_location     = db.Column(db.String(200), nullable=True)
     student_grade        = db.Column(db.String(50),  nullable=True)
+    student_id_url       = db.Column(db.String(500), nullable=True)   # MinIO object name for uploaded ID
     student_submitted_at = db.Column(db.DateTime, nullable=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
 

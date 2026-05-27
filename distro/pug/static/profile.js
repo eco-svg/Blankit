@@ -267,9 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ppStudentVerify = document.getElementById('ppStudentVerify');
     const ppStudentLabel  = document.getElementById('ppStudentLabel');
     const svModal         = document.getElementById('studentVerifyModal');
-    const svSchool        = document.getElementById('svSchool');
-    const svGrade         = document.getElementById('svGrade');
-    const svLocation      = document.getElementById('svLocation');
+    const svIdFile        = document.getElementById('svIdFile');
     const svStatusEl      = document.getElementById('svStatus');
     const svSubmitBtn     = document.getElementById('svSubmitBtn');
     const svCancelBtn     = document.getElementById('svCancelBtn');
@@ -303,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closePopup();
         if (svStatusEl) svStatusEl.style.display = 'none';
         if (svSubmitBtn) { svSubmitBtn.disabled = false; svSubmitBtn.textContent = 'Submit for review'; }
+        if (svIdFile) svIdFile.value = '';
 
         fetch('/auth/student-status')
             .then(r => r.ok ? r.json() : null)
@@ -313,11 +312,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (svSubmitBtn) svSubmitBtn.disabled = true;
                 } else if (data.status === 'pending') {
                     showSvStatus('⏳ Pending review — we\'ll email you within 24h.', true);
-                    if (svSchool && data.school)    svSchool.value   = data.school;
-                    if (svGrade  && data.grade)     svGrade.value    = data.grade;
-                    if (svLocation && data.location) svLocation.value = data.location;
                 } else if (data.status === 'rejected') {
-                    showSvStatus('Previous submission wasn\'t approved. Re-submit with correct details.', false);
+                    showSvStatus('Previous submission wasn\'t approved. Upload a clearer ID and re-submit.', false);
                 }
             })
             .catch(() => {});
@@ -329,18 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', e => { if (e.target === svModal) svModal?.classList.add('hidden'); });
 
     svSubmitBtn?.addEventListener('click', async () => {
-        const school   = svSchool?.value.trim();
-        const grade    = svGrade?.value.trim();
-        const location = svLocation?.value.trim() || '';
-        if (!school || !grade) { showSvStatus('School and grade are required.', false); return; }
-        svSubmitBtn.disabled     = true;
-        svSubmitBtn.textContent  = 'Submitting…';
+        const file = svIdFile?.files?.[0];
+        if (!file) { showSvStatus('Please select your student ID image.', false); return; }
+        svSubmitBtn.disabled    = true;
+        svSubmitBtn.textContent = 'Uploading…';
         try {
-            const res  = await fetch('/auth/student-verify', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify({ school, grade, location }),
-            });
+            const fd = new FormData();
+            fd.append('id_image', file);
+            const res  = await fetch('/auth/student-verify', { method: 'POST', body: fd });
             const data = await res.json();
             if (res.ok) {
                 showSvStatus('✓ Submitted — we\'ll review and email you within 24h.', true);

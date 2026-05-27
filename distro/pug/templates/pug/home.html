@@ -737,22 +737,16 @@
     <div class="modal-content" style="max-width:360px;">
       <h2 class="modal-title" style="margin-bottom:6px;">Student Verification</h2>
       <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
-        Tell us about your school. We review manually — usually within 24h — then email you.
+        Upload a photo or scan of your student ID. We review manually — usually within 24h — then email you.
       </p>
 
       <div id="svStatus" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:8px;font-size:0.78rem;line-height:1.5;"></div>
 
-      <div class="field" style="margin-bottom:10px;">
-        <label style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-dim);display:block;margin-bottom:5px;">School / University *</label>
-        <input class="field-input" type="text" id="svSchool" placeholder="e.g. Delhi Public School" autocomplete="off">
-      </div>
-      <div class="field" style="margin-bottom:10px;">
-        <label style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-dim);display:block;margin-bottom:5px;">Grade / Year *</label>
-        <input class="field-input" type="text" id="svGrade" placeholder="e.g. Grade 10 or 2nd Year" autocomplete="off">
-      </div>
       <div class="field" style="margin-bottom:4px;">
-        <label style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-dim);display:block;margin-bottom:5px;">City / Location (optional)</label>
-        <input class="field-input" type="text" id="svLocation" placeholder="e.g. Mumbai, India" autocomplete="off">
+        <label style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-dim);display:block;margin-bottom:5px;">Student ID Image *</label>
+        <input type="file" id="svIdFile" accept=".jpg,.jpeg,.png,.webp"
+               style="font-size:0.78rem;color:var(--text-muted);width:100%;cursor:pointer;">
+        <p style="font-size:0.66rem;color:var(--text-dim);margin-top:5px;">JPG, PNG, or WEBP — max 30 MB</p>
       </div>
 
       <div class="modal-actions" style="margin-top:16px;">

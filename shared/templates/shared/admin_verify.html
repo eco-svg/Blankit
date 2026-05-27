@@ -66,9 +66,7 @@
           <th>#</th>
           <th>Username</th>
           <th>Email</th>
-          <th>School</th>
-          <th>Grade</th>
-          <th>Location</th>
+          <th>Student ID</th>
           <th>Submitted</th>
           <th>Action</th>
         </tr>
@@ -79,9 +77,14 @@
           <td class="dim">{{ u.id }}</td>
           <td>{{ u.username }}</td>
           <td class="dim">{{ u.email }}</td>
-          <td>{{ u.student_school or '<span class="dim">—</span>' }}</td>
-          <td>{{ u.student_grade or '<span class="dim">—</span>' }}</td>
-          <td class="dim">{{ u.student_location or '—' }}</td>
+          <td>
+            {% if u.student_id_url %}
+              <a href="/auth/admin/student-id/{{ u.student_id_url }}" target="_blank"
+                 style="color:#e8b84b;text-decoration:none;font-size:0.78rem;">View ID ↗</a>
+            {% else %}
+              <span class="dim">—</span>
+            {% endif %}
+          </td>
           <td class="dim">{{ u.student_submitted_at.strftime('%d %b %Y, %H:%M') if u.student_submitted_at else '—' }}</td>
           <td>
             <div class="actions">
