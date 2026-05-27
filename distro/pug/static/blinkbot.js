@@ -164,11 +164,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   async function loadEngine(isDownload) {
     const { MLCEngine } = await import(WEBLLM_CDN);
     if (!MLCEngine) throw new Error('WebLLM bundle loaded but MLCEngine not found');
-    const e = new MLCEngine();
-    await e.reload(MODEL_ID, {
+    const e = new MLCEngine({
       appConfig:            _MLC_APP_CFG,
       initProgressCallback: (report) => onProgress(report.progress, isDownload),
     });
+    await e.reload(MODEL_ID);
     engine = e;
     store.set({ complete: true, pct: 1 });
   }
