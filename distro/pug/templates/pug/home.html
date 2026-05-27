@@ -48,7 +48,8 @@
       <a href="#sec-habits" class="nav-pill">Habits</a>
       <a href="#sec-skills" class="nav-pill">Skills</a>
       <a href="#sec-social" class="nav-pill">Social</a>
-      <a href="#sec-buddybot" class="nav-pill">BuddyBot</a>
+      <a href="#sec-buddybot"    class="nav-pill">BuddyBot</a>
+      <a href="#sec-req-feature" class="nav-pill">Request</a>
     </nav>
 
     <div class="header-right">
@@ -505,15 +506,47 @@
                 <div class="bb-soon-feature-desc">Buy credits when you need deep AI power. No subscriptions forced on you.</div>
               </div>
             </div>
-            <div class="bb-soon-feature">
-              <div class="bb-soon-feature-icon">🧠</div>
-              <div>
-                <div class="bb-soon-feature-name">8B Parameters</div>
-                <div class="bb-soon-feature-desc">Full-size model — not a toy. Real reasoning, real depth, real answers.</div>
-              </div>
-            </div>
           </div>
 
+        </div>
+      </div>
+
+      <!-- Request a Feature -->
+      <div class="card req-card page-hidden" id="sec-req-feature">
+        <div class="card-top-bar">
+          <h2 class="card-title">Request a Feature</h2>
+        </div>
+        <p class="req-sub">Got an idea that would make Veyra better? Describe it — we read everything.</p>
+        <div class="req-from-row">
+          <span class="req-from-label">From</span>
+          <span class="req-from-val">{{ username }}</span>
+        </div>
+        <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
+        <div class="req-actions">
+          <button class="req-send-btn" id="featureSendBtn">Send Request</button>
+          <span class="req-status" id="featureStatus"></span>
+        </div>
+      </div>
+
+      <!-- Report -->
+      <div class="card req-card page-hidden" id="sec-report">
+        <div class="card-top-bar">
+          <h2 class="card-title">Report</h2>
+          <div class="req-type-pills" id="reportTypePills">
+            <button class="req-type-pill active" data-rtype="bug">Bug</button>
+            <button class="req-type-pill" data-rtype="content">Content</button>
+            <button class="req-type-pill" data-rtype="other">Other</button>
+          </div>
+        </div>
+        <p class="req-sub">Something broken or feels wrong? Tell us what happened.</p>
+        <div class="req-from-row">
+          <span class="req-from-label">From</span>
+          <span class="req-from-val">{{ username }}</span>
+        </div>
+        <textarea class="req-textarea" id="reportText" placeholder="Describe what happened…" maxlength="2000"></textarea>
+        <div class="req-actions">
+          <button class="req-send-btn" id="reportSendBtn">Send Report</button>
+          <span class="req-status" id="reportStatus"></span>
         </div>
       </div>
 
@@ -977,6 +1010,52 @@
     if (!inner) return;
     if (flipBtn) flipBtn.addEventListener('click', function() { inner.classList.add('flipped'); });
     if (backBtn) backBtn.addEventListener('click', function() { inner.classList.remove('flipped'); });
+  })();
+
+  // Request / Report forms
+  (function() {
+    function sendFeedback(kind, textId, btnId, statusId, rtypeContainerId) {
+      var btn    = document.getElementById(btnId);
+      var status = document.getElementById(statusId);
+      var ta     = document.getElementById(textId);
+      if (!btn || !ta) return;
+      btn.addEventListener('click', function() {
+        var msg = ta.value.trim();
+        if (!msg) { status.textContent = 'Write something first.'; return; }
+        var rtype = '';
+        if (rtypeContainerId) {
+          var active = document.querySelector('#' + rtypeContainerId + ' .req-type-pill.active');
+          if (active) rtype = active.dataset.rtype;
+        }
+        btn.disabled = true;
+        status.textContent = 'Sending…';
+        fetch('/pug/api/feedback', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({kind: kind, message: msg, rtype: rtype})
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (d.status === 'sent') {
+            ta.value = '';
+            status.textContent = '✓ Sent — thanks!';
+          } else {
+            status.textContent = d.error || 'Error.';
+            btn.disabled = false;
+          }
+        })
+        .catch(function() { status.textContent = 'Network error.'; btn.disabled = false; });
+      });
+    }
+    sendFeedback('feature', 'featureText', 'featureSendBtn', 'featureStatus', null);
+    sendFeedback('report',  'reportText',  'reportSendBtn',  'reportStatus',  'reportTypePills');
+    // Report type pill toggle
+    document.querySelectorAll('#reportTypePills .req-type-pill').forEach(function(p) {
+      p.addEventListener('click', function() {
+        document.querySelectorAll('#reportTypePills .req-type-pill').forEach(function(x) { x.classList.remove('active'); });
+        p.classList.add('active');
+      });
+    });
   })();
 
   // Quick Ask — chatbot with history

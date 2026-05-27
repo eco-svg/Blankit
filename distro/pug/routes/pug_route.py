@@ -2106,6 +2106,54 @@ def proxy_wisdom():
         return jsonify({'error': 'unavailable'}), 502
 
 
+@pug_bp.route('/pug/api/feedback', methods=['POST'])
+def submit_feedback():
+    err = login_required_api()
+    if err: return err
+
+    data     = request.get_json(silent=True) or {}
+    kind     = data.get('kind', 'general')   # 'feature' | 'report'
+    rtype    = data.get('rtype', '')          # bug / content / other (reports only)
+    message  = data.get('message', '').strip()
+    if not message:
+        return jsonify({'error': 'Message is empty'}), 400
+
+    user_id  = session.get('user_id')
+    username = session.get('username', 'Unknown')
+    distro   = session.get('distro', 'Unknown')
+
+    from shared.auth.user import User
+    user       = db.session.get(User, user_id)
+    user_email = user.email if user else 'unknown'
+
+    if kind == 'feature':
+        subject = f'[Veyra Feature Request] {username}'
+        heading = 'Feature Request'
+    else:
+        tag     = f' — {rtype.title()}' if rtype else ''
+        subject = f'[Veyra Report{tag}] {username}'
+        heading = f'Report{tag}'
+
+    html = f"""
+    <h2 style="font-family:sans-serif;">{heading}</h2>
+    <table style="font-family:sans-serif;font-size:14px;">
+      <tr><td><b>User</b></td><td>{username}</td></tr>
+      <tr><td><b>Email</b></td><td>{user_email}</td></tr>
+      <tr><td><b>Distro</b></td><td>{distro}</td></tr>
+    </table>
+    <hr>
+    <p style="font-family:sans-serif;font-size:15px;white-space:pre-wrap;">{message}</p>
+    """
+
+    try:
+        from shared.auth.auth_route import _send_email
+        _send_email('veyrasupportus@gmail.com', subject, html)
+        return jsonify({'status': 'sent'})
+    except Exception as e:
+        print(f'[feedback] send error: {e}')
+        return jsonify({'error': 'Failed to send — try again later'}), 500
+
+
 _MLC_HF_BASE  = 'https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
 _MLC_LIB_BASE = 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_83/base'
 
