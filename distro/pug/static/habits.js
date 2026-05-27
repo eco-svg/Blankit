@@ -133,6 +133,7 @@
       const data = await res.json();
       h.done_today = data.done;
       renderToday();
+      window.dispatchEvent(new Event('habitUpdated'));
     } catch (e) { h.done_today = !h.done_today; renderToday(); }
   }
 
