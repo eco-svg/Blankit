@@ -280,7 +280,7 @@
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
             <label style="display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
               <input type="checkbox" id="regTermsCheck" style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
-              I agree to the <a href="/terms" target="_blank" style="color:var(--accent);text-decoration:none;">Terms of Service</a> and <a href="/privacy" target="_blank" style="color:var(--accent);text-decoration:none;">Privacy Policy</a>
+              I agree to the <a href="/terms" onclick="document.getElementById('termsModal').style.display='block';return false;" style="color:var(--accent);text-decoration:none;cursor:pointer;">Terms of Service</a> and <a href="/privacy" onclick="document.getElementById('privacyModal').style.display='block';return false;" style="color:var(--accent);text-decoration:none;cursor:pointer;">Privacy Policy</a>
             </label>
             <label style="display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
               <input type="checkbox" id="regAgeCheck" style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
@@ -347,7 +347,72 @@
     </div>
   </div>
 
+  <!-- Terms of Service modal -->
+  <div id="termsModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);overflow-y:auto;padding:24px 16px;">
+    <div style="max-width:680px;margin:0 auto;background:#141108;border:1px solid rgba(212,165,116,0.2);border-radius:14px;padding:32px 28px 28px;position:relative;">
+      <button onclick="document.getElementById('termsModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#a89880;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      <h2 style="font-family:'DM Mono',monospace;font-size:1.1rem;color:#ede7d4;margin-bottom:6px;">Terms of Service</h2>
+      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;color:#6b6055;margin-bottom:28px;letter-spacing:0.06em;">Last updated: May 2026</p>
+      {% set sections = [
+        ("1. Eligibility", "You must be at least <strong>13 years old</strong> to use Veyra. By registering, you confirm you meet this requirement. Users aged 13–17 should have parental awareness of their use of the platform. You must provide accurate information — including your real date of birth — when creating an account. Providing false information is a violation of these Terms."),
+        ("2. Accounts", "<ul><li>You are responsible for maintaining the security of your password.</li><li>You may not share your account or allow others to use it.</li><li>One account per person. Duplicate accounts are not permitted.</li><li>You may delete your account at any time from your profile settings.</li></ul>"),
+        ("3. Acceptable use", "You agree not to post illegal, abusive, harassing, or hateful content; violate others' privacy or IP rights; upload malware or spam; attempt unauthorised access; use automated tools without permission; impersonate others; or use Veyra for commercial purposes without written consent."),
+        ("4. Content", "You retain ownership of content you post. By posting, you grant Veyra a non-exclusive licence to store and display that content within the platform. We may remove content that violates these Terms without notice."),
+        ("5. Advertising", "Veyra displays contextual ads based on your stated interests — not behavioural tracking. We do not show behavioural ads to users aged 13–17."),
+        ("6. Termination", "We may suspend or terminate your account for violations of these Terms. You may close your account at any time."),
+        ("7. Disclaimer", "Veyra is provided 'as is' without warranty. We do not guarantee uninterrupted or error-free service."),
+        ("8. Limitation of liability", "To the fullest extent permitted by law, Veyra shall not be liable for indirect, incidental, or consequential damages arising from your use of the platform."),
+        ("9. Governing law", "These Terms are governed by the laws of India. If you are a consumer in the EU or UK, you retain any statutory rights you have under your local law."),
+        ("10. Contact", "Questions: <a href='mailto:legal@veyra.app' style='color:#d4a574;'>legal@veyra.app</a>")
+      ] %}
+      {% for title, body in sections %}
+      <p style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#d4a574;letter-spacing:0.1em;text-transform:uppercase;margin:24px 0 8px;">{{ title }}</p>
+      <div style="font-size:0.84rem;color:#a89880;line-height:1.8;">{{ body | safe }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Privacy Policy modal -->
+  <div id="privacyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);overflow-y:auto;padding:24px 16px;">
+    <div style="max-width:680px;margin:0 auto;background:#141108;border:1px solid rgba(212,165,116,0.2);border-radius:14px;padding:32px 28px 28px;position:relative;">
+      <button onclick="document.getElementById('privacyModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#a89880;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      <h2 style="font-family:'DM Mono',monospace;font-size:1.1rem;color:#ede7d4;margin-bottom:6px;">Privacy Policy</h2>
+      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;color:#6b6055;margin-bottom:28px;letter-spacing:0.06em;">Last updated: May 2026</p>
+      {% set psections = [
+        ("1. What we collect", "<ul><li><strong>Account info:</strong> Username, email, hashed password, date of birth.</li><li><strong>Profile data:</strong> Age tier, habits, notes, goals, posts, DMs.</li><li><strong>Usage data:</strong> Feature interactions, habit logs, streaks.</li><li><strong>Student verification (optional):</strong> Document image temporarily; only metadata retained after review.</li></ul>"),
+        ("2. How we use your data", "To create and manage your account; provide age-appropriate features and peer matching; send account emails (OTP, password reset); display contextual non-behavioural advertising; and improve the platform."),
+        ("3. Children's privacy", "Veyra is for users aged <strong>13 and older</strong>. We do not knowingly collect data from children under 13. Users aged 13–17 receive additional protections including no behavioural advertising. Contact <a href='mailto:privacy@veyra.app' style='color:#d4a574;'>privacy@veyra.app</a> if you believe an under-13 has registered."),
+        ("4. Data sharing", "We do not sell your data. We share only with: email providers (Gmail/Brevo), database hosting (Supabase), platform hosting (Hugging Face), and file storage (Backblaze B2). All are contractually bound to protect your data."),
+        ("5. Data retention", "Data is retained while your account is active. Deleted accounts are purged within 30 days. Anonymous statistics may be retained indefinitely."),
+        ("6. Your rights", "Depending on your country, you may access, correct, delete, or export your data. Email <a href='mailto:privacy@veyra.app' style='color:#d4a574;'>privacy@veyra.app</a> to exercise these rights."),
+        ("7. Cookies", "Session cookies only — to keep you logged in. No third-party tracking or advertising cookies."),
+        ("8. Security", "Passwords are hashed. All traffic is over HTTPS. We apply reasonable technical safeguards, but no system is 100% secure."),
+        ("9. International users", "Veyra is operated from India and endeavours to comply with GDPR (EU), UK GDPR, COPPA (US), and India's DPDP Act 2023. The platform is globally accessible; users in all countries are welcome. We do not maintain local infrastructure in Russia or China, which is standard practice for small global platforms."),
+        ("10. Contact", "<a href='mailto:privacy@veyra.app' style='color:#d4a574;'>privacy@veyra.app</a>")
+      ] %}
+      {% for title, body in psections %}
+      <p style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#d4a574;letter-spacing:0.1em;text-transform:uppercase;margin:24px 0 8px;">{{ title }}</p>
+      <div style="font-size:0.84rem;color:#a89880;line-height:1.8;">{{ body | safe }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
   <script src="{{ url_for('static', filename='login.js') }}"></script>
+  <script>
+    // Policy modals — close on backdrop click or Escape
+    (function(){
+      ['termsModal','privacyModal'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', function(e){ if (e.target === el) el.style.display = 'none'; });
+      });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') ['termsModal','privacyModal'].forEach(function(id){
+          document.getElementById(id).style.display = 'none';
+        });
+      });
+    })();
+  </script>
   <script>
     // ThePug video fade-in
     (function(){
