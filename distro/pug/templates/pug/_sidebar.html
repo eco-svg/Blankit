@@ -1,0 +1,66 @@
+<aside class="r-bar">
+
+  <!-- 1. Calendar — always first -->
+  <div class="r-card calender" id="calendarCard">
+    <div class="r-card-header" data-i18n="sidebar_event_calendar">Event Calendar</div>
+    <div class="calendar-header">
+      <button id="prevMonth">&lt;</button>
+      <span id="monthDisplay">Month Year</span>
+      <button id="nextMonth">&gt;</button>
+    </div>
+    <div class="calendar-weekdays">
+      <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
+    </div>
+    <div class="calendar-days" id="calendarDays"></div>
+  </div>
+
+  <!-- 2. BlinkBot — coming soon -->
+  <div class="r-card r-blinkbot-soon" id="rGroqCard">
+    <div class="r-blinkbot-soon-inner">
+      <div class="r-blinkbot-soon-name">BlinkBot</div>
+      <div class="r-blinkbot-soon-badge">Coming Soon</div>
+      <div class="r-blinkbot-soon-sub">On-device AI Automator</div>
+    </div>
+  </div>
+
+  <!-- 3. Goals card — flippable (front=active, back=finished/cancelled) -->
+  <div class="r-card r-goals-card goal-flip-card">
+    <div class="goal-flip-inner" id="goalFlipInner">
+
+      <!-- Front: active goals -->
+      <div class="goal-face goal-front">
+        <div class="r-card-header">
+          <span data-i18n="sidebar_goals">Goals</span>
+          <button class="goal-flip-btn" id="goalFlipBtn">Done ↩</button>
+        </div>
+        <div class="r-goals-sections">
+          <div class="r-goals-list" id="rActiveGoalsList"></div>
+        </div>
+        <div class="r-goal-input-row">
+          <input type="text" id="rNewGoalInput" placeholder="New goal…" data-i18n-ph="sidebar_new_goal_ph" autocomplete="off">
+          <button id="rAddGoalBtn">+</button>
+        </div>
+      </div>
+
+      <!-- Back: finished / cancelled -->
+      <div class="goal-face goal-back">
+        <div class="r-card-header">
+          <button class="goal-flip-btn" id="goalFlipBackBtn">← Goals</button>
+        </div>
+        <div class="r-done-cols">
+          <div class="r-done-col">
+            <div class="r-done-label" style="color:var(--green);" data-i18n="sidebar_finished">Finished</div>
+            <div id="rFinishedList" class="r-done-list"></div>
+          </div>
+          <div class="r-done-col">
+            <div class="r-done-label" style="color:var(--text-dim);" data-i18n="sidebar_cancelled">Cancelled</div>
+            <div id="rCancelledList" class="r-done-list"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</aside>
+<div class="rbar-backdrop" id="rBarBackdrop"></div>

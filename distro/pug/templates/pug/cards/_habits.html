@@ -1,0 +1,40 @@
+<!-- Habits card — flippable: front=manage+today, back=30-day graph -->
+<div class="card habits-card full-row" id="sec-habits">
+  <div class="habits-inner" id="habitFlipInner">
+
+    <!-- Front: Add & manage habits -->
+    <div class="habit-panel habit-panel-front habit-front">
+      <div class="habit-panel-header">
+        <span class="card-title" data-i18n="card_habits">Habits</span>
+        <button class="habit-flip-btn" id="habitFlipBtn">Today →</button>
+      </div>
+      <div class="habit-add-row">
+        <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
+        <button id="habitAddBtn">+</button>
+      </div>
+      <ul class="habit-manage-list" id="habitManageList"></ul>
+    </div>
+
+    <div class="habit-divider"></div>
+
+    <!-- Back: Today's tracker -->
+    <div class="habit-panel habit-panel-back">
+      <div class="habit-panel-header">
+        <span class="card-title">Today</span>
+        <button class="habit-flip-btn" id="habitFlipBackBtn">← Back</button>
+        <span class="habit-today-date" id="habitTodayDate"></span>
+      </div>
+      <ul class="habit-today-list" id="habitTodayList"></ul>
+      <div class="habit-today-footer" id="habitTodayFooter"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Habit Pulse — mobile only, shown in habits tab below flip card -->
+<div class="habit-pulse-section page-hidden" id="sec-habit-pulse">
+  <div class="habit-pulse-label">Habit Pulse</div>
+  <div class="habit-pulse-chart-wrap">
+    <canvas id="consistencyChart"></canvas>
+  </div>
+</div>

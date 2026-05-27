@@ -12,7 +12,8 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=67">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=68">
+  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=68">
 </head>
 <body>
 
@@ -92,619 +93,23 @@
 
     <main class="playground">
 
-      <!-- Profile tab — full-width, hidden by router until avatar clicked -->
-      <div class="card full-row sec-profile-card page-hidden" id="sec-profile">
-        <div class="profile-inner">
-
-          <!-- Avatar + name -->
-          <div class="profile-tab-avatar-row">
-            <div class="user-avatar profile-tab-avatar" id="profileTabAvatar">
-              <span class="avatar-initial">{{ username[0]|upper }}</span>
-            </div>
-            <div>
-              <div class="profile-tab-username">{{ username }}</div>
-              <div class="profile-tab-sub" id="headerRankBadge2"></div>
-            </div>
-          </div>
-
-          <!-- Settings -->
-          <div class="pp-divider"></div>
-          <div class="pp-label">Theme</div>
-          <div style="padding:6px 16px 10px;">
-            <div class="theme-swatches">
-              <button class="theme-swatch" data-theme="default" style="background:#0d0b08;border-color:rgba(212,165,116,0.45)!important;" title="Blackhole"></button>
-              <button class="theme-swatch" data-theme="cyan"     style="background:#00ccd4;" title="Cyan"></button>
-              <button class="theme-swatch" data-theme="pink"     style="background:#e866a0;" title="Pink"></button>
-              <button class="theme-swatch" data-theme="purple"   style="background:#a855f7;" title="Purple"></button>
-              <button class="theme-swatch" data-theme="blue"     style="background:#4d9ef7;" title="Blue"></button>
-              <button class="theme-swatch" data-theme="darkblue" style="background:#3a5cc5;" title="Dark Blue"></button>
-              <button class="theme-swatch" data-theme="grey"     style="background:#909090;" title="Grey"></button>
-              <button class="theme-swatch" data-theme="black"    style="background:#111;border-color:rgba(255,255,255,0.18)!important;" title="Black"></button>
-              <button class="theme-swatch" data-theme="white"    style="background:#f5f5f5;border-color:rgba(0,0,0,0.2)!important;" title="White"></button>
-              <button class="theme-swatch" data-theme="beige"    style="background:#f0ebe0;border-color:rgba(0,0,0,0.18)!important;" title="Beige"></button>
-              <button class="theme-swatch theme-swatch-soon" title="Custom — Coming Soon">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
-            </div>
-            <div class="theme-cs-label">+ Custom — coming soon</div>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-item" id="ppChangeAvatar">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"></circle><path d="M3 21v-1a9 9 0 0 1 18 0v1"></path></svg>
-            <span>Change Avatar</span>
-            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-          </div>
-          <div class="pp-item" id="ppChangeUsername">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <span>Change Username</span>
-          </div>
-          <div class="pp-item" id="ppChangePassword">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span>Change Password</span>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-item" id="ppStudentVerify">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            <span id="ppStudentLabel">Verify Student Status</span>
-          </div>
-          <div class="pp-divider"></div>
-          <div class="pp-label">App Language</div>
-          <div style="padding:4px 16px 10px;">
-            <select id="ppAppLangSelect" class="pp-lang-select" style="width:100%;max-width:220px;">
-              <option value="en">English</option>
-              <option value="hi">हिन्दी</option>
-              <option value="es">Español</option>
-              <option value="fr">Français</option>
-              <option value="de">Deutsch</option>
-              <option value="ja">日本語</option>
-              <option value="zh">中文</option>
-              <option value="ar">العربية</option>
-              <option value="pt">Português</option>
-              <option value="ru">Русский</option>
-              <option value="ko">한국어</option>
-              <option value="it">Italiano</option>
-              <option value="tr">Türkçe</option>
-              <option value="nl">Nederlands</option>
-              <option value="pl">Polski</option>
-              <option value="bn">বাংলা</option>
-            </select>
-          </div>
-          <div class="pp-divider"></div>
-          <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span>Sign Out</span>
-          </button>
-          <div class="pp-item pp-danger" id="ppDeleteAccount">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path></svg>
-            <span>Delete Account</span>
-          </div>
-
-          <!-- Coming Soon Features -->
-          <div class="pp-divider"></div>
-          <div class="pp-label">Coming Soon</div>
-          <div class="premium-soon-list">
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">BuddyBot</div>
-                <div class="premium-soon-desc">Full-power private AI — dedicated inference server, no filters, credit-based sessions</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">BlinkBot</div>
-                <div class="premium-soon-desc">Inline AI assistant living in your notes and goals sidebar</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">Custom Themes</div>
-                <div class="premium-soon-desc">Upload your own background, set a custom colour palette</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">Student Verification</div>
-                <div class="premium-soon-desc">Verify your student status for exclusive perks</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">Analytics Pro</div>
-                <div class="premium-soon-desc">Deep-dive stats, weekly trends, skill heatmaps</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">Priority AI Speed</div>
-                <div class="premium-soon-desc">Dedicated queue, faster responses across all AI features</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-            <div class="premium-soon-item">
-              <div class="premium-soon-info">
-                <div class="premium-soon-name">Ads</div>
-                <div class="premium-soon-desc">I promise they are gonna be a feature xd.</div>
-              </div>
-              <div class="premium-soon-tag">Soon</div>
-            </div>
-          </div>
-
-          <!-- Request a Feature -->
-          <div class="pp-divider"></div>
-          <div class="pp-label pp-label-section">Request a Feature</div>
-          <div style="padding:4px 16px 12px;">
-            <p class="req-sub" style="padding:0;margin-bottom:8px;">Got an idea? Describe it — we read everything.</p>
-            <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
-            <div class="req-actions">
-              <button class="req-send-btn" id="featureSendBtn">Send Request</button>
-              <span class="req-status" id="featureStatus"></span>
-            </div>
-          </div>
-
-          <!-- Report -->
-          <div class="pp-divider"></div>
-          <div class="pp-label pp-label-section" style="display:flex;align-items:center;justify-content:space-between;padding-right:16px;">
-            Report
-            <div class="req-type-pills" id="reportTypePills" style="margin:0;">
-              <button class="req-type-pill active" data-rtype="bug">Bug</button>
-              <button class="req-type-pill" data-rtype="content">Content</button>
-              <button class="req-type-pill" data-rtype="other">Other</button>
-            </div>
-          </div>
-          <div style="padding:4px 16px 12px;">
-            <p class="req-sub" style="padding:0;margin-bottom:8px;">Something broken or feels wrong? Tell us.</p>
-            <textarea class="req-textarea" id="reportText" placeholder="Describe what happened…" maxlength="2000"></textarea>
-            <div class="req-actions">
-              <button class="req-send-btn" id="reportSendBtn">Send Report</button>
-              <span class="req-status" id="reportStatus"></span>
-            </div>
-          </div>
-
-          <!-- Support -->
-          <div class="pp-divider"></div>
-          <div class="pp-label">Support Veyra</div>
-          <div style="padding:4px 16px 16px;">
-            <p class="req-sub" style="padding:0;margin-bottom:10px;">If Veyra has been useful, consider buying me a drink. It keeps the servers running.</p>
-            <div class="support-donate-links" style="padding:0;">
-              <a class="support-donate-btn" href="https://buymeacoffee.com" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
-            </div>
-          </div>
-
-        </div>
-      </div>
+      {% include 'pug/cards/_profile.html' %}
 
       <!-- Long-term Dream — compact full-row card -->
       <div class="card dream dream-standalone" id="sec-dream">
         <div id="dreamContainer" class="dream-inner"></div>
       </div>
 
-      <div class="card notes" id="sec-notes">
-        <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_notes">Notes / Diary</h2>
-          <span class="enc-badge" title="Your notes are end-to-end encrypted and stored only for you">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            encrypted
-          </span>
-        </div>
-        <div class="notes-view-list" id="notesListScreen">
-          <div class="list-header">
-            <h3 data-i18n="notes_your_flows">Your Flows</h3>
-            <button class="icon-btn" id="newNoteBtn" title="Start New Flow">+</button>
-          </div>
-          <div class="note-items-container" id="noteItemsContainer"></div>
-        </div>
-        <div class="notes-view-editor hidden" id="notesEditorScreen">
-          <div class="editor-top-bar">
-            <button class="icon-btn back-btn" id="backToListBtn">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-            </button>
-            <div style="display:flex;align-items:center;gap:15px;">
-              <span id="saveStatus" class="save-status">Saved</span>
-              <button class="icon-btn" id="deleteNoteBtn" style="color:#c85a2a;">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-          </div>
-          <div class="editor-header">
-            <input type="text" id="noteTitle" placeholder="Entry Title..." data-i18n-ph="notes_title_ph" autocomplete="off" spellcheck="false">
-          </div>
-          <div id="noteBody" class="infinite-canvas" contenteditable="true" data-placeholder="Start your flow (Text, Image, Video)..." data-i18n-dp="notes_body_ph"></div>
-          <div class="editor-media-actions">
-            <input type="date" id="noteDateInput" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:6px;padding:4px;outline:none;font-family:var(--font-mono);font-size:0.8rem;margin-right:10px;cursor:pointer;">
-            <label class="media-btn" style="cursor:pointer;overflow:hidden;position:relative;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-              <input type="file" id="imageInput" accept="image/*" style="opacity:0;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;">
-            </label>
-            <label class="media-btn" style="cursor:pointer;overflow:hidden;position:relative;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-              <input type="file" id="videoInput" accept="video/mp4,video/webm" style="opacity:0;position:absolute;top:0;left:0;width:100%;height:100%;cursor:pointer;">
-            </label>
-          </div>
-        </div>
-      </div>
-
-      <!-- Quick Ask — main chat card (swapped from rbar) -->
-      <div class="card buddybot-main" id="sec-blinkbot" style="display:flex;flex-direction:column;">
-        <div class="card-top-bar">
-          <h2 class="card-title">Quick Ask</h2>
-          <button id="mainGroqClearBtn" style="margin-left:auto;font-size:0.68rem;font-family:var(--font-mono);background:none;border:none;color:var(--text-dim);opacity:0.45;cursor:pointer;">✕ clear</button>
-        </div>
-        <div class="chat-window" id="mainGroqMessages" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px 16px;">
-          <div style="color:var(--text-dim);opacity:0.35;font-size:0.74rem;">Ask anything…</div>
-        </div>
-        <div class="chat-input-pill">
-          <input type="text" id="mainGroqInput" placeholder="Ask Groq…" autocomplete="off">
-          <button class="send-ai-btn" id="mainGroqSendBtn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Skills Card -->
-      <div class="skills-wrap page-hidden" id="sec-skills-wrapper">
-        <div class="skills-flip-inner" id="skillsFlipInner">
-
-          <div class="card skills-main" id="sec-skills">
-            <div class="card-top-bar">
-              <h2 class="card-title" data-i18n="card_skills">Skills</h2>
-              <button class="skills-flip-btn" id="skillsFlipBtn">Achievements →</button>
-            </div>
-            <div class="skills-main-list" id="skillsMainList">
-              <div class="skill-loading" style="margin-top:30px;" data-i18n="skills_empty">Open STATS to generate your skill sheet.</div>
-            </div>
-          </div>
-
-          <div class="card achievements-main" id="sec-achievements">
-            <div class="card-top-bar">
-              <h2 class="card-title" data-i18n="card_work">Achievements</h2>
-              <button class="skills-flip-btn" id="skillsFlipBackBtn">← Skills</button>
-              <button class="icon-btn" id="newAchievementBtn" title="Add achievement">+</button>
-            </div>
-            <div class="achievements-list" id="achievementsList">
-              <div class="skill-loading" style="margin-top:30px;opacity:0.45;">Projects. Releases. Results.<br>No certs — real output only.</div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <div class="card dms" id="sec-social">
-        <div class="card-top-bar">
-          <h2 class="card-title" id="dmCardTitle" data-i18n="card_dms">DMs</h2>
-          <input type="text" id="dmUserSearch" placeholder="Search users..." autocomplete="off" class="dm-inline-search hidden">
-          <button class="icon-btn" id="newDmBtn" title="New message">+</button>
-          <button class="icon-btn" id="cancelNewDmBtn" title="Cancel" style="display:none;">✕</button>
-        </div>
-        <div id="dmUserResults" class="dm-inline-results hidden"></div>
-        <!-- Conversation list -->
-        <div id="dmConvList" class="dm-conv-list"></div>
-        <!-- Chat view -->
-        <div id="dmChatView" class="dm-chat-view hidden">
-          <div class="dm-chat-header">
-            <button id="dmBackBtn" class="icon-btn" title="Back">←</button>
-            <span id="dmChatName" class="dm-chat-name"></span>
-          </div>
-          <div id="dmMessages" class="dm-messages"></div>
-          <div class="dm-input-row">
-            <button class="dm-attach-btn" id="dmAttachBtn" title="Attach file">📎</button>
-            <input type="file" id="dmFileInput" accept="image/*,video/*,audio/*" style="display:none;">
-            <button class="dm-voice-btn" id="dmVoiceBtn" title="Voice message">🎙</button>
-            <span class="dm-voice-timer" id="dmVoiceTimer">0:00</span>
-            <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
-            <button id="dmSendBtn">→</button>
-          </div>
-          <div id="dmUploadProgress" class="upload-progress hidden"><div class="upload-progress-bar" id="dmProgressBar"></div></div>
-          <div id="dmMediaPreview" class="dm-media-preview hidden"></div>
-        </div>
-      </div>
-
-      <div class="card comms" id="sec-comms">
-        <div class="card-top-bar">
-          <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;" id="commTitleBlock">
-            <h2 class="card-title" data-i18n="card_comms">Community Posts</h2>
-            <span class="comm-field-label" id="commRangeLabel">🌐 global</span>
-          </div>
-          <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
-          <button class="icon-btn" id="cancelCommPostBtn" title="Cancel" style="display:none;">✕</button>
-        </div>
-
-        <!-- Inline compose pane -->
-        <div id="commInlineCompose" class="comm-inline-compose hidden">
-          <div class="comm-modal-tabs">
-            <button class="comm-modal-tab active" id="commTabWrite">✏ Write</button>
-            <button class="comm-modal-tab" id="commTabQuick">⚡ Quick</button>
-          </div>
-          <div id="commWritePane" style="margin-top:10px;">
-            <div id="commModalInput" class="comm-modal-textarea" contenteditable="true" data-placeholder="What's on your mind..."></div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-              <label class="dm-attach-btn" id="commAttachLabel" title="Attach media" style="cursor:pointer;font-size:1.0rem;">📎
-                <input type="file" id="commFileInput" accept="image/*,video/*,audio/*" style="display:none;">
-              </label>
-              <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
-            </div>
-            <div id="commUploadProgress" class="upload-progress hidden" style="margin-top:6px;"><div class="upload-progress-bar" id="commProgressBar"></div></div>
-            <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
-          </div>
-          <div id="commQuickPane" class="hidden" style="margin-top:10px;">
-            <label class="comm-quick-zone" id="commQuickZone">
-              <input type="file" id="commQuickFileInput" accept="image/*,video/*,audio/*" style="display:none;">
-              <div id="commQuickPlaceholder">
-                <div style="font-size:2.8rem;line-height:1;margin-bottom:10px;">📷</div>
-                <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-dim);letter-spacing:0.06em;">Photo · Video · Audio</div>
-                <div style="font-size:0.68rem;color:var(--text-dim);opacity:0.5;margin-top:4px;">tap to choose</div>
-              </div>
-              <div id="commQuickPreview" class="hidden"></div>
-            </label>
-            <div id="commQuickProgress" class="upload-progress hidden" style="margin-top:8px;"><div class="upload-progress-bar" id="commQuickProgressBar"></div></div>
-            <input type="text" id="commQuickCaption" class="comm-quick-caption" placeholder="Caption (optional)..." maxlength="150" autocomplete="off">
-            <span class="comm-char-count" id="commQuickCaptionCount">0 / 150</span>
-          </div>
-          <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
-          <div class="modal-actions" style="margin-top:12px;">
-            <button id="confirmCommPostBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Post</button>
-          </div>
-        </div>
-
-        <!-- Skill filter chips -->
-        <div class="comm-skill-filter" id="commSkillFilter">
-          <button class="comm-skill-chip active" data-skill="">All</button>
-          <button class="comm-skill-chip" data-skill="running">Running</button>
-          <button class="comm-skill-chip" data-skill="coding">Coding</button>
-          <button class="comm-skill-chip" data-skill="writing">Writing</button>
-          <button class="comm-skill-chip" data-skill="art">Art</button>
-          <button class="comm-skill-chip" data-skill="cooking">Cooking</button>
-          <button class="comm-skill-chip" data-skill="music">Music</button>
-        </div>
-        <!-- Feed -->
-        <div class="comm-feed" id="commFeed"></div>
-      </div>
-
-      <!-- Habits card — flippable: front=manage+today, back=30-day graph -->
-      <div class="card habits-card full-row" id="sec-habits">
-        <div class="habits-inner" id="habitFlipInner">
-
-          <!-- Front: Add & manage habits -->
-          <div class="habit-panel habit-panel-front habit-front">
-            <div class="habit-panel-header">
-              <span class="card-title" data-i18n="card_habits">Habits</span>
-              <button class="habit-flip-btn" id="habitFlipBtn">Today →</button>
-            </div>
-            <div class="habit-add-row">
-              <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
-              <button id="habitAddBtn">+</button>
-            </div>
-            <ul class="habit-manage-list" id="habitManageList"></ul>
-          </div>
-
-          <div class="habit-divider"></div>
-
-          <!-- Back: Today's tracker -->
-          <div class="habit-panel habit-panel-back">
-            <div class="habit-panel-header">
-              <span class="card-title">Today</span>
-              <button class="habit-flip-btn" id="habitFlipBackBtn">← Back</button>
-              <span class="habit-today-date" id="habitTodayDate"></span>
-            </div>
-            <ul class="habit-today-list" id="habitTodayList"></ul>
-            <div class="habit-today-footer" id="habitTodayFooter"></div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Habit Pulse — mobile only, shown in habits tab below flip card -->
-      <div class="habit-pulse-section page-hidden" id="sec-habit-pulse">
-        <div class="habit-pulse-label">Habit Pulse</div>
-        <div class="habit-pulse-chart-wrap">
-          <canvas id="consistencyChart"></canvas>
-        </div>
-      </div>
-
-      <!-- BuddyBot — premium coming soon, full-row -->
-      <div class="card full-row buddybot-soon-card page-hidden" id="sec-buddybot">
-        <div class="bb-soon-inner">
-
-          <div class="bb-soon-left">
-            <div class="bb-soon-premium-badge">Premium Feature</div>
-            <div class="bb-soon-name">BuddyBot</div>
-            <div class="bb-soon-tagline">Your uncensored AI. Private + Unfiltered.</div>
-            <div class="bb-soon-desc">
-              BuddyBot is a full 8B parameter model running on Veyra's private inference server —
-              not a shared cloud API, not a wrapper. Your session is isolated and never logged.
-              No content filters. No rate limits. No surveillance.
-              Buy credits, run sessions, get real answers.
-            </div>
-            <div class="bb-soon-cta">Coming Soon</div>
-          </div>
-
-          <div class="bb-soon-features">
-            <div class="bb-soon-feature">
-              <div class="bb-soon-feature-dot"></div>
-              <div>
-                <div class="bb-soon-feature-name">Fully Private</div>
-                <div class="bb-soon-feature-desc">Dedicated server session. Your conversation is isolated and purged when done.</div>
-              </div>
-            </div>
-            <div class="bb-soon-feature">
-              <div class="bb-soon-feature-dot"></div>
-              <div>
-                <div class="bb-soon-feature-name">Zero Filters</div>
-                <div class="bb-soon-feature-desc">Uncensored model. Ask anything — get real, unfiltered answers.</div>
-              </div>
-            </div>
-            <div class="bb-soon-feature">
-              <div class="bb-soon-feature-dot"></div>
-              <div>
-                <div class="bb-soon-feature-name">Credit-Based Access</div>
-                <div class="bb-soon-feature-desc">Buy credits when you need deep AI power. No subscriptions forced on you.</div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Request a Feature -->
-      <!-- Stats tab — wrapper: rank guide card + stat sheet card -->
-      <div class="stats-wrap page-hidden" id="sec-stats-wrapper">
-        <div class="stats-flip-inner" id="statsFlipInner">
-
-          <!-- Card 1 (desktop first / mobile back): Rank Guide -->
-          <div class="card sec-rank-card" id="sec-rank-guide">
-            <div class="card-top-bar">
-              <h2 class="card-title">Rank Guide</h2>
-              <button class="stats-flip-btn" id="statsFlipBackBtn">← Stats</button>
-            </div>
-            <div class="rank-guide-scroll">
-              <div class="pp-rank-grid" style="padding:8px 4px 16px;">
-                <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
-                <div class="pp-rank-row"><span style="color:#ffb700;">S</span><span>Top 0.001% globally</span></div>
-                <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
-                <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
-                <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
-                <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
-                <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
-                <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
-                <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
-                <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Card 2 (desktop second / mobile front): Stat Sheet -->
-          <div class="card sec-stats-card" id="sec-stats">
-            <div class="stats-content">
-
-              <div class="stats-sheet-header">
-                <div class="stats-sheet-identity">
-                  <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.8rem;padding:2px 9px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
-                  <span class="stats-sheet-username logo">{{ username }}</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.72rem;padding:4px 12px;">↻ Re-analyze</button>
-                  <button class="stats-flip-btn" id="statsFlipBtn">Guide →</button>
-                </div>
-              </div>
-
-              <div class="stats-field">
-                <span class="stats-field-label" data-i18n="stats_class">CLASS</span>
-                <span class="stats-field-value" id="statClassName">—</span>
-              </div>
-
-              <div class="stats-field">
-                <span class="stats-field-label" data-i18n="stats_personality">PERSONALITY</span>
-                <div>
-                  <span class="stats-field-value" id="statPersonality">—</span>
-                  <div class="stats-field-desc" id="statPersonalityDesc"></div>
-                </div>
-              </div>
-
-              <div class="stats-field stats-field-bio">
-                <span class="stats-field-label">BIO</span>
-                <div class="stats-field-desc" id="statBio"></div>
-              </div>
-
-              <div class="stats-skills-section">
-                <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
-                <div id="statSkillsList" class="skills-list">
-                  <div class="skill-loading">Scanning data...</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Wisdom / Quote — always visible, sits between cards and adboxes -->
-      <div class="wisdom-bar">
-        <span class="quote-text random-quote">Loading wisdom...</span>
-      </div>
-
-      <!-- Ad slots -->
-      <div class="adbox-row">
-        <div class="add1"></div>
-        <div class="add2"></div>
-        <div class="add3"></div>
-        <div class="add4"></div>
-        <div class="add5"></div>
-      </div>
-
+      {% include 'pug/cards/_notes.html' %}
+      {% include 'pug/cards/_skills.html' %}
+      {% include 'pug/cards/_social.html' %}
+      {% include 'pug/cards/_habits.html' %}
+      {% include 'pug/cards/_buddybot.html' %}
+      {% include 'pug/cards/_stats.html' %}
 
     </main>
 
-    <aside class="r-bar">
-
-      <!-- 1. Calendar — always first -->
-      <div class="r-card calender" id="calendarCard">
-        <div class="r-card-header" data-i18n="sidebar_event_calendar">Event Calendar</div>
-        <div class="calendar-header">
-          <button id="prevMonth">&lt;</button>
-          <span id="monthDisplay">Month Year</span>
-          <button id="nextMonth">&gt;</button>
-        </div>
-        <div class="calendar-weekdays">
-          <div>S</div><div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div>
-        </div>
-        <div class="calendar-days" id="calendarDays"></div>
-      </div>
-
-      <!-- 2. BlinkBot — coming soon -->
-      <div class="r-card r-blinkbot-soon" id="rGroqCard">
-        <div class="r-blinkbot-soon-inner">
-          <div class="r-blinkbot-soon-name">BlinkBot</div>
-          <div class="r-blinkbot-soon-badge">Coming Soon</div>
-          <div class="r-blinkbot-soon-sub">On-device AI Automator</div>
-        </div>
-      </div>
-
-      <!-- 3. Goals card — flippable (front=active, back=finished/cancelled) -->
-      <div class="r-card r-goals-card goal-flip-card">
-        <div class="goal-flip-inner" id="goalFlipInner">
-
-          <!-- Front: active goals -->
-          <div class="goal-face goal-front">
-            <div class="r-card-header">
-              <span data-i18n="sidebar_goals">Goals</span>
-              <button class="goal-flip-btn" id="goalFlipBtn">Done ↩</button>
-            </div>
-            <div class="r-goals-sections">
-              <div class="r-goals-list" id="rActiveGoalsList"></div>
-            </div>
-            <div class="r-goal-input-row">
-              <input type="text" id="rNewGoalInput" placeholder="New goal…" data-i18n-ph="sidebar_new_goal_ph" autocomplete="off">
-              <button id="rAddGoalBtn">+</button>
-            </div>
-          </div>
-
-          <!-- Back: finished / cancelled (no title) -->
-          <div class="goal-face goal-back">
-            <div class="r-card-header">
-              <button class="goal-flip-btn" id="goalFlipBackBtn">← Goals</button>
-            </div>
-            <div class="r-done-cols">
-              <div class="r-done-col">
-                <div class="r-done-label" style="color:var(--green);" data-i18n="sidebar_finished">Finished</div>
-                <div id="rFinishedList" class="r-done-list"></div>
-              </div>
-              <div class="r-done-col">
-                <div class="r-done-label" style="color:var(--text-dim);" data-i18n="sidebar_cancelled">Cancelled</div>
-                <div id="rCancelledList" class="r-done-list"></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-    </aside>
-    <div class="rbar-backdrop" id="rBarBackdrop"></div>
+    {% include 'pug/_sidebar.html' %}
 
   </div>
 
@@ -814,7 +219,6 @@
     </div>
   </div>
 
-
   <!-- Verify work item modal -->
   <div id="verifyWorkModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:400px;">
@@ -860,8 +264,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Community compose modal -->
 
   <!-- Public profile popup -->
   <div id="pubProfileModal" class="custom-modal hidden">
@@ -1126,7 +528,7 @@
     });
   })();
 
-  // Quick Ask — chatbot with history
+  // Quick Ask — rbar chatbot (legacy, kept for compatibility)
   (function() {
     var input    = document.getElementById('rGroqInput');
     var sendBtn  = document.getElementById('rGroqSendBtn');
@@ -1162,17 +564,13 @@
       var q = input.value.trim();
       if (!q) return;
       input.value = '';
-
-      // Clear placeholder on first message
       var ph = messages.querySelector('.r-groq-placeholder');
       if (ph) ph.remove();
-
       addBubble(q, 'user');
       history.push({ role: 'user', content: q });
       setThinking(true);
       input.disabled = true;
       sendBtn.disabled = true;
-
       fetch('/pug/api/blinkbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1200,7 +598,6 @@
       history = [];
       messages.innerHTML = '<div class="r-groq-placeholder">Ask anything…</div>';
     });
-
     sendBtn.addEventListener('click', ask);
     input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
   })();
@@ -1229,18 +626,7 @@
       <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">
         Student verification coming soon.
       </p>
-
       <div id="svStatus" style="display:none;margin-bottom:12px;padding:10px 12px;border-radius:8px;font-size:0.78rem;line-height:1.5;"></div>
-
-      <!-- ID upload — commented out until verification flow is finalised
-      <div class="field" style="margin-bottom:4px;">
-        <label style="font-family:var(--font-mono);font-size:0.66rem;color:var(--text-dim);display:block;margin-bottom:5px;">Student ID Image *</label>
-        <input type="file" id="svIdFile" accept=".jpg,.jpeg,.png,.webp"
-               style="font-size:0.78rem;color:var(--text-muted);width:100%;cursor:pointer;">
-        <p style="font-size:0.66rem;color:var(--text-dim);margin-top:5px;">JPG, PNG, or WEBP — max 30 MB</p>
-      </div>
-      -->
-
       <div class="modal-actions" style="margin-top:16px;">
         <button id="svCancelBtn" class="nav-pill btn-ghost">Cancel</button>
         <button id="svSubmitBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Submit for review</button>
@@ -1333,12 +719,10 @@
         e.stopPropagation();
         if (ballEl) hideBall(); else createBall();
       }
-    }, true); // capture phase so it fires before other listeners
+    }, true);
 
-    // Any click outside the ball dismisses it
     document.addEventListener('click', function () { if (ballEl) hideBall(); });
 
-    // Inactivity trigger — only after 14-day streak
     if (getLoginStreak() >= STREAK_THRESHOLD) {
       ['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
         window.addEventListener(ev, resetTimer, { passive: true });
@@ -1346,7 +730,6 @@
       resetTimer();
     }
 
-    // Modal buttons
     document.getElementById('drinkCancelBtn').addEventListener('click', function () {
       document.getElementById('drinkModal').classList.add('hidden');
     });
