@@ -209,6 +209,15 @@ def create_app():
         resp.headers['Cache-Control'] = 'no-cache'
         return resp
 
+    @app.route('/favicon.ico')
+    def favicon():
+        from flask import send_from_directory
+        return send_from_directory(
+            os.path.join(app.static_folder, 'icons'),
+            'icon-192.png',
+            mimetype='image/png',
+        )
+
     # ── Invalidate sessions for deleted users ─────────────
     @app.before_request
     def validate_session_user():
