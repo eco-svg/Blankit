@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=51">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=52">
 </head>
 <body>
 
@@ -563,9 +563,8 @@
 
       <!-- Stats tab -->
       <div class="card full-row sec-stats-card page-hidden" id="sec-stats">
-        <div class="stats-sheet-wrap">
+        <div class="stats-content">
 
-          <!-- Header -->
           <div class="stats-sheet-header">
             <div class="stats-sheet-identity">
               <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.8rem;padding:2px 9px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
@@ -574,7 +573,6 @@
             <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.72rem;padding:4px 12px;">↻ Re-analyze</button>
           </div>
 
-          <!-- Fields -->
           <div class="stats-field">
             <span class="stats-field-label" data-i18n="stats_class">CLASS</span>
             <span class="stats-field-value" id="statClassName">—</span>
@@ -593,7 +591,6 @@
             <div class="stats-field-desc" id="statBio"></div>
           </div>
 
-          <!-- Skills -->
           <div class="stats-skills-section">
             <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
             <div id="statSkillsList" class="skills-list">

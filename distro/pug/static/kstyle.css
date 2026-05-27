@@ -3262,49 +3262,45 @@ button.nav-pill:not(.btn-ghost):hover {
   display: none;
 }
 
-/* ── Stats tab card ──────────────────────────────────── */
+/* ── Stats tab — single card, no double box ──────────── */
 .sec-stats-card {
-  background: rgba(8, 6, 4, 0.80) !important;
-  border-color: rgba(212, 165, 116, 0.18) !important;
-  box-shadow: 0 0 48px rgba(212, 165, 116, 0.06);
-  padding: 28px 20px 40px;
+  background: rgba(8, 6, 4, 0.82) !important;
+  border-color: rgba(212, 165, 116, 0.16) !important;
+  box-shadow: 0 0 56px rgba(212, 165, 116, 0.05);
   height: auto;
-  min-height: 480px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-/* Centered character-sheet form card */
-.stats-sheet-wrap {
-  width: 100%;
-  max-width: 580px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(212, 165, 116, 0.14);
-  border-radius: 14px;
-  padding: 28px 28px 32px;
+  min-height: 460px;
+  padding: 0;
   position: relative;
   overflow: hidden;
 }
 
-/* subtle top-right glow orb */
-.stats-sheet-wrap::before {
+.sec-stats-card::before {
   content: '';
   position: absolute;
-  top: -60px; right: -60px;
-  width: 200px; height: 200px;
+  top: -80px; right: -80px;
+  width: 260px; height: 260px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(212,165,116,0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212,165,116,0.07) 0%, transparent 68%);
   pointer-events: none;
+  z-index: 0;
+}
+
+/* plain centering wrapper — no border, no background */
+.stats-content {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 28px 24px 36px;
 }
 
 .stats-sheet-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(212, 165, 116, 0.12);
+  margin-bottom: 22px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(212, 165, 116, 0.14);
 }
 
 .stats-sheet-identity {
@@ -3318,39 +3314,38 @@ button.nav-pill:not(.btn-ghost):hover {
   line-height: 1;
 }
 
-/* Labeled field rows */
 .stats-field {
   display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: 10px;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
   align-items: start;
-  padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
 }
 
 .stats-field-label {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   letter-spacing: 0.14em;
   color: var(--text-dim);
   text-transform: uppercase;
-  padding-top: 4px;
+  padding-top: 3px;
 }
 
 .stats-field-value {
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--accent);
   line-height: 1.25;
 }
 
 .stats-field-desc {
-  font-size: 0.8rem;
+  font-size: 0.79rem;
   color: var(--text-muted);
   line-height: 1.6;
   font-style: italic;
-  margin-top: 4px;
+  margin-top: 3px;
   min-height: 1em;
 }
 
@@ -3359,14 +3354,13 @@ button.nav-pill:not(.btn-ghost):hover {
   color: var(--text-dim);
 }
 
-/* Skills section */
 .stats-skills-section {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .stats-skills-header {
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.64rem;
   letter-spacing: 0.14em;
   color: var(--text-dim);
   text-transform: uppercase;
@@ -3374,9 +3368,8 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 @media (max-width: 640px) {
-  .stats-sheet-wrap { padding: 20px 16px 24px; }
+  .stats-content { padding: 20px 14px 28px; }
   .stats-field { grid-template-columns: 72px 1fr; }
-  .sec-stats-card { padding: 16px 10px 32px; }
 }
 
 /* ── Stats popup panel ───────────────────────────────── */
