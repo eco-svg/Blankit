@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=41">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=42">
 </head>
 <body>
 
@@ -393,7 +393,7 @@
 
     <aside class="r-bar">
 
-      <!-- Calendar — always first -->
+      <!-- 1. Calendar — always first -->
       <div class="r-card calender" id="calendarCard">
         <div class="r-card-header" data-i18n="sidebar_event_calendar">Event Calendar</div>
         <div class="calendar-header">
@@ -407,30 +407,52 @@
         <div class="calendar-days" id="calendarDays"></div>
       </div>
 
-      <!-- Goals -->
-      <div class="r-card r-goals-card">
-        <div class="r-card-header" data-i18n="sidebar_goals">Goals</div>
-        <div class="r-goals-sections">
-          <div class="r-goals-list" id="rActiveGoalsList"></div>
-        </div>
-        <div class="r-goal-input-row">
-          <input type="text" id="rNewGoalInput" placeholder="New goal..." data-i18n-ph="sidebar_new_goal_ph" autocomplete="off">
-          <button id="rAddGoalBtn">+</button>
+      <!-- 2. Groq quick-ask card -->
+      <div class="r-card r-groq-card" id="rGroqCard">
+        <div class="r-card-header">Quick Ask</div>
+        <div class="r-groq-response" id="rGroqResponse"><span class="r-groq-placeholder">Ask anything from the web…</span></div>
+        <div class="r-groq-input-row">
+          <input type="text" id="rGroqInput" placeholder="Ask Groq…" autocomplete="off">
+          <button id="rGroqSendBtn">↑</button>
         </div>
       </div>
 
-      <!-- Finished / Cancelled — two columns -->
-      <div class="r-card r-done-card">
-        <div class="r-card-header" data-i18n="sidebar_completed">Completed</div>
-        <div class="r-done-cols">
-          <div class="r-done-col">
-            <div class="r-done-label" style="color:var(--green);" data-i18n="sidebar_finished">Finished</div>
-            <div id="rFinishedList" class="r-done-list"></div>
+      <!-- 3. Goals card — flippable (front=active, back=finished/cancelled) -->
+      <div class="r-card r-goals-card goal-flip-card">
+        <div class="goal-flip-inner" id="goalFlipInner">
+
+          <!-- Front: active goals -->
+          <div class="goal-face goal-front">
+            <div class="r-card-header">
+              <span data-i18n="sidebar_goals">Goals</span>
+              <button class="goal-flip-btn" id="goalFlipBtn">Done ↩</button>
+            </div>
+            <div class="r-goals-sections">
+              <div class="r-goals-list" id="rActiveGoalsList"></div>
+            </div>
+            <div class="r-goal-input-row">
+              <input type="text" id="rNewGoalInput" placeholder="New goal…" data-i18n-ph="sidebar_new_goal_ph" autocomplete="off">
+              <button id="rAddGoalBtn">+</button>
+            </div>
           </div>
-          <div class="r-done-col">
-            <div class="r-done-label" style="color:var(--text-dim);" data-i18n="sidebar_cancelled">Cancelled</div>
-            <div id="rCancelledList" class="r-done-list"></div>
+
+          <!-- Back: finished / cancelled (no title) -->
+          <div class="goal-face goal-back">
+            <div class="r-card-header">
+              <button class="goal-flip-btn" id="goalFlipBackBtn">← Goals</button>
+            </div>
+            <div class="r-done-cols">
+              <div class="r-done-col">
+                <div class="r-done-label" style="color:var(--green);" data-i18n="sidebar_finished">Finished</div>
+                <div id="rFinishedList" class="r-done-list"></div>
+              </div>
+              <div class="r-done-col">
+                <div class="r-done-label" style="color:var(--text-dim);" data-i18n="sidebar_cancelled">Cancelled</div>
+                <div id="rCancelledList" class="r-done-list"></div>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -675,6 +697,47 @@
     toggle.addEventListener('click', function() { rbar.classList.contains('open') ? close() : open(); });
     if (bd) bd.addEventListener('click', close);
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') close(); });
+  })();
+
+  // Goal card flip
+  (function() {
+    var inner   = document.getElementById('goalFlipInner');
+    var flipBtn = document.getElementById('goalFlipBtn');
+    var backBtn = document.getElementById('goalFlipBackBtn');
+    if (!inner) return;
+    if (flipBtn) flipBtn.addEventListener('click', function() { inner.classList.add('flipped'); });
+    if (backBtn) backBtn.addEventListener('click', function() { inner.classList.remove('flipped'); });
+  })();
+
+  // Groq quick-ask
+  (function() {
+    var input    = document.getElementById('rGroqInput');
+    var sendBtn  = document.getElementById('rGroqSendBtn');
+    var response = document.getElementById('rGroqResponse');
+    var card     = document.getElementById('rGroqCard');
+    if (!input || !sendBtn || !response) return;
+
+    function ask() {
+      var q = input.value.trim();
+      if (!q) return;
+      input.value = '';
+      response.innerHTML = '<span class="r-groq-thinking">thinking…</span>';
+      if (card) card.classList.add('r-groq-expanded');
+      fetch('/pug/api/blinkbot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: q })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var text = d.answer || d.error || 'No response.';
+        response.textContent = text;
+      })
+      .catch(function() { response.textContent = 'Error — try again.'; });
+    }
+
+    sendBtn.addEventListener('click', ask);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
   })();
   </script>
 

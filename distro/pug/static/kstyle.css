@@ -446,10 +446,113 @@ body.header-hidden .l-bar {
 
 .r-goal-input-row button:hover { background: rgba(255,255,255,0.15); }
 
-/* ── Finished / Cancelled Two-Column Card ──────────── */
-.r-done-card {
-  flex: 0 0 234px;
+/* ── Goal flip card ─────────────────────────────────── */
+.goal-flip-card {
+  perspective: 1200px;
+  overflow: hidden !important;
+  padding: 0;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  animation: none !important;
+  flex: 1;
+  min-height: 200px;
 }
+.goal-flip-card:hover { transform: none; }
+
+.goal-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.goal-flip-inner.flipped { transform: rotateY(180deg); }
+
+.goal-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 8, 6, 0.68);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  overflow: hidden;
+  padding: 12px 14px 10px;
+}
+.goal-back { transform: rotateY(180deg); }
+
+.goal-flip-btn {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.goal-flip-btn:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Groq quick-ask card ────────────────────────────── */
+.r-groq-card {
+  flex: 0 0 auto;
+  min-height: 72px;
+  transition: min-height 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.r-groq-card.r-groq-expanded { min-height: 160px; }
+
+.r-groq-response {
+  flex: 1;
+  font-size: 0.74rem;
+  color: var(--text);
+  line-height: 1.5;
+  overflow-y: auto;
+  min-height: 0;
+}
+.r-groq-placeholder { color: var(--text-dim); opacity: 0.4; font-size: 0.72rem; }
+.r-groq-thinking { color: var(--text-dim); opacity: 0.55; font-style: italic; font-size: 0.72rem; }
+
+.r-groq-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.r-groq-input-row input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.74rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.r-groq-input-row input:focus { border-color: rgba(255,255,255,0.25); }
+.r-groq-input-row button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.r-groq-input-row button:hover { background: rgba(255,255,255,0.15); }
+
+/* ── Finished / Cancelled Two-Column Card ──────────── */
 
 .r-done-cols {
   display: flex;
@@ -2493,6 +2596,9 @@ button.nav-pill:not(.btn-ghost):hover {
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* ── Profile popup rank legend ────────────────────────── */
