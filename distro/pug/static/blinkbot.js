@@ -15,10 +15,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const modeLabel     = document.getElementById('blinkModeLabel');
 
   /* ── Constants ────────────────────────────────────────────────── */
-  const MODEL_ID   = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
-  const MODEL_MB   = 860;
-  const WEBLLM_CDN = '/pug_style/webllm.js';
-  const STORE_KEY  = 'blinkbot-v2';
+  const MODEL_ID      = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
+  const MODEL_LIB     = 'Qwen2-1.5B-Instruct-q4f16_1_cs1k-webgpu.wasm';
+  const MODEL_MB      = 860;
+  const WEBLLM_CDN    = '/pug_style/webllm.js';
+  const STORE_KEY     = 'blinkbot-v2';
+  const _origin       = window.location.origin;
+  const _MLC_APP_CFG  = {
+    model_list: [{
+      model:               `${_origin}/pug/mlc-weights`,
+      model_id:            MODEL_ID,
+      model_lib:           `${_origin}/pug/mlc-lib/${MODEL_LIB}`,
+      low_resource_required: true,
+      overrides:           { context_window_size: 4096 },
+    }],
+  };
 
   /* ── State ────────────────────────────────────────────────────── */
   let engine       = null;
@@ -155,6 +166,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!MLCEngine) throw new Error('WebLLM bundle loaded but MLCEngine not found');
     const e = new MLCEngine();
     await e.reload(MODEL_ID, {
+      appConfig:            _MLC_APP_CFG,
       initProgressCallback: (report) => onProgress(report.progress, isDownload),
     });
     engine = e;

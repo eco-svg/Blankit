@@ -2092,6 +2092,49 @@ def proxy_wisdom():
         return jsonify({'error': 'unavailable'}), 502
 
 
+_MLC_HF_BASE  = 'https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC/resolve/main'
+_MLC_LIB_BASE = 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_83/base'
+
+
+def _stream_proxy(upstream_url):
+    import requests as req
+    from flask import Response, stream_with_context
+    headers = {}
+    if 'Range' in request.headers:
+        headers['Range'] = request.headers['Range']
+    r = req.get(upstream_url, headers=headers, stream=True, timeout=120)
+    resp_headers = {'Content-Type': r.headers.get('Content-Type', 'application/octet-stream')}
+    for h in ('Content-Length', 'Content-Range', 'Accept-Ranges'):
+        if h in r.headers:
+            resp_headers[h] = r.headers[h]
+
+    def gen():
+        for chunk in r.iter_content(chunk_size=65536):
+            yield chunk
+
+    return Response(stream_with_context(gen()), status=r.status_code, headers=resp_headers)
+
+
+@pug_bp.route('/pug/mlc-weights/<path:filepath>')
+def proxy_mlc_weights(filepath):
+    err = login_required_api()
+    if err: return err
+    try:
+        return _stream_proxy(f'{_MLC_HF_BASE}/{filepath}')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 502
+
+
+@pug_bp.route('/pug/mlc-lib/<path:filename>')
+def proxy_mlc_lib(filename):
+    err = login_required_api()
+    if err: return err
+    try:
+        return _stream_proxy(f'{_MLC_LIB_BASE}/{filename}')
+    except Exception as e:
+        return jsonify({'error': str(e)}), 502
+
+
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])
 def blinkbot_debug():
     err = login_required_api()
