@@ -48,10 +48,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function isWasmCspBlocked(err) {
     const msg = (err?.message || String(err)).toLowerCase();
-    return (err instanceof CompileError) ||
-           msg.includes('wasm-unsafe-eval') ||
+    return msg.includes('wasm-unsafe-eval') ||
            msg.includes('unsafe-eval') ||
-           (msg.includes('webassembly') && msg.includes('content security'));
+           (msg.includes('webassembly') && msg.includes('content security')) ||
+           (typeof WebAssembly !== 'undefined' && err instanceof WebAssembly.CompileError);
   }
 
   function setProgress(pct, msg) {
