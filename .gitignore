@@ -18,3 +18,4 @@ distro/pug/tools/
 
 # Claude Code memory
 .claude/
+distro/pug/static/webllm.js
