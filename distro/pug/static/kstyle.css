@@ -169,10 +169,19 @@ body::after {
 }
 
 .nav-pill:hover,
-.nav-pill.active {
+.nav-pill.active,
+.nav-pill.nav-active {
   color: var(--accent);
   border-color: var(--border-hover);
   background: var(--accent-glow);
+}
+
+/* ── SPA page routing ───────────────────────────────── */
+.page-hidden { display: none !important; }
+
+.playground > .card:not(.page-hidden),
+.playground > .card.dream-standalone {
+  animation: fadeUp 0.18s ease both;
 }
 
 .header-right {
