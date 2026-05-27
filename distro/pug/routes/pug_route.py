@@ -42,7 +42,7 @@ def _get_blinkbot():
         _blinkbot_model = Llama(
             model_path=_BLINK_PATH,
             n_ctx=2048,
-            n_threads=os.cpu_count() or 4,
+            n_threads=min(os.cpu_count() or 2, 2),
             chat_format='chatml',
             verbose=False,
             use_mlock=False,
@@ -2063,22 +2063,23 @@ def habits_history():
 def proxy_weather():
     err = login_required_api()
     if err: return err
-    import requests as req
     try:
-        lat = float(request.args.get('lat', '30.7333'))
-        lon = float(request.args.get('lon', '76.7794'))
-        if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-            raise ValueError('out of range')
-    except (ValueError, TypeError):
-        return jsonify({'error': 'invalid coordinates'}), 400
-    try:
+        import requests as req
+        try:
+            lat = float(request.args.get('lat', '30.7333'))
+            lon = float(request.args.get('lon', '76.7794'))
+            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                raise ValueError('out of range')
+        except (ValueError, TypeError):
+            return jsonify({'error': 'invalid coordinates'}), 400
         r = req.get(
             f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true',
             timeout=8
         )
         r.raise_for_status()
         return jsonify(r.json())
-    except Exception:
+    except Exception as e:
+        current_app.logger.error(f'[proxy_weather] {type(e).__name__}: {e}')
         return jsonify({'error': 'unavailable'}), 502
 
 
