@@ -4271,6 +4271,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .mobile-bottom-bar {
   display: none;
 }
+.csf-mobile-title { display: none; }
 
 @media (max-width: 768px) {
   :root {
@@ -4328,6 +4329,47 @@ button.nav-pill:not(.btn-ghost):hover {
   .mbb-menu:active {
     color: rgba(255, 255, 255, 0.8);
   }
+
+  /* Inner nav groups fill the bar */
+  .mbb-main-nav,
+  .mbb-profile-nav {
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+  }
+  .mbb-profile-nav { display: none; }
+
+  /* Swap to profile sub-nav */
+  .mobile-bottom-bar.profile-mode .mbb-main-nav  { display: none; }
+  .mobile-bottom-bar.profile-mode .mbb-profile-nav { display: flex; }
+
+  /* Profile sub-nav buttons (same shape as mbb-tab) */
+  .mbb-profile-tab,
+  .mbb-profile-back {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    padding: 6px 4px 2px;
+    transition: color 0.18s;
+  }
+  .mbb-profile-tab svg,
+  .mbb-profile-back svg { stroke: currentColor; transition: stroke 0.18s; }
+  .mbb-profile-tab.nav-active { color: var(--accent); }
+  .mbb-profile-back { color: rgba(255, 255, 255, 0.55); }
+  .mbb-profile-tab:active,
+  .mbb-profile-back:active { color: rgba(255, 255, 255, 0.8); }
 }
 
 /* ── 768px: single column, compact header ── */
@@ -4409,4 +4451,42 @@ button.nav-pill:not(.btn-ghost):hover {
     height: 90px;
     min-width: 100px;
   }
+
+  /* ── Profile tab: single-panel on mobile ── */
+  .profile-tab-cols { flex-direction: column; }
+
+  .profile-tab-settings,
+  .profile-tab-rank,
+  .profile-tab-soon {
+    display: none;
+    flex: none;
+    width: 100%;
+    border-right: none;
+    padding: 0;
+    overflow-y: auto;
+  }
+  .profile-tab-settings.mob-panel-active { display: flex; flex-direction: column; }
+  .profile-tab-rank.mob-panel-active     { display: block; padding: 16px 20px; }
+  .profile-tab-soon.mob-panel-active     { display: block; padding: 8px 20px 20px; }
+
+  /* hide desktop "Coming Soon" label, show mobile CSF reveal */
+  .pp-csf-desktop-label { display: none; }
+  .csf-mobile-title {
+    display: block;
+    padding: 2px 0 14px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+  .csf-mobile-title .csf-full { display: none; color: var(--accent); }
+  .csf-mobile-title.revealed .csf-full { display: inline; }
+
+  /* ── BuddyBot: vertical stack ── */
+  .bb-soon-inner   { flex-direction: column; gap: 24px; }
+  .bb-soon-features { flex: none; width: 100%; }
+  .bb-soon-name    { font-size: 2.2rem; }
+  .bb-soon-desc    { max-width: 100%; }
 }

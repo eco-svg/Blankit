@@ -23,6 +23,20 @@
     return ROUTES[hash] !== undefined ? hash : DEFAULT;
   }
 
+  function switchProfilePanel(panel) {
+    const map = {
+      settings: document.getElementById('profilePanelSettings'),
+      rank:     document.getElementById('profilePanelRank'),
+      csf:      document.getElementById('profilePanelCSF'),
+    };
+    Object.keys(map).forEach(k => {
+      if (map[k]) map[k].classList.toggle('mob-panel-active', k === panel);
+    });
+    document.querySelectorAll('.mbb-profile-tab').forEach(btn => {
+      btn.classList.toggle('nav-active', btn.getAttribute('data-panel') === panel);
+    });
+  }
+
   function navigate(route, push) {
     const sections = ROUTES[route];
     if (sections === undefined) return;
@@ -60,6 +74,13 @@
     document.querySelectorAll('.mbb-tab').forEach(btn => {
       btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);
     });
+
+    // Swap bottom bar to profile sub-nav or back to main nav
+    const mbb = document.getElementById('mobileBottomBar');
+    if (mbb) mbb.classList.toggle('profile-mode', route === 'profile');
+
+    // Reset to settings panel whenever profile tab is opened
+    if (route === 'profile') switchProfilePanel('settings');
 
     if (push) history.pushState({ route }, '', '#' + route);
   }
@@ -105,6 +126,30 @@
     if (mbbMenu && rBarToggle) {
       mbbMenu.addEventListener('click', function () {
         rBarToggle.click();
+      });
+    }
+
+    // Wire profile sub-nav panel buttons
+    document.querySelectorAll('.mbb-profile-tab').forEach(btn => {
+      const panel = btn.getAttribute('data-panel');
+      btn.addEventListener('click', function () {
+        switchProfilePanel(panel);
+      });
+    });
+
+    // Wire profile back button → home
+    const mbbProfileBack = document.getElementById('mbbProfileBack');
+    if (mbbProfileBack) {
+      mbbProfileBack.addEventListener('click', function () {
+        navigate('notes', true);
+      });
+    }
+
+    // CSF title reveal on tap
+    const csfTitle = document.getElementById('csfMobileTitle');
+    if (csfTitle) {
+      csfTitle.addEventListener('click', function () {
+        this.classList.toggle('revealed');
       });
     }
 

@@ -46,19 +46,14 @@
   }
 })();
 
-// ── Profile Popup Toggle ──────────────────────
+// ── Profile Tab Trigger ───────────────────────
 (function () {
   const trigger = document.getElementById('profileTrigger');
-  const popup   = document.getElementById('profilePopup');
-  if (!trigger || !popup) return;
-
+  if (!trigger) return;
+  trigger.style.cursor = 'pointer';
   trigger.addEventListener('click', e => {
     e.stopPropagation();
-    popup.classList.toggle('hidden');
-  });
-
-  document.addEventListener('click', e => {
-    if (!popup.contains(e.target)) popup.classList.add('hidden');
+    if (window._veyraNavigate) window._veyraNavigate('profile', true);
   });
 })();
 
