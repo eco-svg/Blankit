@@ -32,7 +32,8 @@ _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybo
 _blinkbot_model  = None
 _buddybot_model  = None
 _BUDDYBOT_ENABLED   = os.environ.get('BUDDYBOT_ENABLED',        'false').lower() == 'true'
-_LOCAL_INFERENCE    = os.environ.get('ENABLE_LOCAL_INFERENCE',  'false').lower() == 'true'
+_local_inf_env      = os.environ.get('ENABLE_LOCAL_INFERENCE',  'auto').lower()
+_LOCAL_INFERENCE    = (_LLAMA_OK and os.path.exists(_BLINK_PATH)) if _local_inf_env == 'auto' else (_local_inf_env == 'true')
 
 
 def _get_blinkbot():
