@@ -8,10 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const dmMessages      = document.getElementById('dmMessages');
     const dmInput         = document.getElementById('dmInput');
     const dmSendBtn       = document.getElementById('dmSendBtn');
-    const newDmModal      = document.getElementById('newDmModal');
     const cancelNewDmBtn  = document.getElementById('cancelNewDmBtn');
     const dmUserSearch    = document.getElementById('dmUserSearch');
     const dmUserResults   = document.getElementById('dmUserResults');
+    const dmCardTitle     = document.getElementById('dmCardTitle');
     const dmAttachBtn     = document.getElementById('dmAttachBtn');
     const dmFileInput     = document.getElementById('dmFileInput');
     const dmMediaPreview  = document.getElementById('dmMediaPreview');
@@ -344,27 +344,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     }
 
-    // ── User search modal ─────────────────────────────────────────────────────
-    newDmBtn?.addEventListener('click', () => {
+    // ── User search (inline in DM card header) ────────────────────────────────
+    function openDmSearch() {
+        dmCardTitle?.classList.add('hidden');
+        dmUserSearch?.classList.remove('hidden');
+        cancelNewDmBtn && (cancelNewDmBtn.style.display = '');
+        newDmBtn && (newDmBtn.style.display = 'none');
         dmUserSearch.value = '';
         dmUserResults.innerHTML = '';
-        newDmModal?.classList.remove('hidden');
-        setTimeout(() => dmUserSearch.focus(), 50);
-    });
+        dmUserResults?.classList.add('hidden');
+        setTimeout(() => dmUserSearch?.focus(), 50);
+    }
 
-    cancelNewDmBtn?.addEventListener('click', () => newDmModal?.classList.add('hidden'));
-    window.addEventListener('click', e => { if (e.target === newDmModal) newDmModal?.classList.add('hidden'); });
+    function closeDmSearch() {
+        dmCardTitle?.classList.remove('hidden');
+        dmUserSearch?.classList.add('hidden');
+        cancelNewDmBtn && (cancelNewDmBtn.style.display = 'none');
+        newDmBtn && (newDmBtn.style.display = '');
+        dmUserResults?.classList.add('hidden');
+        dmUserResults.innerHTML = '';
+    }
+
+    newDmBtn?.addEventListener('click', openDmSearch);
+    cancelNewDmBtn?.addEventListener('click', closeDmSearch);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDmSearch(); });
 
     let searchTimer;
     dmUserSearch?.addEventListener('input', () => {
         clearTimeout(searchTimer);
         const q = dmUserSearch.value.trim();
-        if (q.length < 2) { dmUserResults.innerHTML = ''; return; }
+        if (q.length < 2) { dmUserResults.innerHTML = ''; dmUserResults?.classList.add('hidden'); return; }
         searchTimer = setTimeout(() => {
             fetch(`/pug/api/users/search?q=${encodeURIComponent(q)}`)
                 .then(r => r.json())
                 .then(users => {
                     dmUserResults.innerHTML = '';
+                    dmUserResults?.classList.remove('hidden');
                     if (!users.length) {
                         dmUserResults.innerHTML = '<div class="dm-search-empty">No users found.</div>';
                         return;
@@ -374,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         el.className = 'dm-search-result';
                         el.textContent = u.username;
                         el.addEventListener('click', () => {
-                            newDmModal?.classList.add('hidden');
+                            closeDmSearch();
                             openChat(u.id, u.username);
                         });
                         dmUserResults.appendChild(el);

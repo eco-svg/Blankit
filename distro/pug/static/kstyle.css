@@ -575,7 +575,7 @@ body.header-hidden .l-bar {
   grid-template-columns: 1fr 1fr;
   /* row 1: dream banner (60px); rows 2-5: card pairs; row 6: habits full-row; row 7: view full-row; row 8: adboxes */
   grid-template-rows: 60px repeat(4, 800px) 700px 700px 210px;
-  grid-auto-rows: 800px;
+  grid-auto-rows: 0;
   column-gap: clamp(16px, 2.5vw, 40px);
   row-gap: 0;
   align-content: start;
@@ -2245,6 +2245,26 @@ button.nav-pill:not(.btn-ghost):hover {
   transition: opacity 0.15s;
 }
 .dm-input-row button:hover { opacity: 0.85; }
+
+/* Inline DM search */
+.dm-inline-search {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  color: var(--text);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+  outline: none;
+}
+.dm-inline-search::placeholder { color: var(--text-dim); }
+.dm-inline-results {
+  border-bottom: 1px solid var(--border);
+  max-height: 160px;
+  overflow-y: auto;
+  margin: 0 -1px;
+}
 
 /* User search results */
 .dm-search-result {

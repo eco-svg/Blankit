@@ -271,9 +271,12 @@
 
       <div class="card dms" id="sec-social">
         <div class="card-top-bar">
-          <h2 class="card-title" data-i18n="card_dms">DMs</h2>
+          <h2 class="card-title" id="dmCardTitle" data-i18n="card_dms">DMs</h2>
+          <input type="text" id="dmUserSearch" placeholder="Search users..." autocomplete="off" class="dm-inline-search hidden">
           <button class="icon-btn" id="newDmBtn" title="New message">+</button>
+          <button class="icon-btn" id="cancelNewDmBtn" title="Cancel" style="display:none;">✕</button>
         </div>
+        <div id="dmUserResults" class="dm-inline-results hidden"></div>
         <!-- Conversation list -->
         <div id="dmConvList" class="dm-conv-list"></div>
         <!-- Chat view -->
@@ -563,18 +566,6 @@
     </div>
   </div>
 
-  <!-- New DM modal -->
-  <div id="newDmModal" class="custom-modal hidden">
-    <div class="modal-content" style="max-width:320px;">
-      <h3 style="margin-bottom:12px;font-size:1.0rem;color:var(--text);font-weight:600;">New Message</h3>
-      <input id="dmUserSearch" type="text" placeholder="Search username..." autocomplete="off"
-        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:8px;">
-      <div id="dmUserResults" style="max-height:200px;overflow-y:auto;"></div>
-      <div class="modal-actions" style="margin-top:12px;">
-        <button id="cancelNewDmBtn" class="nav-pill btn-ghost">Cancel</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Verify work item modal -->
   <div id="verifyWorkModal" class="custom-modal hidden">
