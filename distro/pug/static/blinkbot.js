@@ -283,7 +283,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!r.ok) throw new Error(`Server error ${r.status}`);
         const data = await r.json();
         reply  = data.answer || data.error || 'No response — try again.';
-        source = 'groq';
+        source = data.source || 'server';
+        const modeMap = { blinkbot: 'server · BlinkBot', buddybot: 'server · BuddyBot', groq: 'server · Groq' };
+        setMode(modeMap[source] || 'server');
         addMsg(reply, 'ai', source);
       }
 

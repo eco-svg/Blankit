@@ -1259,16 +1259,18 @@ def blinkbot_chat():
         user_context = _assemble_user_context(user_id, session.get('username', ''))
         final = None
 
-        # Tier 1: BlinkBot 1.5B — needs fast CPU/GPU, disabled on HF Space
+        # Tier 1: BlinkBot 1.5B — server-side GGUF via llama-cpp
+        source = None
         if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BLINK_PATH):
             try:
                 raw = _call_blinkbot_server(message, history, user_context, user_id)
                 if raw and 'route_to_server' not in raw.lower():
                     final = raw
+                    source = 'blinkbot'
             except Exception as e:
                 print(f'[blinkbot] server error: {e}', flush=True)
 
-        # Tier 2: BuddyBot 8B — needs fast CPU/GPU, disabled on HF Space
+        # Tier 2: BuddyBot 8B
         if not final and _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
             try:
                 goals_str = ', '.join(user_context['active_goals']) or 'none'
@@ -1283,12 +1285,14 @@ def blinkbot_chat():
                     f"task: answer_directly"
                 )
                 final = _call_buddybot(packet, user_context)
+                source = 'buddybot'
             except Exception as e:
                 print(f'[buddybot] relay error: {e}', flush=True)
 
         # Tier 3: Groq — always available
         if not final:
             final = _call_groq_chat(message, history, user_context, user_id=user_id)
+            source = 'groq'
 
         if not final:
             return jsonify({'error': 'AI unavailable'}), 503
@@ -1296,7 +1300,7 @@ def blinkbot_chat():
         from .chat_logger import append_chat_entry
         append_chat_entry(user_id, message, final)
 
-        return jsonify({'answer': final, 'routed': True})
+        return jsonify({'answer': final, 'source': source})
 
     except Exception as e:
         current_app.logger.error(f'BlinkBot relay error: {e}')
