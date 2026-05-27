@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from functools import wraps
 import os
-from groq import Groq
+import requests as http
 
 catalystcrew_bp = Blueprint(
     'catalystcrew', __name__,
@@ -53,39 +53,44 @@ def ai_coach():
     if not message:
         return jsonify({'error': 'No message provided'}), 400
 
-    raw_key = os.getenv('CC_GROQ_API_KEY') or os.getenv('GROQ_API_KEY', '')
+    api_key = os.getenv('CC_GROQ_API_KEY', '').strip()
+    if not api_key:
+        print('[coach] CC_GROQ_API_KEY not set')
+        return jsonify({'reply': "Coach is offline — API key not configured."}), 200
 
     try:
-        if not raw_key:
-            raise ValueError("No Groq API key set (tried CC_GROQ_API_KEY, GROQ_API_KEY)")
-        client = Groq(api_key=raw_key.strip())
-
-        response = client.chat.completions.create(
-            model='llama-3.1-8b-instant',
-            messages=[
-                {
-                    'role': 'system',
-                    'content': (
-                        'You are an AI habit coach called Coach inside a habit tracking app. '
-                        'Be motivational, direct, and personalized. '
-                        'Reply in 2-3 sentences maximum. '
-                        'Do not use asterisks or markdown formatting.'
-                    )
-                },
-                {
-                    'role': 'user',
-                    'content': f'I am feeling {mood}. {message}'
-                }
-            ],
-            max_tokens=150,
-            temperature=0.8
+        resp = http.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type':  'application/json',
+            },
+            json={
+                'model': 'llama-3.3-70b-versatile',
+                'messages': [
+                    {
+                        'role': 'system',
+                        'content': (
+                            'You are an AI habit coach called Coach inside a habit tracking app. '
+                            'Be motivational, direct, and personalized. '
+                            'Reply in 2-3 sentences maximum. '
+                            'Do not use asterisks or markdown formatting.'
+                        )
+                    },
+                    {
+                        'role': 'user',
+                        'content': f'I am feeling {mood}. {message}'
+                    }
+                ],
+                'max_tokens': 150,
+                'temperature': 0.8,
+            },
+            timeout=20,
         )
-
-        reply = response.choices[0].message.content.strip()
+        resp.raise_for_status()
+        reply = resp.json()['choices'][0]['message']['content'].strip()
         return jsonify({'reply': reply})
 
     except Exception as e:
-        print(f"Groq API error FULL: {e}")
-        return jsonify({
-            'reply': "I'm having trouble connecting right now. Keep pushing — you've got this!"
-        }), 200
+        print(f'[coach] Groq error: {e}')
+        return jsonify({'reply': "I'm having trouble connecting right now. Keep pushing — you've got this!"}), 200

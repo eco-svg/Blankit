@@ -247,6 +247,7 @@ def create_app():
             "img-src 'self' data: blob:; "
             "media-src 'self' blob:; "
             "connect-src 'self'; "
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
             "frame-ancestors 'self' https://huggingface.co; "
             "object-src 'none'; "
             "base-uri 'self';"
