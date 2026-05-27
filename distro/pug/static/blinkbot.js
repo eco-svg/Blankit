@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ── Constants ────────────────────────────────────────────────── */
   const MODEL_ID   = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
   const MODEL_MB   = 860;
-  const WEBLLM_CDN = '/pug/static/webllm.js';
+  const WEBLLM_CDN = '/pug_style/webllm.js';
   const STORE_KEY  = 'blinkbot-v2';
 
   /* ── State ────────────────────────────────────────────────────── */
