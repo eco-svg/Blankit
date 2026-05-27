@@ -1,18 +1,21 @@
 (function () {
-  // Each tab shows a group of sections (the original row pair)
   const ROUTES = {
-    'notes':   ['sec-notes', 'sec-blinkbot'],
-    'skills':  ['sec-skills', 'sec-achievements'],
-    'social':  ['sec-social', 'sec-comms'],
+    'notes':    ['sec-notes', 'sec-blinkbot'],
+    'skills':   ['sec-skills', 'sec-achievements'],
+    'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],
-    'request':  ['sec-req-feature', 'sec-report'],
-    'profile': ['sec-profile'],
+    'request':  ['sec-req-feature'],
+    'support':  ['sec-report'],
+    'profile':  ['sec-profile'],
+    'stats':    ['sec-stats'],
   };
+
+  // Routes that show the lbar (home tab only)
+  const LBAR_ROUTES = new Set(['notes']);
 
   const DEFAULT = 'notes';
 
-  // All sections the router manages (dream-standalone is always visible)
   const ALL_SECTIONS = [...new Set(Object.values(ROUTES).flat())];
 
   function getRoute() {
@@ -45,19 +48,25 @@
       a.classList.toggle('nav-active', a.getAttribute('data-route') === route);
     });
 
+    // Toggle lbar visibility
+    document.body.classList.toggle('lbar-open', LBAR_ROUTES.has(route));
+
+    // Update lbar capsule active state
+    document.querySelectorAll('.lbar-capsule').forEach(btn => {
+      btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);
+    });
+
     if (push) history.pushState({ route }, '', '#' + route);
   }
 
-  // Expose navigate globally so other scripts can trigger tab switches
   window._veyraNavigate = navigate;
 
   document.addEventListener('DOMContentLoaded', function () {
     // Wire nav links
     document.querySelectorAll('.header-nav .nav-pill').forEach(a => {
       const href  = a.getAttribute('href') || '';
-      // href is like #sec-notes or #sec-growth — extract the route key
-      const secId  = href.replace('#sec-', '');
-      const route  = Object.keys(ROUTES).find(k =>
+      const secId = href.replace('#sec-', '').replace('#', '');
+      const route = Object.keys(ROUTES).find(k =>
         k === secId || (ROUTES[k] && ROUTES[k].includes('sec-' + secId))
       ) || secId;
       a.setAttribute('data-route', route);
@@ -65,6 +74,14 @@
       a.style.cursor = 'pointer';
       a.addEventListener('click', function (e) {
         e.preventDefault();
+        navigate(route, true);
+      });
+    });
+
+    // Wire lbar capsule buttons
+    document.querySelectorAll('.lbar-capsule').forEach(btn => {
+      const route = btn.getAttribute('data-route');
+      btn.addEventListener('click', function () {
         navigate(route, true);
       });
     });

@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=48">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=50">
 </head>
 <body>
 
@@ -44,12 +44,12 @@
     </div>
 
     <nav class="header-nav">
-      <a href="#sec-notes"  class="nav-pill">Home</a>
-      <a href="#sec-habits" class="nav-pill">Habits</a>
-      <a href="#sec-skills" class="nav-pill">Skills</a>
-      <a href="#sec-social" class="nav-pill">Social</a>
-      <a href="#sec-buddybot"    class="nav-pill">BuddyBot</a>
-      <a href="#sec-req-feature" class="nav-pill">Request</a>
+      <a href="#notes"          class="nav-pill">Home</a>
+      <a href="#buddybot"       class="nav-pill">BuddyBot</a>
+      <a href="#social"         class="nav-pill">Social</a>
+      <a href="#request"        class="nav-pill">Request</a>
+      <a href="#support"        class="nav-pill">Support</a>
+      <a href="#stats"          class="nav-pill">Stats</a>
     </nav>
 
     <div class="header-right">
@@ -82,6 +82,12 @@
       </div>
     </div>
   </header>
+
+  <!-- Left capsule rail — Skills & Habits, visible on Home tab only -->
+  <div class="veyra-lbar" id="veyraLbar">
+    <button class="lbar-capsule" data-route="skills">Skills</button>
+    <button class="lbar-capsule" data-route="habits">Habits</button>
+  </div>
 
   <div class="page-layout">
 
@@ -557,6 +563,39 @@
         </div>
       </div>
 
+      <!-- Stats tab -->
+      <div class="card full-row sec-stats-card stats-sheet page-hidden" id="sec-stats">
+        <div class="stats-tab-topbar">
+          <div class="stats-tab-identity">
+            <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.82rem;padding:2px 8px;border-radius:5px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
+            <h2 class="stats-tab-username logo">{{ username }}</h2>
+          </div>
+          <button id="reanalyzeBtn" class="nav-pill btn-ghost" style="font-size:0.75rem;padding:5px 14px;gap:6px;display:flex;align-items:center;">↻ Re-analyze</button>
+        </div>
+
+        <div class="stats-tab-cols">
+          <div class="stats-tab-profile">
+            <div class="char-class-section">
+              <div class="char-class-label" data-i18n="stats_class">CLASS</div>
+              <div class="char-class-name" id="statClassName">—</div>
+            </div>
+            <div class="char-class-section">
+              <div class="char-class-label" data-i18n="stats_personality">PERSONALITY</div>
+              <div class="char-class-name" id="statPersonality" style="font-size:1rem;">—</div>
+              <div class="char-bio" id="statPersonalityDesc"></div>
+            </div>
+            <div class="char-bio" id="statBio" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px;"></div>
+          </div>
+
+          <div class="stats-tab-skills">
+            <div class="char-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
+            <div id="statSkillsList" class="skills-list">
+              <div class="skill-loading">Scanning data...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Wisdom / Quote — always visible, sits between cards and adboxes -->
       <div class="wisdom-bar">
         <span class="quote-text random-quote">Loading wisdom...</span>
@@ -640,39 +679,6 @@
     </aside>
     <div class="rbar-backdrop" id="rBarBackdrop"></div>
 
-  </div>
-
-  <!-- Stats Popup Panel (anchored top-right, like profile popup) -->
-  <div id="statsModal" class="stats-popup">
-    <div class="stats-popup-inner stats-sheet">
-      <div class="stats-header">
-        <h2 class="logo" style="font-size:1.1rem;display:flex;align-items:center;gap:8px;flex:1;">
-          <span id="statsPopupRankBadge" class="rank-badge" style="display:none;font-size:0.75rem;padding:1px 6px;border-radius:4px;border:1px solid currentColor;font-family:var(--font-mono);"></span>
-          {{ username }}
-        </h2>
-        <button id="reanalyzeBtn" title="Re-analyze (force refresh)" style="background:transparent;border:none;cursor:pointer;color:var(--text-dim);font-size:1rem;padding:2px 6px;opacity:0.45;transition:opacity 0.15s;line-height:1;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='0.45'">↻</button>
-      </div>
-
-      <div class="char-class-section">
-        <div class="char-class-label" data-i18n="stats_class">CLASS</div>
-        <div class="char-class-name" id="statClassName">—</div>
-      </div>
-
-      <div class="char-class-section" style="margin-top:12px;">
-        <div class="char-class-label" data-i18n="stats_personality">PERSONALITY</div>
-        <div class="char-class-name" id="statPersonality" style="font-size:1rem;">—</div>
-        <div class="char-bio" id="statPersonalityDesc" style="margin-top:5px;"></div>
-      </div>
-
-      <div class="char-bio" id="statBio" style="margin-top:12px;border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;"></div>
-
-      <div class="char-skills" style="margin-top:12px;">
-        <div class="char-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
-        <div id="statSkillsList" class="skills-list">
-          <div class="skill-loading">Scanning data...</div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Modals -->
@@ -1151,14 +1157,9 @@
 
   <!-- Buy-me-a-drink modal -->
   <div id="drinkModal" class="custom-modal hidden">
-    <div class="modal-content" style="max-width:360px;text-align:center;">
+    <div class="modal-content" style="max-width:360px;text-align:center;background:rgba(13,11,8,0.45);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);">
       <div style="font-size:3rem;line-height:1;margin-bottom:14px;" id="drinkModalIcon">☕</div>
-      <h3 style="margin-bottom:8px;font-size:1.1rem;color:var(--text);font-weight:600;">Buy me a drink?</h3>
-      <p style="font-size:0.78rem;color:var(--text-dim);margin-bottom:18px;line-height:1.6;">
-        You've been showing up every single day.<br>
-        If Veyra's added anything to your grind,<br>
-        an Amazon Pay gift card is always appreciated 🙏
-      </p>
+      <h3 style="margin-bottom:18px;font-size:1.1rem;color:var(--text);font-weight:600;">Buy Me A Drink?</h3>
       <input type="text" id="drinkGiftCode" autocomplete="off" spellcheck="false"
         placeholder="Amazon Pay gift card code"
         style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.84rem;font-family:var(--font-mono);outline:none;box-sizing:border-box;">
@@ -1219,7 +1220,8 @@
 
     function createBall() {
       if (ballEl) return;
-      var emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      var emojiIdx = Math.floor(Math.random() * EMOJIS.length);
+      var emoji    = EMOJIS[emojiIdx];
       var ball  = document.createElement('div');
       ball.id   = 'drinkBall';
       ball.textContent = emoji;
@@ -1247,10 +1249,16 @@
       function tick() {
         x += dx; y += dy;
         var maxX = window.innerWidth - size, maxY = window.innerHeight - size;
-        if (x <= 0)    { x = 0;    dx =  Math.abs(dx); }
-        if (x >= maxX) { x = maxX; dx = -Math.abs(dx); }
-        if (y <= 0)    { y = 0;    dy =  Math.abs(dy); }
-        if (y >= maxY) { y = maxY; dy = -Math.abs(dy); }
+        var bounced = false;
+        if (x <= 0)    { x = 0;    dx =  Math.abs(dx); bounced = true; }
+        if (x >= maxX) { x = maxX; dx = -Math.abs(dx); bounced = true; }
+        if (y <= 0)    { y = 0;    dy =  Math.abs(dy); bounced = true; }
+        if (y >= maxY) { y = maxY; dy = -Math.abs(dy); bounced = true; }
+        if (bounced) {
+          emojiIdx = (emojiIdx + 1) % EMOJIS.length;
+          emoji = EMOJIS[emojiIdx];
+          ball.textContent = emoji;
+        }
         ball.style.left = x + 'px'; ball.style.top = y + 'px';
         rafId = requestAnimationFrame(tick);
       }

@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const modal           = document.getElementById('statsModal');
-    const btn      = document.getElementById('statsBtn');
-    const closeBtn = document.querySelector('#statsModal .close-modal');
+    const btn             = document.getElementById('statsBtn');
     const classNameEl     = document.getElementById('statClassName');
     const personalityEl   = document.getElementById('statPersonality');
     const personalityDesc = document.getElementById('statPersonalityDesc');
@@ -38,24 +36,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
 
-    // ── Popup open/close ────────────────────────────────────────────────────
+    // ── Stats tab navigation ────────────────────────────────────────────────
     function openStats() {
-        modal.classList.add('visible');
+        if (window._veyraNavigate) window._veyraNavigate('stats', true);
         if (sheet) { renderModal(); }
         else { fetchStats(false); }
     }
-    function closeStats() { modal.classList.remove('visible'); }
 
     btn?.addEventListener('click', e => { e.stopPropagation(); openStats(); });
     reanalyzeBtn?.addEventListener('click', e => { e.stopPropagation(); fetchStats(true); });
-    closeBtn?.addEventListener('click', closeStats);
-
-    // Click outside the popup to close
-    document.addEventListener('click', e => {
-        if (modal.classList.contains('visible') && !modal.contains(e.target) && e.target !== btn) {
-            closeStats();
-        }
-    });
 
     // ── Render helpers ──────────────────────────────────────────────────────
     function normaliseRank(raw) {
@@ -139,10 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function reapplyStatsLabels() {
-        // Re-translate static data-i18n labels inside the stats popup after JS renders
-        const popup = document.getElementById('statsModal');
-        if (!popup || !window.i18nGet) return;
-        popup.querySelectorAll('[data-i18n]').forEach(el => {
+        const statsCard = document.getElementById('sec-stats');
+        if (!statsCard || !window.i18nGet) return;
+        statsCard.querySelectorAll('[data-i18n]').forEach(el => {
             const v = window.i18nGet(el.dataset.i18n);
             if (v !== null) el.textContent = v;
         });
@@ -222,9 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Re-translate when user switches language ─────────────────────────────
     window.addEventListener('langChanged', () => {
         reapplyStatsLabels();
-        if (sheet && modal.classList.contains('visible')) {
-            renderModal();
-        }
+        if (sheet) renderModal();
     });
 
 });

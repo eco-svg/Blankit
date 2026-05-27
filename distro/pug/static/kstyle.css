@@ -253,7 +253,7 @@ body::after {
   position: fixed;
   top: var(--header-h);
   left: 0;
-  width: var(--lbar-w);                                        
+  width: var(--lbar-w);
   height: calc(100vh - var(--header-h));
   z-index: 100;
   display: flex;
@@ -261,6 +261,65 @@ body::after {
   gap: var(--gap);
   padding: var(--gap) var(--gap) var(--gap) 8px;
   overflow: hidden;
+}
+
+/* ── Veyra lbar — 60px vertical capsule rail ─────────── */
+.veyra-lbar {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  width: 60px;
+  height: calc(100vh - var(--header-h));
+  z-index: 110;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-10px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+body.lbar-open .veyra-lbar {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+
+body.lbar-open .playground {
+  margin-left: 60px;
+}
+
+.lbar-capsule {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 30px;
+  padding: 18px 9px;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s;
+  min-height: 72px;
+  line-height: 1;
+}
+
+.lbar-capsule:hover {
+  background: var(--accent-glow);
+  border-color: rgba(212, 165, 116, 0.28);
+  color: var(--accent);
+}
+
+.lbar-capsule.nav-active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .adbox-row {
@@ -1037,7 +1096,7 @@ body.header-hidden .l-bar {
   margin-top: var(--header-h);
   margin-left: 0;
   margin-right: var(--rbar-w);
-  padding: 10px 20px 20px clamp(28px, calc(var(--lbar-w) * 0.35), 100px);
+  padding: 10px 20px 20px 20px;
 
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1051,8 +1110,6 @@ body.header-hidden .l-bar {
 /* ── Card Base ── */
 .card {
   background: rgba(255,255,255,0.10);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: var(--radius);
   padding: 16px 16px 36px;
@@ -1904,6 +1961,17 @@ div.infinite-canvas video {
     margin-top: 10px;
 }
 
+.card.skills-main {
+    background: rgba(100, 190, 130, 0.10);
+    border-color: rgba(100, 190, 130, 0.12);
+}
+
+.sec-profile-card,
+.req-card {
+    background: rgba(6, 5, 4, 0.60);
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
 .card.buddybot-main {
     margin-top: 10px;
 }
@@ -2416,6 +2484,10 @@ div.infinite-canvas video {
 .card.comms {
     display: flex;
     flex-direction: column;
+}
+#sec-social, #sec-comms {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 .comm-composer {
     padding: 10px 14px 8px;
@@ -3188,6 +3260,53 @@ button.nav-pill:not(.btn-ghost):hover {
 
 .user-avatar.has-photo .avatar-initial {
   display: none;
+}
+
+/* ── Stats tab card ──────────────────────────────────── */
+.sec-stats-card {
+  background: rgba(8, 6, 4, 0.80) !important;
+  border-color: rgba(212, 165, 116, 0.18) !important;
+  box-shadow: 0 0 48px rgba(212, 165, 116, 0.06);
+  padding: 28px 32px 40px;
+  height: auto;
+  min-height: 540px;
+}
+
+.stats-tab-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.stats-tab-identity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-tab-username {
+  font-size: 1.25rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.stats-tab-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.stats-tab-skills .char-skills-header {
+  margin-bottom: 14px;
+}
+
+@media (max-width: 640px) {
+  .stats-tab-cols { grid-template-columns: 1fr; gap: 24px; }
+  .sec-stats-card { padding: 20px 18px 32px; }
 }
 
 /* ── Stats popup panel ───────────────────────────────── */
@@ -4059,6 +4178,8 @@ button.nav-pill:not(.btn-ghost):hover {
   .rbar-toggle { display: flex; }
   .header-nav  { display: none; }
   .clock-widget { width: auto; }
+  .veyra-lbar  { display: none; }
+  body.lbar-open .playground { margin-left: 0; }
 
   .r-bar {
     width: min(340px, 86vw) !important;
