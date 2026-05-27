@@ -5,8 +5,8 @@
     'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],
-    'request':  ['sec-req-feature'],
-    'support':  ['sec-report'],
+    'request':  ['sec-req-feature', 'sec-report'],
+    'support':  ['sec-support'],
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats'],
   };
@@ -24,14 +24,8 @@
   }
 
   function switchProfilePanel(panel) {
-    const map = {
-      settings: document.getElementById('profilePanelSettings'),
-      rank:     document.getElementById('profilePanelRank'),
-      csf:      document.getElementById('profilePanelCSF'),
-    };
-    Object.keys(map).forEach(k => {
-      if (map[k]) map[k].classList.toggle('mob-panel-active', k === panel);
-    });
+    const card = document.getElementById('sec-profile');
+    if (card) card.dataset.mobilePanel = panel;
     document.querySelectorAll('.mbb-profile-tab').forEach(btn => {
       btn.classList.toggle('nav-active', btn.getAttribute('data-panel') === panel);
     });

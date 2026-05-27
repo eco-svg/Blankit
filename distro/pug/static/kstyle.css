@@ -740,6 +740,33 @@ body.header-hidden .l-bar {
   line-height: 1.55;
 }
 
+/* ── Support donate buttons ────────────────────────── */
+.support-donate-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px 16px 16px;
+}
+.support-donate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition: border-color 0.18s, background 0.18s, color 0.18s;
+}
+.support-donate-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
 /* ── Request / Report cards ─────────────────────────── */
 .req-card { height: auto !important; min-height: 360px; cursor: default; }
 .req-card:hover { transform: none !important; }
@@ -4465,9 +4492,10 @@ button.nav-pill:not(.btn-ghost):hover {
     padding: 0;
     overflow-y: auto;
   }
-  .profile-tab-settings.mob-panel-active { display: flex; flex-direction: column; }
-  .profile-tab-rank.mob-panel-active     { display: block; padding: 16px 20px; }
-  .profile-tab-soon.mob-panel-active     { display: block; padding: 8px 20px 20px; }
+  /* data-mobile-panel controls which panel is visible */
+  #sec-profile[data-mobile-panel="settings"] .profile-tab-settings { display: flex; flex-direction: column; }
+  #sec-profile[data-mobile-panel="rank"]     .profile-tab-rank     { display: block; padding: 16px 20px; }
+  #sec-profile[data-mobile-panel="csf"]      .profile-tab-soon     { display: block; padding: 8px 20px 20px; }
 
   /* hide desktop "Coming Soon" label, show mobile CSF reveal */
   .pp-csf-desktop-label { display: none; }
@@ -4489,4 +4517,9 @@ button.nav-pill:not(.btn-ghost):hover {
   .bb-soon-features { flex: none; width: 100%; }
   .bb-soon-name    { font-size: 2.2rem; }
   .bb-soon-desc    { max-width: 100%; }
+
+  /* ── R-bar: stop before bottom bar ── */
+  .r-bar {
+    padding-bottom: calc(var(--mbb-h) + env(safe-area-inset-bottom) + 12px) !important;
+  }
 }

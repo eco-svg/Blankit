@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=55">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=56">
 </head>
 <body>
 
@@ -93,7 +93,7 @@
     <main class="playground">
 
       <!-- Profile tab — full-width, hidden by router until avatar clicked -->
-      <div class="card full-row sec-profile-card page-hidden" id="sec-profile">
+      <div class="card full-row sec-profile-card page-hidden" id="sec-profile" data-mobile-panel="settings">
         <div class="profile-tab-cols">
 
           <!-- Col 1: Account settings -->
@@ -615,6 +615,29 @@
         <div class="add3"></div>
         <div class="add4"></div>
         <div class="add5"></div>
+      </div>
+
+      <!-- Support tab — donations -->
+      <div class="card full-row req-card page-hidden" id="sec-support">
+        <div class="card-top-bar">
+          <h2 class="card-title">Support Veyra</h2>
+        </div>
+        <p class="req-sub">If Veyra has been useful to you, consider buying me a drink. It keeps the servers running and the features coming.</p>
+        <div class="support-donate-links" id="supportDonateLinks">
+          <a class="support-donate-btn" href="https://buymeacoffee.com" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Buy Me a Coffee
+          </a>
+          <a class="support-donate-btn" href="https://ko-fi.com" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Ko-fi
+          </a>
+          <a class="support-donate-btn" href="https://upi://pay" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            UPI
+          </a>
+        </div>
+        <p class="req-sub" style="margin-top:16px;font-size:0.72rem;opacity:0.5;">Donation links will be updated soon with real details.</p>
       </div>
 
     </main>
