@@ -299,25 +299,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ppStudentVerify?.addEventListener('click', () => {
         closePopup();
-        if (svStatusEl) svStatusEl.style.display = 'none';
-        if (svSubmitBtn) { svSubmitBtn.disabled = false; svSubmitBtn.textContent = 'Submit for review'; }
-        if (svIdFile) svIdFile.value = '';
-
-        fetch('/auth/student-status')
-            .then(r => r.ok ? r.json() : null)
-            .then(data => {
-                if (!data) return;
-                if (data.status === 'approved') {
-                    showSvStatus('✦ Your student status is already verified!', true);
-                    if (svSubmitBtn) svSubmitBtn.disabled = true;
-                } else if (data.status === 'pending') {
-                    showSvStatus('⏳ Pending review — we\'ll email you within 24h.', true);
-                } else if (data.status === 'rejected') {
-                    showSvStatus('Previous submission wasn\'t approved. Upload a clearer ID and re-submit.', false);
-                }
-            })
-            .catch(() => {});
-
+        if (svStatusEl) {
+            svStatusEl.style.display = 'block';
+            svStatusEl.style.background = 'rgba(232,184,75,0.08)';
+            svStatusEl.style.color = 'var(--accent)';
+            svStatusEl.textContent = '✦ Student verification — coming soon.';
+        }
+        if (svSubmitBtn) svSubmitBtn.disabled = true;
         svModal?.classList.remove('hidden');
     });
 

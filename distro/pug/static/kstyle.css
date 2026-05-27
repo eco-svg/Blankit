@@ -16,7 +16,7 @@
   --green:        #78b878;
   --blue:         #4a7aaa;
 
-  --header-h:  100px;
+  --header-h:  50px;
   --lbar-w:    clamp(240px, 22vw, 320px);
   --rbar-w:    clamp(180px, 22vw, 270px);
   --gap:       12px;
@@ -331,7 +331,7 @@ body.header-hidden .l-bar {
 
 .buddybot { flex: 1; background: rgba(74,122,170,0.13); border-color: rgba(74,122,170,0.15) !important; }
 .buddybot:hover { border-color: rgba(74,122,170,0.35) !important; }
-.calender { flex: 0 0 220px; }
+.calender { flex: 0 0 215px; }
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
@@ -1470,7 +1470,7 @@ div.infinite-canvas video {
     display: flex;
     flex-direction: column;
     padding: 15px !important;
-    min-height: 320px;
+    min-height: 315px;
 }
 
 .calendar-header {
