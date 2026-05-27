@@ -4267,6 +4267,69 @@ button.nav-pill:not(.btn-ghost):hover {
   .stats-popup { right: 10px; }
 }
 
+/* ── Mobile Bottom Bar ── */
+.mobile-bottom-bar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --mbb-h: 56px;
+  }
+
+  .mobile-bottom-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--mbb-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(8, 6, 4, 0.92);
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    z-index: 400;
+    align-items: stretch;
+    justify-content: space-around;
+  }
+
+  .mbb-tab,
+  .mbb-menu {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    padding: 6px 4px 2px;
+    transition: color 0.18s;
+  }
+
+  .mbb-tab svg,
+  .mbb-menu svg {
+    stroke: currentColor;
+    transition: stroke 0.18s;
+  }
+
+  .mbb-tab.nav-active {
+    color: var(--accent);
+  }
+
+  .mbb-tab:active,
+  .mbb-menu:active {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
 /* ── 768px: single column, compact header ── */
 @media (max-width: 768px) {
   :root {
@@ -4275,13 +4338,28 @@ button.nav-pill:not(.btn-ghost):hover {
   }
 
   .main-header { padding: 0 12px; gap: 8px; }
-  .clock-widget { display: none; }
-  .greeting     { display: none; }
+  .rbar-toggle  { display: none !important; }
   .pwa-install-btn { display: none !important; }
+
+  /* Mobile top bar: compact greeting */
+  .greeting-hey   { display: none; }
+  .greeting-name  { font-size: 0.85rem; }
+  .header-rank-badge { display: none; }
+
+  /* Mobile top bar: compact clock widget */
+  .clock-widget.stats-integrated {
+    gap: 6px;
+    padding: 4px 8px;
+  }
+  .cw-row:last-child { display: none; }
+  .cw-time  { font-size: 0.78rem; }
+  .cw-weather { display: none; }
+  .cw-sep   { display: none; }
+  .stats-btn-inner { padding: 4px 8px; font-size: 0.65rem; }
 
   .playground {
     margin-right: 0;
-    padding: 10px;
+    padding: 10px 10px calc(var(--mbb-h) + env(safe-area-inset-bottom) + 10px);
     grid-template-columns: 1fr;
     grid-template-rows: 50px repeat(8, auto);
     grid-auto-rows: auto;

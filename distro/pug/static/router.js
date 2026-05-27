@@ -5,7 +5,8 @@
     'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],
-    'request':  ['sec-req-feature', 'sec-report'],
+    'request':  ['sec-req-feature'],
+    'support':  ['sec-report'],
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats'],
   };
@@ -55,6 +56,11 @@
       btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);
     });
 
+    // Update mobile bottom bar active state
+    document.querySelectorAll('.mbb-tab').forEach(btn => {
+      btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);
+    });
+
     if (push) history.pushState({ route }, '', '#' + route);
   }
 
@@ -84,6 +90,23 @@
         navigate(route, true);
       });
     });
+
+    // Wire mobile bottom bar tab buttons
+    document.querySelectorAll('.mbb-tab').forEach(btn => {
+      const route = btn.getAttribute('data-route');
+      btn.addEventListener('click', function () {
+        navigate(route, true);
+      });
+    });
+
+    // Wire mobile menu button → r-bar toggle
+    const mbbMenu = document.getElementById('mbbMenuBtn');
+    const rBarToggle = document.getElementById('rBarToggle');
+    if (mbbMenu && rBarToggle) {
+      mbbMenu.addEventListener('click', function () {
+        rBarToggle.click();
+      });
+    }
 
     // Initial route
     navigate(getRoute(), false);
