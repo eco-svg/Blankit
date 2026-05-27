@@ -3,7 +3,7 @@
     'notes':    ['sec-notes', 'sec-blinkbot'],
     'skills':   ['sec-skills-wrapper'],
     'social':   ['sec-social', 'sec-comms'],
-    'habits':   ['sec-habits'],
+    'habits':   ['sec-habits', 'sec-habit-pulse'],
     'buddybot': ['sec-buddybot'],
     'request':  ['sec-profile'],
     'support':  ['sec-profile'],
@@ -42,6 +42,11 @@
     });
 
     document.body.classList.toggle('lbar-open', LBAR_ROUTES.has(route));
+    document.body.setAttribute('data-route', route);
+
+    if (route === 'habits') {
+      setTimeout(function() { window.dispatchEvent(new Event('habitPulseFlipped')); }, 60);
+    }
 
     document.querySelectorAll('.lbar-capsule').forEach(btn => {
       btn.classList.toggle('nav-active', btn.getAttribute('data-route') === route);

@@ -2007,6 +2007,9 @@ div.infinite-canvas video {
 /* Habits flip buttons — hidden on desktop */
 .habit-flip-btn { display: none; }
 
+/* Habit Pulse section — hidden on desktop, shown on mobile habits tab */
+.habit-pulse-section { display: none; }
+
 /* Notes card: clip overflowing images so they don't bleed into adjacent cards */
 .card.notes {
     overflow: hidden !important;
@@ -4445,7 +4448,42 @@ button.nav-pill:not(.btn-ghost):hover {
     letter-spacing: 0.1em !important;
   }
 
-  .habits-card { height: 730px; }
+  .habits-card { height: 580px; }
+
+  /* Hide dream bar on habits tab, show habit pulse instead */
+  body[data-route="habits"] .dream-standalone { display: none !important; }
+
+  /* Habit Pulse card */
+  .habit-pulse-section {
+    display: flex;
+    flex-direction: column;
+    height: 170px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: var(--radius);
+    overflow: hidden;
+    padding: 0;
+  }
+  .habit-pulse-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 14px 4px;
+    flex-shrink: 0;
+  }
+  .habit-pulse-chart-wrap {
+    flex: 1;
+    position: relative;
+    padding: 0 10px 10px;
+    min-height: 0;
+  }
+  .habit-pulse-chart-wrap canvas {
+    width: 100% !important;
+    max-width: 350px;
+    height: 100% !important;
+  }
 
   .adbox-row { flex-wrap: wrap; height: auto; }
   .add1,.add2,.add3,.add4,.add5 {
