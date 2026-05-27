@@ -726,3 +726,17 @@ async function submitOtp() {
   }
 }
 
+(function () {
+  const btn = document.getElementById('avcVerifyBtn');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    // Switch to Create Account tab and scroll auth section into view
+    const createTab = document.querySelector('.tab[data-tab="register"]') || document.querySelector('.tab:last-of-type');
+    if (createTab) createTab.click();
+    const authSection = document.querySelector('.auth-section');
+    if (authSection) authSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const note = document.getElementById('avcVerifyNote');
+    if (note) { note.style.display = 'block'; setTimeout(() => note.style.display = 'none', 4000); }
+  });
+})();
+
