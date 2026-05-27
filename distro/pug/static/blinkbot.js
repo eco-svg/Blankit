@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ── Constants ────────────────────────────────────────────────── */
   const MODEL_ID   = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
   const MODEL_MB   = 860;
-  const WEBLLM_CDN = 'https://esm.run/@mlc-ai/web-llm';
+  const WEBLLM_CDN = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/lib/esm/index.min.js';
   const STORE_KEY  = 'blinkbot-v2';
 
   /* ── State ────────────────────────────────────────────────────── */
@@ -132,31 +132,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         <div id="blinkProgressMsg" style="font-family:var(--font-mono);font-size:0.67rem;color:var(--text-dim);">Please wait...</div>
       </div>`;
     },
+
+    loadError(msg, pct) {
+      return `<div style="display:flex;flex-direction:column;gap:12px;">
+        ${S.wordmark}
+        <div style="background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.25);border-radius:8px;padding:10px 12px;">
+          <div style="font-size:0.58rem;font-family:var(--font-mono);color:#ff7070;letter-spacing:0.1em;margin-bottom:5px;">LOCAL MODEL ERROR</div>
+          <p style="font-size:0.71rem;color:var(--text-dim);margin:0;line-height:1.55;word-break:break-word;">${msg}</p>
+        </div>
+        <p style="font-size:0.7rem;color:var(--text-dim);margin:0;opacity:0.7;">Open DevTools → Console for details. ${pct > 0 ? `Download was ${Math.round(pct*100)}% complete.` : ''}</p>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <button id="blinkRetryBtn" style="font-size:0.73rem;padding:9px 0;cursor:pointer;border-radius:8px;background:rgba(255,255,255,0.07);color:var(--text);border:1px solid rgba(255,255,255,0.12);font-family:var(--font-mono);letter-spacing:0.04em;width:100%;">↻ Try again</button>
+          <button id="blinkErrorServerBtn" style="font-size:0.73rem;padding:8px 0;cursor:pointer;border-radius:8px;background:#4a7aaa;color:#fff;border:none;font-family:var(--font-mono);font-weight:600;letter-spacing:0.04em;width:100%;">Use server instead →</button>
+        </div>
+      </div>`;
+    },
   };
 
   /* ── Engine load (WebLLM) ─────────────────────────────────────── */
   async function loadEngine(isDownload) {
-    const { CreateMLCEngine } = await import(WEBLLM_CDN);
+    const webllm = await import(WEBLLM_CDN);
+    // MLCEngine + reload() works without a service worker
+    const Cls = webllm.MLCEngine || webllm.CreateMLCEngine;
+    if (!Cls) throw new Error('WebLLM failed to load — CDN may be unavailable');
 
-    engine = await CreateMLCEngine(MODEL_ID, {
-      initProgressCallback: (report) => {
-        const pct    = report.progress;
-        const mbDone = Math.round(pct * MODEL_MB);
-        store.set({ pct });
-        if (isDownload) {
-          const bar = document.getElementById('blinkProgressBar');
-          const msg = document.getElementById('blinkProgressMsg');
-          const pct2 = document.getElementById('blinkProgressPct');
-          if (bar) { bar.style.width = Math.round(pct * 100) + '%'; bar.style.animation = ''; }
-          if (msg) msg.textContent = `${mbDone} / ${MODEL_MB} MB`;
-          if (pct2) pct2.textContent = Math.round(pct * 100) + '%';
-        } else {
-          setProgress(pct, pct < 1 ? `${Math.round(pct * 100)}%...` : 'Ready.');
-        }
-      },
-    });
+    const e = typeof Cls === 'function' && Cls.toString().startsWith('async')
+      ? await Cls(MODEL_ID)   // CreateMLCEngine path (legacy)
+      : new Cls();             // MLCEngine path
 
+    // If it's an MLCEngine instance it needs reload(); CreateMLCEngine already loaded
+    if (e.reload) {
+      await e.reload(MODEL_ID, {
+        initProgressCallback: (report) => onProgress(report.progress, isDownload),
+      });
+    }
+    engine = e;
     store.set({ complete: true, pct: 1 });
+  }
+
+  function onProgress(pct, isDownload) {
+    const mbDone = Math.round(pct * MODEL_MB);
+    store.set({ pct });
+    if (isDownload) {
+      const bar  = document.getElementById('blinkProgressBar');
+      const msg  = document.getElementById('blinkProgressMsg');
+      const pct2 = document.getElementById('blinkProgressPct');
+      if (bar)  { bar.style.width = Math.round(pct * 100) + '%'; bar.style.animation = ''; }
+      if (msg)  msg.textContent  = `${mbDone} / ${MODEL_MB} MB`;
+      if (pct2) pct2.textContent = Math.round(pct * 100) + '%';
+    } else {
+      setProgress(pct, pct < 1 ? `${Math.round(pct * 100)}%...` : 'Ready.');
+    }
   }
 
   /* ── Chat activation ──────────────────────────────────────────── */
@@ -301,10 +327,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       await loadEngine(false);
       activateChat(true);
-    } catch {
+    } catch (e) {
+      console.error('[blinkbot] cache load failed:', e);
       store.clear();
-      downloadState.innerHTML = S.intro(0);
-      wireIntro(0);
+      downloadState.innerHTML = S.loadError(e?.message || String(e), 0);
+      document.getElementById('blinkRetryBtn')?.addEventListener('click', () => {
+        downloadState.innerHTML = S.intro(0);
+        wireIntro(0);
+      });
+      document.getElementById('blinkErrorServerBtn')?.addEventListener('click', () => activateChat(false));
     }
     return;
   }
@@ -327,10 +358,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadEngine(true);
         activateChat(true);
       } catch (e) {
-        /* interrupted — show intro with updated progress */
+        console.error('[blinkbot] loadEngine failed:', e);
         const newPct = store.get().pct || existingPct;
-        downloadState.innerHTML = S.intro(newPct);
-        wireIntro(newPct);
+        downloadState.innerHTML = S.loadError(e?.message || String(e), newPct);
+        document.getElementById('blinkRetryBtn')?.addEventListener('click', () => {
+          downloadState.innerHTML = S.intro(newPct);
+          wireIntro(newPct);
+        });
+        document.getElementById('blinkErrorServerBtn')?.addEventListener('click', () => activateChat(false));
       }
     });
 
