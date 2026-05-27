@@ -11,6 +11,7 @@ class User(db.Model):
     distro          = db.Column(db.String(20),  nullable=False, default='Eco-Svg')
     is_verified      = db.Column(db.Boolean, default=False)
     age              = db.Column(db.Integer, nullable=True)
+    dob              = db.Column(db.Date, nullable=True)
     student_status       = db.Column(db.String(20), default='none')  # none | pending | approved | rejected
     student_school       = db.Column(db.String(200), nullable=True)
     student_location     = db.Column(db.String(200), nullable=True)

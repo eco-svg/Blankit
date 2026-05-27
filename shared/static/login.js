@@ -209,19 +209,23 @@ document.querySelectorAll('[data-tab]').forEach(el => {
   el.addEventListener('click', () => switchTab(el.dataset.tab));
 });
 
-// Disable register button until a valid age (13+) is entered
 (function(){
-  var ageInput = document.getElementById('regAge');
-  var regBtn   = document.getElementById('registerBtn');
-  if (!ageInput || !regBtn) return;
-  function checkAge() {
-    var v = parseInt(ageInput.value, 10);
-    var ok = !isNaN(v) && v >= 13 && v <= 120;
+  var regBtn = document.getElementById('registerBtn');
+  if (!regBtn) return;
+  function checkDob() {
+    var m = parseInt(document.getElementById('regDobMonth')?.value, 10);
+    var d = parseInt(document.getElementById('regDobDay')?.value, 10);
+    var y = parseInt(document.getElementById('regDobYear')?.value, 10);
+    if (!m || !d || !y || y < 1904 || y > 2099) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
+    var today = new Date(), born = new Date(y, m - 1, d);
+    var age = today.getFullYear() - born.getFullYear() - ((today.getMonth() + 1 < m || (today.getMonth() + 1 === m && today.getDate() < d)) ? 1 : 0);
+    var ok = age >= 13 && age <= 120;
     regBtn.style.opacity = ok ? '' : '0.4';
     regBtn.style.pointerEvents = ok ? '' : 'none';
   }
-  checkAge();
-  ageInput.addEventListener('input', checkAge);
+  ['regDobMonth','regDobDay','regDobYear'].forEach(id => document.getElementById(id)?.addEventListener('change', checkDob));
+  ['regDobMonth','regDobDay','regDobYear'].forEach(id => document.getElementById(id)?.addEventListener('input', checkDob));
+  checkDob();
 })();
 setTimeout(() => positionTabLine('login'), 60);
 window.addEventListener('resize', () => {
@@ -377,7 +381,11 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
   const confirm  = document.getElementById('regConfirm').value;
-  const ageVal   = document.getElementById('regAge').value.trim();
+  const dobMonth = parseInt(document.getElementById('regDobMonth')?.value, 10);
+  const dobDay   = parseInt(document.getElementById('regDobDay')?.value,   10);
+  const dobYear  = parseInt(document.getElementById('regDobYear')?.value,  10);
+  const termsOk  = document.getElementById('regTermsCheck')?.checked;
+  const ageOk    = document.getElementById('regAgeCheck')?.checked;
   let ok = true;
 
   if (!username || username.length < 3)        { setErr('regUsernameErr', 'min 3 chars'); ok = false; }
@@ -385,9 +393,20 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   if (!validEmail(email))                       { setErr('regEmailErr', 'invalid email'); ok = false; }
   if (!password || password.length < 8)         { setErr('regPasswordErr', 'min 8 chars'); ok = false; }
   if (password !== confirm)                     { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
-  const age = parseInt(ageVal, 10);
-  if (!ageVal || isNaN(age) || age < 1 || age > 120) { setErr('regAgeErr', 'please enter your age'); ok = false; }
-  else if (age < 13)                            { setErr('regAgeErr', 'you must be 13 or older'); ok = false; }
+
+  if (!dobMonth || !dobDay || !dobYear || dobYear < 1904 || dobYear > 2099 || dobDay < 1 || dobDay > 31) {
+    setErr('regAgeErr', 'please enter your date of birth'); ok = false;
+  } else {
+    const born  = new Date(dobYear, dobMonth - 1, dobDay);
+    const today = new Date();
+    const computedAge = today.getFullYear() - born.getFullYear() - ((today.getMonth() + 1 < dobMonth || (today.getMonth() + 1 === dobMonth && today.getDate() < dobDay)) ? 1 : 0);
+    if (computedAge < 13) {
+      window.location.href = '/under13'; return;
+    }
+    if (computedAge > 120) { setErr('regAgeErr', 'please enter a valid date of birth'); ok = false; }
+  }
+
+  if (!termsOk || !ageOk) { setErr('regConsentErr', 'please confirm both checkboxes to continue'); ok = false; }
   if (!ok) return;
 
   setLoading('registerBtn', 'registerLoader', true);
@@ -398,15 +417,16 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const res    = await fetch('/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, distro, age }),
+      body: JSON.stringify({ username, email, password, distro, dob: `${dobYear}-${String(dobMonth).padStart(2,'0')}-${String(dobDay).padStart(2,'0')}` }),
     });
     const data = await res.json();
 
     if (res.ok && data.message === 'otp_sent') {
-      // Remember which distro this registration is for
       pendingDistro = distro;
       showOtpPanel(data.email);
       typeCmd('auth --register --otp-sent');
+    } else if (data.error === 'under_13') {
+      window.location.href = '/under13';
     } else {
       showFlash('registerFlash', data.error || 'registration failed');
       typeCmd('auth --register --error');

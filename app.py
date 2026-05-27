@@ -1,5 +1,5 @@
 import os
-from flask import Flask, session
+from flask import Flask, session, render_template
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from shared.config import Config
@@ -79,6 +79,7 @@ def _migrate_schema():
             conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_grade VARCHAR(50)'))
             conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_submitted_at TIMESTAMP'))
             conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_id_url VARCHAR(500)'))
+            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS dob DATE'))
 
     columns = {c['name'] for c in inspector.get_columns('user_badges')}
     if 'user_id' in columns:
@@ -242,6 +243,15 @@ def create_app():
             "base-uri 'self';"
         )
         return response
+
+    @app.route('/privacy')
+    def privacy(): return render_template('shared/privacy.html')
+
+    @app.route('/terms')
+    def terms(): return render_template('shared/terms.html')
+
+    @app.route('/under13')
+    def under13(): return render_template('shared/under13.html')
 
     _ensure_blinkbot_model()
     _ensure_buddybot_model()

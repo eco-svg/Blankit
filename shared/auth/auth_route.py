@@ -3,7 +3,7 @@ import os
 import re
 import uuid
 import requests as _http
-from datetime import datetime
+from datetime import datetime, date
 from flask import Blueprint, request, jsonify, session, current_app, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Message
@@ -216,6 +216,7 @@ def register():
     password = data.get('password', '')
     distro   = data.get('distro', 'Eco-Svg')
     age_raw  = data.get('age')
+    dob_raw  = data.get('dob')  # ISO string YYYY-MM-DD
 
     if distro not in DISTRO_REDIRECTS:
         return jsonify({'error': 'invalid distro'}), 400
@@ -225,14 +226,28 @@ def register():
         return jsonify({'error': 'password must be at least 8 characters'}), 400
     if '@' not in email or '.' not in email.split('@')[-1]:
         return jsonify({'error': 'invalid email address'}), 400
-    try:
-        age = int(age_raw)
-        if age < 1 or age > 120:
-            raise ValueError
-    except (TypeError, ValueError):
-        return jsonify({'error': 'please enter a valid age'}), 400
+
+    # Prefer DOB; fall back to age for backwards compat
+    dob_obj = None
+    if dob_raw:
+        try:
+            dob_obj = date.fromisoformat(dob_raw)
+            today = date.today()
+            age = today.year - dob_obj.year - ((today.month, today.day) < (dob_obj.month, dob_obj.day))
+            if age > 120:
+                return jsonify({'error': 'please enter a valid date of birth'}), 400
+        except ValueError:
+            return jsonify({'error': 'please enter a valid date of birth'}), 400
+    else:
+        try:
+            age = int(age_raw)
+            if age < 1 or age > 120:
+                raise ValueError
+        except (TypeError, ValueError):
+            return jsonify({'error': 'please enter your date of birth'}), 400
+
     if age < 13:
-        return jsonify({'error': 'you must be 13 or older to create an account'}), 400
+        return jsonify({'error': 'under_13'}), 403
 
     # If email exists but unverified — update credentials and resend OTP
     existing = User.query.filter_by(email=email).first()
@@ -243,6 +258,7 @@ def register():
         existing.password_hash = generate_password_hash(password)
         existing.distro        = distro
         existing.age           = age
+        if dob_obj: existing.dob = dob_obj
         VerifyToken.query.filter_by(user_id=existing.id, used=False).update({'used': True})
         db.session.commit()
         token_obj = VerifyToken(user_id=existing.id)
@@ -267,6 +283,7 @@ def register():
         distro        = distro,
         is_verified   = False,
         age           = age,
+        dob           = dob_obj,
     )
     db.session.add(new_user)
     db.session.commit()
