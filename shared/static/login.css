@@ -648,3 +648,109 @@ body::after {
 }
 .pv-submit-btn:hover   { opacity: 0.9; }
 .pv-submit-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ── DISTRO SWITCH TUTORIAL ── */
+.distro-tutorial {
+  position: fixed;
+  left: 24px;
+  bottom: 72px; /* above install strip */
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.distro-tutorial.dt-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.distro-tutorial.dt-hiding {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+.dt-inner {
+  background: rgba(14, 11, 7, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 16px 18px 14px;
+  max-width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.dt-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dt-tag {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.75;
+}
+.dt-close {
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-size: 0.75rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s;
+}
+.dt-close:hover { color: var(--text2); }
+.dt-title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 7px;
+  letter-spacing: 0.03em;
+}
+.dt-body {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.dt-key {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--accent);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 4px;
+  padding: 1px 6px;
+  line-height: 1.5;
+}
+.dt-got-it {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: #111;
+  background: var(--accent);
+  border: none;
+  border-radius: 7px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  display: block;
+  width: 100%;
+}
+.dt-got-it:hover { opacity: 0.88; }
+@media (max-width: 600px) {
+  .distro-tutorial {
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+  }
+  .dt-inner { max-width: 100%; }
+}

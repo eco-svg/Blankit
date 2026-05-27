@@ -386,7 +386,40 @@
     </div>
   </div>
 
+  <!-- DISTRO SWITCH TUTORIAL -->
+  <div class="distro-tutorial" id="distroTutorial" role="dialog" aria-modal="true" aria-label="How to switch distros">
+    <div class="dt-inner">
+      <div class="dt-top">
+        <span class="dt-tag">tutorial</span>
+        <button class="dt-close" id="dtClose" aria-label="Dismiss">✕</button>
+      </div>
+      <p class="dt-title">Switching distros</p>
+      <p class="dt-body">Use the <span class="dt-key">←</span> <span class="dt-key">→</span> arrows — or swipe — to browse distros. Each one has its own theme, community, and maintainer. Pick the one that fits you before signing in.</p>
+      <button class="dt-got-it" id="dtGotIt">Got it</button>
+    </div>
+    <div class="dt-arrow"></div>
+  </div>
+
   <script src="{{ url_for('static', filename='login.js') }}"></script>
+  <script>
+    // Distro switch tutorial — show once per session
+    (function(){
+      var tut = document.getElementById('distroTutorial');
+      if (!tut) return;
+      if (sessionStorage.getItem('dtDismissed')) { tut.remove(); return; }
+      // small delay so the page renders first
+      setTimeout(function(){ tut.classList.add('dt-visible'); }, 600);
+      function dismiss(){
+        tut.classList.remove('dt-visible');
+        tut.classList.add('dt-hiding');
+        setTimeout(function(){ tut.remove(); }, 300);
+        sessionStorage.setItem('dtDismissed', '1');
+      }
+      document.getElementById('dtClose').addEventListener('click', dismiss);
+      document.getElementById('dtGotIt').addEventListener('click', dismiss);
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') dismiss(); });
+    })();
+  </script>
   <script>
     // Policy modals — close on backdrop click or Escape
     (function(){
