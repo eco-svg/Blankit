@@ -5,8 +5,6 @@
     'social':   ['sec-social', 'sec-comms'],
     'habits':   ['sec-habits'],
     'buddybot': ['sec-buddybot'],
-    'request':  ['sec-req-feature', 'sec-report'],
-    'support':  ['sec-support'],
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats'],
   };

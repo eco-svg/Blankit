@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=61">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=62">
 </head>
 <body>
 
@@ -47,8 +47,8 @@
       <a href="#notes"    class="nav-pill">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
       <a href="#social"   class="nav-pill">Social</a>
-      <a href="#request"  class="nav-pill">Request</a>
-      <a href="#support"  class="nav-pill">Support</a>
+      <a href="#skills"   class="nav-pill">Skills</a>
+      <a href="#habits"   class="nav-pill">Habits</a>
     </nav>
 
     <div class="header-right">
@@ -105,22 +105,6 @@
               <div class="profile-tab-username">{{ username }}</div>
               <div class="profile-tab-sub" id="headerRankBadge2"></div>
             </div>
-          </div>
-
-          <!-- Rank Guide -->
-          <div class="pp-divider"></div>
-          <div class="pp-label">Rank Guide</div>
-          <div class="pp-rank-grid">
-            <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
-            <div class="pp-rank-row"><span style="color:#ffb700;">S</span><span>Top 0.001% globally</span></div>
-            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
-            <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
-            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
-            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
-            <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
-            <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
-            <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
-            <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
           </div>
 
           <!-- Settings -->
@@ -247,6 +231,49 @@
                 <div class="premium-soon-desc">I promise they are gonna be a feature xd.</div>
               </div>
               <div class="premium-soon-tag">Soon</div>
+            </div>
+          </div>
+
+          <!-- Request a Feature -->
+          <div class="pp-divider"></div>
+          <div class="pp-label">Request a Feature</div>
+          <div style="padding:4px 16px 12px;">
+            <p class="req-sub" style="padding:0;margin-bottom:8px;">Got an idea? Describe it — we read everything.</p>
+            <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
+            <div class="req-actions">
+              <button class="req-send-btn" id="featureSendBtn">Send Request</button>
+              <span class="req-status" id="featureStatus"></span>
+            </div>
+          </div>
+
+          <!-- Report -->
+          <div class="pp-divider"></div>
+          <div class="pp-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:16px;">
+            Report
+            <div class="req-type-pills" id="reportTypePills" style="margin:0;">
+              <button class="req-type-pill active" data-rtype="bug">Bug</button>
+              <button class="req-type-pill" data-rtype="content">Content</button>
+              <button class="req-type-pill" data-rtype="other">Other</button>
+            </div>
+          </div>
+          <div style="padding:4px 16px 12px;">
+            <p class="req-sub" style="padding:0;margin-bottom:8px;">Something broken or feels wrong? Tell us.</p>
+            <textarea class="req-textarea" id="reportText" placeholder="Describe what happened…" maxlength="2000"></textarea>
+            <div class="req-actions">
+              <button class="req-send-btn" id="reportSendBtn">Send Report</button>
+              <span class="req-status" id="reportStatus"></span>
+            </div>
+          </div>
+
+          <!-- Support -->
+          <div class="pp-divider"></div>
+          <div class="pp-label">Support Veyra</div>
+          <div style="padding:4px 16px 16px;">
+            <p class="req-sub" style="padding:0;margin-bottom:10px;">If Veyra has been useful, consider buying me a drink. It keeps the servers running.</p>
+            <div class="support-donate-links" style="padding:0;">
+              <a class="support-donate-btn" href="https://buymeacoffee.com" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
+              <a class="support-donate-btn" href="https://ko-fi.com" target="_blank" rel="noopener">Ko-fi</a>
+              <a class="support-donate-btn" href="https://upi://pay" target="_blank" rel="noopener">UPI</a>
             </div>
           </div>
 
@@ -434,46 +461,30 @@
 
       <!-- Habits card — flippable: front=manage+today, back=30-day graph -->
       <div class="card habits-card full-row" id="sec-habits">
-        <div class="habit-flip-inner" id="habitFlipInner">
+        <div class="habits-inner">
 
-          <!-- FRONT: left=manage, right=daily tick-off -->
-          <div class="habit-face habit-front">
-            <div class="habit-panel">
-              <div class="habit-panel-header">
-                <span class="card-title" data-i18n="card_habits">Habits</span>
-                <button class="habit-flip-btn" id="habitFlipBtn">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                  30-day graph
-                </button>
-              </div>
-              <div class="habit-add-row">
-                <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
-                <button id="habitAddBtn">+</button>
-              </div>
-              <ul class="habit-manage-list" id="habitManageList"></ul>
+          <!-- Panel 1: Manage habits -->
+          <div class="habit-panel">
+            <div class="habit-panel-header">
+              <span class="card-title" data-i18n="card_habits">Habits</span>
             </div>
-
-            <div class="habit-divider"></div>
-
-            <div class="habit-panel">
-              <div class="habit-panel-header">
-                <span class="card-title">Today</span>
-                <span class="habit-today-date" id="habitTodayDate"></span>
-              </div>
-              <ul class="habit-today-list" id="habitTodayList"></ul>
-              <div class="habit-today-footer" id="habitTodayFooter"></div>
+            <div class="habit-add-row">
+              <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
+              <button id="habitAddBtn">+</button>
             </div>
+            <ul class="habit-manage-list" id="habitManageList"></ul>
           </div>
 
-          <!-- BACK: Habit Pulse -->
-          <div class="habit-face habit-back">
-            <div class="habit-panel-header" style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.05);">
-              <span class="card-title">Habit Pulse</span>
-              <button class="habit-flip-btn" id="habitFlipBackBtn">← Back</button>
+          <div class="habit-divider"></div>
+
+          <!-- Panel 2: Today -->
+          <div class="habit-panel">
+            <div class="habit-panel-header">
+              <span class="card-title">Today</span>
+              <span class="habit-today-date" id="habitTodayDate"></span>
             </div>
-            <div style="position:relative;flex:1;padding:16px 12px 8px;">
-              <canvas id="consistencyChart"></canvas>
-            </div>
+            <ul class="habit-today-list" id="habitTodayList"></ul>
+            <div class="habit-today-footer" id="habitTodayFooter"></div>
           </div>
 
         </div>
@@ -524,47 +535,26 @@
       </div>
 
       <!-- Request a Feature -->
-      <div class="card req-card page-hidden" id="sec-req-feature">
-        <div class="card-top-bar">
-          <h2 class="card-title">Request a Feature</h2>
-        </div>
-        <p class="req-sub">Got an idea that would make Veyra better? Describe it — we read everything.</p>
-        <div class="req-from-row">
-          <span class="req-from-label">From</span>
-          <span class="req-from-val">{{ username }}</span>
-        </div>
-        <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
-        <div class="req-actions">
-          <button class="req-send-btn" id="featureSendBtn">Send Request</button>
-          <span class="req-status" id="featureStatus"></span>
-        </div>
-      </div>
-
-      <!-- Report -->
-      <div class="card req-card page-hidden" id="sec-report">
-        <div class="card-top-bar">
-          <h2 class="card-title">Report</h2>
-          <div class="req-type-pills" id="reportTypePills">
-            <button class="req-type-pill active" data-rtype="bug">Bug</button>
-            <button class="req-type-pill" data-rtype="content">Content</button>
-            <button class="req-type-pill" data-rtype="other">Other</button>
-          </div>
-        </div>
-        <p class="req-sub">Something broken or feels wrong? Tell us what happened.</p>
-        <div class="req-from-row">
-          <span class="req-from-label">From</span>
-          <span class="req-from-val">{{ username }}</span>
-        </div>
-        <textarea class="req-textarea" id="reportText" placeholder="Describe what happened…" maxlength="2000"></textarea>
-        <div class="req-actions">
-          <button class="req-send-btn" id="reportSendBtn">Send Report</button>
-          <span class="req-status" id="reportStatus"></span>
-        </div>
-      </div>
-
       <!-- Stats tab -->
       <div class="card full-row sec-stats-card page-hidden" id="sec-stats">
         <div class="stats-content">
+
+          <!-- Rank Guide -->
+          <div class="stats-rank-guide">
+            <div class="stats-skills-header">RANK GUIDE</div>
+            <div class="pp-rank-grid" style="padding:4px 0 12px;">
+              <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
+              <div class="pp-rank-row"><span style="color:#ffb700;">S</span><span>Top 0.001% globally</span></div>
+              <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
+              <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
+              <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
+              <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
+              <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
+              <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
+              <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
+              <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
+            </div>
+          </div>
 
           <div class="stats-sheet-header">
             <div class="stats-sheet-identity">
@@ -616,28 +606,6 @@
         <div class="add5"></div>
       </div>
 
-      <!-- Support tab — donations -->
-      <div class="card full-row req-card page-hidden" id="sec-support">
-        <div class="card-top-bar">
-          <h2 class="card-title">Support Veyra</h2>
-        </div>
-        <p class="req-sub">If Veyra has been useful to you, consider buying me a drink. It keeps the servers running and the features coming.</p>
-        <div class="support-donate-links" id="supportDonateLinks">
-          <a class="support-donate-btn" href="https://buymeacoffee.com" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-            Buy Me a Coffee
-          </a>
-          <a class="support-donate-btn" href="https://ko-fi.com" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            Ko-fi
-          </a>
-          <a class="support-donate-btn" href="https://upi://pay" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            UPI
-          </a>
-        </div>
-        <p class="req-sub" style="margin-top:16px;font-size:0.72rem;opacity:0.5;">Donation links will be updated soon with real details.</p>
-      </div>
 
     </main>
 
@@ -1373,6 +1341,10 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Home</span>
     </button>
+    <button class="mbb-tab" data-route="habits" aria-label="Habits">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <span>Habits</span>
+    </button>
     <button class="mbb-tab" data-route="buddybot" aria-label="BuddyBot">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       <span>BuddyBot</span>
@@ -1380,14 +1352,6 @@
     <button class="mbb-tab" data-route="social" aria-label="Social">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
       <span>Social</span>
-    </button>
-    <button class="mbb-tab" data-route="request" aria-label="Request">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <span>Request</span>
-    </button>
-    <button class="mbb-tab" data-route="support" aria-label="Support">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      <span>Support</span>
     </button>
     <button class="mbb-menu" id="mbbMenuBtn" aria-label="Menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
