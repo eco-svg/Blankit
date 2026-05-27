@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=60">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=61">
 </head>
 <body>
 
@@ -942,7 +942,11 @@
     function addBubble(text, role) {
       var el = document.createElement('div');
       el.className = 'main-groq-bubble main-groq-' + role;
-      el.textContent = text;
+      if (role === 'ai') {
+        el.innerHTML = (typeof marked !== 'undefined') ? marked.parse(text) : text.replace(/\n/g, '<br>');
+      } else {
+        el.textContent = text;
+      }
       messages.appendChild(el);
       messages.scrollTop = messages.scrollHeight;
     }

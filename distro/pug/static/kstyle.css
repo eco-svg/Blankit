@@ -873,6 +873,14 @@ body.header-hidden .l-bar {
 }
 .main-groq-thinking { opacity: 0.5; font-style: italic; }
 
+.main-groq-ai p { margin: 0 0 6px; }
+.main-groq-ai p:last-child { margin-bottom: 0; }
+.main-groq-ai ul, .main-groq-ai ol { margin: 4px 0 6px 16px; padding: 0; }
+.main-groq-ai li { margin-bottom: 3px; }
+.main-groq-ai strong { color: var(--text); font-weight: 600; }
+.main-groq-ai code { background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.74rem; }
+.main-groq-ai h1, .main-groq-ai h2, .main-groq-ai h3 { font-size: 0.85rem; font-weight: 600; margin: 6px 0 4px; color: var(--text); }
+
 /* ── Goal flip card ─────────────────────────────────── */
 .goal-flip-card {
   perspective: 1200px;
@@ -1136,7 +1144,7 @@ body.header-hidden .l-bar {
   padding: 16px 16px 36px;
   position: relative;
   
-  height: 700px;
+  height: 850px;
   align-self: start;
   
   scroll-margin-top: calc(var(--header-h) + 40px); 
@@ -4400,9 +4408,14 @@ button.nav-pill:not(.btn-ghost):hover {
 
   .card {
     height: auto;
-    min-height: 420px;
+    min-height: 570px;
   }
   .card.full-row { grid-column: 1 !important; }
+
+  .card.notes {
+    height: 620px;
+    min-height: 0;
+  }
 
   .dream-standalone {
     grid-column: 1 !important;
@@ -4424,7 +4437,7 @@ button.nav-pill:not(.btn-ghost):hover {
     letter-spacing: 0.1em !important;
   }
 
-  .habits-card { height: 580px; }
+  .habits-card { height: 730px; }
 
   .adbox-row { flex-wrap: wrap; height: auto; }
   .add1,.add2,.add3,.add4,.add5 {
@@ -4441,6 +4454,18 @@ button.nav-pill:not(.btn-ghost):hover {
   .bb-soon-features { flex: none; width: 100%; }
   .bb-soon-name    { font-size: 2.2rem; }
   .bb-soon-desc    { max-width: 100%; }
+
+  /* ── Notes editor mobile tweaks ── */
+  .editor-top-bar { margin-top: 14px; }
+  .icon-btn { width: 38px; height: 38px; }
+  #noteTitle { font-size: 1.15rem; }
+  .editor-media-actions {
+    bottom: 10px;
+    right: 10px;
+    padding: 5px;
+    gap: 6px;
+  }
+  .infinite-canvas { padding-bottom: 70px; font-size: 1rem; }
 
   /* ── R-bar: end at the top of the bottom bar ── */
   .r-bar {
