@@ -91,6 +91,40 @@ def _assemble_user_context(user_id, username):
         user_id=user_id, entry_type='dream', is_deleted=False
     ).first()
 
+    # Habits — active habits with 30-day log window
+    from distro.svg.models.habit import Habit
+    from distro.svg.models.habit_log import HabitLog
+    from collections import defaultdict
+
+    today      = datetime.utcnow().date()
+    thirty_ago = today - timedelta(days=30)
+
+    habits    = Habit.query.filter_by(user_id=user_id, is_active=True).all()
+    habit_summaries = []
+    if habits:
+        habit_ids = [h.id for h in habits]
+        logs = HabitLog.query.filter(
+            HabitLog.habit_id.in_(habit_ids),
+            HabitLog.date >= thirty_ago
+        ).all()
+        logs_by_habit = defaultdict(dict)
+        for lg in logs:
+            logs_by_habit[lg.habit_id][lg.date] = lg.done
+        for h in habits:
+            ld       = logs_by_habit[h.id]
+            done_7   = sum(1 for i in range(7) if ld.get(today - timedelta(days=i), False))
+            streak   = 0
+            chk      = today
+            while chk >= thirty_ago and ld.get(chk, False):
+                streak += 1
+                chk -= timedelta(days=1)
+            habit_summaries.append({
+                'name':       h.name,
+                'done_today': bool(ld.get(today, False)),
+                'done_7':     done_7,
+                'streak':     streak,
+            })
+
     return {
         'username':           username,
         'member_since':       user.created_at.strftime('%Y-%m-%d') if user and user.created_at else 'unknown',
@@ -104,7 +138,8 @@ def _assemble_user_context(user_id, username):
                 'date':    n.created_at.strftime('%Y-%m-%d')
             }
             for n in recent_notes
-        ]
+        ],
+        'habits': habit_summaries,
     }
 
 
@@ -135,6 +170,15 @@ def _build_context_block(ctx):
             lines.append(f'  [{n["date"]}] {n["title"]}: {n["excerpt"]}')
     else:
         lines.append('  None')
+
+    lines.append('')
+    lines.append('Habits (active):')
+    if ctx.get('habits'):
+        for h in ctx['habits']:
+            tick = '✓' if h['done_today'] else '✗'
+            lines.append(f"  {tick} {h['name']}: {h['done_7']}/7 this week, streak {h['streak']}d")
+    else:
+        lines.append('  None tracked yet')
 
     lines += [
         '',
@@ -266,6 +310,13 @@ def _call_groq_chat(message, session_history, user_context, user_id=None):
         ctx_lines.append(f'  [{n["date"]}] {n["title"]}')
     if not user_context['recent_notes']:
         ctx_lines.append('  None')
+
+    ctx_lines += ['', 'Habits (active):']
+    for h in user_context.get('habits') or []:
+        tick = '✓' if h['done_today'] else '✗'
+        ctx_lines.append(f"  {tick} {h['name']}: {h['done_7']}/7 this week, streak {h['streak']}d")
+    if not user_context.get('habits'):
+        ctx_lines.append('  None tracked yet')
 
     # Search persistent chat log for relevant past exchanges
     if user_id:
