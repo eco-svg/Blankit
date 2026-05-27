@@ -516,21 +516,34 @@ body.header-hidden .l-bar {
 
 /* ── Profile tab ────────────────────────────────────── */
 .sec-profile-card {
-  min-height: 500px;
+  height: 720px;
+  min-height: 0;
   cursor: default;
+  overflow: hidden;
+  padding: 0;
 }
 .sec-profile-card:hover { transform: none; border-color: rgba(255,255,255,0.08); box-shadow: none; }
-
-/* ── Profile card — single scrollable column ── */
-.sec-profile-card {
-  height: auto !important;
-  min-height: 400px;
-  overflow-y: auto;
-}
 .profile-inner {
-  max-width: 560px;
   display: flex;
   flex-direction: column;
+  height: 100%;
+}
+.profile-cols {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 0;
+}
+.profile-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+.profile-col-left {
+  border-right: 1px solid rgba(255,255,255,0.06);
 }
 .pp-rank-grid {
   padding: 4px 16px 8px;

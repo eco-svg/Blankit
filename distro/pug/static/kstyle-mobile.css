@@ -182,8 +182,11 @@
     min-width: 100px;
   }
 
-  /* ── Profile card: full width on mobile ── */
-  .profile-inner { max-width: 100%; }
+  /* ── Profile card: stack columns vertically on mobile ── */
+  .sec-profile-card { height: auto !important; overflow-y: auto !important; }
+  .profile-cols { flex-direction: column; overflow: visible; }
+  .profile-col { overflow-y: visible; }
+  .profile-col-left { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
 
   /* ── BuddyBot: vertical stack ── */
   .bb-soon-inner   { flex-direction: column; gap: 24px; }
