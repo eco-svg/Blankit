@@ -2,9 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const feed            = document.getElementById('commFeed');
     const composeBtn      = document.getElementById('commComposeBtn');
-    const composeModal    = document.getElementById('commComposeModal');
     const cancelPostBtn   = document.getElementById('cancelCommPostBtn');
     const confirmPostBtn  = document.getElementById('confirmCommPostBtn');
+    const commTitleBlock  = document.getElementById('commTitleBlock');
+    const inlineCompose   = document.getElementById('commInlineCompose');
     const modalError      = document.getElementById('commModalError');
     const rangeLabel      = document.getElementById('commRangeLabel');
 
@@ -182,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Compose modal open/close ───────────────────────────────────────────────
     composeBtn?.addEventListener('click', openModal);
     cancelPostBtn?.addEventListener('click', closeModal);
-    window.addEventListener('click', e => { if (e.target === composeModal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     function openModal() {
         pendingMedia = null; pendingQuick = null;
@@ -195,12 +196,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (quickCaption) quickCaption.value = '';
         if (quickCaptionCount) quickCaptionCount.textContent = '0 / 150';
         switchTab('write');
-        composeModal?.classList.remove('hidden');
+        commTitleBlock?.classList.add('hidden');
+        composeBtn && (composeBtn.style.display = 'none');
+        cancelPostBtn && (cancelPostBtn.style.display = '');
+        inlineCompose?.classList.remove('hidden');
         setTimeout(() => modalInput?.focus(), 60);
     }
 
     function closeModal() {
-        composeModal?.classList.add('hidden');
+        inlineCompose?.classList.add('hidden');
+        commTitleBlock?.classList.remove('hidden');
+        composeBtn && (composeBtn.style.display = '');
+        cancelPostBtn && (cancelPostBtn.style.display = 'none');
         pendingMedia = null; pendingQuick = null;
     }
 

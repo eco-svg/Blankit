@@ -3060,6 +3060,12 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 /* ── Community compose modal v23 ────────────────────────── */
+.comm-inline-compose {
+  border-top: 1px solid var(--border);
+  padding: 12px 0 4px;
+  margin-bottom: 8px;
+}
+
 .comm-compose-content {
   background: rgba(20, 17, 12, 0.97);
   backdrop-filter: blur(24px);
