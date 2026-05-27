@@ -4442,8 +4442,8 @@ button.nav-pill:not(.btn-ghost):hover {
   .bb-soon-name    { font-size: 2.2rem; }
   .bb-soon-desc    { max-width: 100%; }
 
-  /* ── R-bar: stop before bottom bar ── */
+  /* ── R-bar: end at the top of the bottom bar ── */
   .r-bar {
-    padding-bottom: calc(var(--mbb-h) + env(safe-area-inset-bottom) + 12px) !important;
+    height: calc(100dvh - var(--mbb-h) - env(safe-area-inset-bottom)) !important;
   }
 }
