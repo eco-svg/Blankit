@@ -2100,7 +2100,7 @@ def proxy_wisdom():
         return jsonify({'error': 'unavailable'}), 502
 
 
-_MLC_HF_BASE  = 'https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC/resolve/main'
+_MLC_HF_BASE  = 'https://huggingface.co/mlc-ai/Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
 _MLC_LIB_BASE = 'https://raw.githubusercontent.com/mlc-ai/binary-mlc-llm-libs/main/web-llm-models/v0_2_83/base'
 
 
