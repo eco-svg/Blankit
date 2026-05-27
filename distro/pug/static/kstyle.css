@@ -586,6 +586,99 @@ body.header-hidden .l-bar {
   opacity: 0.5;
 }
 
+/* ── BuddyBot coming soon — full-row tab card ────────── */
+.buddybot-soon-card {
+  height: auto !important;
+  min-height: 300px;
+  cursor: default;
+  background: rgba(74,122,170,0.05) !important;
+  border-color: rgba(74,122,170,0.18) !important;
+}
+.buddybot-soon-card:hover {
+  transform: none !important;
+  border-color: rgba(74,122,170,0.32) !important;
+  box-shadow: 0 0 40px rgba(74,122,170,0.07) !important;
+}
+.bb-soon-inner {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+}
+.bb-soon-left { flex: 1; min-width: 0; }
+.bb-soon-premium-badge {
+  display: inline-block;
+  font-size: 0.58rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue);
+  border: 1px solid rgba(74,122,170,0.38);
+  border-radius: 4px;
+  padding: 2px 8px;
+  margin-bottom: 14px;
+}
+.bb-soon-name {
+  font-family: var(--font-display);
+  font-size: 3.0rem;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.bb-soon-tagline {
+  font-size: 1.0rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 14px;
+}
+.bb-soon-desc {
+  font-size: 0.79rem;
+  color: var(--text-dim);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 22px;
+}
+.bb-soon-cta {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--blue);
+  border: 1px dashed rgba(74,122,170,0.38);
+  border-radius: 6px;
+  padding: 6px 18px;
+}
+.bb-soon-features {
+  flex: 0 0 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 6px;
+}
+.bb-soon-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+.bb-soon-feature-icon {
+  font-size: 1.15rem;
+  line-height: 1;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
+.bb-soon-feature-name {
+  font-size: 0.81rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.bb-soon-feature-desc {
+  font-size: 0.71rem;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
 /* ── Main Quick Ask chat bubbles ────────────────────── */
 .main-groq-bubble {
   font-size: 0.78rem;

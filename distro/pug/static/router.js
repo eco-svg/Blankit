@@ -4,8 +4,8 @@
     'notes':   ['sec-notes', 'sec-blinkbot'],
     'skills':  ['sec-skills', 'sec-achievements'],
     'social':  ['sec-social', 'sec-comms'],
-    'habits':  ['sec-habits'],
-    'growth':  [],
+    'habits':   ['sec-habits'],
+    'buddybot': ['sec-buddybot'],
     'profile': ['sec-profile'],
   };
 
