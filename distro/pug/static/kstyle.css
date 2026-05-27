@@ -1235,7 +1235,7 @@ body.header-hidden .l-bar {
 .r-card:nth-child(3) { animation: fadeUp 0.4s 0.34s ease both; }
 
 /* ── Scrollbar ── */
-* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; -webkit-tap-highlight-color: transparent; }
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
