@@ -52,9 +52,6 @@ body {
 
 /* ═══════════════════════════════════════════════════════════
    Profile Header
-   FIX: always position:fixed, never moves on scroll.
-   The !important on position ensures no media query can
-   override it back to relative at normal desktop widths.
 ═══════════════════════════════════════════════════════════ */
 .profile-header {
     position: fixed !important;
@@ -104,6 +101,8 @@ body {
     border-radius: 12px;
     padding: 15px;
     min-width: 250px;
+    max-height: 85vh;
+    overflow-y: auto;
     box-shadow: 0 8px 16px rgba(0,0,0,0.4);
     display: none;
     animation: slideDown 0.3s ease;
@@ -122,8 +121,8 @@ body {
     margin-bottom: 15px;
 }
 
-.profile-name  { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; }
-.profile-email { font-size: 0.9rem; color: var(--text-dim); }
+.profile-name  { font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; word-break: break-word; }
+.profile-email { font-size: 0.9rem; color: var(--text-dim); word-break: break-all; }
 
 .profile-stats {
     display: grid;
@@ -188,7 +187,7 @@ body {
     max-width: 1800px;
     margin: 0 auto;
     min-height: 90vh;
-    padding-top: 80px;   /* space for fixed profile header */
+    padding-top: 80px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -329,7 +328,6 @@ h3 { font-size: 1.1rem; font-weight: 600; }
     transition: width 0.5s ease;
 }
 
-/* FIX: Update button never wraps */
 .step-input-group          { display: flex; gap: 8px; align-items: center; }
 .step-input-group input    { flex: 1; min-width: 0; }
 .step-input-group #updateStepsBtn {
@@ -488,7 +486,6 @@ button:active { transform: translateY(0); }
 ═══════════════════════════════════════════════════════════ */
 .right-sidebar { display: flex; flex-direction: column; gap: 15px; }
 
-/* DateTime Widget */
 .datetime-widget {
     background: linear-gradient(135deg, var(--accent), var(--fire));
     color: white;
@@ -510,7 +507,6 @@ button:active { transform: translateY(0); }
 
 .weather-icon { font-size: 2rem; }
 
-/* Alarm */
 .alarm-list { margin-top: 10px; max-height: 120px; overflow-y: auto; }
 
 .alarm-item {
@@ -526,7 +522,6 @@ button:active { transform: translateY(0); }
 
 .alarm-item button { padding: 5px 10px; font-size: 0.8rem; background: var(--fire); }
 
-/* Chat */
 #chatHistory {
     height: 180px;
     background: var(--bg);
@@ -545,7 +540,7 @@ button:active { transform: translateY(0); }
 iframe { border-radius: 8px; border: none; }
 
 /* ═══════════════════════════════════════════════════════════
-   Analytics Toggle Buttons
+   Analytics Toggle
 ═══════════════════════════════════════════════════════════ */
 .analytics-toggle {
     padding: 6px 16px;
@@ -557,22 +552,14 @@ iframe { border-radius: 8px; border: none; }
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
-.analytics-toggle:hover {
-    border-color: var(--accent);
-    color: var(--text);
-    transform: none;
-}
-
-.analytics-toggle.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: white;
-}
+.analytics-toggle:hover  { border-color: var(--accent); color: var(--text); transform: none; }
+.analytics-toggle.active { background: var(--accent); border-color: var(--accent); color: white; }
 
 /* ═══════════════════════════════════════════════════════════
-   Health rows (meals, workouts)
+   Health Rows
 ═══════════════════════════════════════════════════════════ */
 .health-row {
     display: flex;
@@ -596,7 +583,7 @@ iframe { border-radius: 8px; border: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   FIX: Workout Sets + Reps — equal width, inside card boundary
+   Workout Inputs
 ═══════════════════════════════════════════════════════════ */
 .workout-inputs {
     display: flex;
@@ -607,12 +594,12 @@ iframe { border-radius: 8px; border: none; }
 
 .workout-inputs input {
     flex: 1;
-    min-width: 0;       /* allows inputs to shrink below intrinsic size */
-    width: 0;           /* forces equal flex distribution */
+    min-width: 0;
+    width: 0;
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Recurring goal ↻ button
+   Recurring goal button
 ═══════════════════════════════════════════════════════════ */
 .goal-item button[title*="ecurring"]:hover {
     opacity: 0.85;
@@ -620,29 +607,7 @@ iframe { border-radius: 8px; border: none; }
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Misc
-═══════════════════════════════════════════════════════════ */
-.loading { opacity: 0.5; pointer-events: none; }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar              { width: 8px; height: 8px; }
-::-webkit-scrollbar-track        { background: var(--bg); }
-::-webkit-scrollbar-thumb        { background: var(--border); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover  { background: var(--accent); }
-
-/* ═══════════════════════════════════════════════════════════
-   Responsive — single column on narrow screens
-   Profile stays fixed even here; only the dashboard reflows.
-═══════════════════════════════════════════════════════════ */
-@media (max-width: 1200px) {
-    .main-dashboard {
-        grid-template-columns: 1fr;
-        padding-top: 100px;   /* leave room for fixed profile header */
-    }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   Delete Account menu item
+   Delete Account
 ═══════════════════════════════════════════════════════════ */
 .delete-account-item {
     color: var(--fire) !important;
@@ -654,4 +619,188 @@ iframe { border-radius: 8px; border: none; }
     background: rgba(255, 123, 114, 0.1) !important;
     border-color: var(--fire) !important;
     transform: translateX(5px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Misc
+═══════════════════════════════════════════════════════════ */
+.loading { opacity: 0.5; pointer-events: none; }
+
+::-webkit-scrollbar              { width: 8px; height: 8px; }
+::-webkit-scrollbar-track        { background: var(--bg); }
+::-webkit-scrollbar-thumb        { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover  { background: var(--accent); }
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+   Everything below overrides the defaults above for
+   specific screen sizes. Nothing is removed — only adapted.
+═══════════════════════════════════════════════════════════ */
+
+/* ── Large TV / 4K (≥ 1920px) ── */
+@media (min-width: 1920px) {
+    body { padding: 30px; font-size: 1.05rem; }
+    .main-dashboard {
+        grid-template-columns: 360px 1fr 400px;
+        gap: 28px;
+        padding-top: 90px;
+    }
+    h1 { font-size: 2.5rem; }
+    h3 { font-size: 1.3rem; }
+    .time-display  { font-size: 3rem; }
+    .step-display  { font-size: 2.8rem; }
+    .stat-value    { font-size: 2.2rem; }
+    .profile-dropdown { min-width: 300px; }
+}
+
+/* ── Small Desktop / Large Laptop (1200px – 1399px) ── */
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .main-dashboard {
+        grid-template-columns: 260px 1fr 300px;
+        gap: 16px;
+    }
+    h1 { font-size: 1.7rem; }
+    .time-display { font-size: 2.1rem; }
+    .stat-value   { font-size: 1.5rem; }
+}
+
+/* ── Tablet Landscape (900px – 1199px) ── */
+@media (min-width: 900px) and (max-width: 1199px) {
+    body { padding: 14px; font-size: 0.92rem; }
+    .main-dashboard {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        padding-top: 80px;
+    }
+    /* Left sidebar spans full width as a grid */
+    .settings-sidebar {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+    .middle-section { grid-column: 1; }
+    .right-sidebar  { grid-column: 2; }
+
+    h1 { font-size: 1.5rem; }
+    h3 { font-size: 1rem; }
+    .time-display     { font-size: 2rem; }
+    .stat-value       { font-size: 1.4rem; }
+    .profile-dropdown { min-width: 230px; max-width: 280px; }
+    .streak-pill      { font-size: 1rem; }
+}
+
+/* ── Tablet Portrait (600px – 899px) ── */
+@media (min-width: 600px) and (max-width: 899px) {
+    body { padding: 12px; font-size: 0.88rem; }
+    .main-dashboard {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding-top: 78px;
+    }
+    .settings-sidebar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    h1 { font-size: 1.4rem; }
+    h3 { font-size: 0.95rem; }
+    .time-display     { font-size: 1.9rem; }
+    .stat-value       { font-size: 1.3rem; }
+    .chart-container  { height: 220px; }
+    /* Profile dropdown stays readable */
+    .profile-dropdown {
+        min-width: 220px;
+        max-width: 75vw;
+    }
+    .streak-pill { font-size: 0.95rem; }
+    .welcome-banner { padding: 18px; }
+}
+
+/* ── Mobile (< 600px) ── */
+@media (max-width: 599px) {
+    body { padding: 10px; font-size: 0.85rem; }
+    .main-dashboard {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding-top: 72px;
+        min-height: unset;
+    }
+    .settings-sidebar { flex-direction: column; gap: 10px; }
+
+    h1 { font-size: 1.25rem; }
+    h3 { font-size: 0.9rem; }
+
+    /* Profile toggle smaller on mobile */
+    .profile-toggle   { padding: 8px 12px; gap: 8px; }
+    .profile-avatar   { width: 34px; height: 34px; font-size: 1.1rem; }
+
+    /* Dropdown full width so nothing is cut */
+    .profile-dropdown {
+        min-width: unset;
+        width: calc(100vw - 32px);
+        max-width: calc(100vw - 32px);
+        left: 0;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .profile-name  { font-size: 1rem; }
+    .profile-email { font-size: 0.78rem; }
+    .profile-stat-value { font-size: 1.1rem; }
+    .profile-stat-label { font-size: 0.65rem; }
+    .profile-menu-item  { font-size: 0.85rem; padding: 8px; }
+    .logout-btn         { font-size: 0.85rem; }
+
+    .time-display  { font-size: 1.8rem; }
+    .date-display  { font-size: 0.8rem; }
+    .weather-icon  { font-size: 1.5rem; }
+
+    .step-display  { font-size: 1.7rem; }
+    .km-display    { font-size: 0.95rem; }
+    .stat-value    { font-size: 1.3rem; }
+    .stat-label    { font-size: 0.72rem; }
+    .stats-grid    { gap: 6px; }
+
+    .streak-pill   { font-size: 0.9rem; padding: 6px 14px; }
+    .welcome-banner { padding: 14px; }
+
+    .chart-container { height: 180px; }
+    .goal-list       { max-height: 220px; }
+    .history-list    { max-height: 160px; }
+
+    /* Inputs stack on mobile */
+    .input-group { flex-wrap: wrap; gap: 8px; }
+    .input-group > input  { width: 100%; }
+    .input-group > button { width: 100%; }
+
+    /* Keep step update button inline */
+    .step-input-group        { flex-wrap: nowrap; }
+    .step-input-group > button { width: auto; }
+
+    .workout-inputs { gap: 6px; }
+
+    iframe { height: 150px; }
+    #chatHistory { height: 140px; }
+}
+
+/* ── Very Small Mobile (< 380px) ── */
+@media (max-width: 379px) {
+    body { padding: 8px; font-size: 0.8rem; }
+    .main-dashboard { padding-top: 68px; gap: 8px; }
+
+    h1 { font-size: 1.1rem; }
+    h3 { font-size: 0.85rem; }
+
+    .profile-toggle { padding: 6px 10px; }
+    .profile-avatar { width: 30px; height: 30px; font-size: 1rem; }
+    .profile-dropdown { width: calc(100vw - 20px); padding: 12px; }
+
+    .time-display  { font-size: 1.6rem; }
+    .stat-value    { font-size: 1.1rem; }
+    .stats-grid    { grid-template-columns: 1fr 1fr; gap: 5px; }
+    .streak-pill   { font-size: 0.82rem; padding: 5px 10px; }
+    .chart-container { height: 150px; }
+    iframe { height: 130px; }
 }
