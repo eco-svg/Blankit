@@ -464,17 +464,66 @@ body.header-hidden .l-bar {
 
 .profile-tab-cols {
   display: flex;
-  gap: 40px;
+  gap: 0;
   height: 100%;
 }
 .profile-tab-settings {
-  flex: 0 0 320px;
+  flex: 0 0 270px;
   display: flex;
   flex-direction: column;
+  padding-right: 28px;
+  border-right: 1px solid rgba(255,255,255,0.06);
+}
+.profile-tab-prefs {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  padding: 0 28px;
+  border-right: 1px solid rgba(255,255,255,0.06);
 }
 .profile-tab-rank {
   flex: 1;
-  padding-top: 4px;
+  padding: 0 0 0 28px;
+}
+
+/* ── Theme swatches ── */
+.theme-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 6px;
+}
+.theme-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  outline: none;
+  flex-shrink: 0;
+}
+.theme-swatch:hover { transform: scale(1.18); }
+.theme-swatch-active {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+.theme-swatch-soon {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px dashed rgba(255,255,255,0.20) !important;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: default !important;
+  transform: none !important;
+}
+.theme-cs-label {
+  font-size: 0.60rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  letter-spacing: 0.06em;
+  opacity: 0.45;
+  margin-bottom: 10px;
 }
 .profile-tab-avatar-row {
   display: flex;
@@ -808,8 +857,7 @@ body.header-hidden .l-bar {
 
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* row 1: dream banner (60px); rows 2-5: card pairs; row 6: habits full-row; row 7: adboxes */
-  grid-template-rows: 60px repeat(4, 800px) 700px 210px;
+  grid-template-rows: 60px;
   grid-auto-rows: auto;
   column-gap: clamp(16px, 2.5vw, 40px);
   row-gap: 0;
