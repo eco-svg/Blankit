@@ -1984,9 +1984,20 @@ div.infinite-canvas video {
     max-height: 560px;
 }
 
-/* Stats wrapper — transparent on desktop, flip card on mobile */
-.stats-wrap { display: contents; }
-.stats-flip-inner { display: contents; }
+/* Stats wrapper — side-by-side on desktop, flip card on mobile */
+.stats-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: clamp(16px, 2.5vw, 40px);
+  align-items: start;
+}
+.stats-flip-inner {
+  display: flex;
+  flex: 1;
+  gap: clamp(16px, 2.5vw, 40px);
+  align-items: start;
+}
+.stats-flip-inner > .card { flex: 1; min-width: 0; }
 .stats-flip-btn { display: none; }
 
 /* Rank Guide card (desktop) */
@@ -1999,9 +2010,20 @@ div.infinite-canvas video {
 }
 .rank-guide-scroll { padding: 4px 16px 20px; }
 
-/* Skills/Achievements wrapper — transparent on desktop, flip card on mobile */
-.skills-wrap { display: contents; }
-.skills-flip-inner { display: contents; }
+/* Skills/Achievements wrapper — side-by-side on desktop, flip card on mobile */
+.skills-wrap {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: clamp(16px, 2.5vw, 40px);
+  align-items: start;
+}
+.skills-flip-inner {
+  display: flex;
+  flex: 1;
+  gap: clamp(16px, 2.5vw, 40px);
+  align-items: start;
+}
+.skills-flip-inner > .card { flex: 1; min-width: 0; }
 .skills-flip-btn { display: none; }
 
 /* Habits flip buttons — hidden on desktop */
@@ -4516,6 +4538,7 @@ button.nav-pill:not(.btn-ghost):hover {
   /* ── Stats: flip card on mobile ── */
   .stats-wrap {
     display: block;
+    grid-column: 1;
     height: 620px;
     perspective: 1200px;
   }
@@ -4529,15 +4552,17 @@ button.nav-pill:not(.btn-ghost):hover {
   }
   .stats-flip-inner.flipped { transform: rotateY(180deg); }
   #sec-stats, #sec-rank-guide {
-    position: absolute;
+    position: absolute !important;
     inset: 0;
-    height: 100%;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    overflow-y: auto;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     animation: none !important;
+    flex: none !important;
   }
   #sec-rank-guide { transform: rotateY(180deg); }
   .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
@@ -4569,6 +4594,7 @@ button.nav-pill:not(.btn-ghost):hover {
   /* ── Skills/Achievements: flip card on mobile ── */
   .skills-wrap {
     display: block;
+    grid-column: 1;
     height: 620px;
     perspective: 1200px;
   }
@@ -4582,15 +4608,17 @@ button.nav-pill:not(.btn-ghost):hover {
   }
   .skills-flip-inner.flipped { transform: rotateY(180deg); }
   #sec-skills, #sec-achievements {
-    position: absolute;
+    position: absolute !important;
     inset: 0;
-    height: 100%;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    overflow: hidden;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     animation: none !important;
+    flex: none !important;
   }
   #sec-achievements { transform: rotateY(180deg); }
   .skills-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; margin-left: auto; }
