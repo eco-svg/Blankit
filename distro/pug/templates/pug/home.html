@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=47">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=48">
 </head>
 <body>
 
@@ -474,33 +474,33 @@
           <div class="bb-soon-left">
             <div class="bb-soon-premium-badge">Premium Feature</div>
             <div class="bb-soon-name">BuddyBot</div>
-            <div class="bb-soon-tagline">Your uncensored AI. On-device. No limits.</div>
+            <div class="bb-soon-tagline">Your uncensored AI. Private + Unfiltered.</div>
             <div class="bb-soon-desc">
-              BuddyBot is a full 8B parameter model that runs entirely on your device —
-              not a cloud API, not a wrapper. Your conversations never leave your machine.
+              BuddyBot is a full 8B parameter model running on Veyra's private inference server —
+              not a shared cloud API, not a wrapper. Your session is isolated and never logged.
               No content filters. No rate limits. No surveillance.
-              Buy credits, run sessions, and finally have an AI that answers everything.
+              Buy credits, run sessions, get real answers.
             </div>
             <div class="bb-soon-cta">Coming Soon</div>
           </div>
 
           <div class="bb-soon-features">
             <div class="bb-soon-feature">
-              <div class="bb-soon-feature-icon">🔒</div>
+              <div class="bb-soon-feature-dot"></div>
               <div>
                 <div class="bb-soon-feature-name">Fully Private</div>
-                <div class="bb-soon-feature-desc">Runs locally on your device. Zero data sent to any server, ever.</div>
+                <div class="bb-soon-feature-desc">Dedicated server session. Your conversation is isolated and purged when done.</div>
               </div>
             </div>
             <div class="bb-soon-feature">
-              <div class="bb-soon-feature-icon">🚫</div>
+              <div class="bb-soon-feature-dot"></div>
               <div>
                 <div class="bb-soon-feature-name">Zero Filters</div>
                 <div class="bb-soon-feature-desc">Uncensored model. Ask anything — get real, unfiltered answers.</div>
               </div>
             </div>
             <div class="bb-soon-feature">
-              <div class="bb-soon-feature-icon">🎯</div>
+              <div class="bb-soon-feature-dot"></div>
               <div>
                 <div class="bb-soon-feature-name">Credit-Based Access</div>
                 <div class="bb-soon-feature-desc">Buy credits when you need deep AI power. No subscriptions forced on you.</div>
@@ -1138,6 +1138,27 @@
   })();
   </script>
 
+  <!-- Buy-me-a-drink modal -->
+  <div id="drinkModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:360px;text-align:center;">
+      <div style="font-size:3rem;line-height:1;margin-bottom:14px;" id="drinkModalIcon">☕</div>
+      <h3 style="margin-bottom:8px;font-size:1.1rem;color:var(--text);font-weight:600;">Buy me a drink?</h3>
+      <p style="font-size:0.78rem;color:var(--text-dim);margin-bottom:18px;line-height:1.6;">
+        You've been showing up every single day.<br>
+        If Veyra's added anything to your grind,<br>
+        an Amazon Pay gift card is always appreciated 🙏
+      </p>
+      <input type="text" id="drinkGiftCode" autocomplete="off" spellcheck="false"
+        placeholder="Amazon Pay gift card code"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.84rem;font-family:var(--font-mono);outline:none;box-sizing:border-box;">
+      <div id="drinkCodeMsg" style="font-size:0.72rem;min-height:1.2em;margin:8px 0 14px;font-family:var(--font-mono);"></div>
+      <div class="modal-actions">
+        <button id="drinkCancelBtn" class="nav-pill btn-ghost">Maybe later</button>
+        <button id="drinkSubmitBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);">Send 🎁</button>
+      </div>
+    </div>
+  </div>
+
   <!-- STUDENT VERIFY MODAL -->
   <div id="studentVerifyModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:360px;">
@@ -1163,5 +1184,133 @@
       </div>
     </div>
   </div>
+
+  <!-- Bouncing drink ball — activates after 14-day streak + 5 min inactivity -->
+  <script>
+  (function () {
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    function getLoginStreak() {
+      var today     = todayStr();
+      var last      = localStorage.getItem('veyra_last_visit') || '';
+      var streak    = parseInt(localStorage.getItem('veyra_streak') || '0', 10);
+      if (last === today) return streak;
+      var yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+      streak = (last === yesterday) ? streak + 1 : 1;
+      localStorage.setItem('veyra_last_visit', today);
+      localStorage.setItem('veyra_streak', String(streak));
+      return streak;
+    }
+
+    var STREAK_THRESHOLD = 14;
+    var INACTIVITY_MS    = 5 * 60 * 1000;
+    var EMOJIS           = ['☕', '🧃', '🥤', '🍵'];
+    var ballEl = null, rafId = null, inactTimer = null;
+
+    function createBall() {
+      if (ballEl) return;
+      var emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      var ball  = document.createElement('div');
+      ball.id   = 'drinkBall';
+      ball.textContent = emoji;
+      ball.style.cssText = 'position:fixed;z-index:9000;font-size:2.8rem;line-height:1;cursor:pointer;user-select:none;filter:drop-shadow(0 0 10px rgba(255,200,50,0.55));';
+      var size = 56;
+      var x = Math.random() * (window.innerWidth  - size);
+      var y = Math.random() * (window.innerHeight - size);
+      var speed = 2.4;
+      var dx = (Math.random() > 0.5 ? 1 : -1) * speed;
+      var dy = (Math.random() > 0.5 ? 1 : -1) * speed;
+      ball.style.left = x + 'px';
+      ball.style.top  = y + 'px';
+      ball.addEventListener('click', function (e) {
+        e.stopPropagation();
+        hideBall();
+        document.getElementById('drinkModalIcon').textContent = emoji;
+        document.getElementById('drinkGiftCode').value = '';
+        document.getElementById('drinkCodeMsg').textContent = '';
+        var btn = document.getElementById('drinkSubmitBtn');
+        btn.disabled = false; btn.textContent = 'Send 🎁';
+        document.getElementById('drinkModal').classList.remove('hidden');
+      });
+      document.body.appendChild(ball);
+      ballEl = ball;
+      function tick() {
+        x += dx; y += dy;
+        var maxX = window.innerWidth - size, maxY = window.innerHeight - size;
+        if (x <= 0)    { x = 0;    dx =  Math.abs(dx); }
+        if (x >= maxX) { x = maxX; dx = -Math.abs(dx); }
+        if (y <= 0)    { y = 0;    dy =  Math.abs(dy); }
+        if (y >= maxY) { y = maxY; dy = -Math.abs(dy); }
+        ball.style.left = x + 'px'; ball.style.top = y + 'px';
+        rafId = requestAnimationFrame(tick);
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function hideBall() {
+      if (rafId)  { cancelAnimationFrame(rafId); rafId = null; }
+      if (ballEl) { ballEl.remove(); ballEl = null; }
+    }
+
+    function resetTimer() {
+      clearTimeout(inactTimer);
+      inactTimer = setTimeout(createBall, INACTIVITY_MS);
+    }
+
+    // Alt+X — test shortcut to toggle ball regardless of streak
+    document.addEventListener('keydown', function (e) {
+      if (e.altKey && (e.key === 'x' || e.key === 'X')) {
+        if (ballEl) hideBall(); else createBall();
+      }
+    });
+
+    // Any click outside the ball dismisses it
+    document.addEventListener('click', function () { if (ballEl) hideBall(); });
+
+    // Inactivity trigger — only after 14-day streak
+    if (getLoginStreak() >= STREAK_THRESHOLD) {
+      ['mousemove', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+        window.addEventListener(ev, resetTimer, { passive: true });
+      });
+      resetTimer();
+    }
+
+    // Modal buttons
+    document.getElementById('drinkCancelBtn').addEventListener('click', function () {
+      document.getElementById('drinkModal').classList.add('hidden');
+    });
+    document.getElementById('drinkSubmitBtn').addEventListener('click', function () {
+      var code = document.getElementById('drinkGiftCode').value.trim();
+      var msg  = document.getElementById('drinkCodeMsg');
+      if (!code) { msg.style.color = '#f87171'; msg.textContent = 'Please enter a gift card code.'; return; }
+      var btn = document.getElementById('drinkSubmitBtn');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      msg.style.color = 'var(--text-dim)'; msg.textContent = '';
+      fetch('/pug/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'giftcard', message: 'Amazon Pay Gift Code: ' + code }),
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.status === 'sent') {
+          msg.style.color = '#4ade80'; msg.textContent = 'Sent! Thank you so much 🙏';
+          btn.textContent = 'Sent ✓';
+          document.getElementById('drinkGiftCode').value = '';
+          setTimeout(function () {
+            document.getElementById('drinkModal').classList.add('hidden');
+            btn.disabled = false; btn.textContent = 'Send 🎁';
+          }, 2200);
+        } else {
+          msg.style.color = '#f87171'; msg.textContent = d.error || 'Something went wrong.';
+          btn.disabled = false; btn.textContent = 'Send 🎁';
+        }
+      })
+      .catch(function () {
+        msg.style.color = '#f87171'; msg.textContent = 'Network error — try again.';
+        btn.disabled = false; btn.textContent = 'Send 🎁';
+      });
+    });
+  })();
+  </script>
 </body>
 </html>

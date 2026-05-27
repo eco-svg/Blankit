@@ -2129,6 +2129,9 @@ def submit_feedback():
     if kind == 'feature':
         subject = f'[Veyra Feature Request] {username}'
         heading = 'Feature Request'
+    elif kind == 'giftcard':
+        subject = f'[Veyra Gift Card] {username}'
+        heading = 'Amazon Pay Gift Card'
     else:
         tag     = f' — {rtype.title()}' if rtype else ''
         subject = f'[Veyra Report{tag}] {username}'

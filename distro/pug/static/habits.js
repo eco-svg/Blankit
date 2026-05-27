@@ -48,10 +48,11 @@
     }
     manageList.innerHTML = habits.map(h => `
       <li class="habit-manage-item">
+        <span class="habit-manage-dot"></span>
         <span class="habit-name">${h.name}</span>
         ${h.id != null
           ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
-          : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono)">saving…</span>`}
+          : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono);margin-left:auto">saving…</span>`}
       </li>`).join('');
     manageList.querySelectorAll('.habit-del-btn').forEach(btn =>
       btn.addEventListener('click', () => deleteHabit(+btn.dataset.id))
@@ -74,8 +75,17 @@
     todayList.querySelectorAll('.habit-today-item').forEach(li =>
       li.addEventListener('click', () => toggleHabit(+li.dataset.id))
     );
-    const done = confirmed.filter(h => h.done_today).length;
-    if (todayFooter) todayFooter.textContent = `${done} / ${confirmed.length} done today`;
+    const done  = confirmed.filter(h => h.done_today).length;
+    const total = confirmed.length;
+    const pct   = total ? Math.round(done / total * 100) : 0;
+    if (todayFooter) {
+      todayFooter.innerHTML = `
+        <div class="habit-progress-wrap">
+          <div class="habit-progress-bar" style="width:${pct}%"></div>
+        </div>
+        <span class="habit-progress-label">${done} / ${total} done today${pct === 100 ? ' — all done!' : ''}</span>
+      `;
+    }
   }
 
   // ── Add (optimistic) ──────────────────────────────────
