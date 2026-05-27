@@ -1270,9 +1270,11 @@
     // Alt+X — test shortcut to toggle ball regardless of streak
     document.addEventListener('keydown', function (e) {
       if (e.altKey && (e.key === 'x' || e.key === 'X')) {
+        e.preventDefault();
+        e.stopPropagation();
         if (ballEl) hideBall(); else createBall();
       }
-    });
+    }, true); // capture phase so it fires before other listeners
 
     // Any click outside the ball dismisses it
     document.addEventListener('click', function () { if (ballEl) hideBall(); });

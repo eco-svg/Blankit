@@ -795,17 +795,35 @@ body::after {
     display: block;
     background: none;
     border: none;
-    color: var(--text3);
+    color: var(--text2);
     font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
     cursor: pointer;
     padding: 0;
-    margin-bottom: 18px;
+    margin-bottom: 14px;
     transition: color 0.15s;
     text-align: left;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(240,235,224,0.2);
   }
-  .mobile-back-btn:hover { color: var(--text2); }
+  .mobile-back-btn:hover { color: var(--text); text-decoration-color: rgba(240,235,224,0.45); }
+
+  /* Compact auth form on mobile */
+  .auth-wordmark          { font-size: 1.25rem; }
+  .auth-sub               { font-size: 0.72rem; }
+  .auth-section           { gap: 8px; }
+  .auth-card              { padding: 1.1rem 1.1rem; }
+  .tabs                   { margin-bottom: 1rem; }
+  .panel                  { gap: 0.65rem; }
+  .field                  { gap: 4px; }
+  .field-input            { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
+  .field-label            { font-size: 0.68rem; }
+  .field-err              { min-height: 12px; font-size: 0.6rem; }
+  .submit-btn             { padding: 0.55rem 1rem; font-size: 0.8rem; margin-top: 0.1rem; }
+  .check-label            { font-size: 0.68rem; }
+  .link-btn               { font-size: 0.68rem; }
 }
 
 @keyframes mobileSlideIn {
