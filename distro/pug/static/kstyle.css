@@ -521,28 +521,22 @@ body.header-hidden .l-bar {
 }
 .sec-profile-card:hover { transform: none; border-color: rgba(255,255,255,0.08); box-shadow: none; }
 
-.profile-tab-cols {
-  display: flex;
-  gap: 0;
-  height: 100%;
+/* ── Profile card — single scrollable column ── */
+.sec-profile-card {
+  height: auto !important;
+  min-height: 400px;
+  overflow-y: auto;
 }
-.profile-tab-settings {
-  flex: 0 0 300px;
+.profile-inner {
+  max-width: 560px;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  overflow-y: auto;
 }
-.profile-tab-rank {
-  flex: 0 0 260px;
-  padding: 8px 0 16px 32px;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  overflow-y: auto;
-}
-.profile-tab-soon {
-  flex: 1;
-  padding: 8px 8px 16px 32px;
-  overflow-y: auto;
+.pp-rank-grid {
+  padding: 4px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 /* ── Theme swatches ── */
@@ -4298,7 +4292,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .mobile-bottom-bar {
   display: none;
 }
-.csf-mobile-title { display: none; }
+
 
 @media (max-width: 768px) {
   :root {
@@ -4357,42 +4351,6 @@ button.nav-pill:not(.btn-ghost):hover {
     color: rgba(255, 255, 255, 0.8);
   }
 
-  /* Inner nav groups fill the bar */
-  .mbb-main-nav,
-  .mbb-profile-nav {
-    width: 100%;
-    display: flex;
-    align-items: stretch;
-    justify-content: space-around;
-  }
-  .mbb-profile-nav { display: none; }
-
-  /* Profile sub-nav buttons (same shape as mbb-tab) */
-  .mbb-profile-tab,
-  .mbb-profile-back {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.45);
-    font-family: var(--font-ui);
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    padding: 6px 4px 2px;
-    transition: color 0.18s;
-  }
-  .mbb-profile-tab svg,
-  .mbb-profile-back svg { stroke: currentColor; transition: stroke 0.18s; }
-  .mbb-profile-tab.nav-active { color: var(--accent); }
-  .mbb-profile-back { color: rgba(255, 255, 255, 0.55); }
-  .mbb-profile-tab:active,
-  .mbb-profile-back:active { color: rgba(255, 255, 255, 0.8); }
 }
 
 /* ── 768px: single column, compact header ── */
@@ -4475,38 +4433,8 @@ button.nav-pill:not(.btn-ghost):hover {
     min-width: 100px;
   }
 
-  /* ── Profile tab: single-panel on mobile ── */
-  .profile-tab-cols { flex-direction: column; }
-
-  .profile-tab-settings,
-  .profile-tab-rank,
-  .profile-tab-soon {
-    display: none;
-    flex: none;
-    width: 100%;
-    border-right: none;
-    padding: 0;
-    overflow-y: auto;
-  }
-  /* data-mobile-panel controls which panel is visible */
-  #sec-profile[data-mobile-panel="settings"] .profile-tab-settings { display: flex; flex-direction: column; }
-  #sec-profile[data-mobile-panel="rank"]     .profile-tab-rank     { display: block; padding: 16px 20px; }
-  #sec-profile[data-mobile-panel="csf"]      .profile-tab-soon     { display: block; padding: 8px 20px 20px; }
-
-  /* hide desktop "Coming Soon" label, show mobile CSF reveal */
-  .pp-csf-desktop-label { display: none; }
-  .csf-mobile-title {
-    display: block;
-    padding: 2px 0 14px;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    color: var(--text-dim);
-    cursor: pointer;
-    user-select: none;
-  }
-  .csf-mobile-title .csf-full { display: none; color: var(--accent); }
-  .csf-mobile-title.revealed .csf-full { display: inline; }
+  /* ── Profile card: full width on mobile ── */
+  .profile-inner { max-width: 100%; }
 
   /* ── BuddyBot: vertical stack ── */
   .bb-soon-inner   { flex-direction: column; gap: 24px; }
