@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=46">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=47">
 </head>
 <body>
 
@@ -90,8 +90,9 @@
       <div class="card full-row sec-profile-card page-hidden" id="sec-profile">
         <div class="profile-tab-cols">
 
-          <!-- Col 1: Account -->
+          <!-- Col 1: Account settings -->
           <div class="profile-tab-settings">
+            <!-- Avatar + name -->
             <div class="profile-tab-avatar-row">
               <div class="user-avatar profile-tab-avatar" id="profileTabAvatar">
                 <span class="avatar-initial">{{ username[0]|upper }}</span>
@@ -101,6 +102,30 @@
                 <div class="profile-tab-sub" id="headerRankBadge2"></div>
               </div>
             </div>
+
+            <!-- Theme — directly below avatar/name -->
+            <div class="pp-divider"></div>
+            <div class="pp-label">Theme</div>
+            <div style="padding:6px 16px 10px;">
+              <div class="theme-swatches">
+                <button class="theme-swatch" data-theme="default" style="background:#0d0b08;border-color:rgba(212,165,116,0.45)!important;" title="Blackhole"></button>
+                <button class="theme-swatch" data-theme="cyan"     style="background:#00ccd4;" title="Cyan"></button>
+                <button class="theme-swatch" data-theme="pink"     style="background:#e866a0;" title="Pink"></button>
+                <button class="theme-swatch" data-theme="purple"   style="background:#a855f7;" title="Purple"></button>
+                <button class="theme-swatch" data-theme="blue"     style="background:#4d9ef7;" title="Blue"></button>
+                <button class="theme-swatch" data-theme="darkblue" style="background:#3a5cc5;" title="Dark Blue"></button>
+                <button class="theme-swatch" data-theme="grey"     style="background:#909090;" title="Grey"></button>
+                <button class="theme-swatch" data-theme="black"    style="background:#111;border-color:rgba(255,255,255,0.18)!important;" title="Black"></button>
+                <button class="theme-swatch" data-theme="white"    style="background:#f5f5f5;border-color:rgba(0,0,0,0.2)!important;" title="White"></button>
+                <button class="theme-swatch" data-theme="beige"    style="background:#f0ebe0;border-color:rgba(0,0,0,0.18)!important;" title="Beige"></button>
+                <button class="theme-swatch theme-swatch-soon" title="Custom — Coming Soon">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              </div>
+              <div class="theme-cs-label">+ Custom — coming soon</div>
+            </div>
+
+            <!-- Account actions -->
             <div class="pp-divider"></div>
             <div class="pp-item" id="ppChangeAvatar">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="5"></circle><path d="M3 21v-1a9 9 0 0 1 18 0v1"></path></svg>
@@ -120,40 +145,11 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
               <span id="ppStudentLabel">Verify Student Status</span>
             </div>
-            <div class="pp-divider"></div>
-            <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-              <span>Sign Out</span>
-            </button>
-            <div class="pp-item pp-danger" id="ppDeleteAccount">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path></svg>
-              <span>Delete Account</span>
-            </div>
-          </div>
 
-          <!-- Col 2: Appearance -->
-          <div class="profile-tab-prefs">
-            <div class="pp-label" style="padding:8px 0 14px;font-size:0.8rem;">Appearance</div>
-            <div class="pp-label" style="font-size:0.62rem;letter-spacing:0.10em;opacity:0.5;margin-bottom:8px;">THEME</div>
-            <div class="theme-swatches">
-              <button class="theme-swatch" data-theme="default" style="background:linear-gradient(135deg,#d4a574 0%,#c85a2a 100%);" title="Default (Amber)"></button>
-              <button class="theme-swatch" data-theme="cyan"     style="background:#00ccd4;" title="Cyan"></button>
-              <button class="theme-swatch" data-theme="pink"     style="background:#e866a0;" title="Pink"></button>
-              <button class="theme-swatch" data-theme="purple"   style="background:#a855f7;" title="Purple"></button>
-              <button class="theme-swatch" data-theme="blue"     style="background:#4d9ef7;" title="Blue"></button>
-              <button class="theme-swatch" data-theme="darkblue" style="background:#3a5cc5;" title="Dark Blue"></button>
-              <button class="theme-swatch" data-theme="grey"     style="background:#909090;" title="Grey"></button>
-              <button class="theme-swatch" data-theme="black"    style="background:#111;border-color:rgba(255,255,255,0.15)!important;" title="Black"></button>
-              <button class="theme-swatch" data-theme="white"    style="background:#f5f5f5;border-color:rgba(0,0,0,0.18)!important;" title="White"></button>
-              <button class="theme-swatch" data-theme="beige"    style="background:#f0ebe0;border-color:rgba(0,0,0,0.15)!important;" title="Beige"></button>
-              <button class="theme-swatch theme-swatch-soon" title="Custom — Coming Soon">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
-            </div>
-            <div class="theme-cs-label">+ Custom — coming soon</div>
+            <!-- Language — above delete -->
             <div class="pp-divider"></div>
-            <div class="pp-label" style="padding:6px 0 4px;">App Language</div>
-            <div style="padding:4px 0 10px;">
+            <div class="pp-label">App Language</div>
+            <div style="padding:4px 16px 10px;">
               <select id="ppAppLangSelect" class="pp-lang-select" style="width:100%;max-width:220px;">
                 <option value="en">English</option>
                 <option value="hi">हिन्दी</option>
@@ -173,21 +169,70 @@
                 <option value="bn">বাংলা</option>
               </select>
             </div>
+            <div class="pp-divider"></div>
+            <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              <span>Sign Out</span>
+            </button>
+            <div class="pp-item pp-danger" id="ppDeleteAccount">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2 2v2"></path></svg>
+              <span>Delete Account</span>
+            </div>
           </div>
 
-          <!-- Col 3: Rank Guide -->
+          <!-- Col 2: Rank Guide + Premium -->
           <div class="profile-tab-rank">
-            <div class="pp-label" style="margin-bottom:14px;">Rank Guide</div>
-            <div class="pp-rank-row"><span style="color:#ffd700;font-weight:700;">S+</span> <span>Beyond world record</span></div>
-            <div class="pp-rank-row"><span style="color:#ffb700;">S</span>  <span>Top 0.001%</span></div>
-            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span> <span>Top 0.01–0.1%</span></div>
-            <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span> <span>Top 1–10%</span></div>
-            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span> <span>Top 10–20%</span></div>
-            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span> <span>Top 20–40%</span></div>
-            <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span> <span>Top 40–70%</span></div>
-            <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span> <span>Top 70–99%</span></div>
-            <div class="pp-rank-row"><span style="color:#c06030;">E</span> <span>Beginner in field</span></div>
-            <div class="pp-rank-row"><span style="color:#803010;">F</span> <span>Not started</span></div>
+            <div class="pp-label" style="margin-bottom:14px;font-size:0.78rem;">Rank Guide</div>
+            <div class="pp-rank-row"><span style="color:#ffd700;">S+</span><span>Beyond world record</span></div>
+            <div class="pp-rank-row"><span style="color:#ffb700;">S</span> <span>Top 0.001% globally</span></div>
+            <div class="pp-rank-row"><span style="color:#ffa500;">S-</span><span>Top 0.01–0.1%</span></div>
+            <div class="pp-rank-row"><span style="color:#ff8c42;">A+ / A / A-</span><span>Top 1–10%</span></div>
+            <div class="pp-rank-row"><span style="color:#5a8fc8;">B+</span><span>Top 10–20%</span></div>
+            <div class="pp-rank-row"><span style="color:#4a7aaa;">B / B-</span><span>Top 20–40%</span></div>
+            <div class="pp-rank-row"><span style="color:#78b878;">C+ / C / C-</span><span>Top 40–70%</span></div>
+            <div class="pp-rank-row"><span style="color:#888;">D+ / D / D-</span><span>Top 70–99%</span></div>
+            <div class="pp-rank-row"><span style="color:#c06030;">E</span><span>Beginner — first steps</span></div>
+            <div class="pp-rank-row"><span style="color:#803010;">F</span><span>Not yet started</span></div>
+
+            <div class="pp-divider" style="margin:18px 0 14px;"></div>
+            <div class="pp-label" style="margin-bottom:12px;font-size:0.78rem;">Premium — Coming Soon</div>
+            <div class="premium-soon-list">
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">BuddyBot Uncensored</div>
+                  <div class="premium-soon-desc">Full-power AI with no content filters, credit-based</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">Custom Themes</div>
+                  <div class="premium-soon-desc">Upload your own background, set a custom colour palette</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">Analytics Pro</div>
+                  <div class="premium-soon-desc">Deep-dive stats, weekly trends, skill heatmaps</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">Data Export</div>
+                  <div class="premium-soon-desc">Download all notes, goals, habits and achievements</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
+              <div class="premium-soon-item">
+                <div class="premium-soon-info">
+                  <div class="premium-soon-name">Priority AI Speed</div>
+                  <div class="premium-soon-desc">Dedicated queue, faster responses across all AI features</div>
+                </div>
+                <div class="premium-soon-tag">Soon</div>
+              </div>
+            </div>
           </div>
 
         </div>
