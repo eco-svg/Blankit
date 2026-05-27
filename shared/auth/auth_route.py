@@ -486,29 +486,25 @@ def student_verify():
     if user.student_status == 'approved':
         return jsonify({'message': 'already_approved', 'status': 'approved'}), 200
 
-    f = request.files.get('id_image')
-    if not f or not f.filename:
-        return jsonify({'error': 'Please upload your student ID.'}), 400
+    # ID upload — commented out until verification flow is finalised
+    # f = request.files.get('id_image')
+    # if not f or not f.filename:
+    #     return jsonify({'error': 'Please upload your student ID.'}), 400
+    # file_data, err, code = _validate_id_file(f)
+    # if err:
+    #     return err, code
+    # import mimetypes
+    # ext = (f.filename or '').rsplit('.', 1)[-1].lower()
+    # object_name = f'student_ids/{user_id}_{uuid.uuid4().hex}.{ext}'
+    # ct = mimetypes.guess_type(f'x.{ext}')[0] or 'application/octet-stream'
+    # try:
+    #     _minio.put_object(_MINIO_BUCKET, object_name, io.BytesIO(file_data), len(file_data), content_type=ct)
+    # except Exception as e:
+    #     current_app.logger.warning(f'MinIO student ID upload failed: {e}')
+    #     return jsonify({'error': 'Upload failed, try again.'}), 500
+    # user.student_id_url = object_name
 
-    file_data, err, code = _validate_id_file(f)
-    if err:
-        return err, code
-
-    import mimetypes
-    ext = (f.filename or '').rsplit('.', 1)[-1].lower()
-    object_name = f'student_ids/{user_id}_{uuid.uuid4().hex}.{ext}'
-    ct = mimetypes.guess_type(f'x.{ext}')[0] or 'application/octet-stream'
-    try:
-        _minio.put_object(_MINIO_BUCKET, object_name, io.BytesIO(file_data), len(file_data), content_type=ct)
-    except Exception as e:
-        current_app.logger.warning(f'MinIO student ID upload failed: {e}')
-        return jsonify({'error': 'Upload failed, try again.'}), 500
-
-    user.student_status       = 'pending'
-    user.student_id_url       = object_name
-    user.student_submitted_at = datetime.utcnow()
-    db.session.commit()
-    return jsonify({'message': 'pending', 'status': 'pending'}), 200
+    return jsonify({'error': 'Student verification coming soon.'}), 503
 
 
 # ══════════════════════════════

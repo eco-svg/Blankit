@@ -312,6 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
     svCancelBtn?.addEventListener('click', () => svModal?.classList.add('hidden'));
     window.addEventListener('click', e => { if (e.target === svModal) svModal?.classList.add('hidden'); });
 
+    /* ID upload submit — commented out until verification flow is finalised
     svSubmitBtn?.addEventListener('click', async () => {
         const file = svIdFile?.files?.[0];
         if (!file) { showSvStatus('Please select your student ID image.', false); return; }
@@ -335,5 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         svSubmitBtn.textContent = 'Submit for review';
     });
+    */
 
 });
