@@ -46,6 +46,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ── Helpers ──────────────────────────────────────────────────── */
   function setMode(text) { if (modeLabel) modeLabel.textContent = text; }
 
+  function isWasmCspBlocked(err) {
+    const msg = (err?.message || String(err)).toLowerCase();
+    return (err instanceof CompileError) ||
+           msg.includes('wasm-unsafe-eval') ||
+           msg.includes('unsafe-eval') ||
+           (msg.includes('webassembly') && msg.includes('content security'));
+  }
+
   function setProgress(pct, msg) {
     const bar = document.getElementById('blinkProgressBar');
     const lbl = document.getElementById('blinkProgressMsg');
@@ -340,6 +348,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {
       console.error('[blinkbot] cache load failed:', e);
       store.clear();
+      if (isWasmCspBlocked(e)) {
+        activateChat(false);
+        addMsg("WebAssembly is blocked by this server's security policy — local AI can't run here. Using Groq instead.", 'ai', null);
+        return;
+      }
       downloadState.innerHTML = S.loadError(e?.message || String(e), 0);
       document.getElementById('blinkRetryBtn')?.addEventListener('click', () => {
         downloadState.innerHTML = S.intro(0);
@@ -369,6 +382,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         activateChat(true);
       } catch (e) {
         console.error('[blinkbot] loadEngine failed:', e);
+        store.clear();
+        if (isWasmCspBlocked(e)) {
+          activateChat(false);
+          addMsg("WebAssembly is blocked by this server's security policy — local AI can't run here. Using Groq instead.", 'ai', null);
+          return;
+        }
         const newPct = store.get().pct || existingPct;
         downloadState.innerHTML = S.loadError(e?.message || String(e), newPct);
         document.getElementById('blinkRetryBtn')?.addEventListener('click', () => {
