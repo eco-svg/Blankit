@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ── Constants ────────────────────────────────────────────────── */
   const MODEL_ID   = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
   const MODEL_MB   = 860;
-  const WEBLLM_CDN = 'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/lib/esm/index.min.js';
+  const WEBLLM_CDN = '/pug/static/webllm.js';
   const STORE_KEY  = 'blinkbot-v2';
 
   /* ── State ────────────────────────────────────────────────────── */
@@ -151,21 +151,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   /* ── Engine load (WebLLM) ─────────────────────────────────────── */
   async function loadEngine(isDownload) {
-    const webllm = await import(WEBLLM_CDN);
-    // MLCEngine + reload() works without a service worker
-    const Cls = webllm.MLCEngine || webllm.CreateMLCEngine;
-    if (!Cls) throw new Error('WebLLM failed to load — CDN may be unavailable');
-
-    const e = typeof Cls === 'function' && Cls.toString().startsWith('async')
-      ? await Cls(MODEL_ID)   // CreateMLCEngine path (legacy)
-      : new Cls();             // MLCEngine path
-
-    // If it's an MLCEngine instance it needs reload(); CreateMLCEngine already loaded
-    if (e.reload) {
-      await e.reload(MODEL_ID, {
-        initProgressCallback: (report) => onProgress(report.progress, isDownload),
-      });
-    }
+    const { MLCEngine } = await import(WEBLLM_CDN);
+    if (!MLCEngine) throw new Error('WebLLM bundle loaded but MLCEngine not found');
+    const e = new MLCEngine();
+    await e.reload(MODEL_ID, {
+      initProgressCallback: (report) => onProgress(report.progress, isDownload),
+    });
     engine = e;
     store.set({ complete: true, pct: 1 });
   }
