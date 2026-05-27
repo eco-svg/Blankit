@@ -2,7 +2,7 @@
   // Each tab shows a group of sections (the original row pair)
   const ROUTES = {
     'notes':   ['sec-notes', 'sec-blinkbot'],
-    'skills':  ['sec-skills'],
+    'skills':  ['sec-skills', 'sec-achievements'],
     'social':  ['sec-social', 'sec-comms'],
     'habits':  ['sec-habits'],
     'growth':  [],
