@@ -19,10 +19,11 @@ COPY . .
 
 # Download WebLLM bundle at build time (too large for git without LFS)
 RUN python3 -c "\
-import urllib.request; \
-urllib.request.urlretrieve(\
-  'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.83/lib/index.js', \
-  'distro/pug/static/webllm.js')"
+import requests; \
+r = requests.get('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.83/lib/index.js', timeout=120); \
+r.raise_for_status(); \
+open('distro/pug/static/webllm.js', 'wb').write(r.content); \
+print(f'WebLLM: {len(r.content)} bytes written')"
 
 EXPOSE 7860
 
