@@ -1,50 +1,60 @@
-<!-- Habits card — desktop: 3D flip front=manage+today / back=pulse; mobile: panel flip -->
+<!-- Habits card — desktop: flat two-column (tracker + pulse); mobile: panel flip -->
 <div class="card habits-card full-row" id="sec-habits">
-  <div class="habits-inner" id="habitFlipInner">
-
-    <!-- Front face: manage (left) + today (right) on desktop; flip card on mobile -->
+  <div class="habits-inner">
     <div class="habit-face habit-front" id="habitFaceFront">
 
+      <!-- Left: combined tracker (desktop) / manage panel (mobile) -->
       <div class="habit-panel habit-panel-front">
         <div class="habit-panel-header">
           <span class="card-title" data-i18n="card_habits">Habits</span>
-          <!-- Mobile only: flip to today panel -->
-          <button class="habit-flip-btn habit-mob-only" id="habitFlipBtn">Today →</button>
-          <!-- Desktop only: flip to pulse graph -->
-          <button class="habit-flip-btn habit-desk-only" id="habitPulseBtn">Pulse →</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <!-- Desktop: round + trigger -->
+            <button class="habit-desk-only" id="habitAddTrigger" title="Add habit">+</button>
+            <!-- Mobile: flip to today panel -->
+            <button class="habit-mob-only" id="habitFlipBtn">Today →</button>
+          </div>
         </div>
-        <div class="habit-add-row">
+        <!-- Add row: desktop = hidden until + clicked; mobile = always visible -->
+        <div class="habit-add-row" id="habitAddRow">
           <input type="text" id="habitNameInput" placeholder="New habit..." maxlength="80" autocomplete="off">
-          <button id="habitAddBtn">+</button>
+          <button id="habitAddBtn">Add</button>
+          <button class="habit-add-cancel habit-desk-only" id="habitAddCancel" title="Cancel">✕</button>
         </div>
         <ul class="habit-manage-list" id="habitManageList"></ul>
+        <!-- Progress footer: desktop shows here, mobile shows in today-col -->
+        <div class="habit-today-footer" id="habitTodayFooter"></div>
       </div>
 
       <div class="habit-divider"></div>
 
+      <!-- Right: pulse chart (desktop) / today panel (mobile) -->
       <div class="habit-panel habit-panel-back">
-        <div class="habit-panel-header">
-          <span class="card-title">Today</span>
-          <button class="habit-flip-btn habit-mob-only" id="habitFlipBackBtn">← Back</button>
-          <span class="habit-today-date" id="habitTodayDate"></span>
+
+        <!-- Desktop: pulse chart — always visible on right -->
+        <div class="habit-pulse-col">
+          <div class="habit-panel-header">
+            <span class="card-title">Habit Pulse</span>
+            <span class="habit-pulse-range-label">Last 7 days</span>
+          </div>
+          <div class="habit-pulse-chart-area">
+            <canvas id="consistencyChart"></canvas>
+          </div>
         </div>
-        <ul class="habit-today-list" id="habitTodayList"></ul>
-        <div class="habit-today-footer" id="habitTodayFooter"></div>
+
+        <!-- Mobile: today panel — shown on flip back face -->
+        <div class="habit-today-col">
+          <div class="habit-panel-header">
+            <span class="card-title">Today</span>
+            <button class="habit-mob-only" id="habitFlipBackBtn">← Back</button>
+            <span class="habit-today-date" id="habitTodayDate"></span>
+          </div>
+          <ul class="habit-today-list" id="habitTodayList"></ul>
+          <div class="habit-today-footer" id="habitMobFooter"></div>
+        </div>
+
       </div>
 
     </div>
-
-    <!-- Back face: Habit Pulse graph (desktop only) -->
-    <div class="habit-face habit-back">
-      <div class="habit-panel-header">
-        <span class="card-title">Habit Pulse</span>
-        <button class="habit-flip-btn habit-desk-only" id="habitPulseBackBtn">← Back</button>
-      </div>
-      <div class="habit-pulse-chart-wrap" style="flex:1;position:relative;min-height:0;padding:0 16px 16px;">
-        <canvas id="consistencyChart"></canvas>
-      </div>
-    </div>
-
   </div>
 </div>
 

@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderAll() {
-        fetch('/pug/api/habits/history?days=30')
+        fetch('/pug/api/habits/history?days=7')
             .then(res => res.json())
             .then(data => {
                 ['consistencyChart', 'consistencyChartMobile'].forEach(id => {

@@ -1,18 +1,19 @@
 (function () {
   let habits = [];
-  let chartInstance = null;
 
-  const flipInner   = document.getElementById('habitFlipInner');
-  const flipBtn     = document.getElementById('habitFlipBtn');
-  const flipBackBtn = document.getElementById('habitFlipBackBtn');
-  const pulseBtn     = document.getElementById('habitPulseBtn');
-  const pulseBackBtn = document.getElementById('habitPulseBackBtn');
-  const habitInput  = document.getElementById('habitNameInput');
-  const habitAddBtn = document.getElementById('habitAddBtn');
-  const manageList  = document.getElementById('habitManageList');
-  const todayList   = document.getElementById('habitTodayList');
-  const todayFooter = document.getElementById('habitTodayFooter');
-  const todayDateEl = document.getElementById('habitTodayDate');
+  const flipBtn      = document.getElementById('habitFlipBtn');
+  const flipBackBtn  = document.getElementById('habitFlipBackBtn');
+  const addTrigger   = document.getElementById('habitAddTrigger');
+  const addRow       = document.getElementById('habitAddRow');
+  const addCancel    = document.getElementById('habitAddCancel');
+  const habitInput   = document.getElementById('habitNameInput');
+  const habitAddBtn  = document.getElementById('habitAddBtn');
+  const manageList   = document.getElementById('habitManageList');
+  const todayList    = document.getElementById('habitTodayList');
+  const todayFooter  = document.getElementById('habitTodayFooter');
+  const mobFooter    = document.getElementById('habitMobFooter');
+  const todayDateEl  = document.getElementById('habitTodayDate');
+  const faceFront    = document.getElementById('habitFaceFront');
 
   if (todayDateEl) {
     todayDateEl.textContent = new Date().toLocaleDateString('en', {
@@ -20,8 +21,7 @@
     });
   }
 
-  // ── Mobile flip: manage ↔ today inside front face ────
-  const faceFront = document.getElementById('habitFaceFront');
+  // ── Mobile inner flip: manage ↔ today ─────────────────
   function flip(toBack) {
     if (!faceFront) return;
     faceFront.classList.toggle('flipped', toBack);
@@ -29,14 +29,19 @@
   if (flipBtn)     flipBtn.addEventListener('click',     () => flip(true));
   if (flipBackBtn) flipBackBtn.addEventListener('click', () => flip(false));
 
-  // ── Desktop flip: front face ↔ pulse back face ───────
-  function flipToPulse(toBack) {
-    if (!flipInner) return;
-    flipInner.classList.toggle('pulse-flipped', toBack);
-    if (toBack) window.dispatchEvent(new Event('habitPulseFlipped'));
+  // ── Desktop add row: hidden until + clicked ───────────
+  function openAdd() {
+    if (!addRow) return;
+    addRow.classList.add('visible');
+    habitInput?.focus();
   }
-  if (pulseBtn)     pulseBtn.addEventListener('click',     () => flipToPulse(true));
-  if (pulseBackBtn) pulseBackBtn.addEventListener('click', () => flipToPulse(false));
+  function closeAdd() {
+    if (!addRow) return;
+    addRow.classList.remove('visible');
+    if (habitInput) habitInput.value = '';
+  }
+  if (addTrigger) addTrigger.addEventListener('click', openAdd);
+  if (addCancel)  addCancel.addEventListener('click', closeAdd);
 
   // ── Load & render ─────────────────────────────────────
   async function loadHabits() {
@@ -49,31 +54,59 @@
     } catch (e) {}
   }
 
+  function isDesktop() { return window.innerWidth > 768; }
+
   function renderManage() {
     if (!manageList) return;
     if (!habits.length) {
       manageList.innerHTML = '<li class="habit-empty">No habits yet — add one above.</li>';
+      renderFooter();
       return;
     }
-    manageList.innerHTML = habits.map(h => `
-      <li class="habit-manage-item">
-        <span class="habit-manage-dot"></span>
-        <span class="habit-name">${h.name}</span>
-        ${h.id != null
-          ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
-          : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono);margin-left:auto">saving…</span>`}
-      </li>`).join('');
+
+    if (isDesktop()) {
+      // Combined: check circle + name + delete
+      manageList.innerHTML = habits.map(h => `
+        <li class="habit-combined-item${h.done_today ? ' done' : ''}" data-id="${h.id ?? ''}">
+          <span class="habit-check">✓</span>
+          <span class="habit-name">${h.name}</span>
+          ${h.id != null
+            ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
+            : `<span class="habit-saving">saving…</span>`}
+        </li>`).join('');
+      manageList.querySelectorAll('.habit-combined-item').forEach(li => {
+        const id = +li.dataset.id;
+        if (!id) return;
+        li.addEventListener('click', e => {
+          if (e.target.closest('.habit-del-btn')) return;
+          toggleHabit(id);
+        });
+      });
+    } else {
+      // Mobile manage panel: name + delete only
+      manageList.innerHTML = habits.map(h => `
+        <li class="habit-manage-item">
+          <span class="habit-manage-dot"></span>
+          <span class="habit-name">${h.name}</span>
+          ${h.id != null
+            ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
+            : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono);margin-left:auto">saving…</span>`}
+        </li>`).join('');
+    }
+
     manageList.querySelectorAll('.habit-del-btn').forEach(btn =>
-      btn.addEventListener('click', () => deleteHabit(+btn.dataset.id))
+      btn.addEventListener('click', e => { e.stopPropagation(); deleteHabit(+btn.dataset.id); })
     );
+    renderFooter();
   }
 
+  // Mobile today panel (check + name)
   function renderToday() {
     if (!todayList) return;
     const confirmed = habits.filter(h => h.id != null);
     if (!confirmed.length) {
       todayList.innerHTML = '<li class="habit-empty">Add habits on the left.</li>';
-      if (todayFooter) todayFooter.textContent = '';
+      renderFooter();
       return;
     }
     todayList.innerHTML = confirmed.map(h => `
@@ -84,17 +117,22 @@
     todayList.querySelectorAll('.habit-today-item').forEach(li =>
       li.addEventListener('click', () => toggleHabit(+li.dataset.id))
     );
+    renderFooter();
+  }
+
+  function renderFooter() {
+    const confirmed = habits.filter(h => h.id != null);
     const done  = confirmed.filter(h => h.done_today).length;
     const total = confirmed.length;
     const pct   = total ? Math.round(done / total * 100) : 0;
-    if (todayFooter) {
-      todayFooter.innerHTML = `
-        <div class="habit-progress-wrap">
-          <div class="habit-progress-bar" style="width:${pct}%"></div>
-        </div>
-        <span class="habit-progress-label">${done} / ${total} done today${pct === 100 ? ' — all done!' : ''}</span>
-      `;
-    }
+    const html  = total ? `
+      <div class="habit-progress-wrap">
+        <div class="habit-progress-bar" style="width:${pct}%"></div>
+      </div>
+      <span class="habit-progress-label">${done} / ${total} done today${pct === 100 ? ' — all done!' : ''}</span>
+    ` : '';
+    if (todayFooter) todayFooter.innerHTML = html;
+    if (mobFooter)   mobFooter.innerHTML   = html;
   }
 
   // ── Add (optimistic) ──────────────────────────────────
@@ -102,6 +140,7 @@
     const name = (habitInput?.value || '').trim();
     if (!name) return;
     habitInput.value = '';
+    closeAdd();
     const temp = { id: null, name, done_today: false };
     habits.push(temp);
     renderManage();
@@ -128,7 +167,7 @@
   if (habitAddBtn) habitAddBtn.addEventListener('click', addHabit);
   if (habitInput)  habitInput.addEventListener('keypress', e => { if (e.key === 'Enter') addHabit(); });
 
-  // ── Delete (optimistic) ───────────────────────────────
+  // ── Delete ────────────────────────────────────────────
   async function deleteHabit(id) {
     habits = habits.filter(h => h.id !== id);
     renderManage();
@@ -136,91 +175,26 @@
     try {
       await fetch(`/pug/api/habits/${id}`, { method: 'DELETE' });
     } catch (e) {
-      await loadHabits(); // revert on network failure
+      await loadHabits();
     }
   }
 
-  // ── Toggle (already optimistic) ───────────────────────
+  // ── Toggle ────────────────────────────────────────────
   async function toggleHabit(id) {
     const h = habits.find(x => x.id === id);
     if (!h) return;
     h.done_today = !h.done_today;
+    renderManage();
     renderToday();
     try {
       const res = await fetch(`/pug/api/habits/${id}/toggle`, { method: 'POST' });
-      if (!res.ok) { h.done_today = !h.done_today; renderToday(); return; }
+      if (!res.ok) { h.done_today = !h.done_today; renderManage(); renderToday(); return; }
       const data = await res.json();
       h.done_today = data.done;
+      renderManage();
       renderToday();
       window.dispatchEvent(new Event('habitUpdated'));
-    } catch (e) { h.done_today = !h.done_today; renderToday(); }
-  }
-
-  function renderChart(history) {
-    const canvas = document.getElementById('habitChart');
-    if (!canvas || typeof Chart === 'undefined') return;
-    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
-    if (!history.length) return;
-    const labels = history.map(d => {
-      const dt = new Date(d.date + 'T00:00:00');
-      return dt.toLocaleDateString('en', { month: 'short', day: 'numeric' });
-    });
-    chartInstance = new Chart(canvas.getContext('2d'), {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          label: 'Daily Completion %',
-          data: history.map(d => d.pct),
-          borderColor: '#d4a574',
-          backgroundColor: 'rgba(212,165,116,0.10)',
-          borderWidth: 2.5,
-          pointBackgroundColor: '#d4a574',
-          pointBorderColor: '#1c1915',
-          pointBorderWidth: 2,
-          pointRadius: 4,
-          tension: 0.4,
-          fill: true,
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: 'rgba(28,25,21,0.92)',
-            titleColor: '#ede7d4',
-            bodyColor: '#ede7d4',
-            borderColor: '#2c2720',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: { label: ctx => ` ${ctx.parsed.y}% habits done` },
-          },
-        },
-        scales: {
-          x: {
-            grid: { display: false, drawBorder: false },
-            ticks: {
-              color: 'rgba(200,200,200,0.35)',
-              font: { size: 10, family: 'monospace' },
-              autoSkip: true, maxTicksLimit: 10,
-            },
-          },
-          y: {
-            min: 0, max: 100,
-            grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
-            ticks: {
-              color: 'rgba(200,200,200,0.35)',
-              font: { size: 10, family: 'monospace' },
-              stepSize: 25,
-              callback: v => v + '%',
-            },
-          }
-        }
-      }
-    });
+    } catch (e) { h.done_today = !h.done_today; renderManage(); renderToday(); }
   }
 
   loadHabits();

@@ -239,7 +239,7 @@
   .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
   /* ── Habits: mobile flip between manage/today panels ── */
-  .habits-card { height: 580px; perspective: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; }
+  .habits-card { height: 580px; background: transparent !important; perspective: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; }
   .habits-inner { display: block; position: relative; width: 100%; height: 100%; transform: none !important; }
   .habit-face.habit-back { display: none !important; }
   .habit-face.habit-front {
@@ -264,6 +264,11 @@
     overflow: hidden;
   }
   .habit-panel-back { transform: rotateY(180deg); }
+  /* Right panel on mobile: show today-col, hide pulse-col */
+  .habit-pulse-col { display: none !important; }
+  .habit-today-col { display: flex !important; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+  /* Add row: always visible on mobile */
+  .habit-add-row { display: flex !important; }
   .habit-divider { display: none !important; }
   .habit-desk-only { display: none !important; }
   .habit-mob-only { display: inline-flex !important; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
