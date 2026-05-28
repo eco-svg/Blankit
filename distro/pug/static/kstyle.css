@@ -2040,9 +2040,33 @@ div.infinite-canvas video {
 .skills-flip-btn { display: none; }
 
 /* Habits — flip buttons: hidden by default; selectively shown via desk/mob classes */
-.habit-flip-btn { display: none; }
+.habit-flip-btn {
+  display: none;
+  align-items: center; gap: 5px;
+  font-size: 0.68rem; font-family: var(--font-mono);
+  padding: 5px 11px; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-dim); cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.habit-flip-btn:hover { background: rgba(255,255,255,0.09); }
 .habit-desk-only { display: inline-flex; }
-.habit-mob-only  { display: none; }
+.habit-mob-only  { display: none !important; }
+
+/* Pulse → button: loud accent so it's obviously clickable */
+#habitPulseBtn {
+  background: rgba(212,165,116,0.13);
+  border-color: rgba(212,165,116,0.5);
+  color: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(212,165,116,0.12), 0 2px 10px rgba(212,165,116,0.15);
+}
+#habitPulseBtn:hover {
+  background: rgba(212,165,116,0.24);
+  box-shadow: 0 0 0 1px rgba(212,165,116,0.35), 0 2px 14px rgba(212,165,116,0.22);
+}
 
 /* Habit Pulse section — hidden on desktop, shown on mobile habits tab */
 .habit-pulse-section { display: none; }
@@ -4089,7 +4113,7 @@ button.nav-pill:not(.btn-ghost):hover {
   overflow: hidden;
   border-radius: var(--radius);
 }
-.habit-front { flex-direction: row; }
+.habit-front { flex-direction: row; background: rgba(10,8,6,0.5); }
 .habit-back {
   transform: rotateY(180deg);
   flex-direction: column;
@@ -4273,17 +4297,6 @@ button.nav-pill:not(.btn-ghost):hover {
   display: block;
 }
 
-.habit-flip-btn {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 0.68rem; font-family: var(--font-mono);
-  padding: 5px 10px; border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.04);
-  color: var(--text-dim); cursor: pointer;
-  letter-spacing: 0.04em;
-  transition: background 0.2s;
-}
-.habit-flip-btn:hover { background: rgba(255,255,255,0.09); }
 
 
 /* ═══════════════════════════════════════════════════════════
