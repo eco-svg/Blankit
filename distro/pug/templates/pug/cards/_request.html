@@ -1,0 +1,37 @@
+<!-- Request tab — Report + Feature Request, desktop two-column -->
+<div class="card full-row sec-request-card page-hidden" id="sec-request">
+  <div class="request-cols">
+
+    <!-- Left: Request a Feature -->
+    <div class="request-col">
+      <div class="pp-label pp-label-section" style="padding-top:18px;">Request a Feature</div>
+      <p class="req-sub">Got an idea? Describe it — we read everything.</p>
+      <textarea class="req-textarea" id="featureText" placeholder="Describe the feature you'd like to see…" maxlength="2000"></textarea>
+      <div class="req-actions">
+        <button class="req-send-btn" id="featureSendBtn">Send Request</button>
+        <span class="req-status" id="featureStatus"></span>
+      </div>
+    </div>
+
+    <div class="request-col-divider"></div>
+
+    <!-- Right: Report -->
+    <div class="request-col">
+      <div class="pp-label pp-label-section" style="padding-top:18px;display:flex;align-items:center;justify-content:space-between;padding-right:20px;">
+        Report
+        <div class="req-type-pills" id="reportTypePills" style="margin:0;">
+          <button class="req-type-pill active" data-rtype="bug">Bug</button>
+          <button class="req-type-pill" data-rtype="content">Content</button>
+          <button class="req-type-pill" data-rtype="other">Other</button>
+        </div>
+      </div>
+      <p class="req-sub">Something broken or feels wrong? Tell us.</p>
+      <textarea class="req-textarea" id="reportText" placeholder="Describe what happened…" maxlength="2000"></textarea>
+      <div class="req-actions">
+        <button class="req-send-btn" id="reportSendBtn">Send Report</button>
+        <span class="req-status" id="reportStatus"></span>
+      </div>
+    </div>
+
+  </div>
+</div>

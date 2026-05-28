@@ -863,6 +863,37 @@ body.header-hidden .l-bar {
 .req-type-pill:hover { color: var(--text-muted); border-color: rgba(255,255,255,0.22); }
 .req-type-pill.active { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 600; }
 
+/* ── Request tab card ───────────────────────────────── */
+.sec-request-card {
+  height: 520px;
+  overflow: hidden;
+  padding: 0;
+  cursor: default;
+}
+.sec-request-card:hover { transform: none; border-color: rgba(255,255,255,0.08); box-shadow: none; }
+.request-cols {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+.request-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-width: 0;
+}
+.request-col-divider {
+  width: 1px;
+  background: rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.request-col .req-textarea {
+  flex: 1;
+  min-height: 180px;
+  resize: none;
+}
+
 /* ── Main Quick Ask chat bubbles ────────────────────── */
 .main-groq-bubble {
   font-size: 0.78rem;

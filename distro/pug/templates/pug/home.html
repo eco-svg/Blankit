@@ -12,8 +12,8 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=72">
-  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=72">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=73">
+  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=73">
 </head>
 <body>
 
@@ -94,6 +94,7 @@
     <main class="playground">
 
       {% include 'pug/cards/_profile.html' %}
+      {% include 'pug/cards/_request.html' %}
 
       <!-- Long-term Dream — compact full-row card -->
       <div class="card dream dream-standalone" id="sec-dream">
