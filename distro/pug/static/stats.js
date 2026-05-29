@@ -58,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const color = RANK_COLORS[rank] || '#888';
         const glow  = rank === 'S+' ? `text-shadow:0 0 10px ${color};` : '';
         const isVerified = s.verified !== false;
+        const context = s.context
+            ? `<span class="skill-context">${s.context}</span>` : '';
         const note  = s.note
             ? `<span class="skill-note">${s.note}</span>` : '';
         const rankHtml = isVerified
@@ -67,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="skill-row">
                 <span class="skill-name-wrap">
                     <span class="skill-name">${s.name || '—'}</span>
+                    ${context}
                     ${note}
                 </span>
                 ${rankHtml}

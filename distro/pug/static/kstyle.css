@@ -1108,7 +1108,7 @@ body.header-hidden .l-bar {
 
 .skills-main .skill-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 10px 12px;
   border-radius: 8px;
@@ -2470,7 +2470,7 @@ div.infinite-canvas video {
 .skill-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding: 8px 12px;
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--border);
@@ -2490,6 +2490,8 @@ div.infinite-canvas video {
     letter-spacing: 0.05em;
     min-width: 28px;
     text-align: center;
+    padding-top: 1px;
+    flex-shrink: 0;
 }
 
 .skill-loading {
@@ -3276,6 +3278,14 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 /* ── Skill note sub-text ──────────────────────────────── */
+.skill-context {
+  font-size: 0.71rem;
+  color: var(--text-dim);
+  margin-top: 3px;
+  opacity: 0.60;
+  line-height: 1.4;
+}
+
 .skill-note {
   font-size: 0.72rem;
   color: var(--text-dim);

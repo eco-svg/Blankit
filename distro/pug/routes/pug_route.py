@@ -636,7 +636,17 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   If you cannot determine rank from available data, use E and add a note asking "
         "   for the data needed.\n"
         "   DO NOT give high ranks because a goal sounds ambitious. Only evidence counts.\n"
-        "5. Simple English throughout. Common words only.\n\n"
+        "5. CONTEXT — for every skill, add a 'context' field: one line that anchors the rank in real-world terms. "
+        "   This is the most important field for the user — it answers 'compared to what?'\n"
+        "   For skills with global data (running, lifting, chess, swimming): cite an actual benchmark. "
+        "   Examples: '22:14 5K · faster than ~75% of recreational runners (avg ~27 min)' "
+        "   or 'Sub-17 5K · top 0.5% of people who run regularly'. "
+        "   For skills without hard data (cooking, writing, creativity): describe the landscape honestly. "
+        "   Examples: 'Makes complex multi-course meals · most home cooks stick to simple weekday dishes' "
+        "   or 'Ships independent software · fewer than 5% of developers launch a live product'. "
+        "   When data is sparse, end with '(estimated)'. Never make up precise numbers for soft skills. "
+        "   Keep it under 15 words. No rank letter in the context — the badge already shows that.\n"
+        "6. Simple English throughout. Common words only.\n\n"
         "Output ONLY valid JSON:\n"
         '{"class_official":"role based on achievements (Blank Slate if none)",'
         '"class_playful":"same role with flair",'
@@ -644,7 +654,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         '"personality_desc":"One sentence about their mindset.",'
         '"bio":"One sentence. Who they actually are right now.",'
         '"skills":['
-        '{"name":"plain skill name","rank":"E","verified":false,"note":"optional — what to add to unlock rank"}'
+        '{"name":"plain skill name","rank":"E","verified":false,"context":"one-line real-world anchor for the rank","note":"optional — what to add to unlock rank"}'
         ']}'
     )
 
