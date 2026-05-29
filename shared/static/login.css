@@ -766,25 +766,49 @@ body::after {
   }
 }
 
-.dob-benefit-chips {
+.dob-perks-block {
   display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid rgba(212,165,116,0.22);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.dob-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: 20px;
-  background: rgba(212,165,116,0.10);
-  border: 1px solid rgba(212,165,116,0.28);
-  font-size: 0.74rem;
-  color: var(--accent);
+.dob-perks-title {
   font-family: var(--font-mono);
-  font-weight: 500;
-  white-space: nowrap;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(212,165,116,0.10);
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(212,165,116,0.14);
+}
+
+.dob-perk-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.dob-perk-row:last-child { border-bottom: none; }
+
+.dob-perk-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+
+.dob-perk-label {
+  font-size: 0.80rem;
+  font-weight: 600;
+  color: var(--text);
+  font-family: var(--font-sans);
 }
 
 .dob-student-strip {
