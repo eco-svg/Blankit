@@ -215,8 +215,6 @@
     letter-spacing: 0.1em !important;
   }
 
-  .habits-card { height: auto !important; min-height: 340px; }
-
   /* Social tab: community first, DMs second */
   #sec-comms { order: -1; }
   #sec-social { order: 0; }
@@ -319,35 +317,53 @@
   #sec-rank-guide { transform: rotateY(180deg); }
   .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
-  /* ── Habits: mobile flip between manage/today panels ── */
-  .habits-card { height: 580px; background: transparent !important; perspective: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: none !important; }
-  .habits-inner { display: block; position: relative; width: 100%; height: 100%; transform: none !important; }
+  /* ── Habits: mobile panel toggle (simple show/hide, no 3D) ── */
+  .habits-card {
+    height: auto !important;
+    min-height: 0 !important;
+    background: rgba(255,255,255,0.04) !important;
+    perspective: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+  .habits-inner { display: block !important; width: 100% !important; height: auto !important; transform: none !important; }
   .habit-face.habit-back { display: none !important; }
   .habit-face.habit-front {
-    position: absolute;
-    inset: 0;
-    perspective: 1200px;
-    transform-style: preserve-3d;
-    transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: var(--radius);
-    overflow: hidden;
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    height: auto !important;
+    perspective: none !important;
+    transform-style: flat !important;
+    transition: none !important;
+    overflow: visible !important;
   }
-  .habit-face.habit-front.flipped { transform: rotateY(180deg); }
+  .habit-face.habit-front.flipped { transform: none !important; }
   .habit-panel-front, .habit-panel-back {
-    position: absolute;
-    inset: 0;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    position: relative !important;
+    inset: auto !important;
+    width: 100%;
+    height: auto !important;
+    backface-visibility: visible !important;
+    -webkit-backface-visibility: visible !important;
+    transform: none !important;
     display: flex;
     flex-direction: column;
-    background: rgba(10,8,6,0.85);
-    border-radius: var(--radius);
-    overflow: hidden;
+    background: transparent !important;
+    border-radius: 0;
+    overflow: visible !important;
   }
-  .habit-panel-back { transform: rotateY(180deg); }
+  /* Toggle panels via flipped class */
+  .habit-face.habit-front:not(.flipped) .habit-panel-back { display: none !important; }
+  .habit-face.habit-front.flipped .habit-panel-front   { display: none !important; }
+  .habit-face.habit-front.flipped .habit-panel-back    { display: flex !important; transform: none !important; }
+  /* Scrollable habit list */
+  .habit-manage-list { max-height: 320px; overflow-y: auto; }
+  .habit-today-list  { max-height: 320px; overflow-y: auto; }
   /* Right panel on mobile: show today-col, hide pulse-col */
   .habit-pulse-col { display: none !important; }
-  .habit-today-col { display: flex !important; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+  .habit-today-col { display: flex !important; flex-direction: column; }
   /* Add row: always visible on mobile */
   .habit-add-row { display: flex !important; }
   .habit-divider { display: none !important; }
