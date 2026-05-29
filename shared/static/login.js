@@ -237,22 +237,29 @@ document.querySelectorAll('[data-tab]').forEach(el => {
 });
 
 (function(){
-  var regBtn   = document.getElementById('registerBtn');
-  var dobInput = document.getElementById('regDob');
-  if (!regBtn || !dobInput) return;
+  var regBtn      = document.getElementById('registerBtn');
+  var dobInput    = document.getElementById('regDob');
+  var dobInline   = document.getElementById('regDobInline');
+  if (!regBtn) return;
 
-  dobInput.addEventListener('input', function() {
-    var raw = this.value.replace(/\D/g, '').substring(0, 8);
-    var out = '';
-    if (raw.length > 0) out = raw.substring(0, 2);
-    if (raw.length > 2) out += ' / ' + raw.substring(2, 4);
-    if (raw.length > 4) out += ' / ' + raw.substring(4, 8);
-    this.value = out;
-    checkDob();
-  });
+  function formatDob(input) {
+    input.addEventListener('input', function() {
+      var raw = this.value.replace(/\D/g, '').substring(0, 8);
+      var out = '';
+      if (raw.length > 0) out = raw.substring(0, 2);
+      if (raw.length > 2) out += ' / ' + raw.substring(2, 4);
+      if (raw.length > 4) out += ' / ' + raw.substring(4, 8);
+      this.value = out;
+      checkDob();
+    });
+  }
+  if (dobInput)  formatDob(dobInput);
+  if (dobInline) formatDob(dobInline);
 
   function checkDob() {
-    var raw = dobInput.value.replace(/\D/g, '');
+    var active = (window.innerWidth <= 700 && dobInline) ? dobInline : dobInput;
+    if (!active) return;
+    var raw = active.value.replace(/\D/g, '');
     if (raw.length < 8) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
     var m = parseInt(raw.substring(0, 2), 10);
     var d = parseInt(raw.substring(2, 4), 10);
@@ -420,7 +427,9 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const email    = document.getElementById('regEmail').value.trim();
   const password = document.getElementById('regPassword').value;
   const confirm  = document.getElementById('regConfirm').value;
-  const dobRaw   = (document.getElementById('regDob')?.value || '').replace(/\D/g, '');
+  const dobEl    = (window.innerWidth <= 700 && document.getElementById('regDobInline')) ? document.getElementById('regDobInline') : document.getElementById('regDob');
+  const dobErrId = (window.innerWidth <= 700 && document.getElementById('regAgeErrInline')) ? 'regAgeErrInline' : 'regAgeErr';
+  const dobRaw   = (dobEl?.value || '').replace(/\D/g, '');
   const dobMonth = parseInt(dobRaw.substring(0, 2), 10);
   const dobDay   = parseInt(dobRaw.substring(2, 4), 10);
   const dobYear  = parseInt(dobRaw.substring(4, 8), 10);
@@ -435,7 +444,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   if (password !== confirm)                     { setErr('regConfirmErr', 'passwords do not match'); ok = false; }
 
   if (dobRaw.length < 8 || !dobMonth || dobMonth > 12 || !dobDay || dobDay > 31 || dobYear < 1904 || dobYear > 2099) {
-    setErr('regAgeErr', 'please enter your date of birth'); ok = false;
+    setErr(dobErrId, 'please enter your date of birth'); ok = false;
   } else {
     const born  = new Date(dobYear, dobMonth - 1, dobDay);
     const today = new Date();
@@ -443,7 +452,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     if (computedAge < 13) {
       window.location.href = '/under13'; return;
     }
-    if (computedAge > 120) { setErr('regAgeErr', 'please enter a valid date of birth'); ok = false; }
+    if (computedAge > 120) { setErr(dobErrId, 'please enter a valid date of birth'); ok = false; }
   }
 
   if (!termsOk || !ageOk) { setErr('regConsentErr', 'please confirm both checkboxes to continue'); ok = false; }

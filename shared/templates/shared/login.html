@@ -271,6 +271,13 @@
             </div>
             <span class="field-err" id="regConfirmErr"></span>
           </div>
+          <!-- Mobile-only: DOB inline in form (desktop shows it in the left age-verify card) -->
+          <div class="field mobile-dob-inline">
+            <label class="field-label" for="regDobInline">Date of birth <span style="color:var(--accent);">*</span></label>
+            <input class="field-input" type="text" id="regDobInline" placeholder="MM / DD / YYYY" maxlength="14" inputmode="numeric" autocomplete="bday">
+            <span class="field-err" id="regAgeErrInline"></span>
+          </div>
+
           <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
             <label style="display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
               <input type="checkbox" id="regTermsCheck" style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;">

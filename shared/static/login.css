@@ -755,6 +755,12 @@ body::after {
   .dt-inner { max-width: 100%; }
 }
 
+/* ── Mobile-only inline DOB field ── */
+.mobile-dob-inline { display: none; }
+@media (max-width: 700px) {
+  .mobile-dob-inline { display: block; }
+}
+
 /* ── MOBILE TWO-STEP FLOW ── */
 .mobile-step-btn,
 .mobile-back-btn { display: none; }
