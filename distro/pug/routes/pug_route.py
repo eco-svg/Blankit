@@ -575,8 +575,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   routine, or lifestyle behaviour — examples: 'woke up early', 'slept 8 hours', 'drank water', "
         "   'went to bed on time', 'morning routine', 'walked to work', 'meditated', 'no phone before bed'. "
         "   These are not skills and have no competitive benchmark — do NOT generate a skill row for them. "
-        "   A bare 'Ran Xkm' with no time, pace, or Strava proof is also lifestyle — treat it as unverified "
-        "   Running at rank E and note: 'Add a time or pace and verify with a Strava screenshot to get a real rank.'\n"
+        "   A bare 'Ran Xkm' with no time, pace, or Strava proof is also lifestyle — treat it as unverified Running at rank E.\n"
         "   SOFTWARE/TECH SKILLS — TWO-PHASE RULE:\n"
         "   Phase 1 (UNVERIFIED): If a software achievement has NO '[VERIFIED...]' tag, you CANNOT know "
         "   what was actually built, the tech stack, or the quality. Use skill name 'Software Development' "
@@ -598,13 +597,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   independently checkable metric (a finishing time, a Strava export, a public GitHub link). "
         "   A bare achievement title with no tag and no metric = verified: false. "
         "   Unverified skills will show '?' rank to the user until they submit evidence.\n"
-        "   For each skill, add an optional 'note' field (1 sentence, max 15 words) when rank is E or verified is false. "
-        "   The note must tell the user EXACTLY what to add and WHERE. "
-        "   Software unverified → 'Verify with a GitHub link or live URL — it reveals your stack and earns a real rank.' "
-        "   Running unverified → 'In Achievements, add a run with 5K time, pace, or weekly km. Verify with Strava screenshot.' "
-        "   Cooking unverified → 'In Achievements, add dishes you cook. Verify with a photo or video.' "
-        "   Strength unverified → 'In Achievements, log max squat/bench/deadlift in kg. Verify with a video.' "
-        "   Use actual app section names: Notes (logs/journals), Achievements (shipped work), Goals (targets).\n"
+        "   Leave the 'note' field empty — notes are handled automatically by the app.\n"
         "4. RANKING — CRITICAL RULE: rank ONLY relative to people who actively practise that skill. "
         "   Never compare against the general public — most people never run, code, cook, etc. "
         "   Use real-world census/stats data for each field to calibrate benchmarks. "
@@ -636,16 +629,13 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   If you cannot determine rank from available data, use E and add a note asking "
         "   for the data needed.\n"
         "   DO NOT give high ranks because a goal sounds ambitious. Only evidence counts.\n"
-        "5. CONTEXT — for every skill, add a 'context' field: one line that anchors the rank in real-world terms. "
-        "   This is the most important field for the user — it answers 'compared to what?'\n"
-        "   For skills with global data (running, lifting, chess, swimming): cite an actual benchmark. "
-        "   Examples: '22:14 5K · faster than ~75% of recreational runners (avg ~27 min)' "
-        "   or 'Sub-17 5K · top 0.5% of people who run regularly'. "
-        "   For skills without hard data (cooking, writing, creativity): describe the landscape honestly. "
-        "   Examples: 'Makes complex multi-course meals · most home cooks stick to simple weekday dishes' "
-        "   or 'Ships independent software · fewer than 5% of developers launch a live product'. "
-        "   When data is sparse, end with '(estimated)'. Never make up precise numbers for soft skills. "
-        "   Keep it under 15 words. No rank letter in the context — the badge already shows that.\n"
+        "5. CONTEXT — only for VERIFIED skills (verified: true). "
+        "   One line anchoring the rank in real-world terms — answers 'compared to what?'. "
+        "   For measurable skills (running, lifting, chess, swimming): use the actual metric from the evidence. "
+        "   For skills without hard global data (cooking, writing, creativity): describe the landscape honestly, end with '(estimated)'. "
+        "   Never invent a percentage or metric that isn't in the evidence. "
+        "   Keep it under 15 words. No rank letter — the badge already shows that. "
+        "   For unverified skills, set context to empty string.\n"
         "6. Simple English throughout. Common words only.\n\n"
         "Output ONLY valid JSON:\n"
         '{"class_official":"role based on achievements (Blank Slate if none)",'
@@ -670,20 +660,38 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     _TECH_KEYWORDS = ('development', 'engineering', 'programming', 'coding', 'software',
                       'frontend', 'backend', 'fullstack', 'full-stack', 'devops',
                       'machine learning', 'ml', 'ios', 'android', 'web dev')
+    _RUN_KEYWORDS   = ('running', 'run', 'marathon', '5k', '10k', 'sprint', 'jogging')
+    _LIFT_KEYWORDS  = ('strength', 'powerlifting', 'weightlifting', 'lifting', 'squat', 'bench', 'deadlift', 'gym')
+    _COOK_KEYWORDS  = ('cooking', 'culinary', 'baking', 'chef', 'cuisine')
+
+    _NOTES = {
+        'tech':     'Verify with a GitHub link or live URL — it reveals your stack and unlocks a real rank.',
+        'running':  'Add a result with a time or pace and verify with a Strava screenshot.',
+        'lifting':  'Log a max lift (squat / bench / deadlift in kg) and verify with a video.',
+        'cooking':  'Add a dish you cook regularly and verify with a photo or video.',
+        'default':  'Add specific results or proof in Achievements to unlock a real rank.',
+    }
 
     def _enforce_rules(sheet):
-        """Post-process LLM output: unverified skills must be rank E."""
+        """Post-process: unverified = rank E, no context, standardised note."""
         if not sheet or 'skills' not in sheet:
             return sheet
         for s in sheet['skills']:
             if s.get('verified') is False:
                 s['rank'] = 'E'
-                # For tech skills specifically, keep the name generic until verified
+                s['context'] = ''
                 name_lower = (s.get('name') or '').lower()
                 if any(kw in name_lower for kw in _TECH_KEYWORDS):
                     s['name'] = 'Software Development'
-                    s['note'] = ('Verify with a GitHub link or live URL — '
-                                 'it reveals your stack and unlocks a real rank.')
+                    s['note'] = _NOTES['tech']
+                elif any(kw in name_lower for kw in _RUN_KEYWORDS):
+                    s['note'] = _NOTES['running']
+                elif any(kw in name_lower for kw in _LIFT_KEYWORDS):
+                    s['note'] = _NOTES['lifting']
+                elif any(kw in name_lower for kw in _COOK_KEYWORDS):
+                    s['note'] = _NOTES['cooking']
+                else:
+                    s['note'] = _NOTES['default']
         return sheet
 
     # Primary: BuddyBot on-server (needs fast hardware)
