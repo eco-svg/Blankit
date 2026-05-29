@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const profilePopup      = document.getElementById('profilePopup');
     const statusDot         = document.getElementById('statusDot');
     const ppAppLangSelect   = document.getElementById('ppAppLangSelect');
+    const ppHomeTabSelect   = document.getElementById('ppHomeTabSelect');
 
     function closePopup() { profilePopup?.classList.add('hidden'); }
 
@@ -101,6 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ppAppLangSelect) {
         ppAppLangSelect.value = savedAppLang || 'en';
         ppAppLangSelect.addEventListener('change', () => setAppLang(ppAppLangSelect.value));
+    }
+
+    // ── Home Tab setting ─────────────────────────────────────────────────────
+    if (ppHomeTabSelect) {
+        const savedHome = localStorage.getItem('veyra_home_tab') || 'notes';
+        ppHomeTabSelect.value = savedHome;
+        ppHomeTabSelect.addEventListener('change', () => {
+            if (window._veyraSetHomeTab) window._veyraSetHomeTab(ppHomeTabSelect.value);
+        });
     }
 
     // ── First-launch language prompt ──────────────────────────────────────────

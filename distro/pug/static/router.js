@@ -12,13 +12,26 @@
   };
 
   const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);
-  const DEFAULT = 'notes';
+  const HOME_TAB_KEY = 'veyra_home_tab';
   const ALL_SECTIONS = [...new Set(Object.values(ROUTES).flat())];
+
+  function getHomeTab() {
+    const stored = localStorage.getItem(HOME_TAB_KEY);
+    return (stored && ROUTES[stored] !== undefined) ? stored : 'notes';
+  }
 
   function getRoute() {
     const hash = window.location.hash.replace('#', '').toLowerCase();
-    return ROUTES[hash] !== undefined ? hash : DEFAULT;
+    return ROUTES[hash] !== undefined ? hash : getHomeTab();
   }
+
+  window._veyraSetHomeTab = function (route) {
+    if (ROUTES[route] === undefined) return;
+    localStorage.setItem(HOME_TAB_KEY, route);
+    document.querySelectorAll('[data-home="true"]').forEach(el => {
+      el.setAttribute('data-route', route);
+    });
+  };
 
   function navigate(route, push) {
     const sections = ROUTES[route];
@@ -65,15 +78,16 @@
     document.querySelectorAll('.header-nav .nav-pill').forEach(a => {
       const href  = a.getAttribute('href') || '';
       const secId = href.replace('#sec-', '').replace('#', '');
-      const route = Object.keys(ROUTES).find(k =>
+      let route = Object.keys(ROUTES).find(k =>
         k === secId || (ROUTES[k] && ROUTES[k].includes('sec-' + secId))
       ) || secId;
+      if (a.dataset.home === 'true') route = getHomeTab();
       a.setAttribute('data-route', route);
       a.removeAttribute('href');
       a.style.cursor = 'pointer';
       a.addEventListener('click', function (e) {
         e.preventDefault();
-        navigate(route, true);
+        navigate(a.dataset.home === 'true' ? getHomeTab() : a.getAttribute('data-route'), true);
       });
     });
 
@@ -85,8 +99,8 @@
     });
 
     document.querySelectorAll('.mbb-tab').forEach(btn => {
-      const route = btn.getAttribute('data-route');
       btn.addEventListener('click', function () {
+        const route = btn.dataset.home === 'true' ? getHomeTab() : btn.getAttribute('data-route');
         navigate(route, true);
       });
     });
@@ -100,7 +114,7 @@
     }
 
     navigate(getRoute(), false);
-    if (!window.location.hash) history.replaceState({ route: DEFAULT }, '', '#' + DEFAULT);
+    if (!window.location.hash) history.replaceState({ route: getHomeTab() }, '', '#' + getHomeTab());
   });
 
   window.addEventListener('popstate', function (e) {
