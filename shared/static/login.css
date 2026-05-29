@@ -755,11 +755,55 @@ body::after {
   .dt-inner { max-width: 100%; }
 }
 
-/* ── Mobile-only inline DOB field ── */
+/* ── Mobile-only inline DOB + benefits ── */
 .mobile-dob-inline { display: none; }
 @media (max-width: 700px) {
-  .mobile-dob-inline { display: block; }
+  .mobile-dob-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
 }
+
+.dob-benefit-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.dob-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 20px;
+  background: rgba(212,165,116,0.10);
+  border: 1px solid rgba(212,165,116,0.28);
+  font-size: 0.74rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dob-student-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: rgba(212,165,116,0.06);
+  border: 1px solid rgba(212,165,116,0.18);
+}
+
+.dob-student-text {
+  font-size: 0.76rem;
+  color: var(--text2);
+  line-height: 1.55;
+}
+
+.dob-student-text strong { color: var(--accent); }
 
 /* ── MOBILE TWO-STEP FLOW ── */
 .mobile-step-btn,
