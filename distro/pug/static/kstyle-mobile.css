@@ -215,7 +215,11 @@
     letter-spacing: 0.1em !important;
   }
 
-  .habits-card { height: 580px; }
+  .habits-card { height: auto !important; min-height: 340px; }
+
+  /* Social tab: community first, DMs second */
+  #sec-comms { order: -1; }
+  #sec-social { order: 0; }
 
   /* Hide dream bar on habits tab, show habit pulse instead */
   body[data-route="habits"] .dream-standalone { display: none !important; }
