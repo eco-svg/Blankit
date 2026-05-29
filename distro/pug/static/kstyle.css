@@ -3441,6 +3441,103 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .lang-welcome-local:hover { background: rgba(212,165,116,0.18) !important; }
 
+/* ── What's Coming first-visit modal ────────────────────── */
+.wn-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0,0,0,0.80);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.wn-overlay.hidden { display: none; }
+
+.wn-box {
+  background: rgba(14,11,9,0.97);
+  border: 1px solid rgba(212,165,116,0.18);
+  border-radius: 18px;
+  padding: 32px 36px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.wn-header { text-align: center; }
+
+.wn-title {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.wn-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.wn-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wn-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+}
+
+.wn-item-name {
+  font-family: var(--font-mono);
+  font-size: 0.80rem;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.wn-item-desc {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+}
+
+.wn-dismiss {
+  background: var(--accent);
+  color: #111;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  width: 100%;
+}
+.wn-dismiss:hover { opacity: 0.88; }
+
+@media (max-width: 480px) {
+  .wn-box { padding: 24px 20px; }
+  .wn-title { font-size: 1.2rem; }
+}
+
 /* ── Dream — standalone compact first card ────────────── */
 
 .dream-standalone {
