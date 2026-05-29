@@ -180,7 +180,7 @@
     grid-template-columns: 1fr;
     grid-template-rows: 50px repeat(8, auto);
     grid-auto-rows: auto;
-    row-gap: 10px;
+    row-gap: 15px;
     column-gap: 0;
   }
 
@@ -317,58 +317,78 @@
   #sec-rank-guide { transform: rotateY(180deg); }
   .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
-  /* ── Habits: mobile panel toggle (simple show/hide, no 3D) ── */
+  /* ── Habits tab: pulse above card, then wisdom, then adboxes ── */
+  body[data-route="habits"] #sec-habit-pulse { order: -2; }
+  body[data-route="habits"] #sec-habits      { order: -1; }
+
+  /* ── Habits: merged single card (no flip, both sections always visible) ── */
   .habits-card {
     height: auto !important;
     min-height: 0 !important;
-    background: rgba(255,255,255,0.04) !important;
     perspective: none !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     animation: none !important;
   }
-  .habits-inner { display: block !important; width: 100% !important; height: auto !important; transform: none !important; }
+  .habits-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
   .habit-face.habit-back { display: none !important; }
   .habit-face.habit-front {
+    display: flex !important;
+    flex-direction: column !important;
     position: relative !important;
     inset: auto !important;
     width: 100%;
     height: auto !important;
     perspective: none !important;
-    transform-style: flat !important;
+    transform: none !important;
     transition: none !important;
     overflow: visible !important;
   }
   .habit-face.habit-front.flipped { transform: none !important; }
-  .habit-panel-front, .habit-panel-back {
+  .habit-panel-front,
+  .habit-panel-back {
     position: relative !important;
     inset: auto !important;
     width: 100%;
     height: auto !important;
+    transform: none !important;
     backface-visibility: visible !important;
     -webkit-backface-visibility: visible !important;
-    transform: none !important;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     background: transparent !important;
     border-radius: 0;
     overflow: visible !important;
   }
-  /* Toggle panels via flipped class */
-  .habit-face.habit-front:not(.flipped) .habit-panel-back { display: none !important; }
-  .habit-face.habit-front.flipped .habit-panel-front   { display: none !important; }
-  .habit-face.habit-front.flipped .habit-panel-back    { display: flex !important; transform: none !important; }
-  /* Scrollable habit list */
-  .habit-manage-list { max-height: 320px; overflow-y: auto; }
-  .habit-today-list  { max-height: 320px; overflow-y: auto; }
-  /* Right panel on mobile: show today-col, hide pulse-col */
+  /* Both panels always visible regardless of flip state */
+  .habit-face.habit-front .habit-panel-front,
+  .habit-face.habit-front .habit-panel-back { display: flex !important; transform: none !important; }
+  /* Divider between manage and today sections */
+  .habit-divider {
+    display: block !important;
+    width: 100% !important;
+    height: 1px !important;
+    background: rgba(255,255,255,0.07) !important;
+    flex-shrink: 0;
+  }
+  /* Hide flip nav buttons — no longer needed */
+  #habitFlipBtn, #habitFlipBackBtn { display: none !important; }
+  .habit-mob-only { display: none !important; }
+  .habit-desk-only { display: none !important; }
+  /* Pulse col hidden on mobile, today col visible */
   .habit-pulse-col { display: none !important; }
   .habit-today-col { display: flex !important; flex-direction: column; }
-  /* Add row: always visible on mobile */
+  /* Scrollable lists */
+  .habit-manage-list { max-height: 260px; overflow-y: auto; }
+  .habit-today-list  { max-height: 260px; overflow-y: auto; }
+  /* Add row always visible */
   .habit-add-row { display: flex !important; }
-  .habit-divider { display: none !important; }
-  .habit-desk-only { display: none !important; }
-  .habit-mob-only { display: inline-flex !important; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
   /* ── Skills/Achievements: flip card on mobile ── */
   .skills-wrap {
