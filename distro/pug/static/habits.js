@@ -1,6 +1,25 @@
 (function () {
   let habits = [];
 
+  // ── Delete confirmation modal ─────────────────────────
+  const delModal      = document.getElementById('deleteHabitModal');
+  const delNameEl     = document.getElementById('deleteHabitName');
+  const delCancelBtn  = document.getElementById('cancelDeleteHabitBtn');
+  const delConfirmBtn = document.getElementById('confirmDeleteHabitBtn');
+  let   pendingDeleteId = null;
+
+  function openDeleteModal(id, name) {
+    pendingDeleteId = id;
+    if (delNameEl) delNameEl.textContent = `"${name}"`;
+    delModal?.classList.remove('hidden');
+  }
+  delCancelBtn?.addEventListener('click',  () => { delModal?.classList.add('hidden'); pendingDeleteId = null; });
+  delConfirmBtn?.addEventListener('click', () => {
+    delModal?.classList.add('hidden');
+    if (pendingDeleteId !== null) { _doDelete(pendingDeleteId); pendingDeleteId = null; }
+  });
+  window.addEventListener('click', e => { if (e.target === delModal) { delModal.classList.add('hidden'); pendingDeleteId = null; } });
+
   const flipBtn      = document.getElementById('habitFlipBtn');
   const flipBackBtn  = document.getElementById('habitFlipBackBtn');
   const addTrigger   = document.getElementById('habitAddTrigger');
@@ -156,10 +175,12 @@
   if (habitInput)  habitInput.addEventListener('keypress', e => { if (e.key === 'Enter') addHabit(); });
 
   // ── Delete ────────────────────────────────────────────
-  async function deleteHabit(id) {
+  function deleteHabit(id) {
     const habit = habits.find(h => h.id === id);
-    const name  = habit ? `"${habit.name}"` : 'this habit';
-    if (!confirm(`Delete ${name}?\n\nThis is permanent — it removes the habit from every day and cannot be undone.`)) return;
+    openDeleteModal(id, habit ? habit.name : 'this habit');
+  }
+
+  async function _doDelete(id) {
     habits = habits.filter(h => h.id !== id);
     renderManage();
     renderToday();
