@@ -64,35 +64,23 @@
       return;
     }
 
-    if (isDesktop()) {
-      // Combined: check circle + name + delete
-      manageList.innerHTML = habits.map(h => `
-        <li class="habit-combined-item${h.done_today ? ' done' : ''}" data-id="${h.id ?? ''}">
-          <span class="habit-check">✓</span>
-          <span class="habit-name">${h.name}</span>
-          ${h.id != null
-            ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
-            : `<span class="habit-saving">saving…</span>`}
-        </li>`).join('');
-      manageList.querySelectorAll('.habit-combined-item').forEach(li => {
-        const id = +li.dataset.id;
-        if (!id) return;
-        li.addEventListener('click', e => {
-          if (e.target.closest('.habit-del-btn')) return;
-          toggleHabit(id);
-        });
+    // Combined: check circle + name + delete (same on desktop and mobile)
+    manageList.innerHTML = habits.map(h => `
+      <li class="habit-combined-item${h.done_today ? ' done' : ''}" data-id="${h.id ?? ''}">
+        <span class="habit-check">✓</span>
+        <span class="habit-name">${h.name}</span>
+        ${h.id != null
+          ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
+          : `<span class="habit-saving">saving…</span>`}
+      </li>`).join('');
+    manageList.querySelectorAll('.habit-combined-item').forEach(li => {
+      const id = +li.dataset.id;
+      if (!id) return;
+      li.addEventListener('click', e => {
+        if (e.target.closest('.habit-del-btn')) return;
+        toggleHabit(id);
       });
-    } else {
-      // Mobile manage panel: name + delete only
-      manageList.innerHTML = habits.map(h => `
-        <li class="habit-manage-item">
-          <span class="habit-manage-dot"></span>
-          <span class="habit-name">${h.name}</span>
-          ${h.id != null
-            ? `<button class="habit-del-btn" data-id="${h.id}" title="Remove">✕</button>`
-            : `<span style="font-size:0.62rem;opacity:0.35;font-family:var(--font-mono);margin-left:auto">saving…</span>`}
-        </li>`).join('');
-    }
+    });
 
     manageList.querySelectorAll('.habit-del-btn').forEach(btn =>
       btn.addEventListener('click', e => { e.stopPropagation(); deleteHabit(+btn.dataset.id); })
@@ -169,6 +157,9 @@
 
   // ── Delete ────────────────────────────────────────────
   async function deleteHabit(id) {
+    const habit = habits.find(h => h.id === id);
+    const name  = habit ? `"${habit.name}"` : 'this habit';
+    if (!confirm(`Delete ${name}?\n\nThis is permanent — it removes the habit from every day and cannot be undone.`)) return;
     habits = habits.filter(h => h.id !== id);
     renderManage();
     renderToday();

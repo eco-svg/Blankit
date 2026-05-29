@@ -317,11 +317,10 @@
   #sec-rank-guide { transform: rotateY(180deg); }
   .stats-flip-btn { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-family: var(--font-mono); background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 5px 10px; border-radius: 8px; cursor: pointer; }
 
-  /* ── Habits tab: pulse above card, then wisdom, then adboxes ── */
-  body[data-route="habits"] #sec-habit-pulse { order: -2; }
-  body[data-route="habits"] #sec-habits      { order: -1; }
+  /* ── Habits tab: row-1 must be auto (dream is hidden, pulse is first) ── */
+  body[data-route="habits"] .playground { grid-template-rows: repeat(9, auto) !important; }
 
-  /* ── Habits: merged single card (no flip, both sections always visible) ── */
+  /* ── Habits: single panel card (no flip, no today section) ── */
   .habits-card {
     height: auto !important;
     min-height: 0 !important;
@@ -346,13 +345,14 @@
     width: 100%;
     height: auto !important;
     perspective: none !important;
+    transform-style: flat !important;
     transform: none !important;
     transition: none !important;
     overflow: visible !important;
   }
   .habit-face.habit-front.flipped { transform: none !important; }
-  .habit-panel-front,
-  .habit-panel-back {
+  /* Only front panel visible — today section hidden on mobile */
+  .habit-panel-front {
     position: relative !important;
     inset: auto !important;
     width: 100%;
@@ -366,27 +366,17 @@
     border-radius: 0;
     overflow: visible !important;
   }
-  /* Both panels always visible regardless of flip state */
-  .habit-face.habit-front .habit-panel-front,
-  .habit-face.habit-front .habit-panel-back { display: flex !important; transform: none !important; }
-  /* Divider between manage and today sections */
-  .habit-divider {
-    display: block !important;
-    width: 100% !important;
-    height: 1px !important;
-    background: rgba(255,255,255,0.07) !important;
-    flex-shrink: 0;
-  }
-  /* Hide flip nav buttons — no longer needed */
+  .habit-panel-back { display: none !important; }
+  /* Divider hidden (today section gone) */
+  .habit-divider { display: none !important; }
+  /* Hide all flip/nav buttons */
   #habitFlipBtn, #habitFlipBackBtn { display: none !important; }
   .habit-mob-only { display: none !important; }
   .habit-desk-only { display: none !important; }
-  /* Pulse col hidden on mobile, today col visible */
+  /* Hide pulse col inside card (it's a separate card above) */
   .habit-pulse-col { display: none !important; }
-  .habit-today-col { display: flex !important; flex-direction: column; }
-  /* Scrollable lists */
-  .habit-manage-list { max-height: 260px; overflow-y: auto; }
-  .habit-today-list  { max-height: 260px; overflow-y: auto; }
+  /* Scrollable manage list */
+  .habit-manage-list { max-height: 340px; overflow-y: auto; }
   /* Add row always visible */
   .habit-add-row { display: flex !important; }
 

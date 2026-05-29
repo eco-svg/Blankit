@@ -1,4 +1,12 @@
-<!-- Habits card — desktop: flat two-column (tracker + pulse); mobile: panel flip -->
+<!-- Habit Pulse — mobile only, shown above habits card in habits tab -->
+<div class="habit-pulse-section page-hidden" id="sec-habit-pulse">
+  <div class="habit-pulse-label">Habit Pulse</div>
+  <div class="habit-pulse-chart-wrap">
+    <canvas id="consistencyChartMobile"></canvas>
+  </div>
+</div>
+
+<!-- Habits card — desktop: flat two-column (tracker + pulse); mobile: single panel -->
 <div class="card habits-card full-row" id="sec-habits">
   <div class="habits-inner">
     <div class="habit-face habit-front" id="habitFaceFront">
@@ -58,10 +66,3 @@
   </div>
 </div>
 
-<!-- Habit Pulse — mobile only, shown in habits tab below flip card -->
-<div class="habit-pulse-section page-hidden" id="sec-habit-pulse">
-  <div class="habit-pulse-label">Habit Pulse</div>
-  <div class="habit-pulse-chart-wrap">
-    <canvas id="consistencyChartMobile"></canvas>
-  </div>
-</div>
