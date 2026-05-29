@@ -1,4 +1,4 @@
-const CACHE = 'veyra-v2';
+const CACHE = 'veyra-v3';
 const STATIC = [
   '/static/login.css',
   '/static/manifest.json',
