@@ -1,3 +1,48 @@
+// ── Mobile custom select picker ───────────────────────────────────────────────
+function initMobSelects() {
+    if (window.innerWidth > 768) return;
+    document.querySelectorAll('.mob-select-wrap').forEach(wrap => {
+        const sel = wrap.querySelector('select');
+        const btn = wrap.querySelector('.mob-sel-btn');
+        const valSpan = wrap.querySelector('.mob-sel-val');
+        if (!sel || !btn) return;
+
+        function syncLabel() {
+            const opt = sel.options[sel.selectedIndex];
+            if (opt && valSpan) valSpan.textContent = opt.text;
+        }
+        syncLabel();
+
+        btn.addEventListener('click', () => {
+            const overlay = document.createElement('div');
+            overlay.className = 'mob-picker-overlay';
+            const sheet = document.createElement('div');
+            sheet.className = 'mob-picker-sheet';
+            sheet.innerHTML = '<div class="mob-picker-handle"></div>';
+
+            Array.from(sel.options).forEach(opt => {
+                const row = document.createElement('button');
+                row.className = 'mob-picker-row' + (opt.value === sel.value ? ' active' : '');
+                row.type = 'button';
+                row.textContent = opt.text;
+                row.addEventListener('click', () => {
+                    sel.value = opt.value;
+                    sel.dispatchEvent(new Event('change'));
+                    syncLabel();
+                    document.body.removeChild(overlay);
+                });
+                sheet.appendChild(row);
+            });
+
+            overlay.appendChild(sheet);
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) document.body.removeChild(overlay);
+            });
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const ppChangeUsername  = document.getElementById('ppChangeUsername');
@@ -112,6 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window._veyraSetHomeTab) window._veyraSetHomeTab(ppHomeTabSelect.value);
         });
     }
+
+    initMobSelects();
 
     // ── First-launch language prompt ──────────────────────────────────────────
     const FIRST_LAUNCH_KEY = 'pug_lang_asked';

@@ -21,14 +21,20 @@
         <div class="pp-divider"></div>
         <div class="pp-label">Home Tab</div>
         <div style="padding:4px 16px 10px;">
-          <select id="ppHomeTabSelect" class="pp-lang-select" style="width:100%;max-width:220px;">
-            <option value="notes">Notes</option>
-            <option value="habits">Habits</option>
-            <option value="skills">Skills</option>
-            <option value="social">Social</option>
-            <option value="buddybot">BuddyBot</option>
-            <option value="request">Request</option>
-          </select>
+          <div class="mob-select-wrap">
+            <select id="ppHomeTabSelect" class="pp-lang-select mob-sel">
+              <option value="notes">Notes</option>
+              <option value="habits">Habits</option>
+              <option value="skills">Skills</option>
+              <option value="social">Social</option>
+              <option value="buddybot">BuddyBot</option>
+              <option value="request">Request</option>
+            </select>
+            <button class="mob-sel-btn" data-for="ppHomeTabSelect" type="button">
+              <span class="mob-sel-val">Notes</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
         </div>
 
         <!-- Theme -->
@@ -67,24 +73,30 @@
         <div class="pp-divider"></div>
         <div class="pp-label">App Language</div>
         <div style="padding:4px 16px 10px;">
-          <select id="ppAppLangSelect" class="pp-lang-select" style="width:100%;max-width:220px;">
-            <option value="en">English</option>
-            <option value="hi">हिन्दी</option>
-            <option value="es">Español</option>
-            <option value="fr">Français</option>
-            <option value="de">Deutsch</option>
-            <option value="ja">日本語</option>
-            <option value="zh">中文</option>
-            <option value="ar">العربية</option>
-            <option value="pt">Português</option>
-            <option value="ru">Русский</option>
-            <option value="ko">한국어</option>
-            <option value="it">Italiano</option>
-            <option value="tr">Türkçe</option>
-            <option value="nl">Nederlands</option>
-            <option value="pl">Polski</option>
-            <option value="bn">বাংলা</option>
-          </select>
+          <div class="mob-select-wrap">
+            <select id="ppAppLangSelect" class="pp-lang-select mob-sel">
+              <option value="en">English</option>
+              <option value="hi">हिन्दी</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="de">Deutsch</option>
+              <option value="ja">日本語</option>
+              <option value="zh">中文</option>
+              <option value="ar">العربية</option>
+              <option value="pt">Português</option>
+              <option value="ru">Русский</option>
+              <option value="ko">한국어</option>
+              <option value="it">Italiano</option>
+              <option value="tr">Türkçe</option>
+              <option value="nl">Nederlands</option>
+              <option value="pl">Polski</option>
+              <option value="bn">বাংলা</option>
+            </select>
+            <button class="mob-sel-btn" data-for="ppAppLangSelect" type="button">
+              <span class="mob-sel-val">English</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          </div>
         </div>
         <div class="pp-divider"></div>
         <button class="pp-item" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;" onclick="fetch('/auth/logout',{method:'POST'}).then(function(){window.location.href='/'})">

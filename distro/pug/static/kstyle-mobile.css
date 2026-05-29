@@ -3,6 +3,82 @@
    All @media (max-width: 768px) overrides — mobile only
    ═══════════════════════════════════════════════════════════ */
 
+/* ── Mobile custom select picker ── */
+.mob-sel { display: none !important; }
+
+.mob-sel-btn {
+  display: none;
+  width: 100%;
+  max-width: 220px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-align: left;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .mob-sel-btn { display: flex; }
+}
+
+/* Bottom-sheet picker overlay */
+.mob-picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: flex-end;
+}
+
+.mob-picker-sheet {
+  width: 100%;
+  background: var(--card-bg, #141108);
+  border-radius: 18px 18px 0 0;
+  padding: 8px 0 calc(env(safe-area-inset-bottom) + 16px);
+  max-height: 65vh;
+  overflow-y: auto;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.mob-picker-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.18);
+  margin: 8px auto 14px;
+}
+
+.mob-picker-row {
+  display: block;
+  width: 100%;
+  padding: 14px 22px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.90rem;
+  font-family: var(--font-body);
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.12s;
+}
+
+.mob-picker-row:last-child { border-bottom: none; }
+.mob-picker-row:active { background: rgba(255,255,255,0.06); }
+
+.mob-picker-row.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* ── Mobile Bottom Bar ── */
 @media (max-width: 768px) {
   :root {
@@ -86,9 +162,10 @@
   }
   .cw-info { padding: 4px 10px; }
   .cw-row:last-child { display: none; }
-  .cw-time  { font-size: 0.78rem; }
-  .cw-weather { display: none; }
-  .cw-sep   { display: none; }
+  .cw-row:first-child { flex-direction: column; align-items: flex-start; gap: 1px; }
+  .cw-time    { font-size: 0.78rem; }
+  .cw-weather { display: block; font-size: 0.68rem; opacity: 0.75; }
+  .cw-sep     { display: none; }
   .stats-btn-inner {
     width: 68px;
     height: 100%;
