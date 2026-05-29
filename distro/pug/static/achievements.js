@@ -141,15 +141,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${proofHtml}
                 </div>
                 <div style="display:flex;gap:5px;flex-shrink:0;align-items:center;">
-                    <button class="ach-verify-btn" data-id="${a.id}" data-title="${a.title.replace(/"/g,'&quot;')}"
-                        title="Verify this work">verify</button>
+                    <span class="ach-soon-tag" title="Verification coming soon">soon</span>
                     <button class="ach-del-btn" title="Remove" data-id="${a.id}"
                         style="background:transparent;border:none;cursor:pointer;
                                color:var(--text-dim);font-size:1rem;padding:0 2px;line-height:1;">×</button>
                 </div>
             </div>`;
         el.querySelector('.ach-del-btn').addEventListener('click', e => { e.stopPropagation(); del(a.id); });
-        el.querySelector('.ach-verify-btn').addEventListener('click', e => { e.stopPropagation(); openVerify(a.id, a.title); });
         return el;
     }
 
