@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, session, redirect, url_for, reques
 from functools import wraps
 import os
 import requests as http
+from shared.extensions import limiter
 
 catalystcrew_bp = Blueprint(
     'catalystcrew', __name__,
@@ -44,6 +45,7 @@ def habit_tracker():
 #  AI COACH — Groq API endpoint
 # ══════════════════════════════════════════════
 @catalystcrew_bp.route('/d/api/coach', methods=['POST'])
+@limiter.limit("10 per minute")
 @login_required
 def ai_coach():
     data    = request.get_json()
@@ -52,6 +54,8 @@ def ai_coach():
 
     if not message:
         return jsonify({'error': 'No message provided'}), 400
+    if len(message) > 500:
+        return jsonify({'error': 'Message too long (max 500 chars)'}), 400
 
     api_key = os.getenv('CC_GROQ_API_KEY', '').strip()
     if not api_key:

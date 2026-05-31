@@ -1259,83 +1259,14 @@ def ask():
 def blinkbot_chat():
     err = login_required_api()
     if err: return err
-
-    data     = request.get_json(silent=True) or {}
-    message  = data.get('message', '').strip()
-    raw_hist = data.get('history', [])
-    user_id  = session['user_id']
-
-    if not message:
-        return jsonify({'error': 'Empty message'}), 400
-    if len(message) > 2000:
-        return jsonify({'error': 'Message too long'}), 400
-
-    # Sanitize history: only keep well-formed role/content pairs, cap at 20 entries
-    history = []
-    if isinstance(raw_hist, list):
-        for entry in raw_hist[:20]:
-            if (isinstance(entry, dict)
-                    and entry.get('role') in ('user', 'assistant')
-                    and isinstance(entry.get('content'), str)):
-                history.append({'role': entry['role'], 'content': entry['content'][:2000]})
-
-    try:
-        user_context = _assemble_user_context(user_id, session.get('username', ''))
-        final = None
-
-        # Tier 1: BlinkBot 1.5B — server-side GGUF via llama-cpp
-        source = None
-        if _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BLINK_PATH):
-            try:
-                raw = _call_blinkbot_server(message, history, user_context, user_id)
-                if raw and 'route_to_server' not in raw.lower():
-                    final = raw
-                    source = 'blinkbot'
-            except Exception as e:
-                print(f'[blinkbot] server error: {e}', flush=True)
-
-        # Tier 2: BuddyBot 8B
-        if not final and _LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BUDDY_PATH):
-            try:
-                goals_str = ', '.join(user_context['active_goals']) or 'none'
-                notes_str = ', '.join(n['title'] for n in user_context['recent_notes']) or 'none'
-                packet = (
-                    f"situation_type: general\n"
-                    f"user_signals: username={user_context['username']}, "
-                    f"dream={user_context['dream'] or 'not set'}, "
-                    f"active_goals=[{goals_str}]\n"
-                    f"recent_pattern: recent notes titled [{notes_str}]\n"
-                    f"question_core: {message}\n"
-                    f"task: answer_directly"
-                )
-                final = _call_buddybot(packet, user_context)
-                source = 'buddybot'
-            except Exception as e:
-                print(f'[buddybot] relay error: {e}', flush=True)
-
-        # Tier 3: Groq — always available
-        if not final:
-            final = _call_groq_chat(message, history, user_context, user_id=user_id)
-            source = 'groq'
-
-        if not final:
-            return jsonify({'error': 'AI unavailable'}), 503
-
-        from .chat_logger import append_chat_entry
-        append_chat_entry(user_id, message, final)
-
-        return jsonify({'answer': final, 'source': source})
-
-    except Exception as e:
-        current_app.logger.error(f'BlinkBot relay error: {e}')
-        return jsonify({'error': 'AI unavailable'}), 503
+    return jsonify({'answer': 'BlinkBot is being rebuilt — coming soon.', 'source': 'offline'}), 200
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
 def buddybot_endpoint():
-    """Called by a local BlinkBot client when it decides to route to BuddyBot."""
     err = login_required_api()
     if err: return err
+    return jsonify({'answer': 'BuddyBot is coming soon.', 'source': 'offline'}), 200
 
     if not _LLAMA_OK or not _BUDDYBOT_ENABLED:
         return jsonify({'error': 'BuddyBot not available on this server'}), 503

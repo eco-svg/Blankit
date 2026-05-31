@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from flask import Blueprint, request, jsonify, session, current_app
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
+from shared.extensions import limiter
 from datetime import date, timedelta
 
 load_dotenv()
@@ -111,6 +112,7 @@ def get_habit_context(user_id: int) -> str:
 #  POST /ai/suggest-habits
 # ══════════════════════════════
 @ai.route('/suggest-habits', methods=['POST'])
+@limiter.limit("10 per minute")
 def suggest_habits():
     err = login_required_api()
     if err: return err
@@ -119,6 +121,8 @@ def suggest_habits():
     goal = data.get('goal', '').strip()
     if not goal:
         return jsonify({'error': 'goal is required'}), 400
+    if len(goal) > 500:
+        return jsonify({'error': 'Goal too long (max 500 chars)'}), 400
 
     existing = get_habit_context(session['user_id'])
 
@@ -152,6 +156,7 @@ def suggest_habits():
 #  GET /ai/insight
 # ══════════════════════════════
 @ai.route('/insight', methods=['GET'])
+@limiter.limit("10 per minute")
 def insight():
     err = login_required_api()
     if err: return err
@@ -179,6 +184,7 @@ def insight():
 #  POST /ai/chat
 # ══════════════════════════════
 @ai.route('/chat', methods=['POST'])
+@limiter.limit("15 per minute")
 def chat():
     err = login_required_api()
     if err: return err
@@ -187,6 +193,8 @@ def chat():
     message = data.get('message', '').strip()
     if not message:
         return jsonify({'error': 'message required'}), 400
+    if len(message) > 1000:
+        return jsonify({'error': 'Message too long (max 1000 chars)'}), 400
 
     context = get_habit_context(session['user_id'])
 
