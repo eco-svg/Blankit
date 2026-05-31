@@ -40,7 +40,9 @@
   width: 100%; height: 100%;
   object-fit: cover;
   opacity: 0.55;
+  transition: opacity 0.4s ease;
 }
+[data-wallpaper] .pug-bg video { opacity: 0 !important; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
@@ -2608,6 +2610,22 @@ div.infinite-canvas video {
   padding: 4px 16px 2px;
 }
 
+.pp-theme-box {
+  margin: 4px 16px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px 12px;
+}
+.pp-theme-row-label {
+  font-family: var(--font-mono);
+  font-size: 0.60rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
 .pp-label-section {
   font-family: var(--font-body);
   font-size: 0.9rem;
@@ -4662,7 +4680,6 @@ button.nav-pill:not(.btn-ghost):hover {
    ══════════════════════════════════════════════════════════════ */
 
 /* Shared image wallpaper rules */
-[data-wallpaper] .pug-bg video { opacity: 0; }
 
 [data-wallpaper="pug_space_rings"] .pug-bg,
 [data-wallpaper="pug_blackhole_swirl"] .pug-bg,
@@ -4803,11 +4820,6 @@ button.nav-pill:not(.btn-ghost):hover {
    aurora | nebula | synthwave | starfield
    ══════════════════════════════════════════════════════════════ */
 
-[data-wallpaper="aurora"] .pug-bg video,
-[data-wallpaper="nebula"] .pug-bg video,
-[data-wallpaper="synthwave"] .pug-bg video,
-[data-wallpaper="starfield"] .pug-bg video { opacity: 0; }
-
 /* ── AURORA ── */
 [data-wallpaper="aurora"] .pug-bg { background: #04090a; }
 [data-wallpaper="aurora"] .pug-bg::before {
@@ -4890,3 +4902,14 @@ button.nav-pill:not(.btn-ghost):hover {
   width: 100%; height: 100%;
   pointer-events: none;
 }
+
+/* ══════════════════════════════════════════════════════════════
+   STYLE (accent colour only) — applied via [data-style] on <html>
+   Independent of wallpaper. Declared last so it always wins.
+   ══════════════════════════════════════════════════════════════ */
+[data-style="cyan"]    { --accent:#00ccd4; --accent-glow:rgba(0,204,212,0.15);   --accent2:#0099a0; --border-hover:rgba(0,204,212,0.42); }
+[data-style="pink"]    { --accent:#e866a0; --accent-glow:rgba(232,102,160,0.15); --accent2:#c0407a; --border-hover:rgba(232,102,160,0.42); }
+[data-style="purple"]  { --accent:#a855f7; --accent-glow:rgba(168,85,247,0.15);  --accent2:#7c3aed; --border-hover:rgba(168,85,247,0.42); }
+[data-style="blue"]    { --accent:#4d9ef7; --accent-glow:rgba(77,158,247,0.15);  --accent2:#2d78d8; --border-hover:rgba(77,158,247,0.42); }
+[data-style="green"]   { --accent:#50c87a; --accent-glow:rgba(80,200,122,0.15);  --accent2:#30a058; --border-hover:rgba(80,200,122,0.42); }
+[data-style="red"]     { --accent:#e05040; --accent-glow:rgba(224,80,64,0.15);   --accent2:#b83020; --border-hover:rgba(224,80,64,0.42); }

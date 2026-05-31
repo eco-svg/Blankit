@@ -13,14 +13,14 @@
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=75">
-  <script>(function(){var w=localStorage.getItem('veyra-pug-wallpaper');if(w&&w!=='default')document.documentElement.setAttribute('data-wallpaper',w);})();</script>
+  <script>(function(){var w=localStorage.getItem('veyra-pug-wallpaper');if(w&&w!=='default')document.documentElement.setAttribute('data-wallpaper',w);var s=localStorage.getItem('veyra-pug-style');if(s&&s!=='default')document.documentElement.setAttribute('data-style',s);})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=76">
 </head>
 <body>
 
   <!-- SPACE BACKGROUND -->
   <div class="pug-bg">
-    <video id="bgVideo" autoplay muted loop playsinline preload="auto" style="opacity:0.55">
+    <video id="bgVideo" autoplay muted loop playsinline preload="auto">
       <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
     </video>
   </div>
