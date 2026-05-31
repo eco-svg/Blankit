@@ -107,20 +107,20 @@ function initThemeSwatches() {
         });
     });
 
-    // Style (accent colour only — independent of wallpaper)
-    const savedStyle = localStorage.getItem('veyra-pug-style') || 'default';
-    if (savedStyle !== 'default') document.documentElement.setAttribute('data-style', savedStyle);
-    document.querySelectorAll('.style-swatch').forEach(btn => {
-        if (btn.dataset.style === savedStyle) btn.classList.add('theme-swatch-active');
+    // Filter (CSS filter on background — independent of wallpaper)
+    const savedFilter = localStorage.getItem('veyra-pug-filter') || 'default';
+    if (savedFilter !== 'default') document.documentElement.setAttribute('data-filter', savedFilter);
+    document.querySelectorAll('.filter-swatch').forEach(btn => {
+        if (btn.dataset.filter === savedFilter) btn.classList.add('theme-swatch-active');
         btn.addEventListener('click', () => {
-            const st = btn.dataset.style;
-            localStorage.setItem('veyra-pug-style', st);
-            if (st === 'default') {
-                document.documentElement.removeAttribute('data-style');
+            const f = btn.dataset.filter;
+            localStorage.setItem('veyra-pug-filter', f);
+            if (f === 'default') {
+                document.documentElement.removeAttribute('data-filter');
             } else {
-                document.documentElement.setAttribute('data-style', st);
+                document.documentElement.setAttribute('data-filter', f);
             }
-            document.querySelectorAll('.style-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
+            document.querySelectorAll('.filter-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
             btn.classList.add('theme-swatch-active');
         });
     });

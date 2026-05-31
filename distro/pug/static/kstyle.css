@@ -4904,12 +4904,13 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   STYLE (accent colour only) — applied via [data-style] on <html>
-   Independent of wallpaper. Declared last so it always wins.
+   FILTERS — applied via [data-filter] on <html>
+   CSS filter on .pug-bg only — content above is unaffected.
+   Works on top of any wallpaper or CSS animated background.
    ══════════════════════════════════════════════════════════════ */
-[data-style="cyan"]    { --accent:#00ccd4; --accent-glow:rgba(0,204,212,0.15);   --accent2:#0099a0; --border-hover:rgba(0,204,212,0.42); }
-[data-style="pink"]    { --accent:#e866a0; --accent-glow:rgba(232,102,160,0.15); --accent2:#c0407a; --border-hover:rgba(232,102,160,0.42); }
-[data-style="purple"]  { --accent:#a855f7; --accent-glow:rgba(168,85,247,0.15);  --accent2:#7c3aed; --border-hover:rgba(168,85,247,0.42); }
-[data-style="blue"]    { --accent:#4d9ef7; --accent-glow:rgba(77,158,247,0.15);  --accent2:#2d78d8; --border-hover:rgba(77,158,247,0.42); }
-[data-style="green"]   { --accent:#50c87a; --accent-glow:rgba(80,200,122,0.15);  --accent2:#30a058; --border-hover:rgba(80,200,122,0.42); }
-[data-style="red"]     { --accent:#e05040; --accent-glow:rgba(224,80,64,0.15);   --accent2:#b83020; --border-hover:rgba(224,80,64,0.42); }
+[data-filter="warm"]   .pug-bg { filter: sepia(0.40) saturate(1.15) brightness(0.88); }
+[data-filter="cool"]   .pug-bg { filter: hue-rotate(195deg) saturate(1.10) brightness(0.90); }
+[data-filter="dim"]    .pug-bg { filter: brightness(0.50); }
+[data-filter="vivid"]  .pug-bg { filter: contrast(1.20) saturate(1.45); }
+[data-filter="mono"]   .pug-bg { filter: grayscale(1) brightness(0.82); }
+[data-filter="dreamy"] .pug-bg { filter: blur(3px) brightness(0.78) saturate(0.70); }
