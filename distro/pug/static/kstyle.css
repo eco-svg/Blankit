@@ -4820,32 +4820,6 @@ button.nav-pill:not(.btn-ghost):hover {
    aurora | nebula | synthwave | starfield
    ══════════════════════════════════════════════════════════════ */
 
-/* ── AURORA ── */
-[data-wallpaper="aurora"] .pug-bg { background: #04090a; }
-[data-wallpaper="aurora"] .pug-bg::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(125deg,
-    #072818 0%, #0b1c35 20%, #180b35 40%,
-    #0b1c35 60%, #063520 80%, #04090a 100%);
-  background-size: 500% 500%;
-  animation: veyraAurora 18s ease infinite;
-}
-[data-wallpaper="aurora"] .pug-bg::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(170deg,
-    transparent 30%, rgba(0,255,160,0.04) 50%,
-    rgba(80,0,200,0.06) 65%, transparent 80%);
-  background-size: 300% 300%;
-  animation: veyraAurora 26s ease infinite reverse;
-}
-@keyframes veyraAurora {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 /* ── NEBULA ── */
 [data-wallpaper="nebula"] .pug-bg { background: #040010; }
 [data-wallpaper="nebula"] .pug-bg::before {
@@ -4862,37 +4836,6 @@ button.nav-pill:not(.btn-ghost):hover {
   0%   { transform: scale(1)    rotate(0deg);   opacity: 0.88; }
   50%  { transform: scale(1.09) rotate(2.5deg); opacity: 1;    }
   100% { transform: scale(1)    rotate(-1.5deg); opacity: 0.82; }
-}
-
-/* ── SYNTHWAVE ── */
-[data-wallpaper="synthwave"] .pug-bg { background: #080012; }
-[data-wallpaper="synthwave"] .pug-bg::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom,
-    #1c003a 0%, #320055 28%, #180030 50%, rgba(0,0,0,0) 50%);
-  animation: veyraSynthPulse 6s ease-in-out infinite alternate;
-}
-@keyframes veyraSynthPulse {
-  from { opacity: 0.85; }
-  to   { opacity: 1; }
-}
-[data-wallpaper="synthwave"] .pug-bg::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: -30%; right: -30%;
-  height: 62%;
-  background-image:
-    linear-gradient(90deg, rgba(255,0,200,0.22) 1px, transparent 1px),
-    linear-gradient(0deg,  rgba(255,0,200,0.18) 1px, transparent 1px);
-  background-size: 55px 55px;
-  transform: perspective(480px) rotateX(58deg);
-  transform-origin: 50% 100%;
-  animation: veyraSynthScroll 6s linear infinite;
-}
-@keyframes veyraSynthScroll {
-  from { background-position: 0 0; }
-  to   { background-position: 0 55px; }
 }
 
 /* ── STARFIELD ── */
