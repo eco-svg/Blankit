@@ -4909,7 +4909,7 @@ button.nav-pill:not(.btn-ghost):hover {
    Works on top of any wallpaper or CSS animated background.
    ══════════════════════════════════════════════════════════════ */
 [data-filter="warm"]   .pug-bg { filter: sepia(0.40) saturate(1.15) brightness(0.88); }
-[data-filter="cool"]   .pug-bg { filter: hue-rotate(195deg) saturate(1.10) brightness(0.90); }
+[data-filter="cool"]   .pug-bg { filter: sepia(0.6) hue-rotate(220deg) saturate(1.4) brightness(0.85); }
 [data-filter="dim"]    .pug-bg { filter: brightness(0.50); }
 [data-filter="vivid"]  .pug-bg { filter: contrast(1.20) saturate(1.45); }
 [data-filter="mono"]   .pug-bg { filter: grayscale(1) brightness(0.82); }
