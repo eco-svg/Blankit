@@ -93,26 +93,10 @@ function applyWallpaper(name) {
 }
 
 function initThemeSwatches() {
-    const savedTheme = localStorage.getItem('veyra-pug-theme') || 'default';
-    document.querySelectorAll('.theme-swatch:not(.wallpaper-swatch)').forEach(btn => {
-        if (btn.dataset.theme === savedTheme) btn.classList.add('theme-swatch-active');
-        btn.addEventListener('click', () => {
-            const theme = btn.dataset.theme;
-            localStorage.setItem('veyra-pug-theme', theme);
-            if (theme === 'default') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', theme);
-            }
-            document.querySelectorAll('.theme-swatch:not(.wallpaper-swatch)').forEach(s => s.classList.remove('theme-swatch-active'));
-            btn.classList.add('theme-swatch-active');
-        });
-    });
-
-    const savedWallpaper = localStorage.getItem('veyra-pug-wallpaper') || 'default';
-    applyWallpaper(savedWallpaper);
+    const saved = localStorage.getItem('veyra-pug-wallpaper') || 'default';
+    applyWallpaper(saved);
     document.querySelectorAll('.wallpaper-swatch').forEach(btn => {
-        if (btn.dataset.wallpaper === savedWallpaper) btn.classList.add('theme-swatch-active');
+        if (btn.dataset.wallpaper === saved) btn.classList.add('theme-swatch-active');
         btn.addEventListener('click', () => {
             const wp = btn.dataset.wallpaper;
             localStorage.setItem('veyra-pug-wallpaper', wp);

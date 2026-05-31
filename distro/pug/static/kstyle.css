@@ -4653,122 +4653,163 @@ button.nav-pill:not(.btn-ghost):hover {
   display: none;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   THEMES — applied via [data-theme] on <html>
-   Default (no attribute) = Blackhole (warm dark, existing :root)
-   ══════════════════════════════════════════════════════════════ */
-
-[data-theme="cyan"] {
-  --bg:           #060d10;
-  --bg-card:      rgba(0,204,212,0.07);
-  --surface:      rgba(0,204,212,0.07);
-  --border:       rgba(0,204,212,0.13);
-  --border2:      rgba(0,204,212,0.22);
-  --border-hover: rgba(0,204,212,0.40);
-  --accent:       #00ccd4;
-  --accent-glow:  rgba(0,204,212,0.14);
-  --accent2:      #0099a0;
-}
-[data-theme="cyan"] .pug-bg {
-  background: radial-gradient(ellipse at 30% 25%, rgba(0,60,68,1) 0%, #060d10 55%, #030809 100%);
-}
-[data-theme="cyan"] .pug-bg video { opacity: 0.25; }
-
-[data-theme="pink"] {
-  --bg:           #100608;
-  --bg-card:      rgba(232,102,160,0.07);
-  --surface:      rgba(232,102,160,0.07);
-  --border:       rgba(232,102,160,0.13);
-  --border2:      rgba(232,102,160,0.22);
-  --border-hover: rgba(232,102,160,0.40);
-  --accent:       #e866a0;
-  --accent-glow:  rgba(232,102,160,0.14);
-  --accent2:      #c0407a;
-}
-[data-theme="pink"] .pug-bg {
-  background: radial-gradient(ellipse at 28% 25%, rgba(70,15,35,1) 0%, #100608 55%, #080305 100%);
-}
-[data-theme="pink"] .pug-bg video { opacity: 0.20; }
-
-[data-theme="purple"] {
-  --bg:           #0a0810;
-  --bg-card:      rgba(168,85,247,0.07);
-  --surface:      rgba(168,85,247,0.07);
-  --border:       rgba(168,85,247,0.13);
-  --border2:      rgba(168,85,247,0.22);
-  --border-hover: rgba(168,85,247,0.40);
-  --accent:       #a855f7;
-  --accent-glow:  rgba(168,85,247,0.14);
-  --accent2:      #7c3aed;
-}
-[data-theme="purple"] .pug-bg {
-  background: radial-gradient(ellipse at 28% 25%, rgba(45,15,80,1) 0%, #0a0810 55%, #060408 100%);
-}
-[data-theme="purple"] .pug-bg video { opacity: 0.22; }
-
-[data-theme="blue"] {
-  --bg:           #060810;
-  --bg-card:      rgba(77,158,247,0.07);
-  --surface:      rgba(77,158,247,0.07);
-  --border:       rgba(77,158,247,0.13);
-  --border2:      rgba(77,158,247,0.22);
-  --border-hover: rgba(77,158,247,0.40);
-  --accent:       #4d9ef7;
-  --accent-glow:  rgba(77,158,247,0.14);
-  --accent2:      #2d78d8;
-}
-[data-theme="blue"] .pug-bg {
-  background: radial-gradient(ellipse at 28% 25%, rgba(10,25,70,1) 0%, #060810 55%, #030508 100%);
-}
-[data-theme="blue"] .pug-bg video { opacity: 0.30; }
-
-[data-theme="darkblue"] {
-  --bg:           #05060e;
-  --bg-card:      rgba(58,92,197,0.07);
-  --surface:      rgba(58,92,197,0.07);
-  --border:       rgba(58,92,197,0.13);
-  --border2:      rgba(58,92,197,0.22);
-  --border-hover: rgba(58,92,197,0.40);
-  --accent:       #3a5cc5;
-  --accent-glow:  rgba(58,92,197,0.14);
-  --accent2:      #2040a0;
-}
-[data-theme="darkblue"] .pug-bg {
-  background: radial-gradient(ellipse at 28% 25%, rgba(8,14,55,1) 0%, #05060e 55%, #030408 100%);
-}
-[data-theme="darkblue"] .pug-bg video { opacity: 0.35; }
-
-[data-theme="grey"] {
-  --bg:           #0a0a0a;
-  --bg-card:      rgba(144,144,144,0.07);
-  --surface:      rgba(144,144,144,0.07);
-  --border:       rgba(255,255,255,0.09);
-  --border2:      rgba(255,255,255,0.15);
-  --border-hover: rgba(255,255,255,0.30);
-  --accent:       #909090;
-  --accent-glow:  rgba(144,144,144,0.10);
-  --accent2:      #606060;
-}
-[data-theme="grey"] .pug-bg {
-  background: radial-gradient(ellipse at 28% 25%, rgba(25,25,25,1) 0%, #0a0a0a 55%, #060606 100%);
-}
-[data-theme="grey"] .pug-bg video { opacity: 0.18; }
 
 /* ══════════════════════════════════════════════════════════════
    WALLPAPERS — applied via [data-wallpaper] on <html>
-   Independent of theme — can be combined freely
+   No data-wallpaper = default (Blackhole video, warm gold accent)
+   Each wallpaper sets: background image + accent colour palette
+   Cards get a dark overlay so content stays readable.
    ══════════════════════════════════════════════════════════════ */
 
-/* ── Shared: hide video for all CSS wallpapers ── */
+/* Shared image wallpaper rules */
+[data-wallpaper] .pug-bg video { opacity: 0; }
+
+[data-wallpaper="pug_space_rings"] .pug-bg,
+[data-wallpaper="pug_blackhole_swirl"] .pug-bg,
+[data-wallpaper="pug_atom_cosmos"] .pug-bg,
+[data-wallpaper="pug_helix_nebula"] .pug-bg,
+[data-wallpaper="pug_crimson_nebula"] .pug-bg,
+[data-wallpaper="pug_orion_nebula"] .pug-bg,
+[data-wallpaper="pug_red_moon"] .pug-bg,
+[data-wallpaper="pug_synthwave_moon"] .pug-bg,
+[data-wallpaper="pug_eclipse_peak"] .pug-bg,
+[data-wallpaper="pug_cherry_moon"] .pug-bg,
+[data-wallpaper="pug_spirit_forest"] .pug-bg,
+[data-wallpaper="pug_aurora_village"] .pug-bg,
+[data-wallpaper="pug_snow_peaks"] .pug-bg,
+[data-wallpaper="pug_teal_reflection"] .pug-bg,
+[data-wallpaper="pug_pikachu_onsen"] .pug-bg,
+[data-wallpaper="pug_dream_lake"] .pug-bg {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Shared: darken cards so text stays readable over busy images */
+[data-wallpaper^="pug_"] {
+  --bg-card:  rgba(0,0,0,0.52);
+  --surface:  rgba(0,0,0,0.52);
+  --border:   rgba(255,255,255,0.12);
+  --border2:  rgba(255,255,255,0.20);
+  --text:     #f4f0e8;
+  --text-muted: rgba(244,240,232,0.80);
+  --text-dim:   rgba(244,240,232,0.55);
+}
+
+/* ── SPACE GROUP ── */
+[data-wallpaper="pug_space_rings"] .pug-bg { background-image: url('/static/pug_space_rings.jpeg'); }
+[data-wallpaper="pug_space_rings"] {
+  --accent: #4d9ef7; --accent-glow: rgba(77,158,247,0.18);
+  --accent2: #2d78d8; --border-hover: rgba(77,158,247,0.45);
+}
+
+[data-wallpaper="pug_blackhole_swirl"] .pug-bg { background-image: url('/static/pug_blackhole_swirl.jpeg'); }
+[data-wallpaper="pug_blackhole_swirl"] {
+  --accent: #a855f7; --accent-glow: rgba(168,85,247,0.18);
+  --accent2: #7c3aed; --border-hover: rgba(168,85,247,0.45);
+}
+
+[data-wallpaper="pug_atom_cosmos"] .pug-bg { background-image: url('/static/pug_atom_cosmos.jpeg'); }
+[data-wallpaper="pug_atom_cosmos"] {
+  --accent: #00ccd4; --accent-glow: rgba(0,204,212,0.18);
+  --accent2: #0099a0; --border-hover: rgba(0,204,212,0.45);
+}
+
+[data-wallpaper="pug_helix_nebula"] .pug-bg { background-image: url('/static/pug_helix_nebula.jpeg'); }
+[data-wallpaper="pug_helix_nebula"] {
+  --accent: #d4a574; --accent-glow: rgba(212,165,116,0.18);
+  --accent2: #c85a2a; --border-hover: rgba(212,165,116,0.45);
+}
+
+[data-wallpaper="pug_crimson_nebula"] .pug-bg { background-image: url('/static/pug_crimson_nebula.jpeg'); }
+[data-wallpaper="pug_crimson_nebula"] {
+  --accent: #d44878; --accent-glow: rgba(212,72,120,0.18);
+  --accent2: #a83060; --border-hover: rgba(212,72,120,0.45);
+}
+
+[data-wallpaper="pug_orion_nebula"] .pug-bg { background-image: url('/static/pug_orion_nebula.jpeg'); }
+[data-wallpaper="pug_orion_nebula"] {
+  --accent: #e866a0; --accent-glow: rgba(232,102,160,0.18);
+  --accent2: #c04080; --border-hover: rgba(232,102,160,0.45);
+}
+
+/* ── MOON / NIGHT GROUP ── */
+[data-wallpaper="pug_red_moon"] .pug-bg { background-image: url('/static/pug_red_moon.jpeg'); }
+[data-wallpaper="pug_red_moon"] {
+  --accent: #e05040; --accent-glow: rgba(224,80,64,0.18);
+  --accent2: #b83020; --border-hover: rgba(224,80,64,0.45);
+}
+
+[data-wallpaper="pug_synthwave_moon"] .pug-bg { background-image: url('/static/pug_synthwave_moon.jpeg'); }
+[data-wallpaper="pug_synthwave_moon"] {
+  --accent: #00b8e0; --accent-glow: rgba(0,184,224,0.18);
+  --accent2: #0090b8; --border-hover: rgba(0,184,224,0.45);
+}
+
+[data-wallpaper="pug_eclipse_peak"] .pug-bg { background-image: url('/static/pug_eclipse_peak.jpeg'); }
+[data-wallpaper="pug_eclipse_peak"] {
+  --accent: #a0b4e0; --accent-glow: rgba(160,180,224,0.18);
+  --accent2: #7090c0; --border-hover: rgba(160,180,224,0.45);
+}
+
+[data-wallpaper="pug_cherry_moon"] .pug-bg { background-image: url('/static/pug_cherry_moon.jpeg'); }
+[data-wallpaper="pug_cherry_moon"] {
+  --accent: #e878c0; --accent-glow: rgba(232,120,192,0.18);
+  --accent2: #c050a0; --border-hover: rgba(232,120,192,0.45);
+}
+
+/* ── NATURE GROUP ── */
+[data-wallpaper="pug_spirit_forest"] .pug-bg { background-image: url('/static/pug_spirit_forest.jpeg'); }
+[data-wallpaper="pug_spirit_forest"] {
+  --accent: #00d4b4; --accent-glow: rgba(0,212,180,0.18);
+  --accent2: #00a890; --border-hover: rgba(0,212,180,0.45);
+}
+
+[data-wallpaper="pug_aurora_village"] .pug-bg { background-image: url('/static/pug_aurora_village.jpeg'); }
+[data-wallpaper="pug_aurora_village"] {
+  --accent: #50c87a; --accent-glow: rgba(80,200,122,0.18);
+  --accent2: #30a058; --border-hover: rgba(80,200,122,0.45);
+}
+
+[data-wallpaper="pug_snow_peaks"] .pug-bg { background-image: url('/static/pug_snow_peaks.jpeg'); }
+[data-wallpaper="pug_snow_peaks"] {
+  --accent: #80bce8; --accent-glow: rgba(128,188,232,0.18);
+  --accent2: #5090c8; --border-hover: rgba(128,188,232,0.45);
+}
+
+[data-wallpaper="pug_teal_reflection"] .pug-bg { background-image: url('/static/pug_teal_reflection.jpeg'); }
+[data-wallpaper="pug_teal_reflection"] {
+  --accent: #00c4e0; --accent-glow: rgba(0,196,224,0.18);
+  --accent2: #0098b8; --border-hover: rgba(0,196,224,0.45);
+}
+
+/* ── CHILL / ANIME GROUP ── */
+[data-wallpaper="pug_pikachu_onsen"] .pug-bg { background-image: url('/static/pug_pikachu_onsen.jpeg'); }
+[data-wallpaper="pug_pikachu_onsen"] {
+  --bg-card:  rgba(20,12,0,0.58);
+  --surface:  rgba(20,12,0,0.58);
+  --accent: #f0a830; --accent-glow: rgba(240,168,48,0.18);
+  --accent2: #d08010; --border-hover: rgba(240,168,48,0.45);
+}
+
+[data-wallpaper="pug_dream_lake"] .pug-bg { background-image: url('/static/pug_dream_lake.jpeg'); }
+[data-wallpaper="pug_dream_lake"] {
+  --accent: #a0a8e8; --accent-glow: rgba(160,168,232,0.18);
+  --accent2: #7880c8; --border-hover: rgba(160,168,232,0.45);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CSS ANIMATED STYLES — applied via [data-wallpaper] on <html>
+   aurora | nebula | synthwave | starfield
+   ══════════════════════════════════════════════════════════════ */
+
 [data-wallpaper="aurora"] .pug-bg video,
 [data-wallpaper="nebula"] .pug-bg video,
 [data-wallpaper="synthwave"] .pug-bg video,
 [data-wallpaper="starfield"] .pug-bg video { opacity: 0; }
 
 /* ── AURORA ── */
-[data-wallpaper="aurora"] .pug-bg {
-  background: #04090a;
-}
+[data-wallpaper="aurora"] .pug-bg { background: #04090a; }
 [data-wallpaper="aurora"] .pug-bg::before {
   content: '';
   position: absolute; inset: 0;
@@ -4782,10 +4823,8 @@ button.nav-pill:not(.btn-ghost):hover {
   content: '';
   position: absolute; inset: 0;
   background: linear-gradient(170deg,
-    transparent 30%,
-    rgba(0,255,160,0.04) 50%,
-    rgba(80,0,200,0.06) 65%,
-    transparent 80%);
+    transparent 30%, rgba(0,255,160,0.04) 50%,
+    rgba(80,0,200,0.06) 65%, transparent 80%);
   background-size: 300% 300%;
   animation: veyraAurora 26s ease infinite reverse;
 }
@@ -4796,9 +4835,7 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 /* ── NEBULA ── */
-[data-wallpaper="nebula"] .pug-bg {
-  background: #040010;
-}
+[data-wallpaper="nebula"] .pug-bg { background: #040010; }
 [data-wallpaper="nebula"] .pug-bg::before {
   content: '';
   position: absolute; inset: -10%;
@@ -4810,15 +4847,13 @@ button.nav-pill:not(.btn-ghost):hover {
   animation: veyraNebulaShift 28s ease-in-out infinite alternate;
 }
 @keyframes veyraNebulaShift {
-  0%   { transform: scale(1)    rotate(0deg);  opacity: 0.88; }
-  50%  { transform: scale(1.09) rotate(2.5deg); opacity: 1;   }
+  0%   { transform: scale(1)    rotate(0deg);   opacity: 0.88; }
+  50%  { transform: scale(1.09) rotate(2.5deg); opacity: 1;    }
   100% { transform: scale(1)    rotate(-1.5deg); opacity: 0.82; }
 }
 
 /* ── SYNTHWAVE ── */
-[data-wallpaper="synthwave"] .pug-bg {
-  background: #080012;
-}
+[data-wallpaper="synthwave"] .pug-bg { background: #080012; }
 [data-wallpaper="synthwave"] .pug-bg::before {
   content: '';
   position: absolute; inset: 0;
@@ -4848,10 +4883,8 @@ button.nav-pill:not(.btn-ghost):hover {
   to   { background-position: 0 55px; }
 }
 
-/* ── STARFIELD — background set by JS canvas ── */
-[data-wallpaper="starfield"] .pug-bg {
-  background: #020408;
-}
+/* ── STARFIELD ── */
+[data-wallpaper="starfield"] .pug-bg { background: #020408; }
 #veyraStarCanvas {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
