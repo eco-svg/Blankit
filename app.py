@@ -6,9 +6,8 @@ from shared.config import Config
 from shared.extensions import db
 from distro.svg.services.badge_service import seed_badges
 from shared.extensions import limiter
-_DATA_DIR = '/data' if os.path.isdir('/data') else os.path.dirname(os.path.abspath(__file__))
-# /data is the HF persistent bucket mount; fall back to /app for local dev
 
+_DATA_DIR = '/data' if os.path.isdir('/data') else os.path.dirname(os.path.abspath(__file__))
 
 
 def _hf_download(repo_id, filename, dest_path, token):
@@ -66,31 +65,45 @@ def _migrate_schema():
     """Idempotent startup migrations for schema changes not handled by db.create_all()."""
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
-    if 'user_badges' not in inspector.get_table_names():
-        return  # table not yet created — db.create_all() will handle it correctly
-    # users — age + student verification columns
-    if 'users' in inspector.get_table_names():
-        user_cols = {c['name'] for c in inspector.get_columns('users')}
-        with db.engine.begin() as conn:
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS age INTEGER'))
-            conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS student_status VARCHAR(20) DEFAULT 'none'"))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_school VARCHAR(200)'))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_location VARCHAR(200)'))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_grade VARCHAR(50)'))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_submitted_at TIMESTAMP'))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS student_id_url VARCHAR(500)'))
-            conn.execute(text('ALTER TABLE users ADD COLUMN IF NOT EXISTS dob DATE'))
 
-    columns = {c['name'] for c in inspector.get_columns('user_badges')}
-    if 'user_id' in columns:
-        return  # already migrated
-    with db.engine.begin() as conn:
-        conn.execute(text('ALTER TABLE user_badges ADD COLUMN user_id INTEGER REFERENCES users(id)'))
-        conn.execute(text('DELETE FROM user_badges WHERE user_id IS NULL'))
-        try:
-            conn.execute(text('ALTER TABLE user_badges ALTER COLUMN user_id SET NOT NULL'))
-        except Exception:
-            pass  # SQLite doesn't support this; PostgreSQL does
+    # ── user_badges migration ──
+    if 'user_badges' in inspector.get_table_names():
+        columns = {c['name'] for c in inspector.get_columns('user_badges')}
+        if 'user_id' not in columns:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text('ALTER TABLE user_badges ADD COLUMN user_id INTEGER REFERENCES users(id)'))
+                    conn.execute(text('DELETE FROM user_badges WHERE user_id IS NULL'))
+                try:
+                    with db.engine.begin() as conn:
+                        conn.execute(text('ALTER TABLE user_badges ALTER COLUMN user_id SET NOT NULL'))
+                except Exception:
+                    pass  # SQLite doesn't support this; PostgreSQL does
+            except Exception as e:
+                import warnings
+                warnings.warn(f'[migrate] user_badges migration failed: {e}')
+
+    # ── users new columns ──
+    if 'users' in inspector.get_table_names():
+        new_cols = [
+            ('age',                  'INTEGER'),
+            ('student_status',       "VARCHAR(20) DEFAULT 'none'"),
+            ('student_school',       'VARCHAR(200)'),
+            ('student_location',     'VARCHAR(200)'),
+            ('student_grade',        'VARCHAR(50)'),
+            ('student_submitted_at', 'TIMESTAMP'),
+            ('student_id_url',       'VARCHAR(500)'),
+            ('dob',                  'DATE'),
+        ]
+        existing = {c['name'] for c in inspector.get_columns('users')}
+        for col, col_type in new_cols:
+            if col not in existing:
+                try:
+                    with db.engine.begin() as conn:
+                        conn.execute(text(f'ALTER TABLE users ADD COLUMN {col} {col_type}'))
+                except Exception as e:
+                    import warnings
+                    warnings.warn(f'[migrate] Could not add column {col}: {e}')
 
 
 def _migrate_fk_cascades():
@@ -182,7 +195,6 @@ def create_app():
     app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB upload cap
 
     db.init_app(app)
-
     mail.init_app(app)
     limiter.init_app(app)
 
@@ -218,7 +230,7 @@ def create_app():
             mimetype='image/png',
         )
 
-    # ── Invalidate sessions for deleted users ─────────────
+    # ── Invalidate sessions for deleted users ──
     @app.before_request
     def validate_session_user():
         user_id = session.get('user_id')
@@ -233,7 +245,7 @@ def create_app():
             return jsonify({'error': 'session_invalidated', 'message': 'Your account no longer exists.'}), 401
         return redirect(url_for('svg.login') + '?kicked=1')
 
-    # ── Security response headers ─────────────────────────
+    # ── Security response headers ──
     @app.after_request
     def security_headers(response):
         response.headers['X-Frame-Options']        = 'SAMEORIGIN'
