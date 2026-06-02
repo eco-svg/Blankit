@@ -4702,6 +4702,24 @@ button.nav-pill:not(.btn-ghost):hover {
   background-repeat: no-repeat;
 }
 
+/* Portrait images: auto-rotate on landscape screens so they fill without extreme zoom */
+@media (orientation: landscape) {
+  [data-wallpaper="pug_space_rings"] .pug-bg,
+  [data-wallpaper="pug_blackhole_swirl"] .pug-bg,
+  [data-wallpaper="pug_atom_cosmos"] .pug-bg,
+  [data-wallpaper="pug_helix_nebula"] .pug-bg,
+  [data-wallpaper="pug_crimson_nebula"] .pug-bg,
+  [data-wallpaper="pug_orion_nebula"] .pug-bg {
+    inset: 0;
+    margin: auto;
+    width: 100vh;
+    height: 100vw;
+    transform: rotate(90deg);
+    background-size: cover;
+    background-position: center;
+  }
+}
+
 /* Shared: darken cards so text stays readable over busy images */
 [data-wallpaper^="pug_"] {
   --bg-card:  rgba(0,0,0,0.52);
