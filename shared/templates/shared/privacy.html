@@ -23,6 +23,7 @@
     .back { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.72rem; color: #d4a574; text-decoration: none; letter-spacing: 0.06em; opacity: 0.7; margin-bottom: 32px; }
     .back:hover { opacity: 1; }
     strong { color: #c8bfad; font-weight: 600; }
+    .tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(212,165,116,0.12); color: #d4a574; border-radius: 4px; padding: 2px 7px; margin-left: 6px; vertical-align: middle; }
   </style>
 </head>
 <body>
@@ -30,20 +31,33 @@
     <div class="logo">veyra</div>
     <a href="/" class="back">← back</a>
     <h1>Privacy Policy</h1>
-    <div class="updated">Last updated: May 2026</div>
+    <div class="updated">Last updated: June 2026</div>
 
     <p>This Privacy Policy describes how Veyra ("we", "us", "our") collects, uses, and protects your personal information when you use our platform. By using Veyra, you agree to this policy.</p>
 
-    <h2>1. What we collect</h2>
+    <h2>1. Data controller</h2>
+    <p>Veyra is operated as an independent platform. For data protection enquiries, contact us at <a href="mailto:privacy@veyra.app">privacy@veyra.app</a>. We will respond within 30 days.</p>
+
+    <h2>2. What we collect</h2>
     <ul>
       <li><strong>Account information:</strong> Username, email address, password (hashed — never stored in plain text), date of birth.</li>
       <li><strong>Profile data:</strong> Age tier, distro preference, habits, notes, goals, and other content you create.</li>
       <li><strong>Usage data:</strong> Feature interactions, habit logs, streak data, and community posts.</li>
       <li><strong>Communications:</strong> Messages sent via the DM feature (stored to deliver them).</li>
       <li><strong>Student verification (optional):</strong> If you choose to verify, we temporarily store a document image; only extracted metadata is retained after review.</li>
+      <li><strong>Cookie consent choice:</strong> Stored locally in your browser (localStorage) only — not sent to our servers.</li>
     </ul>
 
-    <h2>2. How we use your data</h2>
+    <h2>3. Legal basis for processing <span class="tag">GDPR</span></h2>
+    <p>For users in the European Economic Area (EEA), United Kingdom, and Switzerland, we process your data under the following legal bases:</p>
+    <ul>
+      <li><strong>Contract (Art. 6(1)(b) GDPR):</strong> Account creation, authentication, delivering core features, sending transactional emails.</li>
+      <li><strong>Legitimate interest (Art. 6(1)(f) GDPR):</strong> Platform security, abuse prevention, anonymous analytics to improve the product.</li>
+      <li><strong>Consent (Art. 6(1)(a) GDPR):</strong> Non-essential analytics (only if you select "Accept all" in the cookie banner). You can withdraw consent at any time by clearing your browser's localStorage for this site.</li>
+      <li><strong>Legal obligation (Art. 6(1)(c) GDPR):</strong> Where required by applicable law.</li>
+    </ul>
+
+    <h2>4. How we use your data</h2>
     <ul>
       <li>To create and manage your account.</li>
       <li>To provide age-appropriate features and peer matching.</li>
@@ -52,54 +66,63 @@
       <li>To improve the platform and fix bugs.</li>
     </ul>
 
-    <h2>3. Children's privacy (COPPA / DPDP)</h2>
+    <h2>5. Children's privacy (COPPA / DPDP)</h2>
     <p>Veyra is intended for users aged <strong>13 and older</strong>. We do not knowingly collect personal information from children under 13. If you are under 13, you may not create an account.</p>
     <p>If we discover that a user under 13 has created an account, we will delete their data promptly. If you believe a child under 13 has registered, contact us at <a href="mailto:privacy@veyra.app">privacy@veyra.app</a>.</p>
     <p>Users aged 13–17 are considered minors. We apply additional protections including no behavioural advertising and limited data sharing.</p>
 
-    <h2>4. Data sharing</h2>
+    <h2>6. Cookies &amp; local storage</h2>
+    <p>We use the following technologies:</p>
+    <ul>
+      <li><strong>Session cookie (necessary):</strong> Keeps you signed in during your session. Required for the platform to function.</li>
+      <li><strong>localStorage — preferences (necessary):</strong> Stores your theme, wallpaper, and cookie consent choice locally in your browser. Never sent to our servers.</li>
+      <li><strong>localStorage — analytics (with consent only):</strong> If you accept all cookies, we may store anonymous usage identifiers to understand how features are used. No personal data is transmitted to third-party analytics providers.</li>
+    </ul>
+    <p>You can withdraw consent at any time by going to your browser settings and clearing site data for veyra.app, or by clearing localStorage directly.</p>
+
+    <h2>7. Data sharing</h2>
     <p>We do not sell your personal data. We share data only with:</p>
     <ul>
       <li><strong>Email providers</strong> (Gmail / Brevo) — to send transactional emails.</li>
       <li><strong>Database hosting</strong> (Supabase / PostgreSQL) — to store account and usage data.</li>
-      <li><strong>Platform hosting</strong> (Hugging Face Spaces) — to run the application.</li>
+      <li><strong>Platform hosting</strong> (Render) — to run the application.</li>
       <li><strong>Object storage</strong> (Backblaze B2) — to store uploaded files.</li>
     </ul>
-    <p>All third-party providers are contractually bound to protect your data and may not use it for their own purposes.</p>
+    <p>All third-party providers are contractually bound to protect your data and may not use it for their own purposes. Where required by GDPR, we rely on Standard Contractual Clauses (SCCs) for transfers outside the EEA.</p>
 
-    <h2>5. Data retention</h2>
+    <h2>8. Data retention</h2>
     <ul>
       <li>Active account data is retained for as long as your account exists.</li>
       <li>If you delete your account, your personal data is deleted within 30 days.</li>
       <li>Anonymous usage statistics may be retained indefinitely.</li>
+      <li>Verification document images are deleted immediately after review; only derived metadata is kept.</li>
     </ul>
 
-    <h2>6. Your rights</h2>
-    <p>Depending on your country, you may have the right to:</p>
+    <h2>9. Your rights <span class="tag">GDPR</span></h2>
+    <p>Depending on your country, you have the following rights:</p>
     <ul>
-      <li>Access the personal data we hold about you.</li>
-      <li>Correct inaccurate data.</li>
-      <li>Delete your account and associated data.</li>
-      <li>Object to certain types of processing.</li>
-      <li>Data portability (receive your data in a structured format).</li>
+      <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
+      <li><strong>Rectification:</strong> Correct inaccurate or incomplete data.</li>
+      <li><strong>Erasure ("right to be forgotten"):</strong> Request deletion of your account and all associated personal data.</li>
+      <li><strong>Restriction:</strong> Ask us to limit how we process your data in certain circumstances.</li>
+      <li><strong>Portability:</strong> Receive your data in a structured, machine-readable format.</li>
+      <li><strong>Object:</strong> Object to processing based on legitimate interest at any time.</li>
+      <li><strong>Withdraw consent:</strong> Where processing is based on consent, withdraw it at any time without affecting the lawfulness of prior processing.</li>
     </ul>
-    <p>To exercise any of these rights, email us at <a href="mailto:privacy@veyra.app">privacy@veyra.app</a>.</p>
+    <p>To exercise any of these rights, email <a href="mailto:privacy@veyra.app">privacy@veyra.app</a>. We will respond within 30 days. If you are in the EEA, you also have the right to lodge a complaint with your local Data Protection Authority (DPA).</p>
 
-    <h2>7. Cookies</h2>
-    <p>We use session cookies strictly to keep you logged in. We do not use third-party tracking cookies or advertising cookies.</p>
-
-    <h2>8. Security</h2>
+    <h2>10. Security</h2>
     <p>Passwords are hashed using industry-standard algorithms. Data is transmitted over HTTPS. We implement reasonable technical and organisational measures to protect your data, but no system is 100% secure.</p>
 
-    <h2>9. International users</h2>
-    <p>Veyra is operated from India. By using the platform, you consent to your data being processed in India and on servers operated by the third parties listed above (which may be located in other countries). We endeavour to comply with applicable data protection laws including GDPR (EU), UK GDPR, COPPA (US), and India's DPDP Act 2023.</p>
-    <p><strong>Russia / China:</strong> We do not specifically target users in Russia or China and do not maintain local servers in those jurisdictions. Users in those countries access the platform at their own discretion.</p>
+    <h2>11. International transfers</h2>
+    <p>Veyra is operated from India. By using the platform, you consent to your data being processed in India and on servers operated by the third parties listed above (which may be located in other countries, including the US and EU). For transfers from the EEA, we rely on Standard Contractual Clauses. We endeavour to comply with GDPR (EU), UK GDPR, COPPA (US), and India's DPDP Act 2023.</p>
 
-    <h2>10. Changes to this policy</h2>
+    <h2>12. Changes to this policy</h2>
     <p>We may update this policy as the platform grows. We'll notify you of significant changes via email or an in-app notice. Continued use after changes constitutes acceptance.</p>
 
-    <h2>11. Contact</h2>
-    <p>For any privacy-related questions: <a href="mailto:privacy@veyra.app">privacy@veyra.app</a></p>
+    <h2>13. Contact</h2>
+    <p>For any privacy-related questions or to exercise your rights: <a href="mailto:privacy@veyra.app">privacy@veyra.app</a></p>
+    <p>For EEA users: if you are unsatisfied with our response, you may contact your national Data Protection Authority. A list of EU DPAs is available at <a href="https://edpb.europa.eu/about-edpb/about-edpb/members_en" target="_blank" rel="noopener">edpb.europa.eu</a>.</p>
 
     <hr class="divider">
     <a href="/" class="back">← back to veyra</a>
