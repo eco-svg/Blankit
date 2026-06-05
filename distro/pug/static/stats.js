@@ -369,31 +369,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.textContent = '✕';
 
                 // ── Wire metric class tabs ─────────────────────────────────
-                row.querySelectorAll('.ladder-class-tab').forEach(tab => {
-                    tab.addEventListener('click', () => {
-                        const idx = +tab.dataset.clsIdx;
-                        row.querySelectorAll('.ladder-class-tab').forEach(t => t.classList.toggle('active', +t.dataset.clsIdx === idx));
-                        row.querySelectorAll('.ladder-class-block').forEach(b => b.classList.toggle('hidden', +b.dataset.clsIdx !== idx));
-                        const cls = bm.classes[idx];
-                        if (cls) {
-                            const noteEl = row.querySelector('.ladder-note');
-                            if (noteEl) noteEl.textContent = cls.note || '';
-                            saveClass(skillName, cls.id, cls.label);
-                        }
+                if (saved) {
+                    // Class already locked — tabs are display-only, no switching
+                    row.querySelectorAll('.ladder-class-tab').forEach(t => {
+                        t.style.cursor = 'default';
+                        t.title = `Class locked: ${saved.label}`;
                     });
-                });
+                } else {
+                    row.querySelectorAll('.ladder-class-tab').forEach(tab => {
+                        tab.addEventListener('click', () => {
+                            const idx = +tab.dataset.clsIdx;
+                            row.querySelectorAll('.ladder-class-tab').forEach(t => t.classList.toggle('active', +t.dataset.clsIdx === idx));
+                            row.querySelectorAll('.ladder-class-block').forEach(b => b.classList.toggle('hidden', +b.dataset.clsIdx !== idx));
+                            const cls = bm.classes[idx];
+                            if (cls) {
+                                const noteEl = row.querySelector('.ladder-note');
+                                if (noteEl) noteEl.textContent = cls.note || '';
+                                saveClass(skillName, cls.id, cls.label);
+                                // Lock remaining tabs after selection
+                                row.querySelectorAll('.ladder-class-tab').forEach(t => {
+                                    t.style.cursor = 'default';
+                                    t.title = `Class locked: ${cls.label}`;
+                                    t.replaceWith(t.cloneNode(true)); // remove listeners
+                                });
+                                const lockEl = row.querySelector('.ladder-lock-note');
+                                if (lockEl) lockEl.textContent = `Locked: ${cls.label}`;
+                            }
+                        });
+                    });
+                }
 
                 // ── Wire EXP class chips ───────────────────────────────────
-                row.querySelectorAll('.exp-class-chip').forEach(chip => {
-                    chip.addEventListener('click', () => {
-                        row.querySelectorAll('.exp-class-chip').forEach(c => c.classList.remove('active'));
-                        chip.classList.add('active');
-                        saveClass(skillName, chip.dataset.classId, chip.dataset.classLabel);
-                        // Update lock note text
-                        const lockEl = row.querySelector('.exp-lock-note');
-                        if (lockEl) lockEl.textContent = `Class locked: ${chip.dataset.classLabel}`;
+                if (saved) {
+                    // Already locked — chips are read-only
+                    row.querySelectorAll('.exp-class-chip').forEach(c => {
+                        c.style.cursor = 'default';
+                        c.style.pointerEvents = 'none';
                     });
-                });
+                } else {
+                    row.querySelectorAll('.exp-class-chip').forEach(chip => {
+                        chip.addEventListener('click', () => {
+                            row.querySelectorAll('.exp-class-chip').forEach(c => {
+                                c.classList.remove('active');
+                                c.style.cursor = 'default';
+                                c.style.pointerEvents = 'none';
+                            });
+                            chip.classList.add('active');
+                            saveClass(skillName, chip.dataset.classId, chip.dataset.classLabel);
+                            const lockEl = row.querySelector('.exp-lock-note');
+                            if (lockEl) lockEl.textContent = `Locked: ${chip.dataset.classLabel}`;
+                        });
+                    });
+                }
             });
         });
     }

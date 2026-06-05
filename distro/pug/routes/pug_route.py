@@ -671,7 +671,15 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Never invent a percentage or metric that isn't in the evidence. "
         "   Keep it under 15 words. No rank letter — the badge already shows that. "
         "   For unverified skills, set context to empty string.\n"
-        "6. Simple English throughout. Common words only.\n\n"
+        "6. CLASS DETECTION — extract the specific sub-class from the evidence text when possible.\n"
+        "   Running classes: 1km, 2km, 3km, 4km, 5km, 10km, 15km, 20km, half_marathon, marathon, 25km, 50km, 75km, 100km.\n"
+        "   'run 5km', 'ran 5k', '5km run', 'Couch to 5k' → class_id: '5km', class_label: '5 km'.\n"
+        "   'run 10km' → class_id: '10km', class_label: '10 km'. 'marathon training' → class_id: 'marathon', class_label: 'Marathon (42.2 km)'.\n"
+        "   Powerlifting/Weightlifting → detect lift: squat, bench, deadlift, snatch, clean_jerk, or pl_total.\n"
+        "   Chess → class_id: 'elo', class_label: 'ELO Rating'.\n"
+        "   Language skills → use the exam/language code: cefr, jlpt, hsk, goethe.\n"
+        "   If no specific class can be determined, leave class_id and class_label as empty strings.\n"
+        "7. Simple English throughout. Common words only.\n\n"
         "Output ONLY valid JSON:\n"
         '{"class_official":"role based on achievements (Blank Slate if none)",'
         '"class_playful":"same role with flair",'
@@ -679,7 +687,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         '"personality_desc":"One sentence about their mindset.",'
         '"bio":"One sentence. Who they actually are right now.",'
         '"skills":['
-        '{"name":"plain skill name","rank":"E","verified":false,"context":"one-line real-world anchor for the rank","note":"optional — what to add to unlock rank"}'
+        '{"name":"plain skill name","rank":"E","verified":false,"context":"","note":"","class_id":"5km","class_label":"5 km"}'
         ']}'
     )
 
@@ -708,10 +716,12 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     }
 
     def _enforce_rules(sheet):
-        """Post-process: unverified = rank E, no context, standardised note."""
+        """Post-process: unverified = rank E-, no context, standardised note; preserve class fields."""
         if not sheet or 'skills' not in sheet:
             return sheet
         for s in sheet['skills']:
+            s.setdefault('class_id', '')
+            s.setdefault('class_label', '')
             if s.get('verified') is False:
                 s['rank'] = 'E'
                 s['context'] = ''

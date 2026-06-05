@@ -5,7 +5,13 @@
     <div class="card skills-main" id="sec-skills">
       <div class="card-top-bar">
         <h2 class="card-title" data-i18n="card_skills">Skills</h2>
+        <button id="addSkillBtn" class="skill-add-trigger" title="Add a skill">+</button>
         <button class="skills-flip-btn" id="skillsFlipBtn">Achievements →</button>
+      </div>
+      <!-- Skill adder (inline search) -->
+      <div id="skillAdder" class="skill-adder hidden">
+        <input id="skillAdderInput" class="skill-adder-input" type="text" placeholder="Search skill…" autocomplete="off">
+        <div id="skillAdderResults" class="skill-adder-results"></div>
       </div>
       <div class="skills-main-list" id="skillsMainList">
         <div class="skill-loading" style="margin-top:30px;" data-i18n="skills_empty">Open STATS to generate your skill sheet.</div>
