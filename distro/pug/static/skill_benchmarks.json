@@ -3,141 +3,372 @@
     "type": "metric",
     "classes": [
       {
-        "id": "5km", "label": "5 km",
-        "unit": "min:sec", "note": "Based on 736,928 race results — avg finish 34:29",
+        "id": "1km", "label": "1 km", "unit": "min:sec",
+        "note": "World record ~2:11 (men). Relative to trained runners.",
         "ranks": [
-          { "rank": "F",  "label": "Not started",                          "threshold": null },
-          { "rank": "E",  "label": "First steps — finishing, ~40+ min",    "threshold": "40:00+" },
-          { "rank": "D",  "label": "Top 70–99% — 35–40 min",               "threshold": "35:00–40:00" },
-          { "rank": "C",  "label": "Top 40–70% — 30–35 min",               "threshold": "30:00–35:00" },
-          { "rank": "B",  "label": "Top 20–40% — 25–30 min",               "threshold": "25:00–30:00" },
-          { "rank": "A",  "label": "Top 1–10% — sub-25 min",               "threshold": "under 25:00" },
-          { "rank": "S",  "label": "Top 0.001% — sub-15 min",              "threshold": "under 15:00" },
-          { "rank": "S+", "label": "World record territory — sub-13 min",  "threshold": "under 12:35" }
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~6:00+",      "threshold": "6:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 4:30–6:00",              "threshold": "4:30–6:00" },
+          { "rank": "C",  "label": "Top 40–70% — 3:45–4:30",              "threshold": "3:45–4:30" },
+          { "rank": "B",  "label": "Top 20–40% — 3:10–3:45",              "threshold": "3:10–3:45" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:10",                "threshold": "under 3:10" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:30",               "threshold": "under 2:30" },
+          { "rank": "S+", "label": "World record territory — sub-2:12",   "threshold": "under 2:12" }
         ]
       },
       {
-        "id": "10km", "label": "10 km",
-        "unit": "min:sec", "note": "Top 40% of 10K runners break 1 hour",
+        "id": "2km", "label": "2 km", "unit": "min:sec",
+        "note": "World record ~4:44. Relative to trained runners.",
         "ranks": [
-          { "rank": "F",  "label": "Not started",                          "threshold": null },
-          { "rank": "E",  "label": "First steps — finishing, ~75+ min",    "threshold": "75:00+" },
-          { "rank": "D",  "label": "Top 70–99% — 60–75 min",               "threshold": "60:00–75:00" },
-          { "rank": "C",  "label": "Top 40–70% — under 60 min",            "threshold": "under 60:00" },
-          { "rank": "B",  "label": "Top 20–40% — under 50 min",            "threshold": "under 50:00" },
-          { "rank": "A",  "label": "Top 1–10% — under 40 min",             "threshold": "under 40:00" },
-          { "rank": "S",  "label": "Top 0.001% — sub-28 min",              "threshold": "under 28:00" },
-          { "rank": "S+", "label": "World record territory — sub-27 min",  "threshold": "under 26:17" }
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~12:00+",     "threshold": "12:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 9:00–12:00",             "threshold": "9:00–12:00" },
+          { "rank": "C",  "label": "Top 40–70% — 7:30–9:00",              "threshold": "7:30–9:00" },
+          { "rank": "B",  "label": "Top 20–40% — 6:15–7:30",              "threshold": "6:15–7:30" },
+          { "rank": "A",  "label": "Top 1–10% — sub-6:15",                "threshold": "under 6:15" },
+          { "rank": "S",  "label": "Top 0.001% — sub-5:15",               "threshold": "under 5:15" },
+          { "rank": "S+", "label": "World record territory — sub-4:45",   "threshold": "under 4:45" }
         ]
       },
       {
-        "id": "half_marathon", "label": "Half Marathon",
-        "unit": "hr:min:sec", "note": "Median men 1:59, women 2:24 — top 10% men sub-1:47",
+        "id": "3km", "label": "3 km", "unit": "min:sec",
+        "note": "World record ~7:20 (men).",
         "ranks": [
-          { "rank": "F",  "label": "Not started",                              "threshold": null },
-          { "rank": "E",  "label": "First steps — finishing, ~2:45+",          "threshold": "2:45:00+" },
-          { "rank": "D",  "label": "Top 70–99% — 2:15–2:45",                   "threshold": "2:15:00–2:45:00" },
-          { "rank": "C",  "label": "Top 40–70% — 2:00–2:15",                   "threshold": "2:00:00–2:15:00" },
-          { "rank": "B",  "label": "Top 20–40% — sub-2:00",                    "threshold": "under 2:00:00" },
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~18:00+",     "threshold": "18:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 14:00–18:00",            "threshold": "14:00–18:00" },
+          { "rank": "C",  "label": "Top 40–70% — 11:30–14:00",            "threshold": "11:30–14:00" },
+          { "rank": "B",  "label": "Top 20–40% — 9:30–11:30",             "threshold": "9:30–11:30" },
+          { "rank": "A",  "label": "Top 1–10% — sub-9:30",                "threshold": "under 9:30" },
+          { "rank": "S",  "label": "Top 0.001% — sub-8:00",               "threshold": "under 8:00" },
+          { "rank": "S+", "label": "World record territory — sub-7:21",   "threshold": "under 7:21" }
+        ]
+      },
+      {
+        "id": "4km", "label": "4 km", "unit": "min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~24:00+",     "threshold": "24:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 18:00–24:00",            "threshold": "18:00–24:00" },
+          { "rank": "C",  "label": "Top 40–70% — 15:00–18:00",            "threshold": "15:00–18:00" },
+          { "rank": "B",  "label": "Top 20–40% — 12:30–15:00",            "threshold": "12:30–15:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-12:30",               "threshold": "under 12:30" },
+          { "rank": "S",  "label": "Top 0.001% — sub-10:30",              "threshold": "under 10:30" },
+          { "rank": "S+", "label": "World record territory — sub-10:00",  "threshold": "under 10:00" }
+        ]
+      },
+      {
+        "id": "5km", "label": "5 km", "unit": "min:sec",
+        "note": "Based on 736,928 race results — avg finish 34:29. Top 30% break 30:00, top 10% break 27:00, top 1% sub-18:40.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~40:00+",     "threshold": "40:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 35:00–40:00",            "threshold": "35:00–40:00" },
+          { "rank": "C",  "label": "Top 40–70% — 30:00–35:00",            "threshold": "30:00–35:00" },
+          { "rank": "B",  "label": "Top 20–40% — 25:00–30:00",            "threshold": "25:00–30:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-25:00",               "threshold": "under 25:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-15:00",              "threshold": "under 15:00" },
+          { "rank": "S+", "label": "World record territory — sub-12:36",  "threshold": "under 12:36" }
+        ]
+      },
+      {
+        "id": "10km", "label": "10 km", "unit": "min:sec",
+        "note": "Top 40% of 10K finishers break 1 hour.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~75:00+",     "threshold": "75:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 60:00–75:00",            "threshold": "60:00–75:00" },
+          { "rank": "C",  "label": "Top 40–70% — under 60:00",            "threshold": "under 60:00" },
+          { "rank": "B",  "label": "Top 20–40% — under 50:00",            "threshold": "under 50:00" },
+          { "rank": "A",  "label": "Top 1–10% — under 40:00",             "threshold": "under 40:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-28:00",              "threshold": "under 28:00" },
+          { "rank": "S+", "label": "World record territory — sub-26:18",  "threshold": "under 26:18" }
+        ]
+      },
+      {
+        "id": "15km", "label": "15 km", "unit": "hr:min:sec",
+        "note": "World record ~41:05 (Kenenisa Bekele).",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~1:45:00+",   "threshold": "1:45:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 1:20:00–1:45:00",        "threshold": "1:20:00–1:45:00" },
+          { "rank": "C",  "label": "Top 40–70% — 1:05:00–1:20:00",        "threshold": "1:05:00–1:20:00" },
+          { "rank": "B",  "label": "Top 20–40% — under 1:05:00",          "threshold": "under 1:05:00" },
+          { "rank": "A",  "label": "Top 1–10% — under 52:00",             "threshold": "under 52:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-43:00",              "threshold": "under 43:00" },
+          { "rank": "S+", "label": "World record territory — sub-41:06",  "threshold": "under 41:06" }
+        ]
+      },
+      {
+        "id": "20km", "label": "20 km", "unit": "hr:min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~2:20:00+",   "threshold": "2:20:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 1:50:00–2:20:00",        "threshold": "1:50:00–2:20:00" },
+          { "rank": "C",  "label": "Top 40–70% — 1:35:00–1:50:00",        "threshold": "1:35:00–1:50:00" },
+          { "rank": "B",  "label": "Top 20–40% — under 1:35:00",          "threshold": "under 1:35:00" },
+          { "rank": "A",  "label": "Top 1–10% — under 1:10:00",           "threshold": "under 1:10:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-57:00",              "threshold": "under 57:00" },
+          { "rank": "S+", "label": "World record territory — sub-55:00",  "threshold": "under 55:21" }
+        ]
+      },
+      {
+        "id": "half_marathon", "label": "Half Marathon (21.1 km)", "unit": "hr:min:sec",
+        "note": "Median men 1:59, women 2:24. Top 10% men sub-1:47, top 1% men sub-1:18.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                             "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~2:45:00+",       "threshold": "2:45:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 2:15:00–2:45:00",            "threshold": "2:15:00–2:45:00" },
+          { "rank": "C",  "label": "Top 40–70% — 2:00:00–2:15:00",            "threshold": "2:00:00–2:15:00" },
+          { "rank": "B",  "label": "Top 20–40% — sub-2:00:00",                "threshold": "under 2:00:00" },
           { "rank": "A",  "label": "Top 1–10% — sub-1:47 (men) / 1:57 (women)","threshold": "under 1:47:00" },
-          { "rank": "S",  "label": "Top 0.001% — sub-1:18",                    "threshold": "under 1:18:37" },
-          { "rank": "S+", "label": "World record territory — sub-58 min",      "threshold": "under 57:32" }
+          { "rank": "S",  "label": "Top 0.001% — sub-1:18:00",                "threshold": "under 1:18:38" },
+          { "rank": "S+", "label": "World record territory — sub-58:00",       "threshold": "under 57:32" }
         ]
       },
       {
-        "id": "marathon", "label": "Marathon",
-        "unit": "hr:min:sec", "note": "Median ~4:20–4:30, top 25% under 3:55",
+        "id": "marathon", "label": "Marathon (42.2 km)", "unit": "hr:min:sec",
+        "note": "Median ~4:20–4:30. Top 25% under 3:55. Based on 107M+ race results.",
         "ranks": [
-          { "rank": "F",  "label": "Not started",                          "threshold": null },
-          { "rank": "E",  "label": "First steps — finishing, ~6:00+",      "threshold": "6:00:00+" },
-          { "rank": "D",  "label": "Top 70–99% — 4:45–6:00",               "threshold": "4:45:00–6:00:00" },
-          { "rank": "C",  "label": "Top 40–70% — 4:00–4:45",               "threshold": "4:00:00–4:45:00" },
-          { "rank": "B",  "label": "Top 20–40% — sub-4:00",                "threshold": "under 4:00:00" },
-          { "rank": "A",  "label": "Top 1–10% — sub-3:30",                 "threshold": "under 3:30:00" },
-          { "rank": "S",  "label": "Top 0.001% — sub-2:30",                "threshold": "under 2:30:00" },
-          { "rank": "S+", "label": "World record territory — sub-2:02",    "threshold": "under 2:00:35" }
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing, ~6:00:00+",  "threshold": "6:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 4:45:00–6:00:00",        "threshold": "4:45:00–6:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 4:00:00–4:45:00",        "threshold": "4:00:00–4:45:00" },
+          { "rank": "B",  "label": "Top 20–40% — sub-4:00:00",            "threshold": "under 4:00:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:30:00",             "threshold": "under 3:30:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:30:00",            "threshold": "under 2:30:00" },
+          { "rank": "S+", "label": "World record territory — sub-2:01",   "threshold": "under 2:00:35" }
+        ]
+      },
+      {
+        "id": "25km", "label": "25 km Ultra", "unit": "hr:min:sec",
+        "note": "World record ~1:11:28.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~3:00:00+",   "threshold": "3:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 2:15:00–3:00:00",        "threshold": "2:15:00–3:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 1:50:00–2:15:00",        "threshold": "1:50:00–2:15:00" },
+          { "rank": "B",  "label": "Top 20–40% — 1:35:00–1:50:00",        "threshold": "1:35:00–1:50:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-1:20:00",             "threshold": "under 1:20:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-1:12:00",            "threshold": "under 1:12:00" },
+          { "rank": "S+", "label": "World record territory — sub-1:11:29","threshold": "under 1:11:29" }
+        ]
+      },
+      {
+        "id": "50km", "label": "50 km Ultra", "unit": "hr:min:sec",
+        "note": "World record ~2:43:38.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~7:00:00+",   "threshold": "7:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 5:30:00–7:00:00",        "threshold": "5:30:00–7:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 4:45:00–5:30:00",        "threshold": "4:45:00–5:30:00" },
+          { "rank": "B",  "label": "Top 20–40% — 4:00:00–4:45:00",        "threshold": "4:00:00–4:45:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:15:00",             "threshold": "under 3:15:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:50:00",            "threshold": "under 2:50:00" },
+          { "rank": "S+", "label": "World record territory — sub-2:44",   "threshold": "under 2:43:39" }
+        ]
+      },
+      {
+        "id": "75km", "label": "75 km Ultra", "unit": "hr:min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~11:00:00+",  "threshold": "11:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 9:00:00–11:00:00",       "threshold": "9:00:00–11:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 7:30:00–9:00:00",        "threshold": "7:30:00–9:00:00" },
+          { "rank": "B",  "label": "Top 20–40% — 6:15:00–7:30:00",        "threshold": "6:15:00–7:30:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-5:15:00",             "threshold": "under 5:15:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-4:45:00",            "threshold": "under 4:45:00" },
+          { "rank": "S+", "label": "World record territory — sub-4:32",   "threshold": "under 4:31:13" }
+        ]
+      },
+      {
+        "id": "100km", "label": "100 km Ultra", "unit": "hr:min:sec",
+        "note": "World record ~6:33:11.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~17:00:00+",  "threshold": "17:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 14:00:00–17:00:00",      "threshold": "14:00:00–17:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 11:00:00–14:00:00",      "threshold": "11:00:00–14:00:00" },
+          { "rank": "B",  "label": "Top 20–40% — 9:00:00–11:00:00",       "threshold": "9:00:00–11:00:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-7:30:00",             "threshold": "under 7:30:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-6:45:00",            "threshold": "under 6:45:00" },
+          { "rank": "S+", "label": "World record territory — sub-6:34",   "threshold": "under 6:33:12" }
         ]
       }
     ]
   },
 
-  "Chess": {
+  "Sprinting": {
     "type": "metric",
     "classes": [
       {
-        "id": "chess_com", "label": "Chess.com (Rapid)",
-        "unit": "elo", "note": "Median ~500, top 7% at 1600, top 1% at 2000",
+        "id": "100m", "label": "100 m", "unit": "seconds",
+        "note": "World record 9.58s (Bolt). Relative to trained sprinters.",
         "ranks": [
-          { "rank": "F",  "label": "Knows the rules, unrated",             "threshold": null },
-          { "rank": "E",  "label": "First steps — under 800",              "threshold": "under 800" },
-          { "rank": "D",  "label": "Top 70–99% — 800–1200",                "threshold": "800–1200" },
-          { "rank": "C",  "label": "Top 40–70% — 1200–1500",               "threshold": "1200–1500" },
-          { "rank": "B",  "label": "Top 20–40% — 1500–1800",               "threshold": "1500–1800" },
-          { "rank": "A",  "label": "Top 1–10% — 1800–2200",                "threshold": "1800–2200" },
-          { "rank": "S",  "label": "Top 0.001% — FIDE Master (2300+)",     "threshold": "2300+" },
-          { "rank": "S+", "label": "World record territory — GM (2500+)",  "threshold": "2500+" }
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 16s+ (untrained)",     "threshold": "16s+" },
+          { "rank": "D",  "label": "Top 70–99% — 12.5–16s",              "threshold": "12.5–16s" },
+          { "rank": "C",  "label": "Top 40–70% — 11.0–12.5s",            "threshold": "11.0–12.5s" },
+          { "rank": "B",  "label": "Top 20–40% — 10.5–11.0s",            "threshold": "10.5–11.0s" },
+          { "rank": "A",  "label": "Top 1–10% — 10.0–10.5s (national)", "threshold": "10.0–10.5s" },
+          { "rank": "S",  "label": "Top 0.001% — sub-10.0s (pro)",       "threshold": "under 10.0s" },
+          { "rank": "S+", "label": "World record territory — sub-9.6s",  "threshold": "under 9.59s" }
         ]
       },
       {
-        "id": "lichess", "label": "Lichess (Rapid)",
-        "unit": "elo", "note": "Lichess ratings run ~200–300 pts higher than Chess.com",
+        "id": "200m", "label": "200 m", "unit": "seconds",
+        "note": "World record 19.19s (Bolt).",
         "ranks": [
-          { "rank": "F",  "label": "Knows the rules, unrated",             "threshold": null },
-          { "rank": "E",  "label": "First steps — under 1000",             "threshold": "under 1000" },
-          { "rank": "D",  "label": "Top 70–99% — 1000–1400",               "threshold": "1000–1400" },
-          { "rank": "C",  "label": "Top 40–70% — 1400–1700",               "threshold": "1400–1700" },
-          { "rank": "B",  "label": "Top 20–40% — 1700–2000",               "threshold": "1700–2000" },
-          { "rank": "A",  "label": "Top 1–10% — 2000–2400",                "threshold": "2000–2400" },
-          { "rank": "S",  "label": "Top 0.001% — FIDE Master equivalent",  "threshold": "2400+" },
-          { "rank": "S+", "label": "World record territory — GM level",    "threshold": "2700+" }
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 32s+",                 "threshold": "32s+" },
+          { "rank": "D",  "label": "Top 70–99% — 26–32s",                "threshold": "26–32s" },
+          { "rank": "C",  "label": "Top 40–70% — 22–26s",                "threshold": "22–26s" },
+          { "rank": "B",  "label": "Top 20–40% — 20–22s",                "threshold": "20–22s" },
+          { "rank": "A",  "label": "Top 1–10% — sub-20s (national)",     "threshold": "under 20s" },
+          { "rank": "S",  "label": "Top 0.001% — sub-19.5s (pro)",       "threshold": "under 19.5s" },
+          { "rank": "S+", "label": "World record territory — sub-19.2s", "threshold": "under 19.20s" }
+        ]
+      },
+      {
+        "id": "400m", "label": "400 m", "unit": "seconds",
+        "note": "World record 43.03s.",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 75s+",                 "threshold": "75s+" },
+          { "rank": "D",  "label": "Top 70–99% — 60–75s",                "threshold": "60–75s" },
+          { "rank": "C",  "label": "Top 40–70% — 52–60s",                "threshold": "52–60s" },
+          { "rank": "B",  "label": "Top 20–40% — 47–52s",                "threshold": "47–52s" },
+          { "rank": "A",  "label": "Top 1–10% — sub-47s (national)",     "threshold": "under 47s" },
+          { "rank": "S",  "label": "Top 0.001% — sub-44s (pro)",         "threshold": "under 44s" },
+          { "rank": "S+", "label": "World record territory — sub-43.1s", "threshold": "under 43.04s" }
         ]
       }
     ]
   },
 
-  "Weightlifting": {
+  "Middle Distance": {
     "type": "metric",
     "classes": [
       {
-        "id": "squat", "label": "Squat (1RM / bodyweight)",
-        "unit": "× bodyweight", "note": "Based on 809,986 powerlifting competition entries",
+        "id": "800m", "label": "800 m", "unit": "min:sec",
+        "note": "World record 1:40.91. Based on competition standards.",
         "ranks": [
-          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
-          { "rank": "E",  "label": "First steps — bodyweight movements, learning form","threshold": "BW" },
-          { "rank": "D",  "label": "Top 70–99% of gym-goers — 1.0–1.25× BW",     "threshold": "1.0–1.25× BW" },
-          { "rank": "C",  "label": "Top 40–70% — 1.25–1.5× BW",                  "threshold": "1.25–1.5× BW" },
-          { "rank": "B",  "label": "Top 20–40% — 1.5–2.0× BW",                   "threshold": "1.5–2.0× BW" },
-          { "rank": "A",  "label": "Top 1–10% — 2.0–2.5× BW",                    "threshold": "2.0–2.5× BW" },
-          { "rank": "S",  "label": "Top 0.001% — competitive, 2.5–2.83× BW",     "threshold": "2.5–2.83× BW" },
-          { "rank": "S+", "label": "World record territory — 3.0× BW+",           "threshold": "3.0× BW+" }
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 3:30+",                "threshold": "3:30+" },
+          { "rank": "D",  "label": "Top 70–99% — 2:45–3:30",             "threshold": "2:45–3:30" },
+          { "rank": "C",  "label": "Top 40–70% — 2:15–2:45",             "threshold": "2:15–2:45" },
+          { "rank": "B",  "label": "Top 20–40% — 2:00–2:15",             "threshold": "2:00–2:15" },
+          { "rank": "A",  "label": "Top 1–10% — sub-1:55 (national)",    "threshold": "under 1:55" },
+          { "rank": "S",  "label": "Top 0.001% — sub-1:45 (pro)",        "threshold": "under 1:45" },
+          { "rank": "S+", "label": "World record territory — sub-1:41",  "threshold": "under 1:40.92" }
         ]
       },
       {
-        "id": "bench", "label": "Bench Press (1RM / bodyweight)",
-        "unit": "× bodyweight", "note": "1.25× BW is stronger than ~65–70% of consistent gym-goers",
+        "id": "1500m", "label": "1500 m", "unit": "min:sec",
+        "note": "World record 3:26.00.",
         "ranks": [
-          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
-          { "rank": "E",  "label": "First steps — below bodyweight",              "threshold": "under BW" },
-          { "rank": "D",  "label": "Top 70–99% — 0.75–1.0× BW",                  "threshold": "0.75–1.0× BW" },
-          { "rank": "C",  "label": "Top 40–70% — 1.0–1.25× BW",                  "threshold": "1.0–1.25× BW" },
-          { "rank": "B",  "label": "Top 20–40% — 1.25–1.5× BW",                  "threshold": "1.25–1.5× BW" },
-          { "rank": "A",  "label": "Top 1–10% — 1.5–1.75× BW",                   "threshold": "1.5–1.75× BW" },
-          { "rank": "S",  "label": "Top 0.001% — competitive, 1.75–1.95× BW",    "threshold": "1.75–1.95× BW" },
-          { "rank": "S+", "label": "World record territory — 2.0× BW+",           "threshold": "2.0× BW+" }
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 6:30+",                "threshold": "6:30+" },
+          { "rank": "D",  "label": "Top 70–99% — 5:15–6:30",             "threshold": "5:15–6:30" },
+          { "rank": "C",  "label": "Top 40–70% — 4:30–5:15",             "threshold": "4:30–5:15" },
+          { "rank": "B",  "label": "Top 20–40% — 4:00–4:30",             "threshold": "4:00–4:30" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:50 (national)",    "threshold": "under 3:50" },
+          { "rank": "S",  "label": "Top 0.001% — sub-3:35 (pro)",        "threshold": "under 3:35" },
+          { "rank": "S+", "label": "World record territory — sub-3:27",  "threshold": "under 3:26.01" }
+        ]
+      }
+    ]
+  },
+
+  "Powerlifting": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "total", "label": "Total (S+B+D / bodyweight)", "unit": "× bodyweight",
+        "note": "Based on 809,986 IPF competition entries. Elite 100kg male total ~680+ kg.",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                "threshold": null },
+          { "rank": "E",  "label": "First steps — total under 1.5× BW",          "threshold": "under 1.5× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 1.5–2.0× BW",                   "threshold": "1.5–2.0× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 2.5–3.0× BW",                   "threshold": "2.5–3.0× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 3.0–3.5× BW",                    "threshold": "3.0–3.5× BW" },
+          { "rank": "S",  "label": "Top 0.001% — competitive, 3.5–4.0× BW",      "threshold": "3.5–4.0× BW" },
+          { "rank": "S+", "label": "World record territory — 4.0× BW+",           "threshold": "4.0× BW+" }
         ]
       },
       {
-        "id": "deadlift", "label": "Deadlift (1RM / bodyweight)",
-        "unit": "× bodyweight",
+        "id": "squat", "label": "Squat (1RM / bodyweight)", "unit": "× bodyweight",
         "ranks": [
-          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
-          { "rank": "E",  "label": "First steps — learning form",                 "threshold": "under 1.0× BW" },
-          { "rank": "D",  "label": "Top 70–99% — 1.0–1.5× BW",                   "threshold": "1.0–1.5× BW" },
-          { "rank": "C",  "label": "Top 40–70% — 1.5–2.0× BW",                   "threshold": "1.5–2.0× BW" },
-          { "rank": "B",  "label": "Top 20–40% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
-          { "rank": "A",  "label": "Top 1–10% — 2.5–3.0× BW",                    "threshold": "2.5–3.0× BW" },
-          { "rank": "S",  "label": "Top 0.001% — competitive, 3.0–3.25× BW",     "threshold": "3.0–3.25× BW" },
-          { "rank": "S+", "label": "World record territory — 3.5× BW+",           "threshold": "3.5× BW+" }
+          { "rank": "F",  "label": "Not trained",                                "threshold": null },
+          { "rank": "E",  "label": "First steps — below bodyweight",             "threshold": "under 1.0× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 1.0–1.25× BW",                 "threshold": "1.0–1.25× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.25–1.5× BW",                 "threshold": "1.25–1.5× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.5–2.0× BW",                  "threshold": "1.5–2.0× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 2.5–2.83× BW (competitive)",   "threshold": "2.5–2.83× BW" },
+          { "rank": "S+", "label": "World record territory — 3.0× BW+",          "threshold": "3.0× BW+" }
+        ]
+      },
+      {
+        "id": "bench", "label": "Bench Press (1RM / bodyweight)", "unit": "× bodyweight",
+        "note": "1.25× BW is stronger than ~65–70% of consistent gym-goers.",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                "threshold": null },
+          { "rank": "E",  "label": "First steps — below 0.75× BW",              "threshold": "under 0.75× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 0.75–1.0× BW",                 "threshold": "0.75–1.0× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.0–1.25× BW",                 "threshold": "1.0–1.25× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.25–1.5× BW",                 "threshold": "1.25–1.5× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 1.5–1.75× BW",                  "threshold": "1.5–1.75× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 1.75–1.95× BW (competitive)",  "threshold": "1.75–1.95× BW" },
+          { "rank": "S+", "label": "World record territory — 2.0× BW+",          "threshold": "2.0× BW+" }
+        ]
+      },
+      {
+        "id": "deadlift", "label": "Deadlift (1RM / bodyweight)", "unit": "× bodyweight",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                "threshold": null },
+          { "rank": "E",  "label": "First steps — under 1.0× BW",               "threshold": "under 1.0× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 1.0–1.5× BW",                  "threshold": "1.0–1.5× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.5–2.0× BW",                  "threshold": "1.5–2.0× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 2.0–2.5× BW",                  "threshold": "2.0–2.5× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 2.5–3.0× BW",                   "threshold": "2.5–3.0× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 3.0–3.25× BW (competitive)",   "threshold": "3.0–3.25× BW" },
+          { "rank": "S+", "label": "World record territory — 3.5× BW+",          "threshold": "3.5× BW+" }
+        ]
+      }
+    ]
+  },
+
+  "Olympic Weightlifting": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "snatch", "label": "Snatch (/ bodyweight)", "unit": "× bodyweight",
+        "note": "IWF standards. Elite male 100kg lifter snatches ~180kg (1.8× BW).",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — under 0.5× BW",      "threshold": "under 0.5× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 0.5–0.75× BW",        "threshold": "0.5–0.75× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 0.75–1.0× BW",        "threshold": "0.75–1.0× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.0–1.25× BW",        "threshold": "1.0–1.25× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 1.25–1.5× BW",         "threshold": "1.25–1.5× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 1.5–1.75× BW",        "threshold": "1.5–1.75× BW" },
+          { "rank": "S+", "label": "World record territory — 1.75× BW+","threshold": "1.75× BW+" }
+        ]
+      },
+      {
+        "id": "clean_jerk", "label": "Clean & Jerk (/ bodyweight)", "unit": "× bodyweight",
+        "note": "Elite male 100kg lifter C&J ~220kg (2.2× BW).",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — under 0.6× BW",      "threshold": "under 0.6× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 0.6–0.9× BW",         "threshold": "0.6–0.9× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 0.9–1.25× BW",        "threshold": "0.9–1.25× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.25–1.6× BW",        "threshold": "1.25–1.6× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 1.6–1.9× BW",          "threshold": "1.6–1.9× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 1.9–2.1× BW",         "threshold": "1.9–2.1× BW" },
+          { "rank": "S+", "label": "World record territory — 2.1× BW+", "threshold": "2.1× BW+" }
         ]
       }
     ]
@@ -147,17 +378,337 @@
     "type": "metric",
     "classes": [
       {
-        "id": "calisthenics_skills", "label": "Skills",
-        "unit": "skill milestones", "note": "Planche achieved by ~2% of practitioners, front lever ~3%",
+        "id": "skills", "label": "Skills / Moves", "unit": "skill milestones",
+        "note": "Planche achieved by ~2% of practitioners, front lever ~3%, muscle-up ~10–15% of gym-goers.",
         "ranks": [
-          { "rank": "F",  "label": "Not started",                                         "threshold": null },
-          { "rank": "E",  "label": "First steps — 10 pull-ups, 20 push-ups, basic dips",  "threshold": "10 pull-ups" },
-          { "rank": "D",  "label": "Top 70–99% — 20 pull-ups, L-sit, tuck holds",         "threshold": "20 pull-ups + L-sit" },
-          { "rank": "C",  "label": "Top 40–70% — clean muscle-up, handstand hold",        "threshold": "muscle-up + handstand" },
-          { "rank": "B",  "label": "Top 20–40% — back lever, tuck front lever",           "threshold": "back lever + tuck front lever" },
-          { "rank": "A",  "label": "Top 1–10% — full front lever, straddle planche",      "threshold": "front lever + straddle planche" },
-          { "rank": "S",  "label": "Top 0.001% — full planche, one-arm pull-up",          "threshold": "full planche + 1-arm pull-up" },
-          { "rank": "S+", "label": "World record territory — one-arm planche / Hefesto",  "threshold": "1-arm planche" }
+          { "rank": "F",  "label": "Not started",                                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 10 pull-ups, 20 push-ups, basic dips", "threshold": "10 pull-ups" },
+          { "rank": "D",  "label": "Top 70–99% — 20 pull-ups, L-sit, tuck holds",        "threshold": "20 pull-ups + L-sit" },
+          { "rank": "C",  "label": "Top 40–70% — clean muscle-up, handstand hold",       "threshold": "muscle-up + handstand" },
+          { "rank": "B",  "label": "Top 20–40% — back lever, tuck front lever",          "threshold": "back lever + tuck FL" },
+          { "rank": "A",  "label": "Top 1–10% — full front lever, straddle planche",     "threshold": "front lever + straddle planche" },
+          { "rank": "S",  "label": "Top 0.001% — full planche, one-arm pull-up",         "threshold": "full planche + 1-arm pull-up" },
+          { "rank": "S+", "label": "World record territory — one-arm planche / Hefesto", "threshold": "1-arm planche" }
+        ]
+      }
+    ]
+  },
+
+  "Fitness": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "vertical_jump", "label": "Vertical Jump", "unit": "cm",
+        "note": "Average untrained ~35–40cm (male). NBA combine avg ~70cm. World record ~65.5cm standing.",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 20–30 cm",             "threshold": "20–30 cm" },
+          { "rank": "D",  "label": "Top 70–99% — 35–45 cm",              "threshold": "35–45 cm" },
+          { "rank": "C",  "label": "Top 40–70% — 45–55 cm",              "threshold": "45–55 cm" },
+          { "rank": "B",  "label": "Top 20–40% — 55–65 cm",              "threshold": "55–65 cm" },
+          { "rank": "A",  "label": "Top 1–10% — 65–75 cm",               "threshold": "65–75 cm" },
+          { "rank": "S",  "label": "Top 0.001% — 75–90 cm",              "threshold": "75–90 cm" },
+          { "rank": "S+", "label": "World record territory — 90 cm+",    "threshold": "90 cm+" }
+        ]
+      },
+      {
+        "id": "grip_strength", "label": "Grip Strength", "unit": "kg (dominant hand)",
+        "note": "Average adult ~45–50 kg. World record ~192 kg. Per JAMAR dynamometer.",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — under 30 kg",          "threshold": "under 30 kg" },
+          { "rank": "D",  "label": "Top 70–99% — 30–50 kg",              "threshold": "30–50 kg" },
+          { "rank": "C",  "label": "Top 40–70% — 50–65 kg",              "threshold": "50–65 kg" },
+          { "rank": "B",  "label": "Top 20–40% — 65–80 kg",              "threshold": "65–80 kg" },
+          { "rank": "A",  "label": "Top 1–10% — 80–110 kg",              "threshold": "80–110 kg" },
+          { "rank": "S",  "label": "Top 0.001% — 110–150 kg",            "threshold": "110–150 kg" },
+          { "rank": "S+", "label": "World record territory — 150 kg+",   "threshold": "150 kg+" }
+        ]
+      },
+      {
+        "id": "vo2max", "label": "VO2 Max", "unit": "ml/kg/min",
+        "note": "Average untrained: 35–40 (men), 27–30 (women). Elite endurance: 70–85+ ml/kg/min.",
+        "ranks": [
+          { "rank": "F",  "label": "Sedentary — below average",          "threshold": null },
+          { "rank": "E",  "label": "First steps — 30–35 ml/kg/min",      "threshold": "30–35" },
+          { "rank": "D",  "label": "Top 70–99% — 40–50 ml/kg/min",       "threshold": "40–50" },
+          { "rank": "C",  "label": "Top 40–70% — 50–58 ml/kg/min",       "threshold": "50–58" },
+          { "rank": "B",  "label": "Top 20–40% — 58–65 ml/kg/min",       "threshold": "58–65" },
+          { "rank": "A",  "label": "Top 1–10% — 65–72 ml/kg/min",        "threshold": "65–72" },
+          { "rank": "S",  "label": "Top 0.001% — 72–80 ml/kg/min",       "threshold": "72–80" },
+          { "rank": "S+", "label": "World record territory — 80+ ml/kg/min","threshold": "80+" }
+        ]
+      },
+      {
+        "id": "flexibility", "label": "Flexibility (Sit-and-Reach)", "unit": "cm",
+        "note": "ACSM standards. Average adult 15–20cm.",
+        "ranks": [
+          { "rank": "F",  "label": "No flexibility training",            "threshold": null },
+          { "rank": "E",  "label": "First steps — 0–10 cm",              "threshold": "0–10 cm" },
+          { "rank": "D",  "label": "Top 70–99% — 10–20 cm",              "threshold": "10–20 cm" },
+          { "rank": "C",  "label": "Top 40–70% — 20–30 cm",              "threshold": "20–30 cm" },
+          { "rank": "B",  "label": "Top 20–40% — 30–40 cm",              "threshold": "30–40 cm" },
+          { "rank": "A",  "label": "Top 1–10% — 40–50 cm",               "threshold": "40–50 cm" },
+          { "rank": "S",  "label": "Top 0.001% — 50–60 cm",              "threshold": "50–60 cm" },
+          { "rank": "S+", "label": "World record territory — 60 cm+",    "threshold": "60 cm+" }
+        ]
+      }
+    ]
+  },
+
+  "Tennis": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "atp_wta", "label": "ATP / WTA Ranking", "unit": "ranking (lower = better)",
+        "note": "~5,000 ATP-ranked players globally. ~500 earn a living. NTRP scale used for recreational.",
+        "ranks": [
+          { "rank": "F",  "label": "Not played competitively",               "threshold": null },
+          { "rank": "E",  "label": "First steps — NTRP 1.5–2.5 (beginner)", "threshold": "NTRP 1.5–2.5" },
+          { "rank": "D",  "label": "Top 70–99% — NTRP 3.0–3.5 (club)",      "threshold": "NTRP 3.0–3.5" },
+          { "rank": "C",  "label": "Top 40–70% — NTRP 4.0–4.5",             "threshold": "NTRP 4.0–4.5" },
+          { "rank": "B",  "label": "Top 20–40% — NTRP 5.0+ / ITF ranked",   "threshold": "NTRP 5.0+ / ITF" },
+          { "rank": "A",  "label": "Top 1–10% — ATP/WTA rank 500–1000",      "threshold": "ATP/WTA 500–1000" },
+          { "rank": "S",  "label": "Top 0.001% — ATP/WTA rank 50–200",       "threshold": "ATP/WTA 50–200" },
+          { "rank": "S+", "label": "World record territory — top-20",        "threshold": "ATP/WTA top-20" }
+        ]
+      }
+    ]
+  },
+
+  "Table Tennis": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "ittf", "label": "ITTF / National Rating", "unit": "rating",
+        "note": "~200M casual players globally, ~2,000 elite pros. ITTF rating similar to FIDE ELO.",
+        "ranks": [
+          { "rank": "F",  "label": "Not played competitively",             "threshold": null },
+          { "rank": "E",  "label": "First steps — unrated, basic rallies", "threshold": "unrated" },
+          { "rank": "D",  "label": "Top 70–99% — rated 1200–1500",         "threshold": "1200–1500" },
+          { "rank": "C",  "label": "Top 40–70% — 1500–1800",               "threshold": "1500–1800" },
+          { "rank": "B",  "label": "Top 20–40% — 1800–2000",               "threshold": "1800–2000" },
+          { "rank": "A",  "label": "Top 1–10% — 2000–2300",                "threshold": "2000–2300" },
+          { "rank": "S",  "label": "Top 0.001% — 2300–2500 (national pro)","threshold": "2300–2500" },
+          { "rank": "S+", "label": "World record territory — 2600+",       "threshold": "2600+" }
+        ]
+      }
+    ]
+  },
+
+  "Badminton": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "bwf", "label": "BWF World Ranking", "unit": "ranking (lower = better)",
+        "note": "~100,000 competitive players globally, ~500 tour-level. BWF ranking.",
+        "ranks": [
+          { "rank": "F",  "label": "Not played competitively",             "threshold": null },
+          { "rank": "E",  "label": "First steps — casual play, no rating", "threshold": "unrated" },
+          { "rank": "D",  "label": "Top 70–99% — district / state level",  "threshold": "state-level" },
+          { "rank": "C",  "label": "Top 40–70% — national circuit, BWF 500+","threshold": "BWF 250–500" },
+          { "rank": "B",  "label": "Top 20–40% — BWF 100–250",             "threshold": "BWF 100–250" },
+          { "rank": "A",  "label": "Top 1–10% — BWF 20–100",               "threshold": "BWF 20–100" },
+          { "rank": "S",  "label": "Top 0.001% — BWF top-20",              "threshold": "BWF top-20" },
+          { "rank": "S+", "label": "World record territory — BWF top-5",   "threshold": "BWF top-5" }
+        ]
+      }
+    ]
+  },
+
+  "Squash": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "psa", "label": "PSA World Ranking", "unit": "ranking (lower = better)",
+        "note": "~500 PSA-ranked pros. ~50,000 semi-pro players globally.",
+        "ranks": [
+          { "rank": "F",  "label": "Not played competitively",             "threshold": null },
+          { "rank": "E",  "label": "First steps — recreational beginner",  "threshold": "beginner" },
+          { "rank": "D",  "label": "Top 70–99% — club level",              "threshold": "club level" },
+          { "rank": "C",  "label": "Top 40–70% — national circuit, PSA 400+","threshold": "PSA 200–400" },
+          { "rank": "B",  "label": "Top 20–40% — PSA 50–200",              "threshold": "PSA 50–200" },
+          { "rank": "A",  "label": "Top 1–10% — PSA 20–50",                "threshold": "PSA 20–50" },
+          { "rank": "S",  "label": "Top 0.001% — PSA top-20",              "threshold": "PSA top-20" },
+          { "rank": "S+", "label": "World record territory — PSA top-5",   "threshold": "PSA top-5" }
+        ]
+      }
+    ]
+  },
+
+  "Golf": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "handicap", "label": "Handicap Index", "unit": "handicap (lower = better)",
+        "note": "World average golfer ~15–20. Scratch (0) is top ~2% of registered golfers. USGA data.",
+        "ranks": [
+          { "rank": "F",  "label": "Never played a full round",           "threshold": null },
+          { "rank": "E",  "label": "First steps — handicap 30+",          "threshold": "30+" },
+          { "rank": "D",  "label": "Top 70–99% — handicap 18–28",         "threshold": "18–28" },
+          { "rank": "C",  "label": "Top 40–70% — handicap 10–18",         "threshold": "10–18" },
+          { "rank": "B",  "label": "Top 20–40% — handicap 4–10",          "threshold": "4–10" },
+          { "rank": "A",  "label": "Top 1–10% — handicap 0–4 (scratch)",  "threshold": "0–4" },
+          { "rank": "S",  "label": "Top 0.001% — plus handicap / mini-tour","threshold": "+1 to +5" },
+          { "rank": "S+", "label": "World record territory — PGA Tour",   "threshold": "PGA/DP World Tour" }
+        ]
+      }
+    ]
+  },
+
+  "Bowling": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "average", "label": "Average Score", "unit": "pins per game (max 300)",
+        "note": "Average recreational bowler 130–150. PBA Tour average ~220+.",
+        "ranks": [
+          { "rank": "F",  "label": "Never bowled",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — average 80–120",        "threshold": "80–120" },
+          { "rank": "D",  "label": "Top 70–99% — average 130–160",        "threshold": "130–160" },
+          { "rank": "C",  "label": "Top 40–70% — average 160–185",        "threshold": "160–185" },
+          { "rank": "B",  "label": "Top 20–40% — average 185–200",        "threshold": "185–200" },
+          { "rank": "A",  "label": "Top 1–10% — average 210+",            "threshold": "210+" },
+          { "rank": "S",  "label": "Top 0.001% — average 240+ (PBA)",     "threshold": "240+" },
+          { "rank": "S+", "label": "World record territory — 280+ avg",   "threshold": "280+" }
+        ]
+      }
+    ]
+  },
+
+  "Darts": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "average", "label": "3-Dart Average", "unit": "points per 3 darts (max 180)",
+        "note": "PDC pros average 95–105+. Phil Taylor peak avg ~110. Max per 3 darts = 180.",
+        "ranks": [
+          { "rank": "F",  "label": "Never played",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — average 20–40",         "threshold": "20–40" },
+          { "rank": "D",  "label": "Top 70–99% — average 45–65",          "threshold": "45–65" },
+          { "rank": "C",  "label": "Top 40–70% — average 65–85",          "threshold": "65–85" },
+          { "rank": "B",  "label": "Top 20–40% — average 85–95",          "threshold": "85–95" },
+          { "rank": "A",  "label": "Top 1–10% — average 95–105 (PDC pro)","threshold": "95–105" },
+          { "rank": "S",  "label": "Top 0.001% — average 105–115",        "threshold": "105–115" },
+          { "rank": "S+", "label": "World record territory — 115+ avg",   "threshold": "115+" }
+        ]
+      }
+    ]
+  },
+
+  "Brazilian Jiu-Jitsu": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "belt", "label": "Belt Rank", "unit": "belt (IBJJF standards)",
+        "note": "White→Blue ~2 yrs, Blue→Purple ~2–3 yrs, Purple→Brown ~3–4 yrs, Brown→Black ~1+ yr.",
+        "ranks": [
+          { "rank": "F",  "label": "Never trained",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — White belt",            "threshold": "White" },
+          { "rank": "D",  "label": "Top 70–99% — Blue belt",              "threshold": "Blue" },
+          { "rank": "C",  "label": "Top 40–70% — Purple belt",            "threshold": "Purple" },
+          { "rank": "B",  "label": "Top 20–40% — Brown belt",             "threshold": "Brown" },
+          { "rank": "A",  "label": "Top 1–10% — Black belt",              "threshold": "Black" },
+          { "rank": "S",  "label": "Top 0.001% — Black belt + competition wins","threshold": "Black + titles" },
+          { "rank": "S+", "label": "World record territory — 6th+ degree black","threshold": "6th degree+" }
+        ]
+      }
+    ]
+  },
+
+  "Judo": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "grade", "label": "Kyu / Dan Grade", "unit": "grade (IJF)",
+        "ranks": [
+          { "rank": "F",  "label": "Never trained",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — 6th–7th Kyu",          "threshold": "6–7 Kyu" },
+          { "rank": "D",  "label": "Top 70–99% — 4th–5th Kyu",           "threshold": "4–5 Kyu" },
+          { "rank": "C",  "label": "Top 40–70% — 1st–3rd Kyu",           "threshold": "1–3 Kyu" },
+          { "rank": "B",  "label": "Top 20–40% — 1st Dan (Shodan)",      "threshold": "1st Dan" },
+          { "rank": "A",  "label": "Top 1–10% — 2nd–3rd Dan",            "threshold": "2–3 Dan" },
+          { "rank": "S",  "label": "Top 0.001% — 4th–5th Dan + titles",  "threshold": "4–5 Dan" },
+          { "rank": "S+", "label": "World record territory — 6th+ Dan",  "threshold": "6th Dan+" }
+        ]
+      }
+    ]
+  },
+
+  "Karate": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "grade", "label": "Kyu / Dan Grade", "unit": "grade (WKF)",
+        "ranks": [
+          { "rank": "F",  "label": "Never trained",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — White/Yellow belt",     "threshold": "White–Yellow" },
+          { "rank": "D",  "label": "Top 70–99% — Orange–Green belt",      "threshold": "Orange–Green" },
+          { "rank": "C",  "label": "Top 40–70% — Blue–Brown belt",        "threshold": "Blue–Brown" },
+          { "rank": "B",  "label": "Top 20–40% — 1st Dan (Shodan)",       "threshold": "1st Dan" },
+          { "rank": "A",  "label": "Top 1–10% — 2nd–3rd Dan",             "threshold": "2–3 Dan" },
+          { "rank": "S",  "label": "Top 0.001% — 4th–5th Dan + titles",   "threshold": "4–5 Dan" },
+          { "rank": "S+", "label": "World record territory — 6th+ Dan",   "threshold": "6th Dan+" }
+        ]
+      }
+    ]
+  },
+
+  "Chess": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "elo", "label": "ELO Rating", "unit": "ELO",
+        "note": "Chess.com median ~500, Lichess median ~1400 (different scales). FIDE: 2200+ = FIDE Master, 2500+ = GM. Use either platform — Lichess runs ~200–300pts higher.",
+        "ranks": [
+          { "rank": "F",  "label": "Knows the rules, unrated",             "threshold": null },
+          { "rank": "E",  "label": "First steps — Chess.com under 800 / Lichess under 1000","threshold": "CC <800 / LC <1000" },
+          { "rank": "D",  "label": "Top 70–99% — CC 800–1200 / LC 1000–1400",              "threshold": "CC 800–1200" },
+          { "rank": "C",  "label": "Top 40–70% — CC 1200–1500 / LC 1400–1700",             "threshold": "CC 1200–1500" },
+          { "rank": "B",  "label": "Top 20–40% — CC 1500–1800 / LC 1700–2000",             "threshold": "CC 1500–1800" },
+          { "rank": "A",  "label": "Top 1–10% — CC 1800–2200 / LC 2000–2400",              "threshold": "CC 1800–2200" },
+          { "rank": "S",  "label": "Top 0.001% — FIDE Master (ELO 2200+ / GM 2500+)",      "threshold": "FIDE 2200+" },
+          { "rank": "S+", "label": "World record territory — Super-GM (2700+)",             "threshold": "FIDE 2700+" }
+        ]
+      }
+    ]
+  },
+
+  "Speed Cubing": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "3x3", "label": "3×3 Rubik's Cube", "unit": "seconds",
+        "note": "World record 3.47s (single), ~4.09s official average. WCA data.",
+        "ranks": [
+          { "rank": "F",  "label": "Cannot solve",                        "threshold": null },
+          { "rank": "E",  "label": "First steps — 3+ minutes",            "threshold": "3:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 60–180 seconds",         "threshold": "60–180s" },
+          { "rank": "C",  "label": "Top 40–70% — 30–60 seconds",          "threshold": "30–60s" },
+          { "rank": "B",  "label": "Top 20–40% — 15–30 seconds",          "threshold": "15–30s" },
+          { "rank": "A",  "label": "Top 1–10% — sub-15 seconds",          "threshold": "under 15s" },
+          { "rank": "S",  "label": "Top 0.001% — sub-7 seconds",          "threshold": "under 7s" },
+          { "rank": "S+", "label": "World record territory — sub-4s",     "threshold": "under 3.48s" }
+        ]
+      }
+    ]
+  },
+
+  "Rowing": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "2000m_erg", "label": "2000m Ergometer", "unit": "min:sec",
+        "note": "Concept2 rankings. World record ~5:35. Average club rower ~7:00–7:30.",
+        "ranks": [
+          { "rank": "F",  "label": "Never rowed",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — 9:00+",                 "threshold": "9:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 7:30–9:00",              "threshold": "7:30–9:00" },
+          { "rank": "C",  "label": "Top 40–70% — 7:00–7:30",              "threshold": "7:00–7:30" },
+          { "rank": "B",  "label": "Top 20–40% — 6:30–7:00",              "threshold": "6:30–7:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-6:30 (club competitive)","threshold": "under 6:30" },
+          { "rank": "S",  "label": "Top 0.001% — sub-6:00",               "threshold": "under 6:00" },
+          { "rank": "S+", "label": "World record territory — sub-5:36",   "threshold": "under 5:35" }
         ]
       }
     ]
@@ -167,31 +718,31 @@
     "type": "metric",
     "classes": [
       {
-        "id": "100m", "label": "100 m",
-        "unit": "min:sec",
+        "id": "100m_freestyle", "label": "100m Freestyle", "unit": "min:sec",
+        "note": "World record 46.91s (Cielo). Average club swimmer ~1:00–1:15.",
         "ranks": [
-          { "rank": "F",  "label": "Cannot swim",                                    "threshold": null },
-          { "rank": "E",  "label": "First steps — completing 100m any style",        "threshold": "completing it" },
-          { "rank": "D",  "label": "Top 70–99% — under 2:30",                        "threshold": "under 2:30" },
-          { "rank": "C",  "label": "Top 40–70% — under 1:45",                        "threshold": "under 1:45" },
-          { "rank": "B",  "label": "Top 20–40% — under 1:20",                        "threshold": "under 1:20" },
-          { "rank": "A",  "label": "Top 1–10% — under 1:05 (club competitive)",      "threshold": "under 1:05" },
-          { "rank": "S",  "label": "Top 0.001% — national level, sub-55s",           "threshold": "under 0:55" },
-          { "rank": "S+", "label": "World record territory — sub-47s",               "threshold": "under 0:47" }
+          { "rank": "F",  "label": "Cannot swim",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — completing 100m, 2:30+","threshold": "2:30+" },
+          { "rank": "D",  "label": "Top 70–99% — 1:30–2:30",              "threshold": "1:30–2:30" },
+          { "rank": "C",  "label": "Top 40–70% — 1:10–1:30",              "threshold": "1:10–1:30" },
+          { "rank": "B",  "label": "Top 20–40% — 1:00–1:10",              "threshold": "1:00–1:10" },
+          { "rank": "A",  "label": "Top 1–10% — sub-1:00 (competitive)",  "threshold": "under 1:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-50s (national)",     "threshold": "under 50s" },
+          { "rank": "S+", "label": "World record territory — sub-47s",    "threshold": "under 46.92s" }
         ]
       },
       {
-        "id": "1km", "label": "1 km open water / 40 laps",
-        "unit": "min:sec",
+        "id": "1500m_freestyle", "label": "1500m Freestyle", "unit": "min:sec",
+        "note": "World record ~14:31. Average club swimmer ~18–22 min.",
         "ranks": [
-          { "rank": "F",  "label": "Cannot swim",                             "threshold": null },
-          { "rank": "E",  "label": "First steps — completing 1km",            "threshold": "completing it" },
-          { "rank": "D",  "label": "Top 70–99% — under 30 min",               "threshold": "under 30:00" },
-          { "rank": "C",  "label": "Top 40–70% — under 22 min",               "threshold": "under 22:00" },
-          { "rank": "B",  "label": "Top 20–40% — under 18 min",               "threshold": "under 18:00" },
-          { "rank": "A",  "label": "Top 1–10% — under 14 min (club level)",   "threshold": "under 14:00" },
-          { "rank": "S",  "label": "Top 0.001% — under 10 min",               "threshold": "under 10:00" },
-          { "rank": "S+", "label": "World record territory",                   "threshold": "under 9:00" }
+          { "rank": "F",  "label": "Cannot swim 1500m",                   "threshold": null },
+          { "rank": "E",  "label": "First steps — completing, 30:00+",    "threshold": "30:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 22:00–30:00",            "threshold": "22:00–30:00" },
+          { "rank": "C",  "label": "Top 40–70% — 18:00–22:00",            "threshold": "18:00–22:00" },
+          { "rank": "B",  "label": "Top 20–40% — 16:00–18:00",            "threshold": "16:00–18:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-16:00 (competitive)", "threshold": "under 16:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-15:00",              "threshold": "under 15:00" },
+          { "rank": "S+", "label": "World record territory — sub-14:32",  "threshold": "under 14:31" }
         ]
       }
     ]
@@ -201,17 +752,236 @@
     "type": "metric",
     "classes": [
       {
-        "id": "100km", "label": "100 km (Century)",
-        "unit": "hr:min", "note": "Average recreational cyclist ~4–5 hrs for a century",
+        "id": "100km", "label": "100 km Century", "unit": "hr:min",
+        "note": "Average recreational cyclist ~4–5 hrs. Elite ~2:30.",
         "ranks": [
-          { "rank": "F",  "label": "Cannot ride",                              "threshold": null },
-          { "rank": "E",  "label": "First steps — casual rides up to 20 km",   "threshold": "completing 20km" },
-          { "rank": "D",  "label": "Top 70–99% — completing 100km, ~5:00+",    "threshold": "completing 100km" },
-          { "rank": "C",  "label": "Top 40–70% — 100km under 4:30",            "threshold": "under 4:30" },
-          { "rank": "B",  "label": "Top 20–40% — 100km under 3:30",            "threshold": "under 3:30" },
-          { "rank": "A",  "label": "Top 1–10% — 100km under 2:45 (racing pace)","threshold": "under 2:45" },
-          { "rank": "S",  "label": "Top 0.001% — semi-pro / UCI-rated",         "threshold": "under 2:20" },
-          { "rank": "S+", "label": "World record territory",                    "threshold": "under 1:50" }
+          { "rank": "F",  "label": "Cannot ride / just started",           "threshold": null },
+          { "rank": "E",  "label": "First steps — completing, 5:30+",      "threshold": "5:30+" },
+          { "rank": "D",  "label": "Top 70–99% — 4:30–5:30",               "threshold": "4:30–5:30" },
+          { "rank": "C",  "label": "Top 40–70% — 3:45–4:30",               "threshold": "3:45–4:30" },
+          { "rank": "B",  "label": "Top 20–40% — 3:00–3:45",               "threshold": "3:00–3:45" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:00 (racing pace)",   "threshold": "under 3:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:30 (semi-pro)",     "threshold": "under 2:30" },
+          { "rank": "S+", "label": "World record territory — sub-2:00",    "threshold": "under 2:00" }
+        ]
+      }
+    ]
+  },
+
+  "Rock Climbing": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "sport_yds", "label": "Sport Grade (YDS)", "unit": "Yosemite Decimal System",
+        "note": "From Mountain Project / gym data. 5.10 is roughly top 50% of climbers.",
+        "ranks": [
+          { "rank": "F",  "label": "Never climbed",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — 5.5–5.6",               "threshold": "5.5–5.6" },
+          { "rank": "D",  "label": "Top 70–99% — 5.7–5.9",                "threshold": "5.7–5.9" },
+          { "rank": "C",  "label": "Top 40–70% — 5.10a–5.10d",            "threshold": "5.10a–5.10d" },
+          { "rank": "B",  "label": "Top 20–40% — 5.11a–5.11d",            "threshold": "5.11a–5.11d" },
+          { "rank": "A",  "label": "Top 1–10% — 5.12a–5.12d",             "threshold": "5.12a–5.12d" },
+          { "rank": "S",  "label": "Top 0.001% — 5.13a–5.14a",            "threshold": "5.13a–5.14a" },
+          { "rank": "S+", "label": "World record territory — 5.15+",      "threshold": "5.15+" }
+        ]
+      },
+      {
+        "id": "bouldering_v", "label": "Bouldering (V-Grade)", "unit": "V-grade",
+        "ranks": [
+          { "rank": "F",  "label": "Never climbed",                       "threshold": null },
+          { "rank": "E",  "label": "First steps — V0",                    "threshold": "V0" },
+          { "rank": "D",  "label": "Top 70–99% — V1–V2",                  "threshold": "V1–V2" },
+          { "rank": "C",  "label": "Top 40–70% — V3–V4",                  "threshold": "V3–V4" },
+          { "rank": "B",  "label": "Top 20–40% — V5–V6",                  "threshold": "V5–V6" },
+          { "rank": "A",  "label": "Top 1–10% — V7–V8",                   "threshold": "V7–V8" },
+          { "rank": "S",  "label": "Top 0.001% — V9–V11",                 "threshold": "V9–V11" },
+          { "rank": "S+", "label": "World record territory — V15+",       "threshold": "V15+" }
+        ]
+      }
+    ]
+  },
+
+  "Archery": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "olympic_round", "label": "Olympic Round (72 arrows)", "unit": "score / 720",
+        "note": "World record 700/720. Average club archer ~480–540.",
+        "ranks": [
+          { "rank": "F",  "label": "Never shot competitively",            "threshold": null },
+          { "rank": "E",  "label": "First steps — under 350",             "threshold": "under 350" },
+          { "rank": "D",  "label": "Top 70–99% — 400–500",                "threshold": "400–500" },
+          { "rank": "C",  "label": "Top 40–70% — 500–580",                "threshold": "500–580" },
+          { "rank": "B",  "label": "Top 20–40% — 580–630",                "threshold": "580–630" },
+          { "rank": "A",  "label": "Top 1–10% — 630–670",                 "threshold": "630–670" },
+          { "rank": "S",  "label": "Top 0.001% — 670–700",                "threshold": "670–700" },
+          { "rank": "S+", "label": "World record territory — 700+",       "threshold": "700+" }
+        ]
+      }
+    ]
+  },
+
+  "Triathlon": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "sprint", "label": "Sprint (750m/20km/5km)", "unit": "hr:min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~2:30+",      "threshold": "2:30+" },
+          { "rank": "D",  "label": "Top 70–99% — 2:00–2:30",              "threshold": "2:00–2:30" },
+          { "rank": "C",  "label": "Top 40–70% — 1:45–2:00",              "threshold": "1:45–2:00" },
+          { "rank": "B",  "label": "Top 20–40% — 1:30–1:45",              "threshold": "1:30–1:45" },
+          { "rank": "A",  "label": "Top 1–10% — sub-1:15",                "threshold": "under 1:15" },
+          { "rank": "S",  "label": "Top 0.001% — sub-1:05",               "threshold": "under 1:05" },
+          { "rank": "S+", "label": "World record territory",              "threshold": "under 0:52" }
+        ]
+      },
+      {
+        "id": "olympic", "label": "Olympic (1.5km/40km/10km)", "unit": "hr:min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~4:00+",      "threshold": "4:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 3:15–4:00",              "threshold": "3:15–4:00" },
+          { "rank": "C",  "label": "Top 40–70% — 2:50–3:15",              "threshold": "2:50–3:15" },
+          { "rank": "B",  "label": "Top 20–40% — 2:30–2:50",              "threshold": "2:30–2:50" },
+          { "rank": "A",  "label": "Top 1–10% — sub-2:15",                "threshold": "under 2:15" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:00",               "threshold": "under 2:00" },
+          { "rank": "S+", "label": "World record territory",              "threshold": "under 1:46" }
+        ]
+      },
+      {
+        "id": "ironman", "label": "Ironman (3.8km/180km/42.2km)", "unit": "hr:min:sec",
+        "note": "Avg 12–13 hours. Kona qualifying typically sub-9hrs.",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                         "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing ~17:00+",     "threshold": "17:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 14:00–17:00",            "threshold": "14:00–17:00" },
+          { "rank": "C",  "label": "Top 40–70% — 12:00–14:00",            "threshold": "12:00–14:00" },
+          { "rank": "B",  "label": "Top 20–40% — 11:00–12:00",            "threshold": "11:00–12:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-10:00 (Kona level)",  "threshold": "under 10:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-8:30",               "threshold": "under 8:30" },
+          { "rank": "S+", "label": "World record territory — sub-7:36",   "threshold": "under 7:35" }
+        ]
+      }
+    ]
+  },
+
+  "Typing": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "wpm", "label": "Words Per Minute (WPM)", "unit": "WPM (99%+ accuracy)",
+        "note": "Average office typist 40 WPM. Touch-typist 60–80. Competitive 120+. TypeRacer / Monkeytype data.",
+        "ranks": [
+          { "rank": "F",  "label": "Hunt-and-peck, under 20 WPM",         "threshold": "under 20" },
+          { "rank": "E",  "label": "First steps — 20–35 WPM",             "threshold": "20–35" },
+          { "rank": "D",  "label": "Top 70–99% — 40–60 WPM",              "threshold": "40–60" },
+          { "rank": "C",  "label": "Top 40–70% — 65–85 WPM",              "threshold": "65–85" },
+          { "rank": "B",  "label": "Top 20–40% — 90–110 WPM",             "threshold": "90–110" },
+          { "rank": "A",  "label": "Top 1–10% — 120–140 WPM",             "threshold": "120–140" },
+          { "rank": "S",  "label": "Top 0.001% — 160–180 WPM",            "threshold": "160–180" },
+          { "rank": "S+", "label": "World record territory — 200+ WPM",   "threshold": "200+" }
+        ]
+      }
+    ]
+  },
+
+  "Competitive Programming": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "codeforces", "label": "Codeforces Rating", "unit": "rating",
+        "note": "~1M+ users. Average ~1200. Top 1% (red) ~2000+. ICPC finalist ~2400+.",
+        "ranks": [
+          { "rank": "F",  "label": "No competitive programming",           "threshold": null },
+          { "rank": "E",  "label": "First steps — under 800 (grey)",       "threshold": "under 800" },
+          { "rank": "D",  "label": "Top 70–99% — 800–1200 (green)",        "threshold": "800–1200" },
+          { "rank": "C",  "label": "Top 40–70% — 1200–1600 (cyan/blue)",   "threshold": "1200–1600" },
+          { "rank": "B",  "label": "Top 20–40% — 1600–1900 (violet)",      "threshold": "1600–1900" },
+          { "rank": "A",  "label": "Top 1–10% — 1900–2200 (orange)",       "threshold": "1900–2200" },
+          { "rank": "S",  "label": "Top 0.001% — 2200–2500 (red)",         "threshold": "2200–2500" },
+          { "rank": "S+", "label": "World record territory — 2500+ (ICPC)","threshold": "2500+" }
+        ]
+      }
+    ]
+  },
+
+  "Competitive Mathematics": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "amc_aime_imo", "label": "AMC / AIME / IMO", "unit": "score / qualification",
+        "note": "~300,000 AMC participants. AIME qualifiers top ~5%. IMO participants ~600 globally.",
+        "ranks": [
+          { "rank": "F",  "label": "No competition math experience",       "threshold": null },
+          { "rank": "E",  "label": "First steps — AMC 8 / AMC 10 under 60","threshold": "AMC under 60" },
+          { "rank": "D",  "label": "Top 70–99% — AMC 60–100",              "threshold": "AMC 60–100" },
+          { "rank": "C",  "label": "Top 40–70% — AMC 100–120",             "threshold": "AMC 100–120" },
+          { "rank": "B",  "label": "Top 20–40% — AMC 120–136 (AIME qual)","threshold": "AMC 120+ / AIME" },
+          { "rank": "A",  "label": "Top 1–10% — AIME 7+ / USAMO qual",    "threshold": "AIME 7+" },
+          { "rank": "S",  "label": "Top 0.001% — IMO participant",         "threshold": "IMO" },
+          { "rank": "S+", "label": "World record territory — IMO gold",    "threshold": "IMO Gold" }
+        ]
+      }
+    ]
+  },
+
+  "Valorant": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "rank", "label": "Act Rank", "unit": "rank tier",
+        "note": "Iron ~35%, Bronze ~25%, Silver ~20%, Gold ~12%, Platinum ~5%, Diamond ~2%, Ascendant ~0.7%, Radiant ~0.03%. Riot Games data.",
+        "ranks": [
+          { "rank": "F",  "label": "Unranked",                             "threshold": null },
+          { "rank": "E",  "label": "First steps — Iron 1–3",               "threshold": "Iron" },
+          { "rank": "D",  "label": "Top 70–99% — Bronze–Silver",           "threshold": "Bronze–Silver" },
+          { "rank": "C",  "label": "Top 40–70% — Gold 1–3",                "threshold": "Gold" },
+          { "rank": "B",  "label": "Top 20–40% — Platinum 1–3",            "threshold": "Platinum" },
+          { "rank": "A",  "label": "Top 1–10% — Diamond / Ascendant",      "threshold": "Diamond–Ascendant" },
+          { "rank": "S",  "label": "Top 0.001% — Radiant",                 "threshold": "Radiant" },
+          { "rank": "S+", "label": "World record territory — pro scene",   "threshold": "VCT Pro" }
+        ]
+      }
+    ]
+  },
+
+  "League of Legends": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "rank", "label": "Ranked Tier", "unit": "rank tier",
+        "note": "~150M players. Iron–Bronze ~40%, Silver ~25%, Gold ~20%, Platinum ~10%, Diamond ~2%, Master+ ~0.5%. Riot Games.",
+        "ranks": [
+          { "rank": "F",  "label": "Unranked",                             "threshold": null },
+          { "rank": "E",  "label": "First steps — Iron",                   "threshold": "Iron" },
+          { "rank": "D",  "label": "Top 70–99% — Bronze–Silver",           "threshold": "Bronze–Silver" },
+          { "rank": "C",  "label": "Top 40–70% — Gold",                    "threshold": "Gold" },
+          { "rank": "B",  "label": "Top 20–40% — Platinum–Emerald",        "threshold": "Platinum–Emerald" },
+          { "rank": "A",  "label": "Top 1–10% — Diamond–Master",           "threshold": "Diamond–Master" },
+          { "rank": "S",  "label": "Top 0.001% — Grandmaster / Challenger","threshold": "Grandmaster+" },
+          { "rank": "S+", "label": "World record territory — pro scene",   "threshold": "LCS / LEC Pro" }
+        ]
+      }
+    ]
+  },
+
+  "CS2": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "rank", "label": "CS2 / FACEIT Rating", "unit": "rank / ELO",
+        "note": "CS2 Premier Rating. FACEIT ELO 500–4000. Valve / ESIC data.",
+        "ranks": [
+          { "rank": "F",  "label": "Not played ranked",                    "threshold": null },
+          { "rank": "E",  "label": "First steps — CS2 Rating under 5000",  "threshold": "under 5000" },
+          { "rank": "D",  "label": "Top 70–99% — 5000–10000",              "threshold": "5000–10000" },
+          { "rank": "C",  "label": "Top 40–70% — 10000–15000",             "threshold": "10000–15000" },
+          { "rank": "B",  "label": "Top 20–40% — 15000–20000",             "threshold": "15000–20000" },
+          { "rank": "A",  "label": "Top 1–10% — 20000–25000 / FACEIT 3000+","threshold": "20000+ / FC 3000+" },
+          { "rank": "S",  "label": "Top 0.001% — FACEIT 3500+ (pro level)","threshold": "FACEIT 3500+" },
+          { "rank": "S+", "label": "World record territory — pro scene",   "threshold": "Major Pro" }
         ]
       }
     ]
@@ -221,50 +991,113 @@
     "type": "metric",
     "classes": [
       {
-        "id": "cefr", "label": "CEFR Level",
-        "unit": "level", "note": "Common European Framework of Reference for Languages",
+        "id": "cefr", "label": "CEFR (European languages)", "unit": "level",
         "ranks": [
-          { "rank": "F",  "label": "No exposure",                              "threshold": null },
-          { "rank": "E",  "label": "First steps — A1, basic phrases",          "threshold": "A1" },
-          { "rank": "D",  "label": "Top 70–99% of learners — A2",              "threshold": "A2" },
-          { "rank": "C",  "label": "Top 40–70% — B1, independent speaker",     "threshold": "B1" },
-          { "rank": "B",  "label": "Top 20–40% — B2, fluent in most topics",   "threshold": "B2" },
-          { "rank": "A",  "label": "Top 1–10% — C1, near-native",              "threshold": "C1" },
-          { "rank": "S",  "label": "Top 0.001% — C2 mastery",                  "threshold": "C2" },
-          { "rank": "S+", "label": "Native + interpreter certified",            "threshold": "Interpreter" }
+          { "rank": "F",  "label": "No exposure",                          "threshold": null },
+          { "rank": "E",  "label": "First steps — A1",                     "threshold": "A1" },
+          { "rank": "D",  "label": "Top 70–99% of learners — A2",          "threshold": "A2" },
+          { "rank": "C",  "label": "Top 40–70% — B1, independent speaker", "threshold": "B1" },
+          { "rank": "B",  "label": "Top 20–40% — B2, fluent in most topics","threshold": "B2" },
+          { "rank": "A",  "label": "Top 1–10% — C1, near-native",          "threshold": "C1" },
+          { "rank": "S",  "label": "Top 0.001% — C2 mastery",              "threshold": "C2" },
+          { "rank": "S+", "label": "Native + interpreter certified",        "threshold": "Interpreter" }
+        ]
+      },
+      {
+        "id": "jlpt", "label": "JLPT (Japanese)", "unit": "level (N5→N1)",
+        "note": "~1.8M test-takers annually.",
+        "ranks": [
+          { "rank": "F",  "label": "No Japanese exposure",                 "threshold": null },
+          { "rank": "E",  "label": "First steps — N5",                     "threshold": "N5" },
+          { "rank": "D",  "label": "Top 70–99% of learners — N4",          "threshold": "N4" },
+          { "rank": "C",  "label": "Top 40–70% — N3",                      "threshold": "N3" },
+          { "rank": "B",  "label": "Top 20–40% — N2",                      "threshold": "N2" },
+          { "rank": "A",  "label": "Top 1–10% — N1",                       "threshold": "N1" },
+          { "rank": "S",  "label": "Top 0.001% — N1 near-native",          "threshold": "N1 90%+" },
+          { "rank": "S+", "label": "Native / interpreter level",           "threshold": "Native" }
+        ]
+      },
+      {
+        "id": "hsk", "label": "HSK (Chinese Mandarin)", "unit": "level (1→6)",
+        "note": "~10M test-takers. HSK 6 = advanced fluency.",
+        "ranks": [
+          { "rank": "F",  "label": "No Chinese exposure",                  "threshold": null },
+          { "rank": "E",  "label": "First steps — HSK 1",                  "threshold": "HSK 1" },
+          { "rank": "D",  "label": "Top 70–99% of learners — HSK 2–3",     "threshold": "HSK 2–3" },
+          { "rank": "C",  "label": "Top 40–70% — HSK 4",                   "threshold": "HSK 4" },
+          { "rank": "B",  "label": "Top 20–40% — HSK 5",                   "threshold": "HSK 5" },
+          { "rank": "A",  "label": "Top 1–10% — HSK 6",                    "threshold": "HSK 6" },
+          { "rank": "S",  "label": "Top 0.001% — HSK 6 near-native",       "threshold": "HSK 6 90%+" },
+          { "rank": "S+", "label": "Native / interpreter level",           "threshold": "Native" }
+        ]
+      },
+      {
+        "id": "goethe", "label": "Goethe (German)", "unit": "level (A1→C2)",
+        "note": "~1M test-takers annually. Directly maps to CEFR.",
+        "ranks": [
+          { "rank": "F",  "label": "No German exposure",                   "threshold": null },
+          { "rank": "E",  "label": "First steps — A1",                     "threshold": "A1" },
+          { "rank": "D",  "label": "Top 70–99% of learners — A2",          "threshold": "A2" },
+          { "rank": "C",  "label": "Top 40–70% — B1",                      "threshold": "B1" },
+          { "rank": "B",  "label": "Top 20–40% — B2",                      "threshold": "B2" },
+          { "rank": "A",  "label": "Top 1–10% — C1",                       "threshold": "C1" },
+          { "rank": "S",  "label": "Top 0.001% — C2 mastery",              "threshold": "C2" },
+          { "rank": "S+", "label": "Native / interpreter level",           "threshold": "Interpreter" }
         ]
       }
     ]
   },
 
-  "Guitar": {
-    "type": "exp",
+  "Guitar":           { "type": "exp", "classes": [{"id":"acoustic","label":"Acoustic"},{"id":"electric","label":"Electric"},{"id":"classical","label":"Classical"},{"id":"bass","label":"Bass"}] },
+  "Piano":            { "type": "exp", "classes": [{"id":"piano","label":"Piano"},{"id":"keyboard","label":"Keyboard"}] },
+  "Violin":           { "type": "exp", "classes": [{"id":"violin","label":"Violin"}] },
+  "Drums":            { "type": "exp", "classes": [{"id":"acoustic_drums","label":"Acoustic"},{"id":"electronic_drums","label":"Electronic"}] },
+  "Singing":          { "type": "exp", "classes": [{"id":"classical","label":"Classical"},{"id":"pop","label":"Pop/RnB"},{"id":"rap","label":"Rap/Hip-Hop"}] },
+  "Music Production": { "type": "exp", "classes": [{"id":"beats","label":"Beatmaking"},{"id":"mixing","label":"Mixing"},{"id":"sound_design","label":"Sound Design"}] },
+  "DJing":            { "type": "exp", "classes": [{"id":"dj","label":"DJ"}] },
+  "Dancing":          { "type": "exp", "classes": [{"id":"hip_hop","label":"Hip-Hop"},{"id":"contemporary","label":"Contemporary"},{"id":"classical","label":"Classical/Ballet"},{"id":"folk","label":"Folk/Cultural"}] },
+  "Drawing":          { "type": "exp", "classes": [{"id":"sketch","label":"Sketch"},{"id":"digital","label":"Digital Art"},{"id":"illustration","label":"Illustration"},{"id":"portrait","label":"Portrait"}] },
+  "Painting":         { "type": "exp", "classes": [{"id":"oil","label":"Oil"},{"id":"watercolor","label":"Watercolour"},{"id":"acrylic","label":"Acrylic"},{"id":"digital","label":"Digital"}] },
+  "Photography":      { "type": "exp", "classes": [{"id":"portrait","label":"Portrait"},{"id":"landscape","label":"Landscape"},{"id":"street","label":"Street"},{"id":"product","label":"Product"}] },
+  "Videography":      { "type": "exp", "classes": [{"id":"film","label":"Film/Cinema"},{"id":"documentary","label":"Documentary"},{"id":"content","label":"Content Creation"}] },
+  "Graphic Design":   { "type": "exp", "classes": [{"id":"brand","label":"Branding"},{"id":"ui","label":"UI/UX"},{"id":"motion","label":"Motion"}] },
+  "Cooking":          { "type": "exp", "classes": [{"id":"indian","label":"Indian"},{"id":"italian","label":"Italian/Continental"},{"id":"bbq","label":"BBQ/Grill"},{"id":"asian","label":"Asian"}] },
+  "Baking":           { "type": "exp", "classes": [{"id":"bread","label":"Bread/Sourdough"},{"id":"pastry","label":"Pastry/Cake"},{"id":"cookies","label":"Cookies/Biscuits"}] },
+  "Pottery":          { "type": "exp", "classes": [{"id":"wheel","label":"Wheel Throwing"},{"id":"hand","label":"Hand Building"}] },
+  "Tailoring":        { "type": "exp", "classes": [{"id":"garments","label":"Garments"},{"id":"alterations","label":"Alterations"},{"id":"embroidery","label":"Embroidery"}] },
+  "Woodworking":      { "type": "exp", "classes": [{"id":"furniture","label":"Furniture"},{"id":"carving","label":"Carving"},{"id":"turning","label":"Lathe Turning"}] },
+  "Jewelry Making":   { "type": "exp", "classes": [{"id":"metalsmith","label":"Metalsmithing"},{"id":"beading","label":"Beading/Wire"}] },
+  "Electronics":      { "type": "exp", "classes": [{"id":"repair","label":"Repair"},{"id":"diy","label":"DIY/Build"},{"id":"iot","label":"IoT/Embedded"}] },
+  "Software Development": { "type": "exp", "classes": [{"id":"web","label":"Web"},{"id":"mobile","label":"Mobile"},{"id":"systems","label":"Systems/Backend"},{"id":"ml","label":"ML/AI"},{"id":"game","label":"Game Dev"}] },
+  "Football":         { "type": "exp", "classes": [{"id":"football","label":"Football / Soccer"}] },
+  "Basketball":       { "type": "exp", "classes": [{"id":"basketball","label":"Basketball"}] },
+  "Cricket":          { "type": "exp", "classes": [{"id":"batting","label":"Batting"},{"id":"bowling","label":"Bowling"},{"id":"allround","label":"All-Round"}] },
+  "Volleyball":       { "type": "exp", "classes": [{"id":"volleyball","label":"Volleyball"},{"id":"beach","label":"Beach Volleyball"}] },
+  "Skateboarding":    { "type": "exp", "classes": [{"id":"street","label":"Street"},{"id":"vert","label":"Vert"},{"id":"park","label":"Park"}] },
+  "Surfing":          { "type": "exp", "classes": [{"id":"surfing","label":"Surfing"}] },
+  "Breakdancing":     { "type": "exp", "classes": [{"id":"breaking","label":"Breaking / B-boying"}] },
+  "Parkour":          { "type": "exp", "classes": [{"id":"parkour","label":"Parkour / Freerunning"}] },
+  "Yoga":             { "type": "exp", "classes": [{"id":"hatha","label":"Hatha"},{"id":"ashtanga","label":"Ashtanga"},{"id":"aerial","label":"Aerial"}] },
+  "Writing":          { "type": "exp", "classes": [{"id":"fiction","label":"Fiction"},{"id":"nonfiction","label":"Non-Fiction"},{"id":"poetry","label":"Poetry"}] },
+  "Public Speaking":  { "type": "exp", "classes": [{"id":"debate","label":"Debate"},{"id":"presentation","label":"Presentation"},{"id":"standup","label":"Stand-up Comedy"}] },
+  "Magic":            { "type": "exp", "classes": [{"id":"close_up","label":"Close-Up"},{"id":"stage","label":"Stage"}] },
+  "Poker": {
+    "type": "metric",
     "classes": [
-      { "id": "acoustic",  "label": "Acoustic" },
-      { "id": "electric",  "label": "Electric" },
-      { "id": "classical", "label": "Classical" }
-    ]
-  },
-  "Piano":        { "type": "exp", "classes": [{ "id": "piano",    "label": "Piano" }] },
-  "Singing":      { "type": "exp", "classes": [{ "id": "singing",  "label": "Singing" }] },
-  "Dancing":      { "type": "exp", "classes": [{ "id": "dancing",  "label": "Dancing" }] },
-  "Drawing":      { "type": "exp", "classes": [{ "id": "drawing",  "label": "Drawing" }] },
-  "Photography":  { "type": "exp", "classes": [{ "id": "photo",    "label": "Photography" }] },
-  "Cooking":      { "type": "exp", "classes": [{ "id": "cooking",  "label": "Cooking" }] },
-  "Baking":       { "type": "exp", "classes": [{ "id": "baking",   "label": "Baking" }] },
-  "Pottery":      { "type": "exp", "classes": [{ "id": "pottery",  "label": "Pottery" }] },
-  "Tailoring":    { "type": "exp", "classes": [{ "id": "tailoring","label": "Tailoring" }] },
-  "Football":     { "type": "exp", "classes": [{ "id": "football", "label": "Football" }] },
-  "Badminton":    { "type": "exp", "classes": [{ "id": "badminton","label": "Badminton" }] },
-  "Bodybuilding": { "type": "exp", "classes": [{ "id": "physique", "label": "Physique" }] },
-
-  "Software Development": {
-    "type": "exp",
-    "classes": [
-      { "id": "web",     "label": "Web" },
-      { "id": "mobile",  "label": "Mobile" },
-      { "id": "systems", "label": "Systems" },
-      { "id": "ml",      "label": "ML / AI" }
+      {
+        "id": "roi", "label": "Tournament ROI %", "unit": "% ROI",
+        "note": "Hendon Mob / poker tracking databases. Long-run ROI from volume of live/online tournaments.",
+        "ranks": [
+          { "rank": "F",  "label": "Never played in tournaments",           "threshold": null },
+          { "rank": "E",  "label": "First steps — negative ROI, learning",  "threshold": "negative" },
+          { "rank": "D",  "label": "Top 70–99% — breakeven to +10% ROI",    "threshold": "0–10%" },
+          { "rank": "C",  "label": "Top 40–70% — 10–25% ROI",               "threshold": "10–25%" },
+          { "rank": "B",  "label": "Top 20–40% — 25–40% ROI",               "threshold": "25–40%" },
+          { "rank": "A",  "label": "Top 1–10% — 40–60% ROI / 20+ cashes",  "threshold": "40–60%" },
+          { "rank": "S",  "label": "Top 0.001% — 60%+ ROI / WSOP bracelet","threshold": "60%+ / bracelet" },
+          { "rank": "S+", "label": "World record territory — million+ earnings","threshold": "$1M+ career" }
+        ]
+      }
     ]
   }
 }
