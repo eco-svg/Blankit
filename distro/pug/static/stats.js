@@ -67,7 +67,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!skillAdderRes) return;
         if (!q || !benchmarks) { skillAdderRes.innerHTML = ''; return; }
         const matches = Object.keys(benchmarks).filter(k => k.toLowerCase().includes(q)).slice(0, 7);
-        if (!matches.length) { skillAdderRes.innerHTML = '<div class="skill-adder-empty">No match</div>'; return; }
+        if (!matches.length) {
+            skillAdderRes.innerHTML = '<div class="skill-adder-nomatch">Not in the database yet.<br><span>You can request it from the <strong>Requests</strong> tab.</span></div>';
+            return;
+        }
         skillAdderRes.innerHTML = matches.map(k =>
             `<div class="skill-add-row" data-skill="${k}">
                 <div class="skill-add-row-header">
@@ -309,16 +312,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const expRank  = computeExpRank(exp);
                 const expColor = RANK_COLORS[expRank] || '#888';
                 const { pct, xpInTier, tierSize } = expTierProgress(exp);
-                progressBar = `
-                <div class="skill-progress-track">
-                    <div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div>
-                </div>`;
+                progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div></div>`;
                 nextLine = `<div class="skill-next skill-exp-hint">${fmtExp(xpInTier)} / ${fmtExp(tierSize)} XP</div>`;
                 if (!hasClass) {
                     expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Choose class">···</button>`;
                 }
             } else {
-                // Use locked class if set, else first class
                 const lockedCls = hasClass
                     ? (bm.classes?.find(c => c.id === s.class_id) || bm.classes?.[0])
                     : bm.classes?.[0];
@@ -326,10 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (cls && verified) {
                     const pct  = Math.round(rankProgress(cls, rank) * 100);
                     const next = nextRankInClass(cls, rank);
-                    progressBar = `
-                    <div class="skill-progress-track">
-                        <div class="skill-progress-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}33;"></div>
-                    </div>`;
+                    progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}33;"></div></div>`;
                     if (next && rank !== 'S+') {
                         nextLine = `<div class="skill-next">next <span class="skill-next-rank" style="color:${RANK_COLORS[next.rank]||'#aaa'}">${next.rank}</span> — ${next.label}${next.threshold ? ` <span class="skill-threshold">(${next.threshold})</span>` : ''}</div>`;
                     } else if (rank === 'S+') {
@@ -345,13 +341,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        return `
-        <div class="skill-row skill-row-prog" data-skill="${s.name}">
+        // Layout: rank badge lives at the right end of the progress bar row
+        const nameRow = `
             <div class="skill-row-main">
                 <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
-                <div class="skill-row-right">${expandBtn}${badgeHtml}</div>
-            </div>
-            ${progressBar}
+                ${expandBtn ? `<div class="skill-row-right">${expandBtn}</div>` : ''}
+            </div>`;
+
+        const barRow = bm
+            ? `<div class="skill-bar-row">${progressBar || '<div class="skill-progress-track"><div class="skill-progress-fill" style="width:0%"></div></div>'}${badgeHtml}</div>`
+            : `<div class="skill-row-main" style="margin-top:2px;"><span></span><div class="skill-row-right">${badgeHtml}</div></div>`;
+
+        return `
+        <div class="skill-row skill-row-prog" data-skill="${s.name}">
+            ${nameRow}
+            ${barRow}
             ${nextLine}
         </div>`;
     }

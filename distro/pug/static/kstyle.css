@@ -3828,6 +3828,14 @@ button.nav-pill:not(.btn-ghost):hover {
   overflow-y: auto;
 }
 .skill-adder-empty { font-size: 0.75rem; opacity: 0.4; padding: 6px 12px; }
+.skill-adder-nomatch {
+  font-size: 0.74rem;
+  color: var(--text-dim);
+  opacity: 0.6;
+  padding: 8px 12px;
+  line-height: 1.55;
+}
+.skill-adder-nomatch strong { color: var(--accent); opacity: 1; font-weight: 600; }
 .skill-add-row {
   display: flex;
   flex-direction: column;
@@ -5293,6 +5301,19 @@ button.nav-pill:not(.btn-ghost):hover {
   height: 100%;
   border-radius: 2px;
   transition: width 0.5s ease;
+}
+.skill-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.skill-bar-row .skill-progress-track {
+  flex: 1;
+}
+.skill-bar-row .rank-badge {
+  font-size: 0.72rem;
+  min-width: 22px;
+  flex-shrink: 0;
 }
 .skill-next {
   font-family: var(--font-mono);

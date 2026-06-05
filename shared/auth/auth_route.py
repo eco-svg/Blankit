@@ -412,6 +412,11 @@ def login():
     if not user or not check_password_hash(user.password_hash, password):
         return jsonify({'error': 'invalid credentials'}), 401
 
+    # One-time migration: old accounts stored 'ThePug', now renamed to 'Ocellus'
+    if user.distro == 'ThePug' and distro == 'Ocellus':
+        user.distro = 'Ocellus'
+        db.session.commit()
+
     if user.distro != distro:
         return jsonify({'error': 'invalid credentials'}), 401
 
