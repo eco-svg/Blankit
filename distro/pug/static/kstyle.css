@@ -5237,6 +5237,18 @@ button.nav-pill:not(.btn-ghost):hover {
   border: 1px solid rgba(255,255,255,0.1);
   color: var(--text-dim);
   letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  user-select: none;
+}
+.exp-class-chip:hover {
+  border-color: rgba(255,255,255,0.3);
+  color: var(--text);
+}
+.exp-class-chip.active {
+  border-color: #ffb700;
+  color: #ffb700;
+  background: rgba(255,183,0,0.08);
 }
 .exp-ladder-icon {
   font-size: 1rem;

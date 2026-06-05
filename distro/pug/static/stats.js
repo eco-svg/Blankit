@@ -49,6 +49,33 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
+    // ── Class selection (localStorage until backend persists it) ─────────────
+    function _classKey(skillName) { return `veyra_sc_${skillName}`; }
+
+    function getSavedClass(skillName) {
+        try { return JSON.parse(localStorage.getItem(_classKey(skillName))); } catch { return null; }
+    }
+
+    function saveClass(skillName, classId, classLabel) {
+        try { localStorage.setItem(_classKey(skillName), JSON.stringify({ id: classId, label: classLabel })); } catch {}
+        _applyClassTag(skillName, classLabel);
+    }
+
+    function _applyClassTag(skillName, classLabel) {
+        if (!skillsMainList) return;
+        const row = skillsMainList.querySelector(`.skill-row-prog[data-skill="${CSS.escape(skillName)}"]`);
+        if (!row) return;
+        let tag = row.querySelector('.skill-class-tag');
+        if (!tag) {
+            const nameEl = row.querySelector('.skill-name');
+            if (!nameEl) return;
+            tag = document.createElement('span');
+            tag.className = 'skill-class-tag';
+            nameEl.insertAdjacentElement('afterend', tag);
+        }
+        tag.textContent = `· ${classLabel}`;
+    }
+
     function fmtExp(n) {
         if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
         if (n >= 1000)    return Math.round(n / 1000) + 'K';
@@ -237,12 +264,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function expLadderHTML(bm, activeClassId) {
         const chips = (bm.classes || []).map(c => {
             const active = c.id === activeClassId;
-            return `<span class="exp-class-chip${active ? ' active' : ''}">${c.label}</span>`;
+            return `<span class="exp-class-chip${active ? ' active' : ''}" data-class-id="${c.id}" data-class-label="${c.label}">${c.label}</span>`;
         }).join('');
 
+        const savedLabel = getSavedClass(activeClassId ? bm?.classes?.find(c => c.id === activeClassId)?.label || '' : '')?.label || '';
         const lockNote = activeClassId
-            ? `<span style="opacity:0.45;font-size:0.68rem;">Class locked — select once to track separately.</span>`
-            : `<span style="opacity:0.45;font-size:0.68rem;">Choose a class to track. Selection is permanent per entry.</span>`;
+            ? `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Class locked: ${bm?.classes?.find(c=>c.id===activeClassId)?.label||activeClassId}</span>`
+            : `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Tap a class to select it — one-time per skill entry.</span>`;
 
         return `
         <div class="skill-ladder skill-ladder-exp">
@@ -270,25 +298,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bm        = getBenchmark(skillName);
                 if (!bm) return;
 
+                // Use saved class if set
+                const saved = getSavedClass(skillName);
+                const activeClassId = saved?.id || '';
+
                 const rankEl = row.querySelector('.rank-badge');
                 const rank   = rankEl?.textContent?.trim() === '?' ? 'F' : (rankEl?.textContent?.trim() || 'F');
                 const html   = bm.type === 'exp'
-                    ? expLadderHTML(bm, btn.dataset.classId || '')
+                    ? expLadderHTML(bm, activeClassId)
                     : metricLadderHTML(skillName, rank, bm);
 
                 row.insertAdjacentHTML('beforeend', html);
                 btn.textContent = '✕';
 
-                // Wire class tab switching
+                // ── Wire metric class tabs ─────────────────────────────────
                 row.querySelectorAll('.ladder-class-tab').forEach(tab => {
                     tab.addEventListener('click', () => {
                         const idx = +tab.dataset.clsIdx;
                         row.querySelectorAll('.ladder-class-tab').forEach(t => t.classList.toggle('active', +t.dataset.clsIdx === idx));
                         row.querySelectorAll('.ladder-class-block').forEach(b => b.classList.toggle('hidden', +b.dataset.clsIdx !== idx));
-                        // Update note
                         const cls = bm.classes[idx];
-                        const noteEl = row.querySelector('.ladder-note');
-                        if (noteEl) noteEl.textContent = cls?.note || '';
+                        if (cls) {
+                            const noteEl = row.querySelector('.ladder-note');
+                            if (noteEl) noteEl.textContent = cls.note || '';
+                            saveClass(skillName, cls.id, cls.label);
+                        }
+                    });
+                });
+
+                // ── Wire EXP class chips ───────────────────────────────────
+                row.querySelectorAll('.exp-class-chip').forEach(chip => {
+                    chip.addEventListener('click', () => {
+                        row.querySelectorAll('.exp-class-chip').forEach(c => c.classList.remove('active'));
+                        chip.classList.add('active');
+                        saveClass(skillName, chip.dataset.classId, chip.dataset.classLabel);
+                        // Update lock note text
+                        const lockEl = row.querySelector('.exp-lock-note');
+                        if (lockEl) lockEl.textContent = `Class locked: ${chip.dataset.classLabel}`;
                     });
                 });
             });
@@ -316,6 +362,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const sorted = [...sheet.skills].sort((a, b) =>
             RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
         skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s, true)).join('');
+        // Apply any previously saved class selections
+        sorted.forEach(s => {
+            const saved = getSavedClass(s.name);
+            if (saved?.label) _applyClassTag(s.name, saved.label);
+        });
         wireSkillLadderBtns();
     }
 
