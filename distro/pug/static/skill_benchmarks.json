@@ -1,197 +1,270 @@
 {
   "Running": {
     "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "Not started",                          "proof": null },
-      { "rank": "E",  "label": "First steps — occasional jog, 1–2 km", "proof": "Any logged run" },
-      { "rank": "D",  "label": "Top 70–99% of runners — 5 km non-stop","proof": "5K log or screenshot" },
-      { "rank": "C",  "label": "Top 40–70% — 10 km, runs regularly",   "proof": "10K Strava / NRC proof" },
-      { "rank": "B",  "label": "Top 20–40% — half marathon (21.1 km)", "proof": "Race result or long run log" },
-      { "rank": "A",  "label": "Top 1–10% — full marathon finisher",   "proof": "Race bib + finish time" },
-      { "rank": "S",  "label": "Top 0.001% — sub-3 hr marathon",       "proof": "Official race certificate" },
-      { "rank": "S+", "label": "Beyond world record territory",         "proof": "Elite race result" }
+    "classes": [
+      {
+        "id": "5km", "label": "5 km",
+        "unit": "min:sec", "note": "Based on 736,928 race results — avg finish 34:29",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                          "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing, ~40+ min",    "threshold": "40:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 35–40 min",               "threshold": "35:00–40:00" },
+          { "rank": "C",  "label": "Top 40–70% — 30–35 min",               "threshold": "30:00–35:00" },
+          { "rank": "B",  "label": "Top 20–40% — 25–30 min",               "threshold": "25:00–30:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-25 min",               "threshold": "under 25:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-15 min",              "threshold": "under 15:00" },
+          { "rank": "S+", "label": "World record territory — sub-13 min",  "threshold": "under 12:35" }
+        ]
+      },
+      {
+        "id": "10km", "label": "10 km",
+        "unit": "min:sec", "note": "Top 40% of 10K runners break 1 hour",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                          "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing, ~75+ min",    "threshold": "75:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 60–75 min",               "threshold": "60:00–75:00" },
+          { "rank": "C",  "label": "Top 40–70% — under 60 min",            "threshold": "under 60:00" },
+          { "rank": "B",  "label": "Top 20–40% — under 50 min",            "threshold": "under 50:00" },
+          { "rank": "A",  "label": "Top 1–10% — under 40 min",             "threshold": "under 40:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-28 min",              "threshold": "under 28:00" },
+          { "rank": "S+", "label": "World record territory — sub-27 min",  "threshold": "under 26:17" }
+        ]
+      },
+      {
+        "id": "half_marathon", "label": "Half Marathon",
+        "unit": "hr:min:sec", "note": "Median men 1:59, women 2:24 — top 10% men sub-1:47",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                              "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing, ~2:45+",          "threshold": "2:45:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 2:15–2:45",                   "threshold": "2:15:00–2:45:00" },
+          { "rank": "C",  "label": "Top 40–70% — 2:00–2:15",                   "threshold": "2:00:00–2:15:00" },
+          { "rank": "B",  "label": "Top 20–40% — sub-2:00",                    "threshold": "under 2:00:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-1:47 (men) / 1:57 (women)","threshold": "under 1:47:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-1:18",                    "threshold": "under 1:18:37" },
+          { "rank": "S+", "label": "World record territory — sub-58 min",      "threshold": "under 57:32" }
+        ]
+      },
+      {
+        "id": "marathon", "label": "Marathon",
+        "unit": "hr:min:sec", "note": "Median ~4:20–4:30, top 25% under 3:55",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                          "threshold": null },
+          { "rank": "E",  "label": "First steps — finishing, ~6:00+",      "threshold": "6:00:00+" },
+          { "rank": "D",  "label": "Top 70–99% — 4:45–6:00",               "threshold": "4:45:00–6:00:00" },
+          { "rank": "C",  "label": "Top 40–70% — 4:00–4:45",               "threshold": "4:00:00–4:45:00" },
+          { "rank": "B",  "label": "Top 20–40% — sub-4:00",                "threshold": "under 4:00:00" },
+          { "rank": "A",  "label": "Top 1–10% — sub-3:30",                 "threshold": "under 3:30:00" },
+          { "rank": "S",  "label": "Top 0.001% — sub-2:30",                "threshold": "under 2:30:00" },
+          { "rank": "S+", "label": "World record territory — sub-2:02",    "threshold": "under 2:00:35" }
+        ]
+      }
     ]
   },
-  "Swimming": {
-    "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "Cannot swim",                               "proof": null },
-      { "rank": "E",  "label": "First steps — basic strokes, 25 m",         "proof": "Video or instructor note" },
-      { "rank": "D",  "label": "Top 70–99% — 100 m continuous",             "proof": "Pool session log" },
-      { "rank": "C",  "label": "Top 40–70% — 1 km open water or 40 laps",  "proof": "GPS or pool log" },
-      { "rank": "B",  "label": "Top 20–40% — 5 km open water",             "proof": "Event result or GPS log" },
-      { "rank": "A",  "label": "Top 1–10% — competitive club swimmer",     "proof": "Race times + club membership" },
-      { "rank": "S",  "label": "Top 0.001% — national / regional level",   "proof": "Official meet results" },
-      { "rank": "S+", "label": "Beyond world record territory",             "proof": "National ranking proof" }
-    ]
-  },
-  "Cycling": {
-    "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "Cannot ride",                                "proof": null },
-      { "rank": "E",  "label": "First steps — casual rides, 5–10 km",        "proof": "Any activity log" },
-      { "rank": "D",  "label": "Top 70–99% of cyclists — 30 km ride",        "proof": "Strava log" },
-      { "rank": "C",  "label": "Top 40–70% — 100 km century ride",           "proof": "GPS track" },
-      { "rank": "B",  "label": "Top 20–40% — 200 km endurance ride",         "proof": "GPS track + completion" },
-      { "rank": "A",  "label": "Top 1–10% — gran fondo finisher or racer",   "proof": "Event certificate" },
-      { "rank": "S",  "label": "Top 0.001% — semi-professional / UCI-rated", "proof": "Race results + license" },
-      { "rank": "S+", "label": "Beyond world record territory",               "proof": "Pro contract or UCI profile" }
-    ]
-  },
-  "Guitar": {
-    "type": "practice",
-    "ranks": [
-      { "rank": "F",  "label": "Never played",                                          "proof": null },
-      { "rank": "E",  "label": "First steps — open chords, simple strumming",           "proof": "Short clip of chord changes" },
-      { "rank": "D",  "label": "Top 70–99% of guitarists — strums full songs cleanly",  "proof": "Video of 2–3 songs" },
-      { "rank": "C",  "label": "Top 40–70% — barre chords, scales, fingerpicking",      "proof": "Video with barre shapes + scale run" },
-      { "rank": "B",  "label": "Top 20–40% — improvises, plays lead lines",             "proof": "Jam or solo recording" },
-      { "rank": "A",  "label": "Top 1–10% — composes, performs, or teaches",            "proof": "Original piece or live video" },
-      { "rank": "S",  "label": "Top 0.001% — professional performer / recording artist","proof": "Published recordings or credits" },
-      { "rank": "S+", "label": "Beyond world record territory",                          "proof": "Internationally recognized work" }
-    ]
-  },
-  "Piano": {
-    "type": "practice",
-    "ranks": [
-      { "rank": "F",  "label": "Never played",                                        "proof": null },
-      { "rank": "E",  "label": "First steps — simple melodies, both hands",           "proof": "Short clip" },
-      { "rank": "D",  "label": "Top 70–99% of pianists — Grade 2–3 pieces",          "proof": "Video of graded piece" },
-      { "rank": "C",  "label": "Top 40–70% — Grade 5–6, sight-reads basic pieces",   "proof": "Video of Grade 5+ piece" },
-      { "rank": "B",  "label": "Top 20–40% — advanced repertoire (Beethoven level)",  "proof": "Recording of advanced piece" },
-      { "rank": "A",  "label": "Top 1–10% — performs for audiences, competition-ready","proof": "Concert or recital video" },
-      { "rank": "S",  "label": "Top 0.001% — professional concert pianist",           "proof": "Competition result or diploma" },
-      { "rank": "S+", "label": "Beyond world record territory",                        "proof": "Internationally recognized performance" }
-    ]
-  },
+
   "Chess": {
     "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "Knows the rules",                           "proof": null },
-      { "rank": "E",  "label": "First steps — ELO below 800",               "proof": "Chess.com / Lichess profile" },
-      { "rank": "D",  "label": "Top 70–99% of rated players — ELO 800–1200","proof": "Rated account screenshot" },
-      { "rank": "C",  "label": "Top 40–70% — ELO 1200–1500",               "proof": "Rated account screenshot" },
-      { "rank": "B",  "label": "Top 20–40% — ELO 1500–1800",               "proof": "Chess.com / FIDE proof" },
-      { "rank": "A",  "label": "Top 1–10% — ELO 1800–2100 (Expert level)", "proof": "FIDE or national rating" },
-      { "rank": "S",  "label": "Top 0.001% — FIDE Master (ELO 2200+)",     "proof": "FIDE profile" },
-      { "rank": "S+", "label": "Beyond world record — GM / world-class",    "proof": "FIDE title" }
+    "classes": [
+      {
+        "id": "chess_com", "label": "Chess.com (Rapid)",
+        "unit": "elo", "note": "Median ~500, top 7% at 1600, top 1% at 2000",
+        "ranks": [
+          { "rank": "F",  "label": "Knows the rules, unrated",             "threshold": null },
+          { "rank": "E",  "label": "First steps — under 800",              "threshold": "under 800" },
+          { "rank": "D",  "label": "Top 70–99% — 800–1200",                "threshold": "800–1200" },
+          { "rank": "C",  "label": "Top 40–70% — 1200–1500",               "threshold": "1200–1500" },
+          { "rank": "B",  "label": "Top 20–40% — 1500–1800",               "threshold": "1500–1800" },
+          { "rank": "A",  "label": "Top 1–10% — 1800–2200",                "threshold": "1800–2200" },
+          { "rank": "S",  "label": "Top 0.001% — FIDE Master (2300+)",     "threshold": "2300+" },
+          { "rank": "S+", "label": "World record territory — GM (2500+)",  "threshold": "2500+" }
+        ]
+      },
+      {
+        "id": "lichess", "label": "Lichess (Rapid)",
+        "unit": "elo", "note": "Lichess ratings run ~200–300 pts higher than Chess.com",
+        "ranks": [
+          { "rank": "F",  "label": "Knows the rules, unrated",             "threshold": null },
+          { "rank": "E",  "label": "First steps — under 1000",             "threshold": "under 1000" },
+          { "rank": "D",  "label": "Top 70–99% — 1000–1400",               "threshold": "1000–1400" },
+          { "rank": "C",  "label": "Top 40–70% — 1400–1700",               "threshold": "1400–1700" },
+          { "rank": "B",  "label": "Top 20–40% — 1700–2000",               "threshold": "1700–2000" },
+          { "rank": "A",  "label": "Top 1–10% — 2000–2400",                "threshold": "2000–2400" },
+          { "rank": "S",  "label": "Top 0.001% — FIDE Master equivalent",  "threshold": "2400+" },
+          { "rank": "S+", "label": "World record territory — GM level",    "threshold": "2700+" }
+        ]
+      }
     ]
   },
-  "Software Development": {
-    "type": "portfolio",
-    "ranks": [
-      { "rank": "F",  "label": "No coding experience",                                       "proof": null },
-      { "rank": "E",  "label": "First steps — basic scripts, hello world",                   "proof": "GitHub repo (any language)" },
-      { "rank": "D",  "label": "Top 70–99% of developers — complete project, one language",  "proof": "GitHub repo with README" },
-      { "rank": "C",  "label": "Top 40–70% — multi-file app, deployed and live",             "proof": "Live URL + GitHub" },
-      { "rank": "B",  "label": "Top 20–40% — production app with real users",                "proof": "Live app + active users or metrics" },
-      { "rank": "A",  "label": "Top 1–10% — complex systems, open source, or team lead",     "proof": "Significant repo / merged PRs" },
-      { "rank": "S",  "label": "Top 0.001% — shipped product at scale, revenue or team",     "proof": "Revenue proof or team + code" },
-      { "rank": "S+", "label": "Beyond world record — top-tier industry recognition",         "proof": "Major project or award" }
-    ]
-  },
-  "Drawing": {
-    "type": "portfolio",
-    "ranks": [
-      { "rank": "F",  "label": "No drawing practice",                                        "proof": null },
-      { "rank": "E",  "label": "First steps — basic shapes, learning fundamentals",           "proof": "Any drawing photo" },
-      { "rank": "D",  "label": "Top 70–99% of artists — realistic portraits or objects from reference","proof": "3+ reference drawings" },
-      { "rank": "C",  "label": "Top 40–70% — original scenes, developing consistent style",  "proof": "Portfolio of 5+ originals" },
-      { "rank": "B",  "label": "Top 20–40% — commission-worthy, clients pay for work",       "proof": "Paid commission or published work" },
-      { "rank": "A",  "label": "Top 1–10% — gallery or professional quality",                "proof": "Exhibition or client portfolio" },
-      { "rank": "S",  "label": "Top 0.001% — published / widely recognized artist",          "proof": "Published prints or brand credits" },
-      { "rank": "S+", "label": "Beyond world record — world-class illustrator",              "proof": "Major publication or award" }
-    ]
-  },
-  "Photography": {
-    "type": "portfolio",
-    "ranks": [
-      { "rank": "F",  "label": "Casual phone snaps, no intent",                              "proof": null },
-      { "rank": "E",  "label": "First steps — learning composition, rule of thirds",          "proof": "5+ shots showing intent" },
-      { "rank": "D",  "label": "Top 70–99% of photographers — manual mode, consistent shots","proof": "Portfolio of 10+ images" },
-      { "rank": "C",  "label": "Top 40–70% — edits, shoots themes, one clear style",         "proof": "Edited themed portfolio" },
-      { "rank": "B",  "label": "Top 20–40% — paid shoots, clients seek them out",            "proof": "Invoice or testimonial" },
-      { "rank": "A",  "label": "Top 1–10% — published or regular editorial / commercial work","proof": "Published credit or portfolio site" },
-      { "rank": "S",  "label": "Top 0.001% — award-winning or internationally featured",     "proof": "Competition win or editorial credit" },
-      { "rank": "S+", "label": "Beyond world record — world-class photographer",             "proof": "Major publication or agency" }
-    ]
-  },
-  "Cooking": {
-    "type": "subjective",
-    "ranks": [
-      { "rank": "F",  "label": "Can't cook",                                                 "proof": null },
-      { "rank": "E",  "label": "First steps — basic dishes, learning the basics",            "proof": "Photo of cooked meal" },
-      { "rank": "D",  "label": "Top 70–99% of cooks — consistent meals, guests approve",    "proof": "Meal photos + community post" },
-      { "rank": "C",  "label": "Top 40–70% — 3.5+ rating, 10+ verified sales",              "proof": "Verified buyer reviews" },
-      { "rank": "B",  "label": "Top 20–40% — 4.0+ rating, repeat buyers, side income",      "proof": "Repeat purchase data" },
-      { "rank": "A",  "label": "Top 1–10% — full-time or catering-level earnings",          "proof": "Revenue + high repeat rate" },
-      { "rank": "S",  "label": "Top 0.001% — chef-level, teaches or runs a kitchen",        "proof": "Restaurant or catering proof" },
-      { "rank": "S+", "label": "Beyond world record — Michelin / internationally recognized","proof": "Media feature or award" }
-    ]
-  },
-  "Baking": {
-    "type": "subjective",
-    "ranks": [
-      { "rank": "F",  "label": "Never baked",                                                "proof": null },
-      { "rank": "E",  "label": "First steps — basic cakes and cookies",                      "proof": "Photo of baked item" },
-      { "rank": "D",  "label": "Top 70–99% of bakers — consistent results, friends ask for more","proof": "Meal photos + reactions" },
-      { "rank": "C",  "label": "Top 40–70% — 3.5+ rating, 10+ verified sales",              "proof": "Verified buyer reviews" },
-      { "rank": "B",  "label": "Top 20–40% — 4.0+ rating, custom orders, repeat buyers",    "proof": "Repeat buyer data" },
-      { "rank": "A",  "label": "Top 1–10% — full-time baking income or supplies shops",      "proof": "Revenue + order history" },
-      { "rank": "S",  "label": "Top 0.001% — patissier-level, teaches or supplies widely",  "proof": "Supply contracts or classes" },
-      { "rank": "S+", "label": "Beyond world record — professional pastry chef, published",  "proof": "Restaurant or media credit" }
-    ]
-  },
+
   "Weightlifting": {
     "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "Never trained",                                              "proof": null },
-      { "rank": "E",  "label": "First steps — bodyweight movements, learning form",          "proof": "Gym check-in or video" },
-      { "rank": "D",  "label": "Top 70–99% of gym-goers — squats 1× bodyweight",            "proof": "Gym log video" },
-      { "rank": "C",  "label": "Top 40–70% — 1.5× BW squat / 1× BW bench",                 "proof": "Gym video with weights visible" },
-      { "rank": "B",  "label": "Top 20–40% — 2× BW squat / 1.5× BW bench",                 "proof": "Verified lift video" },
-      { "rank": "A",  "label": "Top 1–10% — 2.5× BW squat, competitive-level lifts",        "proof": "Competition or verified 1RM" },
-      { "rank": "S",  "label": "Top 0.001% — competitive powerlifter / national level",     "proof": "Competition results" },
-      { "rank": "S+", "label": "Beyond world record territory",                              "proof": "Federation ranking" }
+    "classes": [
+      {
+        "id": "squat", "label": "Squat (1RM / bodyweight)",
+        "unit": "× bodyweight", "note": "Based on 809,986 powerlifting competition entries",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
+          { "rank": "E",  "label": "First steps — bodyweight movements, learning form","threshold": "BW" },
+          { "rank": "D",  "label": "Top 70–99% of gym-goers — 1.0–1.25× BW",     "threshold": "1.0–1.25× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.25–1.5× BW",                  "threshold": "1.25–1.5× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.5–2.0× BW",                   "threshold": "1.5–2.0× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 2.0–2.5× BW",                    "threshold": "2.0–2.5× BW" },
+          { "rank": "S",  "label": "Top 0.001% — competitive, 2.5–2.83× BW",     "threshold": "2.5–2.83× BW" },
+          { "rank": "S+", "label": "World record territory — 3.0× BW+",           "threshold": "3.0× BW+" }
+        ]
+      },
+      {
+        "id": "bench", "label": "Bench Press (1RM / bodyweight)",
+        "unit": "× bodyweight", "note": "1.25× BW is stronger than ~65–70% of consistent gym-goers",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
+          { "rank": "E",  "label": "First steps — below bodyweight",              "threshold": "under BW" },
+          { "rank": "D",  "label": "Top 70–99% — 0.75–1.0× BW",                  "threshold": "0.75–1.0× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.0–1.25× BW",                  "threshold": "1.0–1.25× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 1.25–1.5× BW",                  "threshold": "1.25–1.5× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 1.5–1.75× BW",                   "threshold": "1.5–1.75× BW" },
+          { "rank": "S",  "label": "Top 0.001% — competitive, 1.75–1.95× BW",    "threshold": "1.75–1.95× BW" },
+          { "rank": "S+", "label": "World record territory — 2.0× BW+",           "threshold": "2.0× BW+" }
+        ]
+      },
+      {
+        "id": "deadlift", "label": "Deadlift (1RM / bodyweight)",
+        "unit": "× bodyweight",
+        "ranks": [
+          { "rank": "F",  "label": "Not trained",                                 "threshold": null },
+          { "rank": "E",  "label": "First steps — learning form",                 "threshold": "under 1.0× BW" },
+          { "rank": "D",  "label": "Top 70–99% — 1.0–1.5× BW",                   "threshold": "1.0–1.5× BW" },
+          { "rank": "C",  "label": "Top 40–70% — 1.5–2.0× BW",                   "threshold": "1.5–2.0× BW" },
+          { "rank": "B",  "label": "Top 20–40% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
+          { "rank": "A",  "label": "Top 1–10% — 2.5–3.0× BW",                    "threshold": "2.5–3.0× BW" },
+          { "rank": "S",  "label": "Top 0.001% — competitive, 3.0–3.25× BW",     "threshold": "3.0–3.25× BW" },
+          { "rank": "S+", "label": "World record territory — 3.5× BW+",           "threshold": "3.5× BW+" }
+        ]
+      }
     ]
   },
-  "Football": {
-    "type": "practice",
-    "ranks": [
-      { "rank": "F",  "label": "Never played",                                              "proof": null },
-      { "rank": "E",  "label": "First steps — casual kickabout, learning rules",            "proof": "Photo or clip with ball" },
-      { "rank": "D",  "label": "Top 70–99% of players — plays regularly, solid basics",     "proof": "Match clip showing control" },
-      { "rank": "C",  "label": "Top 40–70% — club or school team player",                   "proof": "Team photo or match clip" },
-      { "rank": "B",  "label": "Top 20–40% — district or regional competitive level",       "proof": "League record or coach letter" },
-      { "rank": "A",  "label": "Top 1–10% — state or national youth circuit",               "proof": "League record or coach letter" },
-      { "rank": "S",  "label": "Top 0.001% — semi-professional or professional",            "proof": "Contract or transfer record" },
-      { "rank": "S+", "label": "Beyond world record — elite professional",                  "proof": "Professional club contract" }
+
+  "Calisthenics": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "calisthenics_skills", "label": "Skills",
+        "unit": "skill milestones", "note": "Planche achieved by ~2% of practitioners, front lever ~3%",
+        "ranks": [
+          { "rank": "F",  "label": "Not started",                                         "threshold": null },
+          { "rank": "E",  "label": "First steps — 10 pull-ups, 20 push-ups, basic dips",  "threshold": "10 pull-ups" },
+          { "rank": "D",  "label": "Top 70–99% — 20 pull-ups, L-sit, tuck holds",         "threshold": "20 pull-ups + L-sit" },
+          { "rank": "C",  "label": "Top 40–70% — clean muscle-up, handstand hold",        "threshold": "muscle-up + handstand" },
+          { "rank": "B",  "label": "Top 20–40% — back lever, tuck front lever",           "threshold": "back lever + tuck front lever" },
+          { "rank": "A",  "label": "Top 1–10% — full front lever, straddle planche",      "threshold": "front lever + straddle planche" },
+          { "rank": "S",  "label": "Top 0.001% — full planche, one-arm pull-up",          "threshold": "full planche + 1-arm pull-up" },
+          { "rank": "S+", "label": "World record territory — one-arm planche / Hefesto",  "threshold": "1-arm planche" }
+        ]
+      }
     ]
   },
+
+  "Swimming": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "100m", "label": "100 m",
+        "unit": "min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Cannot swim",                                    "threshold": null },
+          { "rank": "E",  "label": "First steps — completing 100m any style",        "threshold": "completing it" },
+          { "rank": "D",  "label": "Top 70–99% — under 2:30",                        "threshold": "under 2:30" },
+          { "rank": "C",  "label": "Top 40–70% — under 1:45",                        "threshold": "under 1:45" },
+          { "rank": "B",  "label": "Top 20–40% — under 1:20",                        "threshold": "under 1:20" },
+          { "rank": "A",  "label": "Top 1–10% — under 1:05 (club competitive)",      "threshold": "under 1:05" },
+          { "rank": "S",  "label": "Top 0.001% — national level, sub-55s",           "threshold": "under 0:55" },
+          { "rank": "S+", "label": "World record territory — sub-47s",               "threshold": "under 0:47" }
+        ]
+      },
+      {
+        "id": "1km", "label": "1 km open water / 40 laps",
+        "unit": "min:sec",
+        "ranks": [
+          { "rank": "F",  "label": "Cannot swim",                             "threshold": null },
+          { "rank": "E",  "label": "First steps — completing 1km",            "threshold": "completing it" },
+          { "rank": "D",  "label": "Top 70–99% — under 30 min",               "threshold": "under 30:00" },
+          { "rank": "C",  "label": "Top 40–70% — under 22 min",               "threshold": "under 22:00" },
+          { "rank": "B",  "label": "Top 20–40% — under 18 min",               "threshold": "under 18:00" },
+          { "rank": "A",  "label": "Top 1–10% — under 14 min (club level)",   "threshold": "under 14:00" },
+          { "rank": "S",  "label": "Top 0.001% — under 10 min",               "threshold": "under 10:00" },
+          { "rank": "S+", "label": "World record territory",                   "threshold": "under 9:00" }
+        ]
+      }
+    ]
+  },
+
+  "Cycling": {
+    "type": "metric",
+    "classes": [
+      {
+        "id": "100km", "label": "100 km (Century)",
+        "unit": "hr:min", "note": "Average recreational cyclist ~4–5 hrs for a century",
+        "ranks": [
+          { "rank": "F",  "label": "Cannot ride",                              "threshold": null },
+          { "rank": "E",  "label": "First steps — casual rides up to 20 km",   "threshold": "completing 20km" },
+          { "rank": "D",  "label": "Top 70–99% — completing 100km, ~5:00+",    "threshold": "completing 100km" },
+          { "rank": "C",  "label": "Top 40–70% — 100km under 4:30",            "threshold": "under 4:30" },
+          { "rank": "B",  "label": "Top 20–40% — 100km under 3:30",            "threshold": "under 3:30" },
+          { "rank": "A",  "label": "Top 1–10% — 100km under 2:45 (racing pace)","threshold": "under 2:45" },
+          { "rank": "S",  "label": "Top 0.001% — semi-pro / UCI-rated",         "threshold": "under 2:20" },
+          { "rank": "S+", "label": "World record territory",                    "threshold": "under 1:50" }
+        ]
+      }
+    ]
+  },
+
   "Language": {
     "type": "metric",
-    "ranks": [
-      { "rank": "F",  "label": "No exposure",                                               "proof": null },
-      { "rank": "E",  "label": "First steps — A1, basic phrases and greetings",             "proof": "Duolingo streak or course cert" },
-      { "rank": "D",  "label": "Top 70–99% of learners — A2, survival conversations",       "proof": "A2 certificate or tutor note" },
-      { "rank": "C",  "label": "Top 40–70% — B1, independent speaker",                     "proof": "B1 exam certificate" },
-      { "rank": "B",  "label": "Top 20–40% — B2, fluent in most everyday topics",          "proof": "B2 certificate (e.g. Goethe, IELTS)" },
-      { "rank": "A",  "label": "Top 1–10% — C1, near-native proficiency",                  "proof": "C1 certificate" },
-      { "rank": "S",  "label": "Top 0.001% — C2 mastery, effectively bilingual",           "proof": "C2 certificate" },
-      { "rank": "S+", "label": "Beyond world record — native-level + interpreter grade",    "proof": "Interpreter certification" }
+    "classes": [
+      {
+        "id": "cefr", "label": "CEFR Level",
+        "unit": "level", "note": "Common European Framework of Reference for Languages",
+        "ranks": [
+          { "rank": "F",  "label": "No exposure",                              "threshold": null },
+          { "rank": "E",  "label": "First steps — A1, basic phrases",          "threshold": "A1" },
+          { "rank": "D",  "label": "Top 70–99% of learners — A2",              "threshold": "A2" },
+          { "rank": "C",  "label": "Top 40–70% — B1, independent speaker",     "threshold": "B1" },
+          { "rank": "B",  "label": "Top 20–40% — B2, fluent in most topics",   "threshold": "B2" },
+          { "rank": "A",  "label": "Top 1–10% — C1, near-native",              "threshold": "C1" },
+          { "rank": "S",  "label": "Top 0.001% — C2 mastery",                  "threshold": "C2" },
+          { "rank": "S+", "label": "Native + interpreter certified",            "threshold": "Interpreter" }
+        ]
+      }
     ]
   },
-  "Badminton": {
-    "type": "practice",
-    "ranks": [
-      { "rank": "F",  "label": "Never played",                                              "proof": null },
-      { "rank": "E",  "label": "First steps — basic rallies, learning rules",               "proof": "Short clip" },
-      { "rank": "D",  "label": "Top 70–99% of players — plays regularly, solid smash",     "proof": "Match clip" },
-      { "rank": "C",  "label": "Top 40–70% — club or district player",                     "proof": "Club photo or match result" },
-      { "rank": "B",  "label": "Top 20–40% — state U19 or tournament finalist",            "proof": "Tournament result sheet" },
-      { "rank": "A",  "label": "Top 1–10% — national level junior",                        "proof": "BAI / national ranking" },
-      { "rank": "S",  "label": "Top 0.001% — national senior circuit",                     "proof": "BWF profile or ranking" },
-      { "rank": "S+", "label": "Beyond world record — international / BWF ranked",         "proof": "BWF world ranking" }
+
+  "Guitar": {
+    "type": "exp",
+    "classes": [
+      { "id": "acoustic",  "label": "Acoustic" },
+      { "id": "electric",  "label": "Electric" },
+      { "id": "classical", "label": "Classical" }
+    ]
+  },
+  "Piano":        { "type": "exp", "classes": [{ "id": "piano",    "label": "Piano" }] },
+  "Singing":      { "type": "exp", "classes": [{ "id": "singing",  "label": "Singing" }] },
+  "Dancing":      { "type": "exp", "classes": [{ "id": "dancing",  "label": "Dancing" }] },
+  "Drawing":      { "type": "exp", "classes": [{ "id": "drawing",  "label": "Drawing" }] },
+  "Photography":  { "type": "exp", "classes": [{ "id": "photo",    "label": "Photography" }] },
+  "Cooking":      { "type": "exp", "classes": [{ "id": "cooking",  "label": "Cooking" }] },
+  "Baking":       { "type": "exp", "classes": [{ "id": "baking",   "label": "Baking" }] },
+  "Pottery":      { "type": "exp", "classes": [{ "id": "pottery",  "label": "Pottery" }] },
+  "Tailoring":    { "type": "exp", "classes": [{ "id": "tailoring","label": "Tailoring" }] },
+  "Football":     { "type": "exp", "classes": [{ "id": "football", "label": "Football" }] },
+  "Badminton":    { "type": "exp", "classes": [{ "id": "badminton","label": "Badminton" }] },
+  "Bodybuilding": { "type": "exp", "classes": [{ "id": "physique", "label": "Physique" }] },
+
+  "Software Development": {
+    "type": "exp",
+    "classes": [
+      { "id": "web",     "label": "Web" },
+      { "id": "mobile",  "label": "Mobile" },
+      { "id": "systems", "label": "Systems" },
+      { "id": "ml",      "label": "ML / AI" }
     ]
   }
 }
