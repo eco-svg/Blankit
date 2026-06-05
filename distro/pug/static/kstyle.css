@@ -3773,14 +3773,91 @@ button.nav-pill:not(.btn-ghost):hover {
   margin-top: 18px;
 }
 
+.stats-skills-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
 .stats-skills-header {
   font-family: var(--font-mono);
   font-size: 0.64rem;
   letter-spacing: 0.14em;
   color: var(--text-dim);
   text-transform: uppercase;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
+.skill-add-trigger {
+  font-size: 1.1rem;
+  line-height: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+}
+.skill-add-trigger:hover { border-color: rgba(255,255,255,0.4); color: var(--text); }
+
+/* Skill adder search box */
+.skill-adder { margin-bottom: 10px; }
+.skill-adder.hidden { display: none; }
+.skill-adder-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  outline: none;
+}
+.skill-adder-input:focus { border-color: rgba(255,255,255,0.3); }
+.skill-adder-results {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.skill-adder-empty { font-size: 0.75rem; opacity: 0.4; padding: 6px 12px; }
+.skill-add-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+}
+.skill-add-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.skill-add-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.skill-add-chip {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+}
+.skill-add-chip:hover { border-color: #ffb700; color: #ffb700; }
 
 @media (max-width: 640px) {
   .stats-content { padding: 20px 14px 28px; }

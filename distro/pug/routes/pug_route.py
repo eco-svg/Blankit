@@ -1425,6 +1425,54 @@ def get_stats_sheet():
     })
 
 
+@pug_bp.route('/pug/api/stats/skill-class', methods=['PATCH'])
+def update_skill_class():
+    err = login_required_api()
+    if err: return err
+    user_id = session.get('user_id')
+    data        = request.get_json(force=True) or {}
+    skill_name  = (data.get('name') or '').strip()
+    class_id    = (data.get('class_id') or '').strip()
+    class_label = (data.get('class_label') or '').strip()
+    if not skill_name:
+        return jsonify({'error': 'name required'}), 400
+    sheet  = _get_cached_sheet(user_id) or {}
+    skills = sheet.get('skills', [])
+    for s in skills:
+        if s.get('name') == skill_name:
+            s['class_id']    = class_id
+            s['class_label'] = class_label
+            break
+    sheet['skills'] = skills
+    _save_cached_sheet(user_id, sheet)
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/stats/skill', methods=['POST'])
+def add_skill_manual():
+    err = login_required_api()
+    if err: return err
+    user_id = session.get('user_id')
+    data        = request.get_json(force=True) or {}
+    name        = (data.get('name') or '').strip()
+    class_id    = (data.get('class_id') or '').strip()
+    class_label = (data.get('class_label') or '').strip()
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+    sheet  = _get_cached_sheet(user_id) or {}
+    skills = sheet.get('skills', [])
+    if not any(s.get('name') == name and s.get('class_id') == class_id for s in skills):
+        skills.append({
+            'name': name, 'rank': 'E-', 'verified': False,
+            'context': '', 'note': 'Add proof in Achievements to unlock a real rank.',
+            'class_id': class_id, 'class_label': class_label, 'exp': 0,
+        })
+        sheet['skills'] = skills
+        _save_cached_sheet(user_id, sheet)
+        _ensure_skill_habits(user_id, [{'name': name}])
+    return jsonify({'ok': True, 'sheet': sheet})
+
+
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
     from shared.auth.user import User

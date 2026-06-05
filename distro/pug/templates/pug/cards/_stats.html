@@ -63,7 +63,15 @@
         </div>
 
         <div class="stats-skills-section">
-          <div class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</div>
+          <div class="stats-skills-header-row">
+            <span class="stats-skills-header" data-i18n="stats_detected_skills">DETECTED SKILLS</span>
+            <button id="addSkillBtn" class="skill-add-trigger" title="Add a skill">+</button>
+          </div>
+          <!-- Skill adder (inline search) -->
+          <div id="skillAdder" class="skill-adder hidden">
+            <input id="skillAdderInput" class="skill-adder-input" type="text" placeholder="Search skill…" autocomplete="off">
+            <div id="skillAdderResults" class="skill-adder-results"></div>
+          </div>
           <div id="statSkillsList" class="skills-list">
             <div class="skill-loading">Scanning data...</div>
           </div>

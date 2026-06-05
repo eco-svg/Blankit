@@ -49,7 +49,53 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
-    // ── Class selection (localStorage until backend persists it) ─────────────
+    // ── Add skill manually ───────────────────────────────────────────────────
+    const addSkillBtn     = document.getElementById('addSkillBtn');
+    const skillAdder      = document.getElementById('skillAdder');
+    const skillAdderInput = document.getElementById('skillAdderInput');
+    const skillAdderRes   = document.getElementById('skillAdderResults');
+
+    addSkillBtn?.addEventListener('click', e => {
+        e.stopPropagation();
+        skillAdder?.classList.toggle('hidden');
+        if (!skillAdder?.classList.contains('hidden')) skillAdderInput?.focus();
+    });
+
+    skillAdderInput?.addEventListener('input', () => {
+        const q = (skillAdderInput.value || '').toLowerCase().trim();
+        if (!skillAdderRes) return;
+        if (!q || !benchmarks) { skillAdderRes.innerHTML = ''; return; }
+        const matches = Object.keys(benchmarks).filter(k => k.toLowerCase().includes(q)).slice(0, 7);
+        if (!matches.length) { skillAdderRes.innerHTML = '<div class="skill-adder-empty">No match</div>'; return; }
+        skillAdderRes.innerHTML = matches.map(k => {
+            const bm = benchmarks[k];
+            const chips = (bm.classes || []).map(c =>
+                `<button class="skill-add-chip" data-skill="${k}" data-cid="${c.id}" data-clabel="${c.label}">${c.label}</button>`
+            ).join('');
+            return `<div class="skill-add-row"><span class="skill-add-name">${k}</span><div class="skill-add-chips">${chips}</div></div>`;
+        }).join('');
+        skillAdderRes.querySelectorAll('.skill-add-chip').forEach(chip => {
+            chip.addEventListener('click', () => addSkillManual(chip.dataset.skill, chip.dataset.cid, chip.dataset.clabel));
+        });
+    });
+
+    async function addSkillManual(name, classId, classLabel) {
+        try {
+            const res = await fetch('/pug/api/stats/skill', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, class_id: classId, class_label: classLabel })
+            });
+            const data = await res.json();
+            if (data.sheet) { sheet = data.sheet; renderMainCard(); updateRankBadge(); }
+            if (classId) saveClass(name, classId, classLabel);
+        } catch {}
+        skillAdder?.classList.add('hidden');
+        if (skillAdderInput) skillAdderInput.value = '';
+        if (skillAdderRes)   skillAdderRes.innerHTML = '';
+    }
+
+    // ── Class selection (localStorage + backend) ─────────────────────────────
     function _classKey(skillName) { return `veyra_sc_${skillName}`; }
 
     function getSavedClass(skillName) {
@@ -59,6 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveClass(skillName, classId, classLabel) {
         try { localStorage.setItem(_classKey(skillName), JSON.stringify({ id: classId, label: classLabel })); } catch {}
         _applyClassTag(skillName, classLabel);
+        // Update in-memory sheet so it survives re-render without round-trip
+        if (sheet?.skills) {
+            const sk = sheet.skills.find(s => s.name === skillName);
+            if (sk) { sk.class_id = classId; sk.class_label = classLabel; }
+        }
+        // Persist to backend
+        fetch('/pug/api/stats/skill-class', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: skillName, class_id: classId, class_label: classLabel })
+        }).catch(() => {});
     }
 
     function _applyClassTag(skillName, classLabel) {
@@ -159,16 +216,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const bm       = getBenchmark(s.name);
         const isExp    = bm?.type === 'exp';
 
-        // EXP skills: always show computed rank, never "?"
+        // Always show the actual rank — verified = full color, unverified = dimmed
         let badgeHtml;
         if (isExp) {
             const expRank  = computeExpRank(s.exp || 0);
             const expColor = RANK_COLORS[expRank] || '#888';
             badgeHtml = `<span class="rank-badge" style="color:${expColor};">${expRank}</span>`;
+        } else if (verified) {
+            badgeHtml = `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`;
         } else {
-            badgeHtml = verified
-                ? `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`
-                : `<span class="rank-badge rank-unverified" title="Verify an achievement to unlock rank">?</span>`;
+            badgeHtml = `<span class="rank-badge rank-unverified" style="color:${color};opacity:0.45;" title="Unverified — add proof to confirm rank">${rank}</span>`;
         }
 
         if (!withProgression) return `
