@@ -142,7 +142,7 @@ def _migrate_fk_cascades():
 def _migrate_distro_names():
     """Rename old distro keys to new branded names (one-time, idempotent)."""
     from sqlalchemy import text
-    mapping = {'ecosvg': 'Eco-Svg', 'thepug': 'ThePug', 'divyanhu': 'CatalystCrew'}
+    mapping = {'ecosvg': 'Eco-Svg', 'ocellus': 'Ocellus', 'divyanhu': 'CatalystCrew'}
     try:
         with db.engine.begin() as conn:
             for old, new in mapping.items():

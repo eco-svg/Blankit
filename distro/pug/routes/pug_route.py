@@ -851,7 +851,7 @@ def ensure_bucket():
 def login_required_page():
     if not session.get('user_id'):
         return redirect(url_for('svg.login'))
-    if session.get('distro') != 'ThePug':
+    if session.get('distro') != 'Ocellus':
         return redirect(url_for('svg.login'))
     return None
 
@@ -859,7 +859,7 @@ def login_required_page():
 def login_required_api():
     if not session.get('user_id'):
         return jsonify({'error': 'Not authenticated'}), 401
-    if session.get('distro') != 'ThePug':
+    if session.get('distro') != 'Ocellus':
         return jsonify({'error': 'Forbidden'}), 403
     return None
 
@@ -1237,7 +1237,7 @@ def get_user_profile(uid):
     if err: return err
     from shared.auth.user import User
     u = User.query.get(uid)
-    if not u or u.distro != 'ThePug':
+    if not u or u.distro != 'Ocellus':
         return jsonify({'error': 'Not found'}), 404
     n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
     sheet = None
@@ -1667,7 +1667,7 @@ def get_community_feed():
     skill_filter = (request.args.get('skill') or '').strip().lower()
 
     posts = Note.query.filter_by(
-        entry_type='community_post', is_deleted=False, mood='ThePug'
+        entry_type='community_post', is_deleted=False, mood='Ocellus'
     ).order_by(Note.created_at.desc()).limit(200).all()
 
     def _build_row(p, u):
@@ -1689,7 +1689,7 @@ def get_community_feed():
             'media_url':  media_url,
             'username':   u.username,
             'user_id':    p.user_id,
-            'distro':     p.mood or 'ThePug',
+            'distro':     p.mood or 'Ocellus',
             'rank':       rank,
             'rank_color': color,
             'is_mine':    p.user_id == me,
@@ -1744,7 +1744,7 @@ def create_community_post():
         is_finished= False,
     )
     p.body = body_val
-    p.mood = session.get('distro', 'ThePug')
+    p.mood = session.get('distro', 'Ocellus')
     db.session.add(p)
     db.session.commit()
     return jsonify({'id': p.id, 'ok': True}), 201
@@ -1775,7 +1775,7 @@ def search_users():
     users = User.query.filter(
         User.username.ilike(f'%{q}%'),
         User.id != me,
-        User.distro == 'ThePug'
+        User.distro == 'Ocellus'
     ).limit(10).all()
     return jsonify([{'id': u.id, 'username': u.username} for u in users])
 
@@ -1860,7 +1860,7 @@ def send_dm(other_id):
     me = session['user_id']
     if other_id == me:
         return jsonify({'error': 'Cannot DM yourself'}), 400
-    recipient = User.query.filter_by(id=other_id, distro='ThePug').first()
+    recipient = User.query.filter_by(id=other_id, distro='Ocellus').first()
     if not recipient:
         return jsonify({'error': 'User not found'}), 404
     data      = request.get_json(force=True) or {}

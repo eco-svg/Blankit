@@ -11,7 +11,7 @@ svg = Blueprint(
 DISTRO_REDIRECTS = {
     'Eco-Svg':   '/home',
     'CatalystCrew': '/d/home',
-    'ThePug':   '/pug/home',
+    'Ocellus':   '/pug/home',
 }
 
 def get_user():

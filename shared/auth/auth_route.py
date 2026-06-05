@@ -120,7 +120,7 @@ def _send_email(to_email, subject, html):
 DISTRO_REDIRECTS = {
     'Eco-Svg':   '/home',
     'CatalystCrew': '/d/home',
-    'ThePug':   '/pug/home',
+    'Ocellus':   '/pug/home',
 }
 
 

@@ -8,16 +8,16 @@
 const DISTROS = {
   'Eco-Svg':   { maintainer: 'Eco-Svg',  focus: 'habit tracking + AI insights', status: '● active', about: '— to be filled —' },
   'CatalystCrew': { maintainer: 'CatalystCrew', focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
-  'ThePug':   { maintainer: 'ThePug',   focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
+  'Ocellus':   { maintainer: 'Ocellus',   focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
 };
-const DISTRO_KEYS = ['Eco-Svg', 'CatalystCrew', 'ThePug'];
-const BG_IDS      = { 'Eco-Svg': 'bg-Eco-Svg', 'CatalystCrew': 'bg-CatalystCrew', 'ThePug': 'bg-ThePug' };
+const DISTRO_KEYS = ['Eco-Svg', 'CatalystCrew', 'Ocellus'];
+const BG_IDS      = { 'Eco-Svg': 'bg-Eco-Svg', 'CatalystCrew': 'bg-CatalystCrew', 'Ocellus': 'bg-Ocellus' };
 
 // Where each distro lands after login/register
 const DISTRO_REDIRECTS = {
   'Eco-Svg':   '/home',
   'CatalystCrew': '/d/home',
-  'ThePug':   '/pug/home',
+  'Ocellus':   '/pug/home',
 };
 
 /* ══════════════════════════════

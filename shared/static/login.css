@@ -29,7 +29,7 @@ html { font-size: 16px; }
 /* distro accent overrides */
 [data-distro="Eco-Svg"]  { --accent: #e8b84b; }
 [data-distro="CatalystCrew"]{ --accent: #6ec6f5; }
-[data-distro="ThePug"]  { --accent: #d4a574; }
+[data-distro="Ocellus"]  { --accent: #d4a574; }
 
 body {
   font-family: var(--font-sans);
@@ -66,10 +66,10 @@ body::after {
 .bg-layer.active { opacity: 1; }
 #bg-Eco-Svg   { background-image: url('eco-svg_background.jpg'); }
 #bg-CatalystCrew { background-image: url('catalystcrew_background.jpg'); }
-#bg-ThePug {
+#bg-Ocellus {
   background: radial-gradient(ellipse at 28% 25%, rgba(38,26,14,1) 0%, #0d0a07 55%, #080604 100%);
 }
-#bg-ThePug video {
+#bg-Ocellus video {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   object-fit: cover;
