@@ -3829,13 +3829,15 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .skill-adder-empty { font-size: 0.75rem; opacity: 0.4; padding: 6px 12px; }
 .skill-adder-nomatch {
-  font-size: 0.74rem;
-  color: var(--text-dim);
-  opacity: 0.6;
-  padding: 8px 12px;
-  line-height: 1.55;
+  font-size: 0.76rem;
+  color: var(--text);
+  padding: 10px 12px;
+  line-height: 1.6;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
 }
-.skill-adder-nomatch strong { color: var(--accent); opacity: 1; font-weight: 600; }
+.skill-adder-nomatch strong { color: var(--accent); font-weight: 600; }
 .skill-add-row {
   display: flex;
   flex-direction: column;
