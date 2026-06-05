@@ -169,6 +169,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function removeSkill(name, classId) {
+        try {
+            const res = await fetch('/pug/api/stats/skill', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, class_id: classId })
+            });
+            const data = await res.json();
+            if (data.sheet) {
+                sheet = data.sheet;
+                try { localStorage.removeItem(_classKey(name)); } catch {}
+                renderMainCard();
+                updateRankBadge();
+            }
+        } catch {}
+    }
+
+    function wireRemoveBtns() {
+        if (!skillsMainList) return;
+        skillsMainList.querySelectorAll('.skill-remove-btn').forEach(btn => {
+            btn.addEventListener('click', e => {
+                e.stopPropagation();
+                removeSkill(btn.dataset.skill, btn.dataset.cid);
+            });
+        });
+    }
+
     async function dismissSuggestion(name) {
         try {
             const res = await fetch('/pug/api/stats/skill-suggestion/dismiss', {
@@ -342,10 +369,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Layout: rank badge lives at the right end of the progress bar row
+        const removeBtn = `<button class="skill-remove-btn" data-skill="${s.name}" data-cid="${s.class_id||''}" title="Remove skill">×</button>`;
         const nameRow = `
             <div class="skill-row-main">
                 <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
-                ${expandBtn ? `<div class="skill-row-right">${expandBtn}</div>` : ''}
+                <div class="skill-row-right">${expandBtn}${removeBtn}</div>
             </div>`;
 
         const barRow = bm
@@ -526,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s, true)).join('');
         wireSkillLadderBtns();
+        wireRemoveBtns();
         renderSuggestions(sheet.suggestions || []);
     }
 

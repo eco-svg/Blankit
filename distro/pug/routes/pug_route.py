@@ -1504,6 +1504,25 @@ def add_skill_manual():
     return jsonify({'ok': True, 'sheet': sheet})
 
 
+@pug_bp.route('/pug/api/stats/skill', methods=['DELETE'])
+def remove_skill():
+    err = login_required_api()
+    if err: return err
+    user_id  = session.get('user_id')
+    data     = request.get_json(force=True) or {}
+    name     = (data.get('name') or '').strip()
+    class_id = (data.get('class_id') or '').strip()
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+    sheet = _get_cached_sheet(user_id) or {}
+    sheet['skills'] = [
+        s for s in sheet.get('skills', [])
+        if not (s.get('name') == name and s.get('class_id', '') == class_id)
+    ]
+    _save_cached_sheet(user_id, sheet)
+    return jsonify({'ok': True, 'sheet': sheet})
+
+
 @pug_bp.route('/pug/api/stats/skill-suggestion/dismiss', methods=['POST'])
 def dismiss_suggestion():
     err = login_required_api()

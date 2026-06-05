@@ -3340,20 +3340,20 @@
     "type": "exp",
     "classes": [
       {
-        "id": "indian",
-        "label": "Indian"
+        "id": "stovetop",
+        "label": "Stovetop / Pan"
       },
       {
-        "id": "italian",
-        "label": "Italian/Continental"
+        "id": "grilling",
+        "label": "BBQ / Grilling"
       },
       {
-        "id": "bbq",
-        "label": "BBQ/Grill"
+        "id": "baking",
+        "label": "Baking / Roasting"
       },
       {
-        "id": "asian",
-        "label": "Asian"
+        "id": "meal_prep",
+        "label": "Meal Prep"
       }
     ]
   },

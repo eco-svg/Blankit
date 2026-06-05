@@ -5278,6 +5278,22 @@ button.nav-pill:not(.btn-ghost):hover {
   gap: 8px;
   flex-shrink: 0;
 }
+.skill-remove-btn {
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  opacity: 0.18;
+  transition: opacity 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+.skill-remove-btn:hover { opacity: 0.7; color: #d06060; }
+.skill-row-prog:hover .skill-remove-btn,
+.skill-row-prog:focus-within .skill-remove-btn { opacity: 0.32; }
 .skill-ladder-btn {
   font-family: var(--font-mono);
   font-size: 0.7rem;
