@@ -215,9 +215,8 @@
     letter-spacing: 0.1em !important;
   }
 
-  /* Social tab: community first, DMs second */
+  /* Community tab: full width */
   #sec-comms { order: -1; }
-  #sec-social { order: 0; }
 
   /* Hide dream bar on habits tab, show habit pulse instead */
   body[data-route="habits"] .dream-standalone { display: none !important; }

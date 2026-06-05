@@ -48,11 +48,16 @@
     <nav class="header-nav">
       <a href="#notes" class="nav-pill" data-home="true">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
-      <a href="#social"   class="nav-pill">Social</a>
+      <a href="#social"   class="nav-pill">Community</a>
       <a href="#request"  class="nav-pill">Request</a>
     </nav>
 
     <div class="header-right">
+      <button class="dm-toggle" id="dmBarToggle" aria-label="Messages">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        DMs
+        <span class="dm-unread-dot" id="dmUnreadDot"></span>
+      </button>
       <button class="rbar-toggle" id="rBarToggle" aria-label="Show sidebar">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
       </button>
@@ -659,6 +664,57 @@
   })();
   </script>
 
+  <!-- DM Sidebar Drawer -->
+  <aside class="dm-bar" id="dmBar">
+    <div class="dm-bar-header">
+      <span class="dm-bar-title" id="dmCardTitle" data-i18n="card_dms">Messages</span>
+      <div class="dm-bar-actions">
+        <input type="text" id="dmUserSearch" placeholder="Search users..." autocomplete="off" class="dm-inline-search hidden">
+        <button class="icon-btn" id="newDmBtn" title="New message">+</button>
+        <button class="icon-btn" id="cancelNewDmBtn" title="Cancel" style="display:none;">✕</button>
+        <button class="dm-bar-close" id="dmBarClose">✕</button>
+      </div>
+    </div>
+    <div id="dmUserResults" class="dm-inline-results hidden"></div>
+    <div class="dm-bar-body">
+      <div id="dmConvList" class="dm-conv-list"></div>
+      <div id="dmChatView" class="dm-chat-view hidden">
+        <div class="dm-chat-header">
+          <button id="dmBackBtn" class="icon-btn" title="Back">←</button>
+          <span id="dmChatName" class="dm-chat-name"></span>
+        </div>
+        <div id="dmMessages" class="dm-messages"></div>
+        <div class="dm-input-row">
+          <button class="dm-attach-btn" id="dmAttachBtn" title="Attach file">📎</button>
+          <input type="file" id="dmFileInput" accept="image/*,video/*,audio/*" style="display:none;">
+          <button class="dm-voice-btn" id="dmVoiceBtn" title="Voice message">🎙</button>
+          <span class="dm-voice-timer" id="dmVoiceTimer">0:00</span>
+          <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
+          <button id="dmSendBtn">→</button>
+        </div>
+        <div id="dmUploadProgress" class="upload-progress hidden"><div class="upload-progress-bar" id="dmProgressBar"></div></div>
+        <div id="dmMediaPreview" class="dm-media-preview hidden"></div>
+      </div>
+    </div>
+  </aside>
+  <div class="dm-bar-backdrop" id="dmBarBackdrop"></div>
+
+  <script>
+  (function() {
+    var toggle = document.getElementById('dmBarToggle');
+    var bar    = document.getElementById('dmBar');
+    var bd     = document.getElementById('dmBarBackdrop');
+    var closeBtn = document.getElementById('dmBarClose');
+    if (!toggle || !bar) return;
+    function openDm()  { bar.classList.add('open');    if(bd) bd.classList.add('active');    toggle.classList.add('active');    document.body.style.overflow='hidden'; }
+    function closeDm() { bar.classList.remove('open'); if(bd) bd.classList.remove('active'); toggle.classList.remove('active'); document.body.style.overflow=''; }
+    toggle.addEventListener('click', function() { bar.classList.contains('open') ? closeDm() : openDm(); });
+    if (closeBtn) closeBtn.addEventListener('click', closeDm);
+    if (bd) bd.addEventListener('click', closeDm);
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && bar.classList.contains('open')) closeDm(); });
+  })();
+  </script>
+
   <!-- Buy-me-a-drink modal -->
   <div id="drinkModal" class="custom-modal hidden">
     <div class="modal-content" style="max-width:360px;text-align:center;background:rgba(13,11,8,0.45);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);">
@@ -838,9 +894,9 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       <span>BuddyBot</span>
     </button>
-    <button class="mbb-tab" data-route="social" aria-label="Social">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      <span>Social</span>
+    <button class="mbb-tab" data-route="social" aria-label="Community">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="3"/><path d="M6 20v-2a6 6 0 0 1 12 0v2"/><circle cx="4" cy="10" r="2"/><path d="M2 20v-1a4 4 0 0 1 4-4"/><circle cx="20" cy="10" r="2"/><path d="M22 20v-1a4 4 0 0 0-4-4"/></svg>
+      <span>Community</span>
     </button>
     <button class="mbb-tab" data-route="skills" aria-label="Skills">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10l6-6 6 6v10"/><path d="M10 20v-5h4v5"/></svg>

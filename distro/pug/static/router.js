@@ -2,7 +2,7 @@
   const ROUTES = {
     'notes':    ['sec-notes', 'sec-blinkbot'],
     'skills':   ['sec-skills-wrapper'],
-    'social':   ['sec-social', 'sec-comms'],
+    'social':   ['sec-comms'],
     'habits':   ['sec-habits', 'sec-habit-pulse'],
     'buddybot': ['sec-buddybot'],
     'request':  ['sec-request'],
