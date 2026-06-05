@@ -55,6 +55,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return String(n);
     }
 
+    function computeExpRank(exp) {
+        if (!expConfig) return 'F';
+        const th = expConfig.rank_thresholds;
+        for (const r of RANK_ORDER) {
+            if (th[r] != null && exp >= th[r]) return r;
+        }
+        return 'F';
+    }
+
+    function expTierProgress(exp) {
+        if (!expConfig) return { pct: 0, xpInTier: 0, tierSize: 200 };
+        const rank  = computeExpRank(exp);
+        const th    = expConfig.rank_thresholds;
+        const idx   = RANK_ORDER.indexOf(rank);
+        const tierStart = th[rank] ?? 0;
+        const nextRank  = idx > 0 ? RANK_ORDER[idx - 1] : null;
+        const tierEnd   = (nextRank && th[nextRank] != null) ? th[nextRank] : tierStart + 1;
+        const tierSize  = Math.max(1, tierEnd - tierStart);
+        const xpInTier  = exp - tierStart;
+        const pct       = Math.min(99, Math.round((xpInTier / tierSize) * 100));
+        return { pct, xpInTier, tierSize };
+    }
+
     function getBenchmark(skillName) {
         if (!benchmarks || !skillName) return null;
         const name = skillName.trim();
@@ -105,28 +128,42 @@ document.addEventListener('DOMContentLoaded', () => {
         const verified = s.verified !== false;
         const context  = s.context ? `<span class="skill-context">${s.context}</span>` : '';
         const note     = s.note    ? `<span class="skill-note">${s.note}</span>`    : '';
-        const badgeHtml = verified
-            ? `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`
-            : `<span class="rank-badge rank-unverified" title="Verify an achievement to unlock rank">?</span>`;
+        const classTag = s.class_label ? `<span class="skill-class-tag">· ${s.class_label}</span>` : '';
+        const bm       = getBenchmark(s.name);
+        const isExp    = bm?.type === 'exp';
+
+        // EXP skills: always show computed rank, never "?"
+        let badgeHtml;
+        if (isExp) {
+            const expRank  = computeExpRank(s.exp || 0);
+            const expColor = RANK_COLORS[expRank] || '#888';
+            badgeHtml = `<span class="rank-badge" style="color:${expColor};">${expRank}</span>`;
+        } else {
+            badgeHtml = verified
+                ? `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`
+                : `<span class="rank-badge rank-unverified" title="Verify an achievement to unlock rank">?</span>`;
+        }
 
         if (!withProgression) return `
             <div class="skill-row">
-                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${context}${note}</span>
+                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
                 ${badgeHtml}
             </div>`;
 
-        const bm = getBenchmark(s.name);
         let progressBar = '', nextLine = '', expandBtn = '';
 
         if (bm) {
-            if (bm.type === 'exp') {
-                // Dummy EXP bar — real system wired later
+            if (isExp) {
+                const exp      = s.exp || 0;
+                const expRank  = computeExpRank(exp);
+                const expColor = RANK_COLORS[expRank] || '#888';
+                const { pct, xpInTier, tierSize } = expTierProgress(exp);
                 progressBar = `
                 <div class="skill-progress-track">
-                    <div class="skill-progress-fill skill-exp-fill" style="width:0%;background:${color};"></div>
+                    <div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div>
                 </div>`;
-                nextLine = `<div class="skill-next skill-exp-hint">EXP — community engagement tracking coming soon</div>`;
-                expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" title="Show classes">···</button>`;
+                nextLine = `<div class="skill-next skill-exp-hint">${fmtExp(xpInTier)} / ${fmtExp(tierSize)} XP</div>`;
+                expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Show classes">···</button>`;
             } else {
                 // Metric — use first class by default
                 const cls = bm.classes?.[0];
@@ -153,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
         <div class="skill-row skill-row-prog" data-skill="${s.name}">
             <div class="skill-row-main">
-                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${context}${note}</span>
+                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
                 <div class="skill-row-right">${expandBtn}${badgeHtml}</div>
             </div>
             ${progressBar}
@@ -196,30 +233,24 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`;
     }
 
-    // ── EXP ladder HTML ──────────────────────────────────────────────────────
-    function expLadderHTML(bm) {
-        const classList = bm.classes.map(c => `<span class="exp-class-chip">${c.label}</span>`).join('');
-
-        const EXP_RANKS = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E+','E','E-','F'];
-        const thresholds = expConfig?.rank_thresholds || {};
-        const rankRows = EXP_RANKS.map(r => {
-            const xp  = thresholds[r];
-            const c   = RANK_COLORS[r] || '#888';
-            const xpLabel = (xp != null && xp > 0) ? `<span class="exp-threshold-label">${fmtExp(xp)} XP</span>` : '';
-            const isSubRank = r.includes('+') || r.includes('-');
-            return `<div class="exp-rank-row${isSubRank ? ' exp-subrank' : ''}">
-                <span class="ladder-rank" style="color:${c}">${r}</span>
-                ${xpLabel}
-            </div>`;
+    // ── EXP ladder HTML (class picker / info) ───────────────────────────────
+    function expLadderHTML(bm, activeClassId) {
+        const chips = (bm.classes || []).map(c => {
+            const active = c.id === activeClassId;
+            return `<span class="exp-class-chip${active ? ' active' : ''}">${c.label}</span>`;
         }).join('');
+
+        const lockNote = activeClassId
+            ? `<span style="opacity:0.45;font-size:0.68rem;">Class locked — select once to track separately.</span>`
+            : `<span style="opacity:0.45;font-size:0.68rem;">Choose a class to track. Selection is permanent per entry.</span>`;
 
         return `
         <div class="skill-ladder skill-ladder-exp">
-            <div class="exp-ladder-classes">${classList}</div>
-            <div class="exp-rank-ladder">${rankRows}</div>
-            <div class="exp-ladder-msg">
-                <span style="opacity:0.5;font-size:0.72rem;">Earned from: likes · comments · shares · saves · follows · DMs · collabs · hires</span>
-                <br><span style="opacity:0.35;font-size:0.65rem;">Tracking coming soon — posts count retroactively.</span>
+            <div class="exp-ladder-classes">${chips}</div>
+            ${lockNote}
+            <div class="exp-ladder-msg" style="margin-top:8px;">
+                <span style="opacity:0.5;font-size:0.72rem;">EXP from: likes · comments · shares · saves · DMs · collabs · hires</span>
+                <br><span style="opacity:0.35;font-size:0.65rem;">Retroactive — every post counts from day one.</span>
             </div>
         </div>`;
     }
@@ -242,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rankEl = row.querySelector('.rank-badge');
                 const rank   = rankEl?.textContent?.trim() === '?' ? 'F' : (rankEl?.textContent?.trim() || 'F');
                 const html   = bm.type === 'exp'
-                    ? expLadderHTML(bm)
+                    ? expLadderHTML(bm, btn.dataset.classId || '')
                     : metricLadderHTML(skillName, rank, bm);
 
                 row.insertAdjacentHTML('beforeend', html);

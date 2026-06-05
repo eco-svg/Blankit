@@ -3415,6 +3415,14 @@ button.nav-pill:not(.btn-ghost):hover {
   flex-shrink: 0;
 }
 
+/* ── Skill class tag (e.g. "· 5km" next to skill name) ── */
+.skill-class-tag {
+  font-size: 0.72rem;
+  opacity: 0.5;
+  font-family: var(--font-mono, monospace);
+  margin-left: 4px;
+}
+
 /* ── Skill note sub-text ──────────────────────────────── */
 .skill-context {
   font-size: 0.71rem;

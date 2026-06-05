@@ -455,6 +455,26 @@ def _get_cached_sheet(user_id):
     return None
 
 
+def _ensure_skill_habits(user_id, skills):
+    """Auto-create a habit for any skill that has no matching habit yet."""
+    from distro.svg.models.habit import Habit
+    if not skills:
+        return
+    existing = [h.name.lower() for h in Habit.query.filter_by(user_id=user_id, is_active=True).all()]
+    added = False
+    for s in skills:
+        skill_name = (s.get('name') or '').strip()
+        if not skill_name:
+            continue
+        if any(skill_name.lower() in h or h in skill_name.lower() for h in existing):
+            continue
+        db.session.add(Habit(user_id=user_id, name=skill_name, track_type='manual'))
+        existing.append(skill_name.lower())
+        added = True
+    if added:
+        db.session.commit()
+
+
 def _save_cached_sheet(user_id, sheet):
     """Persist stats sheet to DB so it survives server restarts."""
     n = Note.query.filter_by(
@@ -540,6 +560,16 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
     goals_str = ', '.join(user_context['active_goals'][:10]) or 'none'
     notes_str = ', '.join(n['title'] for n in user_context['recent_notes'][:10]) or 'none'
 
+    # Active habits that look like skill practice (not lifestyle/routine)
+    _LIFESTYLE_KWS = ('sleep', 'water', 'wake', 'woke', 'bed', 'morning', 'routine',
+                      'meditat', 'posture', 'journal', 'phone', 'drink', 'breathe',
+                      'shower', 'step count', 'stretch', 'vitamins', 'supplements')
+    skill_habits = [
+        h['name'] for h in (user_context.get('habits') or [])
+        if not any(kw in h['name'].lower() for kw in _LIFESTYLE_KWS)
+    ]
+    habit_skills_str = ', '.join(skill_habits[:15]) or 'none'
+
     log       = read_user_log(user_id) or ''
     exchanges = _parse_chat_log(log) if log else []
     history_lines = [
@@ -556,6 +586,7 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         f"Finished Goals: {finished_str}\n"
         f"Work / Shipped Projects (strongest evidence): {work_str}\n"
         f"Active Goals (aspirations only, do NOT use for ranking): {goals_str}\n"
+        f"Active Skill Habits (ongoing practice — E-rank evidence): {habit_skills_str}\n"
         f"Notes Written: {notes_str}\n"
         f"Member Since: {user_context['member_since']}\n"
         f"Total Notes: {notes_count}, Streak: {streak} days\n\n"
@@ -566,10 +597,12 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   Use real-world role names (e.g. 'Runner', 'Writer', 'Developer'), NOT game titles.\n"
         "2. PERSONALITY is inferred from chat patterns, written goals, notes, behavior — "
         "   who they seem to be, what drives them. Short archetype name + one sentence.\n"
-        "3. SKILLS come ONLY from Achievements/shipped projects, finished goals, and real logged output. "
-        "   Achievements with verified evidence are the strongest signal — weight these highest. "
-        "   Never infer skills from active goals. "
-        "   Return only skills with evidence — 0 to 5 max. "
+        "3. SKILLS come from: (a) Achievements/shipped projects — strongest signal; "
+        "   (b) Finished goals — strong signal; "
+        "   (c) Active Skill Habits — weakest signal, gives rank E only (unverified). "
+        "   A habit like 'Run 5km', 'Practice guitar', 'Study Japanese' = E-rank skill evidence. "
+        "   Never infer skills from active goals (goals are aspirations, habits are practice). "
+        "   Return only skills with any evidence — 0 to 5 max. "
         "   Use plain words: 'Cooking' not 'Culinary Arts', 'Running' not 'Physical Fitness'. "
         "   LIFESTYLE / HABIT FILTER — CRITICAL: Completely ignore any entry that is a daily habit, "
         "   routine, or lifestyle behaviour — examples: 'woke up early', 'slept 8 hours', 'drank water', "
@@ -617,7 +650,9 @@ def _generate_character_sheet(user_id, user_context, notes_count, streak):
         "   D+ = Top 70–80% of active practitioners\n"
         "   D  = Top 80–90% of active practitioners\n"
         "   D- = Top 90–99% of active practitioners (bottom tier, but still practising)\n"
-        "   E  = Beginner — in the field but very new (< ~3 months, no metrics yet)\n"
+        "   E+ = Active beginner — regular practice, several months in, no metrics yet\n"
+        "   E  = Beginner — started recently, a handful of sessions\n"
+        "   E- = Very first steps — one or two tries, just discovered the skill\n"
         "   F  = General public — has not started this skill at all\n"
         "   CALIBRATION EXAMPLES:\n"
         "   Running (global ~800M recreational runners): average 5K ~27 min. Sub-17 = S-. Sub-20 = A+. Sub-24 = B. Sub-30 = C. Just started = E.\n"
@@ -1370,6 +1405,7 @@ def get_stats_sheet():
         sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
         if sheet:
             _save_cached_sheet(user_id, sheet)
+            _ensure_skill_habits(user_id, sheet.get('skills', []))
     elif db_sheet:
         # Cache exists — return it regardless of age; midnight refresh handles updates
         sheet = db_sheet
@@ -1379,6 +1415,7 @@ def get_stats_sheet():
         sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
         if sheet:
             _save_cached_sheet(user_id, sheet)
+            _ensure_skill_habits(user_id, sheet.get('skills', []))
 
     return jsonify({
         'notes_count': notes_count,
