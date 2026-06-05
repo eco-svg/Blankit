@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sheet      = null;
     let benchmarks = null;
+    let expConfig  = null;
 
     const RANK_COLORS = {
         'S+': '#ffd700', 'S': '#ffb700', 'S-': '#ffa500',
@@ -32,12 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     btn?.addEventListener('click', e => { e.stopPropagation(); openStats(); });
     reanalyzeBtn?.addEventListener('click', e => { e.stopPropagation(); fetchStats(true); });
 
-    // ── Benchmarks ───────────────────────────────────────────────────────────
+    // ── Benchmarks + EXP config ──────────────────────────────────────────────
     function fetchBenchmarks() {
         fetch('/pug_style/skill_benchmarks.json')
             .then(r => r.json())
             .then(data => { benchmarks = data; if (sheet) renderMainCard(); })
             .catch(() => {});
+    }
+
+    function fetchExpConfig() {
+        fetch('/pug_style/exp_config.json')
+            .then(r => r.json())
+            .then(data => { expConfig = data; })
+            .catch(() => {});
+    }
+
+    function fmtExp(n) {
+        if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+        if (n >= 1000)    return Math.round(n / 1000) + 'K';
+        return String(n);
     }
 
     function getBenchmark(skillName) {
@@ -181,22 +195,30 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`;
     }
 
-    // ── EXP ladder HTML (dummy) ──────────────────────────────────────────────
+    // ── EXP ladder HTML ──────────────────────────────────────────────────────
     function expLadderHTML(bm) {
         const classList = bm.classes.map(c => `<span class="exp-class-chip">${c.label}</span>`).join('');
+
+        const EXP_RANKS = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
+        const thresholds = expConfig?.rank_thresholds || {};
+        const rankRows = EXP_RANKS.map(r => {
+            const xp  = thresholds[r];
+            const c   = RANK_COLORS[r] || '#888';
+            const xpLabel = (xp != null && xp > 0) ? `<span class="exp-threshold-label">${fmtExp(xp)} XP</span>` : '';
+            const isSubRank = r.includes('+') || r.includes('-');
+            return `<div class="exp-rank-row${isSubRank ? ' exp-subrank' : ''}">
+                <span class="ladder-rank" style="color:${c}">${r}</span>
+                ${xpLabel}
+            </div>`;
+        }).join('');
+
         return `
         <div class="skill-ladder skill-ladder-exp">
             <div class="exp-ladder-classes">${classList}</div>
+            <div class="exp-rank-ladder">${rankRows}</div>
             <div class="exp-ladder-msg">
-                <span class="exp-ladder-icon">⬡</span>
-                EXP ranking — driven by community engagement on your posts (likes, saves, shares, performance requests).
-                <br><span style="opacity:0.4;font-size:0.7rem;">Tracking system coming soon — your posts will count retroactively.</span>
-            </div>
-            <div class="exp-rank-ladder">
-                ${RANK_ORDER.filter(r => !r.includes('-') || r === 'S-').map(r => {
-                    const c = RANK_COLORS[r]||'#888';
-                    return `<div class="exp-rank-row"><span class="ladder-rank" style="color:${c}">${r}</span><div class="exp-rank-bar-track"><div class="exp-rank-bar" style="background:${c}22;"></div></div></div>`;
-                }).join('')}
+                <span style="opacity:0.5;font-size:0.72rem;">Earned from: likes · comments · shares · saves · follows · DMs · collabs · hires</span>
+                <br><span style="opacity:0.35;font-size:0.65rem;">Tracking coming soon — posts count retroactively.</span>
             </div>
         </div>`;
     }
@@ -348,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Page-load ────────────────────────────────────────────────────────────
     fetchBenchmarks();
+    fetchExpConfig();
     fetch('/pug/api/stats?cache_only=true')
         .then(r => r.json())
         .then(data => { if (data.sheet) { sheet = data.sheet; renderMainCard(); updateRankBadge(); } })

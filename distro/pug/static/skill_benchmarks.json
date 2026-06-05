@@ -280,12 +280,12 @@
     ]
   },
 
-  "Powerlifting": {
+  "Weightlifting": {
     "type": "metric",
     "classes": [
       {
-        "id": "total", "label": "Total (S+B+D / bodyweight)", "unit": "× bodyweight",
-        "note": "Based on 809,986 IPF competition entries. Elite 100kg male total ~680+ kg.",
+        "id": "pl_total", "label": "PL Total (S+B+D / bodyweight)", "unit": "× bodyweight",
+        "note": "Powerlifting. Based on 809,986 IPF competition entries.",
         "ranks": [
           { "rank": "F",  "label": "Not trained",                                "threshold": null },
           { "rank": "E",  "label": "First steps — total under 1.5× BW",          "threshold": "under 1.5× BW" },
@@ -293,7 +293,7 @@
           { "rank": "C",  "label": "Top 40–70% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
           { "rank": "B",  "label": "Top 20–40% — 2.5–3.0× BW",                   "threshold": "2.5–3.0× BW" },
           { "rank": "A",  "label": "Top 1–10% — 3.0–3.5× BW",                    "threshold": "3.0–3.5× BW" },
-          { "rank": "S",  "label": "Top 0.001% — competitive, 3.5–4.0× BW",      "threshold": "3.5–4.0× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 3.5–4.0× BW",                   "threshold": "3.5–4.0× BW" },
           { "rank": "S+", "label": "World record territory — 4.0× BW+",           "threshold": "4.0× BW+" }
         ]
       },
@@ -306,7 +306,7 @@
           { "rank": "C",  "label": "Top 40–70% — 1.25–1.5× BW",                 "threshold": "1.25–1.5× BW" },
           { "rank": "B",  "label": "Top 20–40% — 1.5–2.0× BW",                  "threshold": "1.5–2.0× BW" },
           { "rank": "A",  "label": "Top 1–10% — 2.0–2.5× BW",                   "threshold": "2.0–2.5× BW" },
-          { "rank": "S",  "label": "Top 0.001% — 2.5–2.83× BW (competitive)",   "threshold": "2.5–2.83× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 2.5–2.83× BW",                 "threshold": "2.5–2.83× BW" },
           { "rank": "S+", "label": "World record territory — 3.0× BW+",          "threshold": "3.0× BW+" }
         ]
       },
@@ -320,7 +320,7 @@
           { "rank": "C",  "label": "Top 40–70% — 1.0–1.25× BW",                 "threshold": "1.0–1.25× BW" },
           { "rank": "B",  "label": "Top 20–40% — 1.25–1.5× BW",                 "threshold": "1.25–1.5× BW" },
           { "rank": "A",  "label": "Top 1–10% — 1.5–1.75× BW",                  "threshold": "1.5–1.75× BW" },
-          { "rank": "S",  "label": "Top 0.001% — 1.75–1.95× BW (competitive)",  "threshold": "1.75–1.95× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 1.75–1.95× BW",                "threshold": "1.75–1.95× BW" },
           { "rank": "S+", "label": "World record territory — 2.0× BW+",          "threshold": "2.0× BW+" }
         ]
       },
@@ -333,19 +333,13 @@
           { "rank": "C",  "label": "Top 40–70% — 1.5–2.0× BW",                  "threshold": "1.5–2.0× BW" },
           { "rank": "B",  "label": "Top 20–40% — 2.0–2.5× BW",                  "threshold": "2.0–2.5× BW" },
           { "rank": "A",  "label": "Top 1–10% — 2.5–3.0× BW",                   "threshold": "2.5–3.0× BW" },
-          { "rank": "S",  "label": "Top 0.001% — 3.0–3.25× BW (competitive)",   "threshold": "3.0–3.25× BW" },
+          { "rank": "S",  "label": "Top 0.001% — 3.0–3.25× BW",                 "threshold": "3.0–3.25× BW" },
           { "rank": "S+", "label": "World record territory — 3.5× BW+",          "threshold": "3.5× BW+" }
         ]
-      }
-    ]
-  },
-
-  "Olympic Weightlifting": {
-    "type": "metric",
-    "classes": [
+      },
       {
-        "id": "snatch", "label": "Snatch (/ bodyweight)", "unit": "× bodyweight",
-        "note": "IWF standards. Elite male 100kg lifter snatches ~180kg (1.8× BW).",
+        "id": "snatch", "label": "Snatch / bodyweight (Olympic)", "unit": "× bodyweight",
+        "note": "Olympic Weightlifting. IWF standards. Elite 100kg lifter ~1.8× BW.",
         "ranks": [
           { "rank": "F",  "label": "Not trained",                       "threshold": null },
           { "rank": "E",  "label": "First steps — under 0.5× BW",      "threshold": "under 0.5× BW" },
@@ -358,8 +352,8 @@
         ]
       },
       {
-        "id": "clean_jerk", "label": "Clean & Jerk (/ bodyweight)", "unit": "× bodyweight",
-        "note": "Elite male 100kg lifter C&J ~220kg (2.2× BW).",
+        "id": "clean_jerk", "label": "Clean & Jerk / bodyweight (Olympic)", "unit": "× bodyweight",
+        "note": "Olympic Weightlifting. Elite 100kg lifter C&J ~2.2× BW.",
         "ranks": [
           { "rank": "F",  "label": "Not trained",                       "threshold": null },
           { "rank": "E",  "label": "First steps — under 0.6× BW",      "threshold": "under 0.6× BW" },

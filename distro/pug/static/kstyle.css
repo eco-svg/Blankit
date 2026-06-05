@@ -5254,6 +5254,17 @@ button.nav-pill:not(.btn-ghost):hover {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 1px 0;
+}
+.exp-rank-row.exp-subrank {
+  padding-left: 12px;
+  opacity: 0.75;
+}
+.exp-threshold-label {
+  font-size: 0.68rem;
+  font-family: monospace;
+  opacity: 0.55;
+  margin-left: auto;
 }
 .exp-rank-bar-track {
   flex: 1;
@@ -5262,6 +5273,10 @@ button.nav-pill:not(.btn-ghost):hover {
   background: rgba(255,255,255,0.05);
 }
 .exp-rank-bar { height: 100%; border-radius: 2px; width: 100%; }
+.exp-ladder-msg {
+  margin-top: 10px;
+  line-height: 1.5;
+}
 .skill-exp-hint {
   font-style: italic;
   opacity: 0.4;
