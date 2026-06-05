@@ -664,54 +664,18 @@
   })();
   </script>
 
-  <!-- DM Sidebar Drawer -->
-  <aside class="dm-bar" id="dmBar">
-    <div class="dm-bar-header">
-      <span class="dm-bar-title" id="dmCardTitle" data-i18n="card_dms">Messages</span>
-      <div class="dm-bar-actions">
-        <input type="text" id="dmUserSearch" placeholder="Search users..." autocomplete="off" class="dm-inline-search hidden">
-        <button class="icon-btn" id="newDmBtn" title="New message">+</button>
-        <button class="icon-btn" id="cancelNewDmBtn" title="Cancel" style="display:none;">✕</button>
-        <button class="dm-bar-close" id="dmBarClose">✕</button>
-      </div>
-    </div>
-    <div id="dmUserResults" class="dm-inline-results hidden"></div>
-    <div class="dm-bar-body">
-      <div id="dmConvList" class="dm-conv-list"></div>
-      <div id="dmChatView" class="dm-chat-view hidden">
-        <div class="dm-chat-header">
-          <button id="dmBackBtn" class="icon-btn" title="Back">←</button>
-          <span id="dmChatName" class="dm-chat-name"></span>
-        </div>
-        <div id="dmMessages" class="dm-messages"></div>
-        <div class="dm-input-row">
-          <button class="dm-attach-btn" id="dmAttachBtn" title="Attach file">📎</button>
-          <input type="file" id="dmFileInput" accept="image/*,video/*,audio/*" style="display:none;">
-          <button class="dm-voice-btn" id="dmVoiceBtn" title="Voice message">🎙</button>
-          <span class="dm-voice-timer" id="dmVoiceTimer">0:00</span>
-          <input type="text" id="dmInput" placeholder="Message..." autocomplete="off">
-          <button id="dmSendBtn">→</button>
-        </div>
-        <div id="dmUploadProgress" class="upload-progress hidden"><div class="upload-progress-bar" id="dmProgressBar"></div></div>
-        <div id="dmMediaPreview" class="dm-media-preview hidden"></div>
-      </div>
-    </div>
-  </aside>
-  <div class="dm-bar-backdrop" id="dmBarBackdrop"></div>
-
   <script>
   (function() {
     var toggle = document.getElementById('dmBarToggle');
-    var bar    = document.getElementById('dmBar');
-    var bd     = document.getElementById('dmBarBackdrop');
-    var closeBtn = document.getElementById('dmBarClose');
-    if (!toggle || !bar) return;
-    function openDm()  { bar.classList.add('open');    if(bd) bd.classList.add('active');    toggle.classList.add('active');    document.body.style.overflow='hidden'; }
-    function closeDm() { bar.classList.remove('open'); if(bd) bd.classList.remove('active'); toggle.classList.remove('active'); document.body.style.overflow=''; }
-    toggle.addEventListener('click', function() { bar.classList.contains('open') ? closeDm() : openDm(); });
-    if (closeBtn) closeBtn.addEventListener('click', closeDm);
-    if (bd) bd.addEventListener('click', closeDm);
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && bar.classList.contains('open')) closeDm(); });
+    if (!toggle) return;
+    function lbar() { return document.getElementById('commDmLbar'); }
+    function openDm()  { var l = lbar(); if (l) l.classList.add('open');    toggle.classList.add('active'); }
+    function closeDm() { var l = lbar(); if (l) l.classList.remove('open'); toggle.classList.remove('active'); }
+    toggle.addEventListener('click', function() {
+      var l = lbar();
+      if (l && l.classList.contains('open')) closeDm(); else openDm();
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDm(); });
   })();
   </script>
 
