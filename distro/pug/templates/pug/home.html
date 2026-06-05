@@ -672,8 +672,14 @@
     function openDm()  { var l = lbar(); if (l) l.classList.add('open');    toggle.classList.add('active'); }
     function closeDm() { var l = lbar(); if (l) l.classList.remove('open'); toggle.classList.remove('active'); }
     toggle.addEventListener('click', function() {
+      var onComm = document.body.getAttribute('data-route') === 'social';
       var l = lbar();
-      if (l && l.classList.contains('open')) closeDm(); else openDm();
+      if (!onComm) {
+        if (window._veyraNavigate) window._veyraNavigate('social', true);
+        openDm();
+      } else {
+        if (l && l.classList.contains('open')) closeDm(); else openDm();
+      }
     });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDm(); });
   })();
