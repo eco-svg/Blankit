@@ -4883,6 +4883,15 @@ button.nav-pill:not(.btn-ghost):hover {
 [data-filter="mono"]   .pug-bg { filter: grayscale(1) brightness(0.82); }
 [data-filter="dreamy"] .pug-bg { filter: blur(3px) brightness(0.78) saturate(0.70); }
 
+/* ── Community tab: full central area (desktop only) ─── */
+@media (min-width: 769px) {
+  body[data-route="social"] #sec-comms {
+    grid-column: 1 / -1;
+    height: calc(100dvh - var(--header-h) - 30px);
+    min-height: 500px;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════
    DM Sidebar Drawer
    ══════════════════════════════════════════════════════════ */
