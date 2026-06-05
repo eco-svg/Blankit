@@ -3831,33 +3831,129 @@ button.nav-pill:not(.btn-ghost):hover {
 .skill-add-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px 10px;
+  padding: 0;
   border-radius: 6px;
   background: rgba(255,255,255,0.03);
+  border: 1px solid transparent;
+  transition: background 0.12s, border-color 0.12s;
+  overflow: hidden;
+}
+.skill-add-row:hover { border-color: rgba(255,255,255,0.1); background: rgba(255,255,255,0.055); }
+.skill-add-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  cursor: pointer;
 }
 .skill-add-name {
   font-size: 0.78rem;
   font-weight: 600;
   opacity: 0.75;
 }
-.skill-add-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+.skill-add-arrow {
+  font-size: 0.9rem;
+  opacity: 0.3;
+  transition: opacity 0.12s, transform 0.12s;
 }
-.skill-add-chip {
+.skill-add-row.open .skill-add-arrow { opacity: 0.6; transform: rotate(90deg); }
+.skill-add-class-picker {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 0 10px 8px;
+}
+.skill-add-class-picker.hidden { display: none; }
+.skill-add-select {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 5px;
+  color: var(--text);
+  font-size: 0.74rem;
+  padding: 5px 8px;
+  outline: none;
   font-family: var(--font-mono);
-  font-size: 0.6rem;
-  padding: 2px 8px;
-  border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.15);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+.skill-add-select option { background: #1a1814; }
+.skill-add-confirm {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 5px 12px;
+  border-radius: 4px;
+  border: 1px solid rgba(212,165,116,0.4);
+  background: rgba(212,165,116,0.07);
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.skill-add-confirm:hover { background: rgba(212,165,116,0.15); }
+
+/* ── Detected Activity (suggestions) ────────────────── */
+.skill-suggestions-header {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  opacity: 0.35;
+  margin: 16px 0 6px;
+  padding: 0 2px;
+  text-transform: uppercase;
+}
+.skill-suggestion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 4px;
+}
+.skill-suggestion-name {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  opacity: 0.7;
+}
+.skill-suggestion-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.skill-suggestion-track {
+  font-family: var(--font-mono);
+  font-size: 0.63rem;
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(212,165,116,0.3);
+  background: rgba(212,165,116,0.05);
+  color: var(--accent);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.12s, border-color 0.12s;
+}
+.skill-suggestion-track:hover {
+  background: rgba(212,165,116,0.13);
+  border-color: rgba(212,165,116,0.55);
+}
+.skill-suggestion-dismiss {
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: none;
   background: transparent;
   color: var(--text-dim);
   cursor: pointer;
-  transition: border-color 0.12s, color 0.12s;
+  opacity: 0.3;
+  transition: opacity 0.12s;
 }
-.skill-add-chip:hover { border-color: #ffb700; color: #ffb700; }
+.skill-suggestion-dismiss:hover { opacity: 0.65; }
 
 @media (max-width: 640px) {
   .stats-content { padding: 20px 14px 28px; }

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rankBadgeEl        = document.getElementById('headerRankBadge');
     const statsPopupRankBadge= document.getElementById('statsPopupRankBadge');
     const skillsMainList     = document.getElementById('skillsMainList');
+    const skillSuggestionsArea = document.getElementById('skillSuggestionsArea');
     const reanalyzeBtn       = document.getElementById('reanalyzeBtn');
 
     let sheet      = null;
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
-    // ── Add skill manually ───────────────────────────────────────────────────
+    // ── Add skill manually (two-step) ────────────────────────────────────────
     const addSkillBtn     = document.getElementById('addSkillBtn');
     const skillAdder      = document.getElementById('skillAdder');
     const skillAdderInput = document.getElementById('skillAdderInput');
@@ -67,15 +68,60 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!q || !benchmarks) { skillAdderRes.innerHTML = ''; return; }
         const matches = Object.keys(benchmarks).filter(k => k.toLowerCase().includes(q)).slice(0, 7);
         if (!matches.length) { skillAdderRes.innerHTML = '<div class="skill-adder-empty">No match</div>'; return; }
-        skillAdderRes.innerHTML = matches.map(k => {
-            const bm = benchmarks[k];
-            const chips = (bm.classes || []).map(c =>
-                `<button class="skill-add-chip" data-skill="${k}" data-cid="${c.id}" data-clabel="${c.label}">${c.label}</button>`
-            ).join('');
-            return `<div class="skill-add-row"><span class="skill-add-name">${k}</span><div class="skill-add-chips">${chips}</div></div>`;
-        }).join('');
-        skillAdderRes.querySelectorAll('.skill-add-chip').forEach(chip => {
-            chip.addEventListener('click', () => addSkillManual(chip.dataset.skill, chip.dataset.cid, chip.dataset.clabel));
+        skillAdderRes.innerHTML = matches.map(k =>
+            `<div class="skill-add-row" data-skill="${k}">
+                <div class="skill-add-row-header">
+                    <span class="skill-add-name">${k}</span>
+                    <span class="skill-add-arrow">›</span>
+                </div>
+                <div class="skill-add-class-picker hidden"></div>
+            </div>`
+        ).join('');
+        skillAdderRes.querySelectorAll('.skill-add-row').forEach(row => {
+            row.querySelector('.skill-add-row-header')?.addEventListener('click', () => {
+                // Collapse any other open row
+                skillAdderRes.querySelectorAll('.skill-add-row.open').forEach(r => {
+                    if (r !== row) {
+                        r.classList.remove('open');
+                        r.querySelector('.skill-add-class-picker')?.classList.add('hidden');
+                    }
+                });
+                const skillName = row.dataset.skill;
+                const bm        = benchmarks[skillName];
+                const picker    = row.querySelector('.skill-add-class-picker');
+                if (!picker) return;
+                // Toggle
+                if (row.classList.contains('open')) {
+                    row.classList.remove('open');
+                    picker.classList.add('hidden');
+                    return;
+                }
+                row.classList.add('open');
+                picker.classList.remove('hidden');
+                const classes = bm?.classes || [];
+                if (classes.length === 0) {
+                    addSkillManual(skillName, '', '');
+                    return;
+                }
+                if (classes.length === 1) {
+                    addSkillManual(skillName, classes[0].id, classes[0].label);
+                    return;
+                }
+                const opts = classes.map(c => `<option value="${c.id}" data-label="${c.label}">${c.label}</option>`).join('');
+                picker.innerHTML = `
+                    <select class="skill-add-select">
+                        <option value="">Select class…</option>
+                        ${opts}
+                    </select>
+                    <button class="skill-add-confirm">Add</button>`;
+                picker.querySelector('.skill-add-confirm')?.addEventListener('click', () => {
+                    const sel      = picker.querySelector('.skill-add-select');
+                    const classId  = sel?.value;
+                    const classLabel = sel?.options[sel.selectedIndex]?.dataset.label || '';
+                    if (!classId) return;
+                    addSkillManual(skillName, classId, classLabel);
+                });
+            });
         });
     });
 
@@ -95,6 +141,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (skillAdderRes)   skillAdderRes.innerHTML = '';
     }
 
+    // ── Suggestions ──────────────────────────────────────────────────────────
+    function renderSuggestions(suggestions) {
+        if (!skillSuggestionsArea) return;
+        if (!suggestions?.length) { skillSuggestionsArea.innerHTML = ''; return; }
+        skillSuggestionsArea.innerHTML = `
+            <div class="skill-suggestions-header">Detected Activity</div>
+            ${suggestions.map(s => `
+                <div class="skill-suggestion-row">
+                    <span class="skill-suggestion-name">${s.name}${s.class_label ? `<span class="skill-class-tag">· ${s.class_label}</span>` : ''}</span>
+                    <div class="skill-suggestion-actions">
+                        <button class="skill-suggestion-track" data-skill="${s.name}" data-cid="${s.class_id||''}" data-clabel="${s.class_label||''}">Track</button>
+                        <button class="skill-suggestion-dismiss" data-skill="${s.name}" title="Dismiss">×</button>
+                    </div>
+                </div>`
+            ).join('')}`;
+        skillSuggestionsArea.querySelectorAll('.skill-suggestion-track').forEach(btn => {
+            btn.addEventListener('click', () =>
+                addSkillManual(btn.dataset.skill, btn.dataset.cid, btn.dataset.clabel)
+            );
+        });
+        skillSuggestionsArea.querySelectorAll('.skill-suggestion-dismiss').forEach(btn => {
+            btn.addEventListener('click', () => dismissSuggestion(btn.dataset.skill));
+        });
+    }
+
+    async function dismissSuggestion(name) {
+        try {
+            const res = await fetch('/pug/api/stats/skill-suggestion/dismiss', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            const data = await res.json();
+            if (data.sheet) { sheet = data.sheet; renderSuggestions(sheet.suggestions || []); }
+        } catch {}
+    }
+
     // ── Class selection (localStorage + backend) ─────────────────────────────
     function _classKey(skillName) { return `veyra_sc_${skillName}`; }
 
@@ -104,8 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveClass(skillName, classId, classLabel) {
         try { localStorage.setItem(_classKey(skillName), JSON.stringify({ id: classId, label: classLabel })); } catch {}
-        _applyClassTag(skillName, classLabel);
-        // Update in-memory sheet so it survives re-render without round-trip
+        // Update in-memory sheet
         if (sheet?.skills) {
             const sk = sheet.skills.find(s => s.name === skillName);
             if (sk) { sk.class_id = classId; sk.class_label = classLabel; }
@@ -116,21 +198,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: skillName, class_id: classId, class_label: classLabel })
         }).catch(() => {});
-    }
-
-    function _applyClassTag(skillName, classLabel) {
-        if (!skillsMainList) return;
-        const row = skillsMainList.querySelector(`.skill-row-prog[data-skill="${CSS.escape(skillName)}"]`);
-        if (!row) return;
-        let tag = row.querySelector('.skill-class-tag');
-        if (!tag) {
-            const nameEl = row.querySelector('.skill-name');
-            if (!nameEl) return;
-            tag = document.createElement('span');
-            tag.className = 'skill-class-tag';
-            nameEl.insertAdjacentElement('afterend', tag);
-        }
-        tag.textContent = `· ${classLabel}`;
     }
 
     function fmtExp(n) {
@@ -215,8 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const classTag = s.class_label ? `<span class="skill-class-tag">· ${s.class_label}</span>` : '';
         const bm       = getBenchmark(s.name);
         const isExp    = bm?.type === 'exp';
+        const hasClass = !!(s.class_id || s.class_label);
 
-        // Always show the actual rank — verified = full color, unverified = dimmed
         let badgeHtml;
         if (isExp) {
             const expRank  = computeExpRank(s.exp || 0);
@@ -247,10 +314,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div>
                 </div>`;
                 nextLine = `<div class="skill-next skill-exp-hint">${fmtExp(xpInTier)} / ${fmtExp(tierSize)} XP</div>`;
-                expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Show classes">···</button>`;
+                if (!hasClass) {
+                    expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Choose class">···</button>`;
+                }
             } else {
-                // Metric — use first class by default
-                const cls = bm.classes?.[0];
+                // Use locked class if set, else first class
+                const lockedCls = hasClass
+                    ? (bm.classes?.find(c => c.id === s.class_id) || bm.classes?.[0])
+                    : bm.classes?.[0];
+                const cls = lockedCls;
                 if (cls && verified) {
                     const pct  = Math.round(rankProgress(cls, rank) * 100);
                     const next = nextRankInClass(cls, rank);
@@ -267,7 +339,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:8%;background:${color}44;"></div></div>`;
                     nextLine = `<div class="skill-next skill-unverified-hint">${s.note || 'Add proof in Achievements to unlock rank'}</div>`;
                 }
-                expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="metric" title="Show rank ladder">···</button>`;
+                if (!hasClass) {
+                    expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="metric" title="Show rank ladder">···</button>`;
+                }
             }
         }
 
@@ -285,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Ladder HTML (metric) ─────────────────────────────────────────────────
     function metricLadderHTML(skillName, currentRank, bm) {
         const rank    = normaliseRank(currentRank);
-        // Class tabs
         const tabs = bm.classes.map((cls, i) => `
             <button class="ladder-class-tab${i===0?' active':''}" data-cls-idx="${i}">${cls.label}</button>`
         ).join('');
@@ -317,14 +390,13 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>`;
     }
 
-    // ── EXP ladder HTML (class picker / info) ───────────────────────────────
+    // ── EXP ladder HTML ──────────────────────────────────────────────────────
     function expLadderHTML(bm, activeClassId) {
         const chips = (bm.classes || []).map(c => {
             const active = c.id === activeClassId;
             return `<span class="exp-class-chip${active ? ' active' : ''}" data-class-id="${c.id}" data-class-label="${c.label}">${c.label}</span>`;
         }).join('');
 
-        const savedLabel = getSavedClass(activeClassId ? bm?.classes?.find(c => c.id === activeClassId)?.label || '' : '')?.label || '';
         const lockNote = activeClassId
             ? `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Class locked: ${bm?.classes?.find(c=>c.id===activeClassId)?.label||activeClassId}</span>`
             : `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Tap a class to select it — one-time per skill entry.</span>`;
@@ -355,12 +427,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bm        = getBenchmark(skillName);
                 if (!bm) return;
 
-                // Use saved class if set
                 const saved = getSavedClass(skillName);
                 const activeClassId = saved?.id || '';
 
                 const rankEl = row.querySelector('.rank-badge');
-                const rank   = rankEl?.textContent?.trim() === '?' ? 'F' : (rankEl?.textContent?.trim() || 'F');
+                const rank   = rankEl?.textContent?.trim() || 'F';
                 const html   = bm.type === 'exp'
                     ? expLadderHTML(bm, activeClassId)
                     : metricLadderHTML(skillName, rank, bm);
@@ -368,9 +439,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.insertAdjacentHTML('beforeend', html);
                 btn.textContent = '✕';
 
-                // ── Wire metric class tabs ─────────────────────────────────
+                // Wire metric class tabs
                 if (saved) {
-                    // Class already locked — tabs are display-only, no switching
                     row.querySelectorAll('.ladder-class-tab').forEach(t => {
                         t.style.cursor = 'default';
                         t.title = `Class locked: ${saved.label}`;
@@ -386,11 +456,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const noteEl = row.querySelector('.ladder-note');
                                 if (noteEl) noteEl.textContent = cls.note || '';
                                 saveClass(skillName, cls.id, cls.label);
-                                // Lock remaining tabs after selection
                                 row.querySelectorAll('.ladder-class-tab').forEach(t => {
                                     t.style.cursor = 'default';
                                     t.title = `Class locked: ${cls.label}`;
-                                    t.replaceWith(t.cloneNode(true)); // remove listeners
+                                    t.replaceWith(t.cloneNode(true));
                                 });
                                 const lockEl = row.querySelector('.ladder-lock-note');
                                 if (lockEl) lockEl.textContent = `Locked: ${cls.label}`;
@@ -399,9 +468,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                // ── Wire EXP class chips ───────────────────────────────────
+                // Wire EXP class chips
                 if (saved) {
-                    // Already locked — chips are read-only
                     row.querySelectorAll('.exp-class-chip').forEach(c => {
                         c.style.cursor = 'default';
                         c.style.pointerEvents = 'none';
@@ -441,17 +509,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!skillsMainList) return;
         if (!sheet?.skills?.length) {
             skillsMainList.innerHTML = '<div class="skill-loading" style="margin-top:30px;">Click <strong>analyze</strong> or open STATS to detect your skills.</div>';
+            renderSuggestions(sheet?.suggestions || []);
             return;
         }
         const sorted = [...sheet.skills].sort((a, b) =>
             RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
-        skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s, true)).join('');
-        // Apply any previously saved class selections
+        // Merge localStorage class into each skill before rendering
         sorted.forEach(s => {
             const saved = getSavedClass(s.name);
-            if (saved?.label) _applyClassTag(s.name, saved.label);
+            if (saved?.id)    s.class_id    = saved.id;
+            if (saved?.label) s.class_label = saved.label;
         });
+        skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s, true)).join('');
         wireSkillLadderBtns();
+        renderSuggestions(sheet.suggestions || []);
     }
 
     function netRank(skills) {

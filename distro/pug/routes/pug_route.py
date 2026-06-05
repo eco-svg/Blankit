@@ -1406,26 +1406,44 @@ def get_stats_sheet():
     # DB-backed cache — survives server restarts
     db_sheet = _get_cached_sheet(user_id)
 
+    def _ai_to_suggestions(ai_sheet, keep_skills):
+        """Convert AI-generated skills into suggestions, preserving confirmed user skills."""
+        confirmed = {s.get('name') for s in keep_skills}
+        suggestions = [
+            {'name': s['name'], 'class_id': s.get('class_id', ''), 'class_label': s.get('class_label', '')}
+            for s in (ai_sheet.pop('skills', None) or [])
+            if s.get('name') and s['name'] not in confirmed
+        ]
+        ai_sheet['suggestions'] = suggestions
+        return ai_sheet
+
     if cache_only:
         # Page-load silent fetch: only return what's already stored, never generate
         sheet = db_sheet
     elif refresh:
-        # Midnight forced refresh — always regenerate
+        # Forced refresh — regenerate personality/class/bio/suggestions; preserve confirmed skills
+        old_sheet    = db_sheet or {}
         user_context = _assemble_user_context(user_id, session.get('username', ''))
-        sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
-        if sheet:
+        new_sheet    = _generate_character_sheet(user_id, user_context, notes_count, streak)
+        if new_sheet:
+            new_sheet['skills'] = old_sheet.get('skills', [])
+            _ai_to_suggestions(new_sheet, new_sheet['skills'])
+            sheet = new_sheet
             _save_cached_sheet(user_id, sheet)
-            _ensure_skill_habits(user_id, sheet.get('skills', []))
+        else:
+            sheet = db_sheet
     elif db_sheet:
         # Cache exists — return it regardless of age; midnight refresh handles updates
         sheet = db_sheet
     else:
         # No cache at all (first use) — generate once
         user_context = _assemble_user_context(user_id, session.get('username', ''))
-        sheet = _generate_character_sheet(user_id, user_context, notes_count, streak)
-        if sheet:
+        new_sheet    = _generate_character_sheet(user_id, user_context, notes_count, streak)
+        if new_sheet:
+            new_sheet['skills'] = []
+            _ai_to_suggestions(new_sheet, [])
+            sheet = new_sheet
             _save_cached_sheet(user_id, sheet)
-            _ensure_skill_habits(user_id, sheet.get('skills', []))
 
     return jsonify({
         'notes_count': notes_count,
@@ -1476,10 +1494,28 @@ def add_skill_manual():
             'name': name, 'rank': 'E-', 'verified': False,
             'context': '', 'note': 'Add proof in Achievements to unlock a real rank.',
             'class_id': class_id, 'class_label': class_label, 'exp': 0,
+            'user_added': True,
         })
         sheet['skills'] = skills
+        # Remove from suggestions once confirmed
+        sheet['suggestions'] = [s for s in sheet.get('suggestions', []) if s.get('name') != name]
         _save_cached_sheet(user_id, sheet)
         _ensure_skill_habits(user_id, [{'name': name}])
+    return jsonify({'ok': True, 'sheet': sheet})
+
+
+@pug_bp.route('/pug/api/stats/skill-suggestion/dismiss', methods=['POST'])
+def dismiss_suggestion():
+    err = login_required_api()
+    if err: return err
+    user_id = session.get('user_id')
+    data    = request.get_json(force=True) or {}
+    name    = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'name required'}), 400
+    sheet = _get_cached_sheet(user_id) or {}
+    sheet['suggestions'] = [s for s in sheet.get('suggestions', []) if s.get('name') != name]
+    _save_cached_sheet(user_id, sheet)
     return jsonify({'ok': True, 'sheet': sheet})
 
 
