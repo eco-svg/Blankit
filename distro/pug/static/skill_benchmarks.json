@@ -1468,8 +1468,8 @@
     "type": "metric",
     "classes": [
       {
-        "id": "atp_wta",
-        "label": "ATP / WTA Ranking",
+        "id": "level",
+        "label": "Skill Level",
         "unit": "ranking (lower = better)",
         "note": "~5,000 ATP-ranked players globally. ~500 earn a living. NTRP scale used for recreational.",
         "ranks": [
@@ -1627,8 +1627,8 @@
     "type": "metric",
     "classes": [
       {
-        "id": "psa",
-        "label": "PSA World Ranking",
+        "id": "level",
+        "label": "Skill Level",
         "unit": "ranking (lower = better)",
         "note": "~500 PSA-ranked pros. ~50,000 semi-pro players globally.",
         "ranks": [
@@ -3144,12 +3144,16 @@
     "type": "exp",
     "classes": [
       {
-        "id": "piano",
-        "label": "Piano"
+        "id": "classical",
+        "label": "Classical"
       },
       {
-        "id": "keyboard",
-        "label": "Keyboard"
+        "id": "jazz",
+        "label": "Jazz"
+      },
+      {
+        "id": "pop",
+        "label": "Pop & Contemporary"
       }
     ]
   },
@@ -3157,8 +3161,16 @@
     "type": "exp",
     "classes": [
       {
-        "id": "violin",
-        "label": "Violin"
+        "id": "classical",
+        "label": "Classical"
+      },
+      {
+        "id": "folk",
+        "label": "Folk / Fiddle"
+      },
+      {
+        "id": "jazz",
+        "label": "Jazz"
       }
     ]
   },
@@ -3213,8 +3225,16 @@
     "type": "exp",
     "classes": [
       {
-        "id": "dj",
-        "label": "DJ"
+        "id": "club",
+        "label": "Club & EDM"
+      },
+      {
+        "id": "hiphop",
+        "label": "Hip-Hop & Scratch"
+      },
+      {
+        "id": "events",
+        "label": "Events & Mobile"
       }
     ]
   },
@@ -3478,21 +3498,11 @@
   },
   "Football": {
     "type": "exp",
-    "classes": [
-      {
-        "id": "football",
-        "label": "Football / Soccer"
-      }
-    ]
+    "classes": []
   },
   "Basketball": {
     "type": "exp",
-    "classes": [
-      {
-        "id": "basketball",
-        "label": "Basketball"
-      }
-    ]
+    "classes": []
   },
   "Cricket": {
     "type": "exp",
@@ -3545,28 +3555,22 @@
     "type": "exp",
     "classes": [
       {
-        "id": "surfing",
-        "label": "Surfing"
+        "id": "shortboard",
+        "label": "Shortboard"
+      },
+      {
+        "id": "longboard",
+        "label": "Longboard"
       }
     ]
   },
   "Breakdancing": {
     "type": "exp",
-    "classes": [
-      {
-        "id": "breaking",
-        "label": "Breaking / B-boying"
-      }
-    ]
+    "classes": []
   },
   "Parkour": {
     "type": "exp",
-    "classes": [
-      {
-        "id": "parkour",
-        "label": "Parkour / Freerunning"
-      }
-    ]
+    "classes": []
   },
   "Yoga": {
     "type": "exp",

@@ -107,7 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 if (classes.length === 1) {
-                    addSkillManual(skillName, classes[0].id, classes[0].label);
+                    // Auto-add; skip class tag if label is same as skill name
+                    const c = classes[0];
+                    const sameAsSkill = c.label.toLowerCase().replace(/\W/g,'').includes(skillName.toLowerCase().replace(/\W/g,''));
+                    addSkillManual(skillName, sameAsSkill ? '' : c.id, sameAsSkill ? '' : c.label);
                     return;
                 }
                 const opts = classes.map(c => `<option value="${c.id}" data-label="${c.label}">${c.label}</option>`).join('');
@@ -341,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { pct, xpInTier, tierSize } = expTierProgress(exp);
                 progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div></div>`;
                 nextLine = `<div class="skill-next skill-exp-hint">${fmtExp(xpInTier)} / ${fmtExp(tierSize)} XP</div>`;
-                if (!hasClass) {
+                if (!hasClass && bm.classes?.length > 0) {
                     expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Choose class">···</button>`;
                 }
             } else {
