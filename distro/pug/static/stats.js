@@ -21,9 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
         'B+': '#5a8fc8', 'B': '#4a7aaa', 'B-': '#4070a0',
         'C+': '#8ac888', 'C': '#78b878', 'C-': '#68a068',
         'D+': '#a0a0a0', 'D': '#888888', 'D-': '#707070',
-        'E':  '#c06030', 'F': '#803010',
+        'E+': '#d07040', 'E': '#c06030', 'E-': '#a05020',
+        'F':  '#803010',
     };
-    const RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
+    const RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E+','E','E-','F'];
 
     // ── Navigation ──────────────────────────────────────────────────────────
     function openStats() {
@@ -199,7 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function expLadderHTML(bm) {
         const classList = bm.classes.map(c => `<span class="exp-class-chip">${c.label}</span>`).join('');
 
-        const EXP_RANKS = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F'];
+        const EXP_RANKS = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E+','E','E-','F'];
         const thresholds = expConfig?.rank_thresholds || {};
         const rankRows = EXP_RANKS.map(r => {
             const xp  = thresholds[r];
