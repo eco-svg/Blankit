@@ -1,3 +1,9 @@
+// Apply saved palette immediately on script load (prevents flash of wrong theme)
+(function() {
+    const p = localStorage.getItem('veyra-pug-palette');
+    if (p && p !== 'dark') document.documentElement.setAttribute('data-theme', p);
+})();
+
 // ── Mobile custom select picker ───────────────────────────────────────────────
 function initMobSelects() {
     if (window.innerWidth > 768) return;
@@ -82,6 +88,14 @@ function _stopStarfield() {
     if (_starCanvas) { _starCanvas.remove(); _starCanvas = null; }
 }
 
+function applyPalette(name) {
+    if (!name || name === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        document.documentElement.setAttribute('data-theme', name);
+    }
+}
+
 function applyWallpaper(name) {
     _stopStarfield();
     if (!name || name === 'default') {
@@ -93,6 +107,20 @@ function applyWallpaper(name) {
 }
 
 function initThemeSwatches() {
+    // Color palette (full theme swap)
+    const savedPalette = localStorage.getItem('veyra-pug-palette') || 'dark';
+    applyPalette(savedPalette);
+    document.querySelectorAll('.palette-swatch').forEach(btn => {
+        if (btn.dataset.palette === savedPalette) btn.classList.add('theme-swatch-active');
+        btn.addEventListener('click', () => {
+            const p = btn.dataset.palette;
+            localStorage.setItem('veyra-pug-palette', p);
+            applyPalette(p);
+            document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
+            btn.classList.add('theme-swatch-active');
+        });
+    });
+
     // Wallpaper (background)
     const savedWp = localStorage.getItem('veyra-pug-wallpaper') || 'default';
     applyWallpaper(savedWp);
