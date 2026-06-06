@@ -88,11 +88,12 @@
     </div>
   </header>
 
-  <!-- Left capsule rail — Notes, Skills & Habits -->
+  <!-- Left capsule rail — Notes, Skills, Habits & Physique -->
   <div class="veyra-lbar" id="veyraLbar">
     <button class="lbar-capsule" data-route="notes">Notes</button>
     <button class="lbar-capsule" data-route="skills">Skills</button>
     <button class="lbar-capsule" data-route="habits">Habits</button>
+    <button class="lbar-capsule lbar-capsule-soon" id="physiqueCapsule">Physique</button>
   </div>
 
   <div class="page-layout">
@@ -662,6 +663,13 @@
     });
     sendBtn.addEventListener('click', ask);
     input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
+  })();
+  </script>
+
+  <script>
+  (function() {
+    var pc = document.getElementById('physiqueCapsule');
+    if (pc) pc.addEventListener('click', function(e) { e.stopPropagation(); });
   })();
   </script>
 

@@ -159,15 +159,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-username">${esc(p.username)}</span>`
             : `<button class="comm-username comm-username-link" data-uid="${p.user_id}">${esc(p.username)}</button>`;
 
-        // Marketplace CTA — action button for viewers, label for own posts
+        // Marketplace CTA — action button on all typed posts
         let ctaHtml = '';
         if (p.post_type) {
-            if (p.is_mine) {
-                ctaHtml = `<div class="comm-post-type-own comm-post-type-own-${p.post_type}">${p.post_type}</div>`;
-            } else {
-                const label = MARKET_LABELS[p.post_type] || p.post_type;
-                ctaHtml = `<button class="comm-market-cta comm-market-cta-${p.post_type}" data-uid="${p.user_id}" data-username="${esc(p.username)}">${label}</button>`;
-            }
+            const label = MARKET_LABELS[p.post_type] || p.post_type;
+            ctaHtml = `<button class="comm-market-cta comm-market-cta-${p.post_type}" data-uid="${p.user_id}" data-username="${esc(p.username)}" data-mine="${p.is_mine ? '1' : ''}">${label}</button>`;
         }
 
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
@@ -206,8 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
 
-        // Marketplace CTA — open DM
+        // Marketplace CTA — open DM (skip on own posts)
         el.querySelector('.comm-market-cta')?.addEventListener('click', function() {
+            if (this.dataset.mine) return;
             const uid      = parseInt(this.dataset.uid);
             const username = this.dataset.username;
             document.getElementById('commDmLbar')?.classList.add('open');

@@ -411,6 +411,24 @@ body.lbar-open .playground {
   color: var(--accent);
 }
 
+.lbar-capsule-soon {
+  opacity: 0.45;
+  cursor: default;
+  position: relative;
+}
+.lbar-capsule-soon::after {
+  content: 'SOON';
+  position: absolute;
+  top: 6px;
+  right: 50%;
+  transform: translateX(50%) rotate(180deg);
+  font-size: 0.44rem;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  opacity: 0.8;
+}
+
 .adbox-row {
   grid-column: 1 / -1;
   display: flex;
@@ -4706,34 +4724,33 @@ button.nav-pill:not(.btn-ghost):hover {
   font-weight: 600;
 }
 
-/* ── Feed mode toggle (Radar / Global) ─────────────────── */
+/* ── Feed mode toggle (inline in title row) ─────────────── */
 .comm-feed-mode-bar {
   display: flex;
-  flex-shrink: 0;
   gap: 0;
-  padding: 8px 16px 4px;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.14);
+  flex-shrink: 0;
 }
 .comm-mode-btn {
-  flex: 1;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  border: none;
   cursor: pointer;
-  color: var(--text);
-  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-size: 0.68rem;
   font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  padding: 7px 0;
-  font-weight: 500;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.05em;
+  padding: 4px 11px;
+  font-weight: 600;
+  transition: background 0.14s, color 0.14s;
+  white-space: nowrap;
 }
-.comm-mode-btn:first-child { border-radius: 8px 0 0 8px; border-right: none; }
-.comm-mode-btn:last-child  { border-radius: 0 8px 8px 0; }
-.comm-mode-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.comm-mode-btn + .comm-mode-btn { border-left: 1px solid rgba(255,255,255,0.14); }
+.comm-mode-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
 .comm-mode-btn.active {
   background: rgba(212,165,116,0.18);
-  border-color: rgba(212,165,116,0.45);
   color: var(--accent);
-  font-weight: 700;
 }
 
 /* Marketplace type pills in compose */
