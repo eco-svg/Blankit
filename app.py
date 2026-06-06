@@ -94,6 +94,7 @@ def _migrate_schema():
             ('student_submitted_at', 'TIMESTAMP'),
             ('student_id_url',       'VARCHAR(500)'),
             ('dob',                  'DATE'),
+            ('last_seen',            'TIMESTAMP'),
         ]
         existing = {c['name'] for c in inspector.get_columns('users')}
         for col, col_type in new_cols:
