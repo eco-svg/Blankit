@@ -166,10 +166,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
         const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
 
-        // ShowOff-only buttons
+        // Buy + Learn only on ShowOff posts (bottom right)
         const showOffBtns = isShowOff ? `
             <button class="comm-action-btn comm-action-buy"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
             <button class="comm-action-btn comm-action-learn" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : '';
+
+        const typeSwitcher = p.is_mine ? `
+            <div class="comm-type-switcher">
+                <button class="comm-type-sw-btn${!isShowOff ? ' active' : ''}" data-type="blog">Blog</button>
+                <button class="comm-type-sw-btn${isShowOff ? ' active' : ''}" data-type="showoff">ShowOff ✦</button>
+            </div>` : '';
 
         el.innerHTML = `
             <div class="comm-post-header">
@@ -186,19 +192,17 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             ${mediaHtml}
             ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
-            <div class="comm-post-actions">
-                <div class="comm-post-actions-left">
-                    <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
-                    <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
-                    ${showOffBtns}
-                </div>
-                <div class="comm-post-actions-right">
+            ${typeSwitcher}
+            <div class="comm-post-footer">
+                <div class="comm-showoff-btns">${showOffBtns}</div>
+                <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
                     <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
                     <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
                     <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
                 </div>
             </div>
+            <div class="comm-comments-preview"></div>
             <div class="comm-post-comments hidden">
                 <div class="comm-comments-list"></div>
                 <div class="comm-comment-input-row">
@@ -210,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
 
-        // Action buttons (Hire / Collab / Buy / Learn) — open DM
+        // Buy / Learn buttons — open DM
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (this.dataset.mine) return;
@@ -218,6 +222,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 const username = this.dataset.username;
                 document.getElementById('commDmLbar')?.classList.add('open');
                 document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+            });
+        });
+
+        // Type switcher (own posts)
+        el.querySelectorAll('.comm-type-sw-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const newType = this.dataset.type;
+                fetch(`/pug/api/community/${p.id}/type`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ post_type: newType })
+                }).then(r => r.json()).then(data => {
+                    if (!data.ok) return;
+                    el.querySelectorAll('.comm-type-sw-btn').forEach(b =>
+                        b.classList.toggle('active', b.dataset.type === newType));
+                    const nowShowOff = newType === 'showoff';
+                    const showOffContainer = el.querySelector('.comm-showoff-btns');
+                    if (showOffContainer) {
+                        showOffContainer.innerHTML = nowShowOff ? `
+                            <button class="comm-action-btn comm-action-buy"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
+                            <button class="comm-action-btn comm-action-learn" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : '';
+                        showOffContainer.querySelectorAll('.comm-action-btn').forEach(b => {
+                            b.addEventListener('click', function() {
+                                if (this.dataset.mine) return;
+                                document.getElementById('commDmLbar')?.classList.add('open');
+                                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username } }));
+                            });
+                        });
+                    }
+                }).catch(() => {});
             });
         });
 
@@ -232,10 +266,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 if (action === 'comment') {
+                    const preview    = el.querySelector('.comm-comments-preview');
                     const commentsEl = el.querySelector('.comm-post-comments');
+                    preview?.classList.add('hidden');
                     const nowVisible = commentsEl.classList.toggle('hidden') === false;
                     if (nowVisible && commentsEl.dataset.loaded !== 'true') {
-                        loadComments(p.id, commentsEl);
+                        loadComments(p.id, commentsEl, p.is_mine);
                     }
                     return;
                 }
@@ -244,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: action })
                 }).then(r => r.json()).then(data => {
-                    el.querySelector('[data-action="like"] .react-count').textContent  = data.likes    || 0;
+                    el.querySelector('[data-action="like"] .react-count').textContent    = data.likes    || 0;
                     el.querySelector('[data-action="dislike"] .react-count').textContent = data.dislikes || 0;
                     el.querySelector('[data-action="like"]').classList.toggle('active',    data.my_reaction === 'like');
                     el.querySelector('[data-action="dislike"]').classList.toggle('active', data.my_reaction === 'dislike');
@@ -253,16 +289,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Comments
-        const commentsEl  = el.querySelector('.comm-post-comments');
+        const commentsEl   = el.querySelector('.comm-post-comments');
         const commentInput = el.querySelector('.comm-comment-input');
         const commentSend  = el.querySelector('.comm-comment-send');
-        commentSend?.addEventListener('click', () => sendComment(p.id, commentInput, commentsEl));
-        commentInput?.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(p.id, commentInput, commentsEl); });
+        commentSend?.addEventListener('click', () => sendComment(p.id, commentInput, commentsEl, el));
+        commentInput?.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(p.id, commentInput, commentsEl, el); });
+
+        // Auto-load top 3 preview comments
+        if ((p.comment_count || 0) > 0) {
+            loadPreviewComments(p.id, el);
+        }
 
         return el;
     }
 
-    function loadComments(pid, commentsEl) {
+    function buildCommentRow(c, isMine) {
+        const pinBtn = c.can_pin
+            ? `<button class="comm-pin-btn${c.is_pinned ? ' pinned' : ''}" data-cid="${c.id}" title="${c.is_pinned ? 'Unpin' : 'Pin'}">📌</button>` : '';
+        const pinBadge = c.is_pinned ? `<span class="comm-pin-badge">pinned</span>` : '';
+        const row = document.createElement('div');
+        row.className = 'comm-comment-row';
+        row.dataset.cid = c.id;
+        row.innerHTML = `${pinBadge}<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span><span class="comm-comment-ago">${timeAgo(c.created_at)}</span>${pinBtn}`;
+        return row;
+    }
+
+    function loadComments(pid, commentsEl, isMine) {
         const list = commentsEl.querySelector('.comm-comments-list');
         commentsEl.dataset.loaded = 'true';
         list.innerHTML = '<div class="comm-comments-loading">loading…</div>';
@@ -275,16 +327,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 comments.forEach(c => {
-                    const row = document.createElement('div');
-                    row.className = 'comm-comment-row';
-                    row.innerHTML = `<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span><span class="comm-comment-ago">${timeAgo(c.created_at)}</span>`;
+                    const row = buildCommentRow(c, isMine);
+                    row.querySelector('.comm-pin-btn')?.addEventListener('click', function() {
+                        fetch(`/pug/api/community/${pid}/comment/${c.id}/pin`, { method: 'POST' })
+                            .then(r => r.json()).then(() => loadComments(pid, commentsEl, isMine)).catch(() => {});
+                    });
                     list.appendChild(row);
                 });
             })
             .catch(() => { list.innerHTML = ''; });
     }
 
-    function sendComment(pid, input, commentsEl) {
+    function loadPreviewComments(pid, postEl) {
+        const preview = postEl.querySelector('.comm-comments-preview');
+        if (!preview) return;
+        fetch(`/pug/api/community/${pid}/comments`)
+            .then(r => r.json())
+            .then(comments => {
+                preview.innerHTML = '';
+                const top3 = comments.slice(-3);
+                top3.forEach(c => {
+                    const row = document.createElement('div');
+                    row.className = 'comm-comment-preview-row';
+                    row.innerHTML = `<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span>`;
+                    preview.appendChild(row);
+                });
+            }).catch(() => {});
+    }
+
+    function sendComment(pid, input, commentsEl, postEl) {
         const text = (input?.value || '').trim();
         if (!text) return;
         fetch(`/pug/api/community/${pid}/comment`, {
@@ -295,9 +366,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) return;
             input.value = '';
             commentsEl.dataset.loaded = 'false';
-            loadComments(pid, commentsEl);
-            const countEl = commentsEl.closest('.comm-post')?.querySelector('[data-action="comment"] .react-count');
+            const isMine = postEl?.querySelector('.comm-del-btn') !== null;
+            loadComments(pid, commentsEl, isMine);
+            const countEl = postEl?.querySelector('[data-action="comment"] .react-count');
             if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+            loadPreviewComments(pid, postEl);
         }).catch(() => {});
     }
 
@@ -510,12 +583,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const pubSkills    = document.getElementById('pubProfileSkills');
     const pubEmpty     = document.getElementById('pubProfileEmpty');
     const closePub     = document.getElementById('closePubProfileBtn');
+    const pubActions   = document.getElementById('pubProfileActions');
 
     closePub?.addEventListener('click', () => pubModal?.classList.add('hidden'));
     window.addEventListener('click', e => { if (e.target === pubModal) pubModal?.classList.add('hidden'); });
 
+    pubActions?.querySelectorAll('.pub-action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const uid      = parseInt(pubModal.dataset.uid || '0');
+            const username = pubModal.dataset.username || '';
+            if (!uid) return;
+            pubModal.classList.add('hidden');
+            document.getElementById('commDmLbar')?.classList.add('open');
+            document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+        });
+    });
+
     function openProfile(uid, username) {
         if (!pubModal) return;
+        pubModal.dataset.uid      = uid;
+        pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
         if (pubAvatar) pubAvatar.textContent = (username||'?')[0].toUpperCase();
         if (pubName)   pubName.textContent   = username;
@@ -523,6 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pubClass)  pubClass.textContent  = '';
         if (pubSkills) pubSkills.innerHTML   = '';
         if (pubEmpty)  pubEmpty.classList.add('hidden');
+        if (pubActions) pubActions.classList.remove('hidden');
         fetch(`/pug/api/users/${uid}/profile`)
             .then(r => r.json())
             .then(data => {

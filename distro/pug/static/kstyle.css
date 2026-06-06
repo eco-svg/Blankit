@@ -2992,25 +2992,50 @@ div.infinite-canvas video {
 .comm-range-label { flex-shrink: 0; }
 
 /* ── Post reactions footer ────────────────────────────── */
-/* ── Post action row (bottom of every post) ──────────────── */
-.comm-post-actions {
+/* ── Post type switcher (own posts only) ─────────────────── */
+.comm-type-switcher {
+    display: flex;
+    gap: 0;
+    margin: 8px 0 0;
+    width: fit-content;
+    border-radius: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.comm-type-sw-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 3px 10px;
+    transition: background 0.13s, color 0.13s;
+}
+.comm-type-sw-btn + .comm-type-sw-btn { border-left: 1px solid rgba(255,255,255,0.1); }
+.comm-type-sw-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.comm-type-sw-btn.active { background: rgba(255,200,60,0.14); color: #ffc83c; }
+
+/* ── Post footer (Buy/Learn + reactions) ─────────────────── */
+.comm-post-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 6px;
     margin-top: 10px;
     padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,0.08);
 }
-.comm-post-actions-left {
+.comm-showoff-btns {
     display: flex;
     gap: 6px;
-    flex-wrap: wrap;
+    margin-right: auto;
 }
-.comm-post-actions-right {
+.comm-post-reactions {
     display: flex;
     gap: 3px;
-    flex-shrink: 0;
 }
 
 /* Action buttons — Hire / Collab / Buy / Learn */
@@ -3092,6 +3117,70 @@ div.infinite-canvas video {
     color: var(--text-dim);
     padding: 4px 0;
 }
+
+/* ── Comments preview (top 3, always visible) ────────────── */
+.comm-comments-preview { margin-top: 6px; }
+.comm-comment-preview-row {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    padding: 2px 0;
+    font-size: 0.77rem;
+}
+.comm-comment-preview-row .comm-comment-user { font-weight: 700; color: var(--accent); font-size: 0.72rem; flex-shrink: 0; }
+.comm-comment-preview-row .comm-comment-text { color: var(--text); flex: 1; word-break: break-word; }
+
+/* ── Pin button & badge ───────────────────────────────────── */
+.comm-pin-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.72rem;
+    opacity: 0.3;
+    padding: 0 2px;
+    transition: opacity 0.12s;
+    flex-shrink: 0;
+}
+.comm-pin-btn:hover, .comm-pin-btn.pinned { opacity: 1; }
+.comm-pin-badge {
+    font-size: 0.6rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: rgba(212,165,116,0.12);
+    border-radius: 4px;
+    padding: 1px 5px;
+    margin-right: 4px;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+/* ── Profile popup action buttons ────────────────────────── */
+.pub-profile-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+}
+.pub-action-btn {
+    flex: 1;
+    padding: 7px 0;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: opacity 0.14s, transform 0.1s;
+    border-width: 1.5px;
+    border-style: solid;
+}
+.pub-action-btn:hover { opacity: 0.82; transform: translateY(-1px); }
+.pub-action-hire   { background: rgba(255,160,72,0.15);  border-color: #ffa048; color: #ffa048; }
+.pub-action-collab { background: rgba(255,100,180,0.15); border-color: #ff64b4; color: #ff64b4; }
+.pub-action-friend { background: rgba(77,158,255,0.15);  border-color: #4d9eff; color: #4d9eff; }
 .comm-comment-input-row {
     display: flex;
     gap: 6px;

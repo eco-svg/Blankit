@@ -1760,29 +1760,31 @@ def get_community_feed():
     def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
         body = p.body or ''
-        text, media_key, post_type = body, None, None
+        text, media_key, post_type, pinned_cid = body, None, None, None
         if body.startswith('{'):
             try:
                 bd = json.loads(body)
-                text      = bd.get('t', '')
-                media_key = bd.get('m')
-                post_type = bd.get('pt')
+                text       = bd.get('t', '')
+                media_key  = bd.get('m')
+                post_type  = bd.get('pt')
+                pinned_cid = bd.get('pin')
             except Exception:
                 pass
         media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
         return {
-            'id':         p.id,
-            'text':       text,
-            'media_key':  media_key,
-            'media_url':  media_url,
-            'post_type':  post_type,
-            'username':   u.username,
-            'user_id':    p.user_id,
-            'distro':     p.mood or 'Ocellus',
-            'rank':       rank,
-            'rank_color': color,
-            'is_mine':    p.user_id == me,
-            'created_at': p.created_at.isoformat() if p.created_at else None,
+            'id':          p.id,
+            'text':        text,
+            'media_key':   media_key,
+            'media_url':   media_url,
+            'post_type':   post_type,
+            'pinned_cid':  pinned_cid,
+            'username':    u.username,
+            'user_id':     p.user_id,
+            'distro':      p.mood or 'Ocellus',
+            'rank':        rank,
+            'rank_color':  color,
+            'is_mine':     p.user_id == me,
+            'created_at':  p.created_at.isoformat() if p.created_at else None,
         }
 
     def _enrich(posts_list):
@@ -1927,6 +1929,16 @@ def get_post_comments(pid):
     if err: return err
     from shared.auth.user import User
     me = session['user_id']
+    # Get pinned_cid from the parent post
+    parent = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
+    pinned_cid = None
+    post_author = None
+    if parent:
+        post_author = parent.user_id
+        body = parent.body or ''
+        if body.startswith('{'):
+            try: pinned_cid = json.loads(body).get('pin')
+            except Exception: pass
     comments = Note.query.filter_by(
         entry_type='post_comment', mood=str(pid), is_deleted=False
     ).order_by(Note.created_at.asc()).limit(50).all()
@@ -1940,7 +1952,11 @@ def get_post_comments(pid):
             'text':       c.body,
             'created_at': c.created_at.isoformat() if c.created_at else None,
             'is_mine':    c.user_id == me,
+            'is_pinned':  c.id == pinned_cid,
+            'can_pin':    post_author == me,
         })
+    # Pinned comment floats to top
+    result.sort(key=lambda c: (0 if c['is_pinned'] else 1, 0))
     return jsonify(result)
 
 
@@ -1963,6 +1979,51 @@ def add_post_comment(pid):
     db.session.add(c)
     db.session.commit()
     return jsonify({'id': c.id, 'ok': True}), 201
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/comment/<int:cid>/pin', methods=['POST'])
+def pin_comment(pid, cid):
+    err = login_required_api()
+    if err: return err
+    me   = session['user_id']
+    post = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False, user_id=me).first()
+    if not post:
+        return jsonify({'error': 'Not your post'}), 403
+    body = post.body or ''
+    if body.startswith('{'):
+        try: bd = json.loads(body)
+        except Exception: bd = {'t': body}
+    else:
+        bd = {'t': body}
+    bd['pin'] = None if bd.get('pin') == cid else cid
+    post.body = json.dumps({k: v for k, v in bd.items() if v is not None})
+    db.session.commit()
+    return jsonify({'ok': True, 'pinned': bd.get('pin')})
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/type', methods=['PATCH'])
+def update_post_type(pid):
+    err = login_required_api()
+    if err: return err
+    me        = session['user_id']
+    data      = request.get_json(force=True) or {}
+    post_type = (data.get('post_type') or '').strip().lower()
+    if post_type not in ('blog', 'showoff', ''):
+        return jsonify({'error': 'Invalid type'}), 400
+    post = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False, user_id=me).first()
+    if not post:
+        return jsonify({'error': 'Not found'}), 404
+    body = post.body or ''
+    if body.startswith('{'):
+        try: bd = json.loads(body)
+        except Exception: bd = {'t': body}
+    else:
+        bd = {'t': body}
+    if post_type: bd['pt'] = post_type
+    else: bd.pop('pt', None)
+    post.body = json.dumps({k: v for k, v in bd.items() if v is not None})
+    db.session.commit()
+    return jsonify({'ok': True, 'post_type': post_type or None})
 
 
 @pug_bp.route('/pug/api/users/search')
