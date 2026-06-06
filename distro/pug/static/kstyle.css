@@ -2973,7 +2973,6 @@ div.infinite-canvas video {
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-left: auto;
     flex-shrink: 0;
 }
 .comm-username {
@@ -3008,6 +3007,30 @@ div.infinite-canvas video {
     line-height: 1.6;
     white-space: pre-wrap;
     word-break: break-word;
+}
+/* ── Side-by-side text + media ─────────────────────────── */
+.comm-post-content {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-top: 6px;
+}
+.comm-post-content .comm-post-body {
+    flex: 1;
+    min-width: 0;
+}
+.comm-post-content .comm-media-img,
+.comm-post-content .comm-media-video {
+    flex-shrink: 0;
+    width: 46%;
+    max-height: 160px;
+    margin-top: 0;
+    object-fit: cover;
+}
+.comm-post-content .comm-media-audio {
+    flex-shrink: 0;
+    width: 46%;
+    margin-top: 0;
 }
 .comm-del-btn {
     background: transparent;
@@ -3074,6 +3097,7 @@ div.infinite-canvas video {
     display: flex;
     gap: 4px;
     flex-shrink: 0;
+    margin-left: auto;
 }
 
 /* Action buttons — Buy / Collab / Learn / Hire */
@@ -3126,7 +3150,7 @@ div.infinite-canvas video {
     padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,0.05);
 }
-.comm-comments-list { margin-bottom: 8px; }
+.comm-comments-list { margin-bottom: 8px; padding-left: 10px; }
 .comm-comment-row {
     display: flex;
     gap: 6px;

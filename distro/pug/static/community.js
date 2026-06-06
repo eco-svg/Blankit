@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${deleteBtn}
                 </div>
             </div>
-            ${p.text_order === 'mt' ? mediaHtml + (p.text ? `<div class="comm-post-body comm-body-spaced">${esc(p.text)}</div>` : '') : (p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : '') + mediaHtml}
+            ${(p.text && p.media_url) ? `<div class="comm-post-content"><div class="comm-post-body">${esc(p.text)}</div>${mediaHtml}</div>` : (p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : '') + mediaHtml}
             <div class="comm-comments-preview"></div>
             <div class="comm-post-comments hidden">
                 <div class="comm-comments-list"></div>
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         posting = true;
         if (confirmPostBtn) confirmPostBtn.disabled = true;
-        const payload = { text, media_key, text_order: activeTab === 'quick' ? 'mt' : 'tm' };
+        const payload = { text, media_key };
         if (activePostType) payload.post_type = activePostType;
         fetch('/pug/api/community', {
             method: 'POST',
