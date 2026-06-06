@@ -263,27 +263,26 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const action = btn.dataset.action;
                 if (action === 'share') {
-                    const shareUrl  = location.href;
-                    const shareText = (p.text ? p.text.slice(0, 120) + '\n' : '') + shareUrl;
+                    const shareText = (p.text ? p.text.slice(0, 100) + ' — ' : '') + location.href;
                     const origHtml  = btn.innerHTML;
-                    function showOk() { btn.innerHTML = '✓'; setTimeout(() => { btn.innerHTML = origHtml; }, 1600); }
-                    function execCopy() {
+                    function done() {
+                        btn.textContent = '✓';
+                        btn.style.color = '#48dc70';
+                        setTimeout(() => { btn.innerHTML = origHtml; btn.style.color = ''; }, 2000);
+                    }
+                    function legacyCopy() {
                         const ta = document.createElement('textarea');
-                        ta.value = shareText; ta.style.cssText = 'position:fixed;opacity:0;top:-9999px';
-                        document.body.appendChild(ta); ta.select();
-                        try { document.execCommand('copy'); showOk(); } catch(e) {}
+                        ta.value = shareText;
+                        ta.style.cssText = 'position:fixed;opacity:0;top:-9999px;left:-9999px';
+                        document.body.appendChild(ta);
+                        ta.focus(); ta.select();
+                        try { if (document.execCommand('copy')) done(); } catch(e) {}
                         document.body.removeChild(ta);
                     }
-                    function copyToClipboard() {
-                        if (navigator.clipboard) { navigator.clipboard.writeText(shareText).then(showOk).catch(execCopy); }
-                        else { execCopy(); }
-                    }
-                    if (navigator.share) {
-                        navigator.share({ title: 'Veyra', url: shareUrl })
-                            .then(showOk)
-                            .catch(err => { if (err.name !== 'AbortError') copyToClipboard(); });
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(shareText).then(done).catch(legacyCopy);
                     } else {
-                        copyToClipboard();
+                        legacyCopy();
                     }
                     return;
                 }
