@@ -1676,59 +1676,6 @@
       }
     ]
   },
-  "Golf": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "handicap",
-        "label": "Handicap Index",
-        "unit": "handicap (lower = better)",
-        "note": "World average golfer ~15–20. Scratch (0) is top ~2% of registered golfers. USGA data.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never played a full round",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — handicap 30+",
-            "threshold": "30+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — handicap 18–28",
-            "threshold": "18–28"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — handicap 10–18",
-            "threshold": "10–18"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — handicap 4–10",
-            "threshold": "4–10"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — handicap 0–4 (scratch)",
-            "threshold": "0–4"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — plus handicap / mini-tour",
-            "threshold": "+1 to +5"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — PGA Tour",
-            "threshold": "PGA/DP World Tour"
-          }
-        ]
-      }
-    ]
-  },
   "Bowling": {
     "type": "metric",
     "classes": [
@@ -2155,451 +2102,425 @@
     "type": "metric",
     "classes": [
       {
-        "id": "100m_freestyle",
-        "label": "100m Freestyle",
-        "unit": "min:sec",
-        "note": "World record 46.91s (Cielo). Average club swimmer ~1:00–1:15.",
+        "id": "50m",
+        "label": "50 m",
+        "unit": "time (mm:ss)",
         "ranks": [
           {
             "rank": "F",
-            "label": "Cannot swim",
+            "label": "Never swum laps",
             "threshold": null
           },
           {
             "rank": "E",
-            "label": "First steps — completing 100m, 2:30+",
-            "threshold": "2:30+"
+            "label": "Beginner — can complete 50 m",
+            "threshold": "2:00+"
           },
           {
             "rank": "D",
-            "label": "Top 70–99% — 1:30–2:30",
-            "threshold": "1:30–2:30"
+            "label": "Recreational — steady pace",
+            "threshold": "1:20–2:00"
           },
           {
             "rank": "C",
-            "label": "Top 40–70% — 1:10–1:30",
-            "threshold": "1:10–1:30"
+            "label": "Intermediate — comfortable effort",
+            "threshold": "1:00–1:20"
           },
           {
             "rank": "B",
-            "label": "Top 20–40% — 1:00–1:10",
-            "threshold": "1:00–1:10"
+            "label": "Club level",
+            "threshold": "40–60s"
           },
           {
             "rank": "A",
-            "label": "Top 1–10% — sub-1:00 (competitive)",
-            "threshold": "under 1:00"
+            "label": "Competitive swimmer",
+            "threshold": "under 30s"
           },
           {
             "rank": "S",
-            "label": "Top 0.001% — sub-50s (national)",
-            "threshold": "under 50s"
+            "label": "Elite / national level",
+            "threshold": "under 23s"
           },
           {
             "rank": "S+",
-            "label": "World record territory — sub-47s",
+            "label": "World record territory",
+            "threshold": "under 20.91s"
+          }
+        ]
+      },
+      {
+        "id": "100m",
+        "label": "100 m",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "Never swum laps",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "Beginner — can complete 100 m",
+            "threshold": "3:30+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "2:30–3:30"
+          },
+          {
+            "rank": "C",
+            "label": "Intermediate",
+            "threshold": "1:45–2:30"
+          },
+          {
+            "rank": "B",
+            "label": "Club level",
+            "threshold": "1:10–1:45"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 1:10"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / national level",
+            "threshold": "under 54s"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
             "threshold": "under 46.92s"
           }
         ]
       },
       {
-        "id": "1500m_freestyle",
-        "label": "1500m Freestyle",
-        "unit": "min:sec",
-        "note": "World record ~14:31. Average club swimmer ~18–22 min.",
+        "id": "200m",
+        "label": "200 m",
+        "unit": "time (mm:ss)",
         "ranks": [
           {
             "rank": "F",
-            "label": "Cannot swim 1500m",
+            "label": "Never swum laps",
             "threshold": null
           },
           {
             "rank": "E",
-            "label": "First steps — completing, 30:00+",
+            "label": "Beginner — can complete 200 m",
+            "threshold": "8:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "5:30–8:00"
+          },
+          {
+            "rank": "C",
+            "label": "Intermediate",
+            "threshold": "4:00–5:30"
+          },
+          {
+            "rank": "B",
+            "label": "Club level",
+            "threshold": "2:45–4:00"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 2:45"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / national level",
+            "threshold": "under 2:00"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
+            "threshold": "under 1:42.00"
+          }
+        ]
+      },
+      {
+        "id": "400m",
+        "label": "400 m",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "Never swum laps",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "Beginner — can complete 400 m",
+            "threshold": "15:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "10:00–15:00"
+          },
+          {
+            "rank": "C",
+            "label": "Intermediate",
+            "threshold": "7:30–10:00"
+          },
+          {
+            "rank": "B",
+            "label": "Club level",
+            "threshold": "5:30–7:30"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 5:30"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / national level",
+            "threshold": "under 4:15"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
+            "threshold": "under 3:40.07"
+          }
+        ]
+      },
+      {
+        "id": "1500m",
+        "label": "1500 m",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "Never swum laps",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "Beginner — can complete 1500 m",
+            "threshold": "60:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "42:00–60:00"
+          },
+          {
+            "rank": "C",
+            "label": "Intermediate",
+            "threshold": "30:00–42:00"
+          },
+          {
+            "rank": "B",
+            "label": "Club level",
+            "threshold": "22:00–30:00"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 22:00"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / national level",
+            "threshold": "under 17:00"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
+            "threshold": "under 14:31"
+          }
+        ]
+      },
+      {
+        "id": "1km_ow",
+        "label": "1 km (open water)",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "No open water swimming",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "First open water swim",
             "threshold": "30:00+"
           },
           {
             "rank": "D",
-            "label": "Top 70–99% — 22:00–30:00",
+            "label": "Recreational OW swimmer",
             "threshold": "22:00–30:00"
           },
           {
             "rank": "C",
-            "label": "Top 40–70% — 18:00–22:00",
-            "threshold": "18:00–22:00"
+            "label": "Comfortable in open water",
+            "threshold": "17:00–22:00"
           },
           {
             "rank": "B",
-            "label": "Top 20–40% — 16:00–18:00",
-            "threshold": "16:00–18:00"
+            "label": "Club OW / triathlon level",
+            "threshold": "13:00–17:00"
           },
           {
             "rank": "A",
-            "label": "Top 1–10% — sub-16:00 (competitive)",
-            "threshold": "under 16:00"
+            "label": "Competitive OW swimmer",
+            "threshold": "under 13:00"
           },
           {
             "rank": "S",
-            "label": "Top 0.001% — sub-15:00",
-            "threshold": "under 15:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — sub-14:32",
-            "threshold": "under 14:31"
-          }
-        ]
-      }
-    ]
-  },
-  "Cycling": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "100km",
-        "label": "100 km Century",
-        "unit": "hr:min",
-        "note": "Average recreational cyclist ~4–5 hrs. Elite ~2:30.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Cannot ride / just started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — completing, 5:30+",
-            "threshold": "5:30+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 4:30–5:30",
-            "threshold": "4:30–5:30"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 3:45–4:30",
-            "threshold": "3:45–4:30"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 3:00–3:45",
-            "threshold": "3:00–3:45"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — sub-3:00 (racing pace)",
-            "threshold": "under 3:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — sub-2:30 (semi-pro)",
-            "threshold": "under 2:30"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — sub-2:00",
-            "threshold": "under 2:00"
-          }
-        ]
-      }
-    ]
-  },
-  "Rock Climbing": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "sport_yds",
-        "label": "Sport Grade (YDS)",
-        "unit": "Yosemite Decimal System",
-        "note": "From Mountain Project / gym data. 5.10 is roughly top 50% of climbers.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never climbed",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — 5.5–5.6",
-            "threshold": "5.5–5.6"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 5.7–5.9",
-            "threshold": "5.7–5.9"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 5.10a–5.10d",
-            "threshold": "5.10a–5.10d"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 5.11a–5.11d",
-            "threshold": "5.11a–5.11d"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — 5.12a–5.12d",
-            "threshold": "5.12a–5.12d"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — 5.13a–5.14a",
-            "threshold": "5.13a–5.14a"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — 5.15+",
-            "threshold": "5.15+"
-          }
-        ]
-      },
-      {
-        "id": "bouldering_v",
-        "label": "Bouldering (V-Grade)",
-        "unit": "V-grade",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never climbed",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — V0",
-            "threshold": "V0"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — V1–V2",
-            "threshold": "V1–V2"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — V3–V4",
-            "threshold": "V3–V4"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — V5–V6",
-            "threshold": "V5–V6"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — V7–V8",
-            "threshold": "V7–V8"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — V9–V11",
-            "threshold": "V9–V11"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — V15+",
-            "threshold": "V15+"
-          }
-        ]
-      }
-    ]
-  },
-  "Archery": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "olympic_round",
-        "label": "Olympic Round (72 arrows)",
-        "unit": "score / 720",
-        "note": "World record 700/720. Average club archer ~480–540.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never shot competitively",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — under 350",
-            "threshold": "under 350"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 400–500",
-            "threshold": "400–500"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 500–580",
-            "threshold": "500–580"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 580–630",
-            "threshold": "580–630"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — 630–670",
-            "threshold": "630–670"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — 670–700",
-            "threshold": "670–700"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory — 700+",
-            "threshold": "700+"
-          }
-        ]
-      }
-    ]
-  },
-  "Triathlon": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "sprint",
-        "label": "Sprint (750m/20km/5km)",
-        "unit": "hr:min:sec",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — finishing ~2:30+",
-            "threshold": "2:30+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 2:00–2:30",
-            "threshold": "2:00–2:30"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 1:45–2:00",
-            "threshold": "1:45–2:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 1:30–1:45",
-            "threshold": "1:30–1:45"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — sub-1:15",
-            "threshold": "under 1:15"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — sub-1:05",
-            "threshold": "under 1:05"
+            "label": "Elite / national OW",
+            "threshold": "under 11:00"
           },
           {
             "rank": "S+",
             "label": "World record territory",
-            "threshold": "under 0:52"
-          }
-        ]
-      },
-      {
-        "id": "olympic",
-        "label": "Olympic (1.5km/40km/10km)",
-        "unit": "hr:min:sec",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — finishing ~4:00+",
-            "threshold": "4:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 3:15–4:00",
-            "threshold": "3:15–4:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 2:50–3:15",
-            "threshold": "2:50–3:15"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 2:30–2:50",
-            "threshold": "2:30–2:50"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — sub-2:15",
-            "threshold": "under 2:15"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% — sub-2:00",
-            "threshold": "under 2:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 1:46"
-          }
-        ]
-      },
-      {
-        "id": "ironman",
-        "label": "Ironman (3.8km/180km/42.2km)",
-        "unit": "hr:min:sec",
-        "note": "Avg 12–13 hours. Kona qualifying typically sub-9hrs.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps — finishing ~17:00+",
-            "threshold": "17:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70–99% — 14:00–17:00",
-            "threshold": "14:00–17:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40–70% — 12:00–14:00",
-            "threshold": "12:00–14:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20–40% — 11:00–12:00",
-            "threshold": "11:00–12:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1–10% — sub-10:00 (Kona level)",
             "threshold": "under 10:00"
+          }
+        ]
+      },
+      {
+        "id": "2km_ow",
+        "label": "2 km (open water)",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "No open water swimming",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "First 2 km OW attempt",
+            "threshold": "70:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "50:00–70:00"
+          },
+          {
+            "rank": "C",
+            "label": "Comfortable",
+            "threshold": "38:00–50:00"
+          },
+          {
+            "rank": "B",
+            "label": "Club / triathlon level",
+            "threshold": "28:00–38:00"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 28:00"
           },
           {
             "rank": "S",
-            "label": "Top 0.001% — sub-8:30",
-            "threshold": "under 8:30"
+            "label": "Elite / national",
+            "threshold": "under 22:00"
           },
           {
             "rank": "S+",
-            "label": "World record territory — sub-7:36",
-            "threshold": "under 7:35"
+            "label": "World record territory",
+            "threshold": "under 20:00"
+          }
+        ]
+      },
+      {
+        "id": "5km_ow",
+        "label": "5 km (open water)",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "No open water swimming",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "First 5 km OW attempt",
+            "threshold": "3:00:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "2:15:00–3:00:00"
+          },
+          {
+            "rank": "C",
+            "label": "Comfortable marathon swimmer",
+            "threshold": "1:45:00–2:15:00"
+          },
+          {
+            "rank": "B",
+            "label": "Club / event finisher",
+            "threshold": "1:20:00–1:45:00"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 1:20:00"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / national",
+            "threshold": "under 1:04:00"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
+            "threshold": "under 58:00"
+          }
+        ]
+      },
+      {
+        "id": "10km_ow",
+        "label": "10 km (open water)",
+        "unit": "time (mm:ss)",
+        "ranks": [
+          {
+            "rank": "F",
+            "label": "No open water swimming",
+            "threshold": null
+          },
+          {
+            "rank": "E",
+            "label": "First 10 km OW attempt",
+            "threshold": "5:30:00+"
+          },
+          {
+            "rank": "D",
+            "label": "Recreational",
+            "threshold": "4:00:00–5:30:00"
+          },
+          {
+            "rank": "C",
+            "label": "Comfortable marathon swimmer",
+            "threshold": "3:00:00–4:00:00"
+          },
+          {
+            "rank": "B",
+            "label": "Event finisher, solid pace",
+            "threshold": "2:30:00–3:00:00"
+          },
+          {
+            "rank": "A",
+            "label": "Competitive",
+            "threshold": "under 2:15:00"
+          },
+          {
+            "rank": "S",
+            "label": "Elite / Olympic level",
+            "threshold": "under 1:55:00"
+          },
+          {
+            "rank": "S+",
+            "label": "World record territory",
+            "threshold": "under 1:49:34"
           }
         ]
       }
