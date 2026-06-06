@@ -653,10 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
             pubModal.classList.add('hidden');
     });
 
+    const _myName = document.querySelector('.greeting-name')?.textContent?.trim() || 'Someone';
     const PUB_ACTION_MESSAGES = {
-        'pub-action-hire':   u => `Hey ${u}, I'd like to hire you! 👋`,
-        'pub-action-collab': u => `Hey ${u}, I'd like to collab with you! 🤝`,
-        'pub-action-friend': u => `Hey ${u}! I'd like to connect with you 👋`,
+        'pub-action-hire':   () => `Hey! ${_myName} wants to hire you! 👋`,
+        'pub-action-collab': () => `Hey! ${_myName} wants to collab with you! 🤝`,
+        'pub-action-friend': () => `Hey! ${_myName} wants to connect with you! 👋`,
     };
 
     pubActions?.querySelectorAll('.pub-action-btn').forEach(btn => {
@@ -665,7 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const username = pubModal.dataset.username || '';
             if (!uid) return;
             const cls = Array.from(btn.classList).find(c => PUB_ACTION_MESSAGES[c]);
-            const autoMessage = cls ? PUB_ACTION_MESSAGES[cls](username) : null;
+            const autoMessage = cls ? PUB_ACTION_MESSAGES[cls]() : null;
             pubModal.classList.add('hidden');
             document.getElementById('commDmLbar')?.classList.add('open');
             document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
