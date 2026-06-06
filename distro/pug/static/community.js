@@ -154,9 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 mediaHtml = `<img class="comm-media-img" src="${p.media_url}" loading="lazy">`;
         }
 
-        const usernameHtml = p.is_mine
-            ? `<span class="comm-username">${esc(p.username)}</span>`
-            : `<button class="comm-username comm-username-link" data-uid="${p.user_id}">${esc(p.username)}</button>`;
+        const usernameHtml = `<button class="comm-username comm-username-link" data-uid="${p.user_id}">${esc(p.username)}</button>`;
 
         const isShowOff = p.post_type === 'showoff';
         const mine      = p.is_mine ? '1' : '';
@@ -215,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
-        el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
+        el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username, p.is_mine));
 
         // Buy / Learn buttons — open DM
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
@@ -618,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    function openProfile(uid, username) {
+    function openProfile(uid, username, isMine = false) {
         if (!pubModal) return;
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
@@ -629,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pubClass)  pubClass.textContent  = '';
         if (pubSkills) pubSkills.innerHTML   = '';
         if (pubEmpty)  pubEmpty.classList.add('hidden');
-        if (pubActions) pubActions.classList.remove('hidden');
+        if (pubActions) pubActions.classList.toggle('hidden', isMine);
         fetch(`/pug/api/users/${uid}/profile`)
             .then(r => r.json())
             .then(data => {
