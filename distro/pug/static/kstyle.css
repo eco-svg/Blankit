@@ -4704,6 +4704,36 @@ button.nav-pill:not(.btn-ghost):hover {
   font-weight: 600;
 }
 
+/* ── Feed mode toggle (Radar / Global) ─────────────────── */
+.comm-feed-mode-bar {
+  display: flex;
+  gap: 0;
+  margin: 8px 0 4px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 3px;
+  width: fit-content;
+}
+.comm-mode-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  padding: 4px 14px;
+  border-radius: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+.comm-mode-btn:hover { color: var(--text); }
+.comm-mode-btn.active {
+  background: rgba(212,165,116,0.16);
+  color: var(--accent);
+  font-weight: 600;
+}
+
 /* Marketplace type pills in compose */
 .comm-type-pills {
   display: flex;

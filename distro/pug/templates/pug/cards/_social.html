@@ -39,10 +39,14 @@
     <div class="card-top-bar">
       <div style="display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;" id="commTitleBlock">
         <h2 class="card-title" data-i18n="card_comms">Community Posts</h2>
-        <span class="comm-field-label" id="commRangeLabel">🌐 global</span>
+        <span class="comm-field-label" id="commRangeLabel">📍 radar</span>
       </div>
       <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
       <button class="icon-btn" id="cancelCommPostBtn" title="Cancel" style="display:none;">✕</button>
+    </div>
+    <div class="comm-feed-mode-bar">
+      <button class="comm-mode-btn active" data-mode="radar">📍 Radar</button>
+      <button class="comm-mode-btn" data-mode="global">🌐 Global</button>
     </div>
 
     <!-- Inline compose pane -->
@@ -52,10 +56,8 @@
         <button class="comm-modal-tab" id="commTabQuick">⚡ Quick</button>
       </div>
       <div class="comm-type-pills" id="commTypePills">
-        <button class="comm-type-pill" data-type="sell">Sell</button>
         <button class="comm-type-pill" data-type="buy">Buy</button>
         <button class="comm-type-pill" data-type="hire">Hire</button>
-        <button class="comm-type-pill" data-type="teach">Teach</button>
         <button class="comm-type-pill" data-type="learn">Learn</button>
         <button class="comm-type-pill" data-type="collab">Collab</button>
       </div>

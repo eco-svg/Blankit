@@ -1853,7 +1853,7 @@ def create_community_post():
     text      = (data.get('text') or '').strip()
     media_key = (data.get('media_key') or '').strip()
     post_type = (data.get('post_type') or '').strip().lower()
-    VALID_TYPES = {'sell', 'buy', 'hire', 'teach', 'learn', 'collab'}
+    VALID_TYPES = {'buy', 'hire', 'learn', 'collab', 'sell', 'teach'}
     if post_type and post_type not in VALID_TYPES:
         post_type = ''
     if not text and not media_key:

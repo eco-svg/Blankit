@@ -40,6 +40,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let myLat = null, myLng = null;
     let activeSkill    = '';
     let activePostType = null;
+    let feedMode       = localStorage.getItem('veyra-comm-mode') || 'radar';
+
+    // ── Feed mode toggle ───────────────────────────────────────────────────────
+    document.querySelectorAll('.comm-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === feedMode);
+        btn.addEventListener('click', () => {
+            feedMode = btn.dataset.mode;
+            localStorage.setItem('veyra-comm-mode', feedMode);
+            document.querySelectorAll('.comm-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === feedMode));
+            lastPostCount = 0;
+            loadFeed();
+        });
+    });
 
     // ── Post type pills ────────────────────────────────────────────────────────
     document.querySelectorAll('.comm-type-pill').forEach(pill => {
@@ -86,7 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadFeed() {
         let url = '/pug/api/community';
         const params = [];
-        if (myLat !== null && myLng !== null) { params.push(`lat=${myLat}`); params.push(`lng=${myLng}`); }
+        if (feedMode === 'radar' && myLat !== null && myLng !== null) {
+            params.push(`lat=${myLat}`);
+            params.push(`lng=${myLng}`);
+        }
         if (activeSkill) params.push(`skill=${encodeURIComponent(activeSkill)}`);
         if (params.length) url += '?' + params.join('&');
         fetch(url)
@@ -95,12 +111,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const posts  = Array.isArray(data) ? data : (data.posts || []);
                 const radius = Array.isArray(data) ? null : data.radius_km;
                 if (rangeLabel) {
-                    if (radius) {
+                    if (feedMode === 'global') {
+                        rangeLabel.textContent = '🌐 global feed';
+                    } else if (radius) {
                         rangeLabel.textContent = `📍 within ${radius} km`;
-                    } else if (myLat !== null) {
-                        rangeLabel.textContent = '🌐 global';
                     } else {
-                        rangeLabel.textContent = '🌐 global';
+                        rangeLabel.textContent = '📍 radar';
                     }
                 }
                 if (posts.length === lastPostCount) return;
@@ -115,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
-    const MARKET_LABELS = { sell:'Buy', buy:'Sell', hire:'Apply', teach:'Learn', learn:'Teach', collab:'Collab' };
+    const MARKET_LABELS = { buy:'Buy', hire:'Hire', learn:'Learn', collab:'Collab', sell:'Buy', teach:'Learn' };
 
     function makePost(p) {
         const el       = document.createElement('div');
