@@ -164,12 +164,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
         const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
 
-        // Hire+Collab always; Buy+Learn only on ShowOff (all right side)
-        const actionBtns = `
-            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
-            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>${isShowOff ? `
+        // ShowOff only: Buy, Collab, Learn, Hire — Blog has no action buttons
+        const actionBtns = isShowOff ? `
             <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : ''}`;
+            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
+            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>
+            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>` : '';
 
         // Type switcher — compact inline pill in the post header (own posts only)
         const typeSwitcher = p.is_mine ? `
@@ -190,12 +190,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${rankHtml}
                     <span class="comm-distro-tag">${esc(p.distro)}</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-                    <span class="comm-ago">${ago}</span>
-                    ${deleteBtn}
-                </div>
-            </div>
-            <div class="comm-post-bar">
                 <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
                     <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
@@ -203,9 +197,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
                 </div>
                 <div class="comm-action-btns">${actionBtns}</div>
+                <div class="comm-post-hdr-right">
+                    <span class="comm-ago">${ago}</span>
+                    ${deleteBtn}
+                </div>
             </div>
-            ${mediaHtml}
-            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
+            ${p.text_order === 'mt' ? mediaHtml + (p.text ? `<div class="comm-post-body comm-body-spaced">${esc(p.text)}</div>` : '') : (p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : '') + mediaHtml}
             <div class="comm-comments-preview"></div>
             <div class="comm-post-comments hidden">
                 <div class="comm-comments-list"></div>
@@ -216,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
-        el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username, p.is_mine));
+        el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e.currentTarget));
 
         // Buy / Learn buttons — open DM
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
@@ -244,11 +241,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nowShowOff = newType === 'showoff';
                     const actionContainer = el.querySelector('.comm-action-btns');
                     if (actionContainer) {
-                        actionContainer.innerHTML = `
-                            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
-                            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>${nowShowOff ? `
+                        actionContainer.innerHTML = nowShowOff ? `
                             <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-                            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : ''}`;
+                            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
+                            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>
+                            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>` : '';
                         actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
                             b.addEventListener('click', function() {
                                 if (this.dataset.mine) return;
@@ -618,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         posting = true;
         if (confirmPostBtn) confirmPostBtn.disabled = true;
-        const payload = { text, media_key };
+        const payload = { text, media_key, text_order: activeTab === 'quick' ? 'mt' : 'tm' };
         if (activePostType) payload.post_type = activePostType;
         fetch('/pug/api/community', {
             method: 'POST',
@@ -646,7 +643,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const pubActions   = document.getElementById('pubProfileActions');
 
     closePub?.addEventListener('click', () => pubModal?.classList.add('hidden'));
-    window.addEventListener('click', e => { if (e.target === pubModal) pubModal?.classList.add('hidden'); });
+    document.addEventListener('click', e => {
+        if (pubModal && !pubModal.classList.contains('hidden') && !pubModal.contains(e.target) && !e.target.closest('.comm-username-link'))
+            pubModal.classList.add('hidden');
+    });
 
     pubActions?.querySelectorAll('.pub-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -663,11 +663,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const pubOnlineDot    = document.getElementById('pubOnlineDot');
     const pubOnlineLabel  = document.getElementById('pubProfileOnlineLabel');
 
-    function openProfile(uid, username, isMine = false) {
+    function openProfile(uid, username, isMine = false, anchorEl = null) {
         if (!pubModal) return;
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
+        // Position near the clicked element
+        if (anchorEl) {
+            const rect = anchorEl.getBoundingClientRect();
+            const W = 278, H = 360;
+            let left = rect.left;
+            let top  = rect.bottom + 6;
+            if (left + W > window.innerWidth  - 8) left = window.innerWidth  - W - 8;
+            if (left < 8) left = 8;
+            if (top  + H > window.innerHeight - 8) top  = Math.max(8, rect.top - H - 6);
+            pubModal.style.left = left + 'px';
+            pubModal.style.top  = top  + 'px';
+        }
         if (pubAvatar)      pubAvatar.textContent      = (username||'?')[0].toUpperCase();
         if (pubName)        pubName.textContent        = username;
         if (pubRank)        pubRank.textContent        = '';

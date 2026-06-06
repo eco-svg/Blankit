@@ -1799,7 +1799,7 @@ def get_community_feed():
     def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
         body = p.body or ''
-        text, media_key, post_type, pinned_cid = body, None, None, None
+        text, media_key, post_type, pinned_cid, text_order = body, None, None, None, 'tm'
         if body.startswith('{'):
             try:
                 bd = json.loads(body)
@@ -1807,6 +1807,7 @@ def get_community_feed():
                 media_key  = bd.get('m')
                 post_type  = bd.get('pt')
                 pinned_cid = bd.get('pin')
+                text_order = bd.get('to', 'tm')
             except Exception:
                 pass
         media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
@@ -1817,6 +1818,7 @@ def get_community_feed():
             'media_url':   media_url,
             'post_type':   post_type,
             'pinned_cid':  pinned_cid,
+            'text_order':  text_order,
             'username':    u.username,
             'user_id':     p.user_id,
             'distro':      p.mood or 'Ocellus',
@@ -1904,8 +1906,11 @@ def create_community_post():
         return jsonify({'error': 'Too long (max 500 chars)'}), 400
     if media_key and not media_key.startswith('shared/'):
         return jsonify({'error': 'Invalid media key'}), 400
-    if media_key or post_type:
-        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None}.items() if v})
+    text_order = (data.get('text_order') or '').strip() or None
+    if text_order not in (None, 'tm', 'mt'):
+        text_order = None
+    if media_key or post_type or text_order:
+        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order}.items() if v})
     else:
         body_val = text
     p = Note(

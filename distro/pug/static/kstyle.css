@@ -59,7 +59,7 @@
   border-bottom-color: rgba(0,0,0,0.07);
 }
 [data-theme="light"] .comm-post:hover { background: rgba(0,0,0,0.03); }
-[data-theme="light"] .comm-post-bar { border-bottom-color: rgba(0,0,0,0.08); }
+/* (comm-post-bar removed — reactions now inline in header) */
 [data-theme="light"] .comm-post-comments { border-top-color: rgba(0,0,0,0.06); }
 [data-theme="light"] .modal-content {
   background: rgba(255,255,255,0.97);
@@ -2946,8 +2946,9 @@ div.infinite-canvas video {
 .comm-post-header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
 }
 .comm-avatar {
     width: 28px; height: 28px;
@@ -2965,8 +2966,15 @@ div.infinite-canvas video {
     display: flex;
     align-items: center;
     gap: 5px;
-    flex: 1;
     min-width: 0;
+    flex-shrink: 1;
+}
+.comm-post-hdr-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 .comm-username {
     font-size: 0.80rem;
@@ -3056,32 +3064,23 @@ div.infinite-canvas video {
 .comm-type-sw-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
 .comm-type-sw-btn.active { background: rgba(255,200,60,0.14); color: #ffc83c; }
 
-/* ── Post action bar (reactions + Buy/Learn/Hire/Collab) — sits just below the header ── */
-.comm-post-bar {
+/* ── Post header inline reactions + action buttons ─────── */
+.comm-post-reactions {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
-    margin-bottom: 8px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid rgba(255,255,255,0.07);
+    gap: 2px;
+    flex-shrink: 0;
 }
 .comm-action-btns {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-shrink: 0;
 }
-.comm-post-reactions {
-    display: flex;
-    gap: 3px;
-    margin-right: auto;
-}
 
-/* Action buttons — Hire / Collab / Buy / Learn */
+/* Action buttons — Buy / Collab / Learn / Hire */
 .comm-action-btn {
-    padding: 5px 14px;
-    border-radius: 7px;
-    font-size: 0.78rem;
+    padding: 3px 9px;
+    border-radius: 6px;
+    font-size: 0.68rem;
     font-family: var(--font-mono);
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -3100,17 +3099,17 @@ div.infinite-canvas video {
 .comm-action-buy    { background: rgba(77,158,255,0.22);  border-color: #4d9eff; color: #72b3ff; }
 .comm-action-learn  { background: rgba(72,220,220,0.22);  border-color: #48dcdc; color: #6ee8e8; }
 
-/* Reaction buttons (right side of action row) */
+/* Reaction buttons — inline in post header */
 .comm-react-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     background: transparent;
     border: none;
     cursor: pointer;
     color: var(--text);
-    font-size: 0.8rem;
-    padding: 4px 7px;
+    font-size: 0.74rem;
+    padding: 3px 5px;
     border-radius: 6px;
     transition: background 0.12s;
     font-family: var(--font-mono);
@@ -3285,144 +3284,99 @@ div.infinite-canvas video {
     flex-shrink: 0;
 }
 
-/* ── Full-screen public profile screen ───────────────────── */
-#pubProfileModal {
-    align-items: stretch;
-    justify-content: flex-start;
+/* ── Mini profile popup card ──────────────────────────────── */
+.comm-mini-profile {
+    position: fixed;
+    width: 272px;
+    max-height: 62vh;
     overflow-y: auto;
-    background: var(--bg-gradient);
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 36px rgba(0,0,0,0.55);
+    z-index: 9100;
+    padding: 14px;
 }
-#pubProfileModal .modal-content {
-    max-width: 100% !important;
-    width: 100%;
-    min-height: 100vh;
-    border-radius: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    text-align: left;
-}
-.pps-header {
+.comm-mini-profile.hidden { display: none; }
+.cmp-top {
     display: flex;
-    align-items: center;
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
     gap: 10px;
-    position: sticky;
-    top: 0;
-    background: var(--bg-gradient);
-    z-index: 2;
+    margin-bottom: 10px;
 }
-.pps-header-title {
-    font-size: 0.82rem;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-.pps-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 20px 20px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-}
-.pps-avatar-wrap {
+.cmp-av-wrap {
     position: relative;
-    display: inline-flex;
-    margin-bottom: 14px;
+    flex-shrink: 0;
 }
-.pps-avatar {
-    width: 68px !important;
-    height: 68px !important;
-    font-size: 1.7rem !important;
-    border-radius: 50% !important;
+.cmp-av {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 1.2rem !important;
 }
-.pps-avatar-wrap .online-dot {
-    width: 13px; height: 13px;
-    bottom: 2px; right: 2px;
-    border-width: 2.5px;
-}
-.pps-name {
-    font-size: 1.25rem;
+.cmp-av-wrap .online-dot { bottom: 0; right: 0; }
+.cmp-info { flex: 1; min-width: 0; }
+.cmp-name {
     font-weight: 700;
+    font-size: 0.92rem;
     color: var(--text);
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
-.pps-rank {
+.cmp-rank {
     font-family: var(--font-mono);
-    font-size: 0.76rem;
+    font-size: 0.70rem;
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     margin-bottom: 3px;
 }
-.pps-meta-row {
+.cmp-meta-row {
     display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 5px;
+    gap: 6px;
     flex-wrap: wrap;
-    justify-content: center;
-}
-.pps-class, .pps-connections, .pps-online-label {
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-.pps-online-label.is-online { color: #48dc70; }
-.pps-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    padding: 18px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-}
-.pps-actions .pub-action-btn {
-    flex: none;
-    padding: 8px 22px;
-    font-size: 0.78rem;
-}
-.pps-section-label {
     font-family: var(--font-mono);
     font-size: 0.60rem;
     color: var(--text-dim);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.pps-online-label.is-online { color: #48dc70; }
+.cmp-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+}
+.cmp-actions .pub-action-btn { padding: 4px 12px; font-size: 0.72rem; }
+.cmp-skills-label {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: 0.10em;
-    padding: 16px 20px 6px;
+    margin-bottom: 4px;
 }
-.pps-skills-list {
-    padding: 0 20px 40px;
-    display: flex;
-    flex-direction: column;
-}
+.cmp-skills-list { display: flex; flex-direction: column; }
 .pps-skill-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 0;
+    padding: 6px 0;
     border-bottom: 1px solid var(--border);
-    font-size: 0.84rem;
+    font-size: 0.80rem;
     color: var(--text);
 }
 .pps-skill-rank {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     font-weight: 700;
 }
 .pps-empty {
     font-family: var(--font-mono);
-    font-size: 0.76rem;
+    font-size: 0.72rem;
     color: var(--text-dim);
     text-align: center;
-    padding: 40px 20px;
+    padding: 16px 0 4px;
     opacity: 0.5;
 }
 
@@ -4932,10 +4886,8 @@ button.nav-pill:not(.btn-ghost):hover {
   accent-color: var(--accent);
 }
 
-/* ── Public profile modal ─────────────────────────────── */
-#pubProfileModal .modal-content {
-  padding: 18px 20px 16px;
-}
+/* ── Text after media spacing ─────────────────────────── */
+.comm-body-spaced { margin-top: 8px; }
 
 /* ── Community compose modal — legacy fallback ────────── */
 #commComposeModal .modal-content {

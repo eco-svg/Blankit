@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=79">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=80">
   <script>(function(){var w=localStorage.getItem('veyra-pug-wallpaper');if(w&&w!=='default')document.documentElement.setAttribute('data-wallpaper',w);var f=localStorage.getItem('veyra-pug-filter');if(f&&f!=='default')document.documentElement.setAttribute('data-filter',f);})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=76">
 </head>
@@ -327,35 +327,32 @@
     </div>
   </div>
 
-  <!-- Public profile full-screen overlay -->
-  <div id="pubProfileModal" class="custom-modal hidden">
-    <div class="modal-content">
-      <div class="pps-header">
-        <button class="icon-btn" id="closePubProfileBtn">← Back</button>
-        <span class="pps-header-title">Profile</span>
+  <!-- Public profile mini-popup -->
+  <div id="pubProfileModal" class="comm-mini-profile hidden">
+    <div class="cmp-top">
+      <div class="cmp-av-wrap">
+        <div class="comm-avatar cmp-av" id="pubProfileAvatar">?</div>
+        <span class="online-dot" id="pubOnlineDot"></span>
       </div>
-      <div class="pps-hero">
-        <div class="pps-avatar-wrap">
-          <div class="comm-avatar pps-avatar" id="pubProfileAvatar">?</div>
-          <span class="online-dot" id="pubOnlineDot"></span>
-        </div>
-        <div class="pps-name" id="pubProfileName"></div>
-        <div class="pps-rank" id="pubProfileRank"></div>
-        <div class="pps-meta-row">
-          <span class="pps-class" id="pubProfileClass"></span>
-          <span class="pps-connections" id="pubProfileConnections"></span>
+      <div class="cmp-info">
+        <div class="cmp-name" id="pubProfileName"></div>
+        <div class="cmp-rank" id="pubProfileRank"></div>
+        <div class="cmp-meta-row">
+          <span id="pubProfileClass"></span>
+          <span id="pubProfileConnections"></span>
           <span class="pps-online-label" id="pubProfileOnlineLabel"></span>
         </div>
       </div>
-      <div id="pubProfileActions" class="pps-actions hidden">
-        <button class="pub-action-btn pub-action-hire">Hire</button>
-        <button class="pub-action-btn pub-action-collab">Collab</button>
-        <button class="pub-action-btn pub-action-friend">+ Friend</button>
-      </div>
-      <div class="pps-section-label">Skills</div>
-      <div id="pubProfileSkills" class="pps-skills-list"></div>
-      <div id="pubProfileEmpty" class="hidden pps-empty">No public stats yet.</div>
+      <button class="icon-btn" id="closePubProfileBtn">✕</button>
     </div>
+    <div id="pubProfileActions" class="cmp-actions hidden">
+      <button class="pub-action-btn pub-action-hire">Hire</button>
+      <button class="pub-action-btn pub-action-collab">Collab</button>
+      <button class="pub-action-btn pub-action-friend">+ Friend</button>
+    </div>
+    <div class="cmp-skills-label">Skills</div>
+    <div id="pubProfileSkills" class="cmp-skills-list"></div>
+    <div id="pubProfileEmpty" class="hidden pps-empty">No stats yet.</div>
   </div>
 
   <script src="{{ url_for('pug.static', filename='i18n.js') }}"></script>
@@ -373,7 +370,7 @@
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=4"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}?v=4"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=4"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}?v=7"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=8"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=3"></script></script>
   <script src="{{ url_for('pug.static', filename='router.js') }}?v=2"></script>
