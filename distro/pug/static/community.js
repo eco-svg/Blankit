@@ -395,17 +395,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadPreviewComments(pid, postEl) {
-        const preview = postEl.querySelector('.comm-comments-preview');
+        const preview    = postEl.querySelector('.comm-comments-preview');
+        const commentsEl = postEl.querySelector('.comm-post-comments');
         if (!preview) return;
         fetch(`/pug/api/community/${pid}/comments`)
             .then(r => r.json())
             .then(comments => {
                 preview.innerHTML = '';
-                const top3 = comments.slice(-3);
-                top3.forEach(c => {
-                    const row = document.createElement('div');
-                    row.className = 'comm-comment-preview-row';
-                    row.innerHTML = `<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span>`;
+                comments.slice(0, 3).forEach(c => {
+                    const row = buildCommentRow(c, false);
+                    row.querySelector('.comm-pin-btn')?.addEventListener('click', () => {
+                        fetch(`/pug/api/community/${pid}/comment/${c.id}/pin`, { method: 'POST' })
+                            .then(r => r.json()).then(() => loadPreviewComments(pid, postEl)).catch(() => {});
+                    });
+                    row.querySelectorAll('.comm-comment-react').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const action = this.dataset.action;
+                            if (action === 'reply') {
+                                const input = commentsEl?.querySelector('.comm-comment-input');
+                                commentsEl?.classList.remove('hidden');
+                                if (input) { input.value = `@${this.dataset.username} `; input.focus(); }
+                                return;
+                            }
+                            fetch(`/pug/api/community/${pid}/comment/${this.dataset.cid}/react`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ type: action })
+                            }).then(r => r.json()).then(data => {
+                                row.querySelector('[data-action="like"] .cmt-cnt').textContent    = data.likes    || 0;
+                                row.querySelector('[data-action="dislike"] .cmt-cnt').textContent = data.dislikes || 0;
+                                row.querySelector('[data-action="like"]').classList.toggle('active',    data.my_reaction === 'like');
+                                row.querySelector('[data-action="dislike"]').classList.toggle('active', data.my_reaction === 'dislike');
+                            }).catch(() => {});
+                        });
+                    });
                     preview.appendChild(row);
                 });
             }).catch(() => {});
