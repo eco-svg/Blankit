@@ -653,14 +653,22 @@ document.addEventListener('DOMContentLoaded', () => {
             pubModal.classList.add('hidden');
     });
 
+    const PUB_ACTION_MESSAGES = {
+        'pub-action-hire':   u => `Hey ${u}, I'd like to hire you! 👋`,
+        'pub-action-collab': u => `Hey ${u}, I'd like to collab with you! 🤝`,
+        'pub-action-friend': u => `Hey ${u}! I'd like to connect with you 👋`,
+    };
+
     pubActions?.querySelectorAll('.pub-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const uid      = parseInt(pubModal.dataset.uid || '0');
             const username = pubModal.dataset.username || '';
             if (!uid) return;
+            const cls = Array.from(btn.classList).find(c => PUB_ACTION_MESSAGES[c]);
+            const autoMessage = cls ? PUB_ACTION_MESSAGES[cls](username) : null;
             pubModal.classList.add('hidden');
             document.getElementById('commDmLbar')?.classList.add('open');
-            document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+            document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
         });
     });
 

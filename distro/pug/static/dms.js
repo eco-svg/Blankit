@@ -427,6 +427,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Cross-module DM open (from community marketplace CTAs) ────────────────
     document.addEventListener('veyra:open-dm', e => {
         openChat(e.detail.uid, e.detail.username);
+        const msg = e.detail.autoMessage;
+        if (msg) {
+            // wait for chat to open + messages to load, then auto-send
+            setTimeout(() => {
+                if (dmInput) dmInput.value = msg;
+                sendMsg();
+            }, 600);
+        }
     });
 
     // ── Init ──────────────────────────────────────────────────────────────────
