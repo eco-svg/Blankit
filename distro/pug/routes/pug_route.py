@@ -1538,6 +1538,74 @@ def dismiss_suggestion():
     return jsonify({'ok': True, 'sheet': sheet})
 
 
+# ── EXP award ────────────────────────────────────────────────────────────────
+import os as _os
+
+def _load_exp_config():
+    path = _os.path.join(_os.path.dirname(__file__), '..', 'static', 'exp_config.json')
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+_EXP_CONFIG = None
+
+def _get_exp_config():
+    global _EXP_CONFIG
+    if _EXP_CONFIG is None:
+        _EXP_CONFIG = _load_exp_config()
+    return _EXP_CONFIG
+
+def _exp_rank(total_exp):
+    cfg = _get_exp_config()
+    th  = cfg.get('rank_thresholds', {})
+    rank_order = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E+','E','E-','F']
+    for r in rank_order:
+        if th.get(r) is not None and total_exp >= th[r]:
+            return r
+    return 'F'
+
+def award_exp(user_id, skill_name, action, count=1):
+    """Award EXP to a named skill for a community action. Returns updated exp total."""
+    cfg     = _get_exp_config()
+    weight  = cfg.get('action_weights', {}).get(action, 0)
+    delta   = weight * count
+    if delta <= 0:
+        return None
+    sheet  = _get_cached_sheet(user_id) or {}
+    skills = sheet.get('skills', [])
+    for s in skills:
+        if s.get('name') == skill_name:
+            s['exp'] = round(s.get('exp', 0) + delta, 2)
+            s['rank'] = _exp_rank(s['exp'])
+            break
+    sheet['skills'] = skills
+    _save_cached_sheet(user_id, sheet)
+    return sheet
+
+
+@pug_bp.route('/pug/api/stats/skill/exp', methods=['POST'])
+def add_skill_exp():
+    """Award EXP to a skill for a given action. Body: {skill, action, count?}"""
+    err = login_required_api()
+    if err: return err
+    user_id = session.get('user_id')
+    data    = request.get_json(force=True) or {}
+    skill   = (data.get('skill') or '').strip()
+    action  = (data.get('action') or '').strip()
+    count   = int(data.get('count', 1))
+    if not skill or not action:
+        return jsonify({'error': 'skill and action required'}), 400
+    cfg = _get_exp_config()
+    if action not in cfg.get('action_weights', {}):
+        return jsonify({'error': f'unknown action: {action}'}), 400
+    sheet = award_exp(user_id, skill, action, count)
+    if sheet is None:
+        return jsonify({'error': 'skill not found in your sheet'}), 404
+    return jsonify({'ok': True, 'sheet': sheet})
+
+
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
     from shared.auth.user import User

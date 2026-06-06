@@ -1,1907 +1,1927 @@
 {
-  "Running": {
+  "1 km Run": {
     "type": "metric",
-    "classes": [
+    "unit": "min:sec",
+    "note": "World record ~2:11 (men). Relative to trained runners.",
+    "ranks": [
       {
-        "id": "1km",
-        "label": "1 km",
-        "unit": "min:sec",
-        "note": "World record ~2:11 (men). Relative to trained runners.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~6:00+",
-            "threshold": "6:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 4:30\u20136:00",
-            "threshold": "4:30\u20136:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 3:45\u20134:30",
-            "threshold": "3:45\u20134:30"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 3:10\u20133:45",
-            "threshold": "3:10\u20133:45"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-3:10",
-            "threshold": "under 3:10"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-2:30",
-            "threshold": "under 2:30"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-2:12",
-            "threshold": "under 2:12"
-          }
-        ]
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
       },
       {
-        "id": "2km",
-        "label": "2 km",
-        "unit": "min:sec",
-        "note": "World record ~4:44. Relative to trained runners.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~12:00+",
-            "threshold": "12:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 9:00\u201312:00",
-            "threshold": "9:00\u201312:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 7:30\u20139:00",
-            "threshold": "7:30\u20139:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 6:15\u20137:30",
-            "threshold": "6:15\u20137:30"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-6:15",
-            "threshold": "under 6:15"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-5:15",
-            "threshold": "under 5:15"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-4:45",
-            "threshold": "under 4:45"
-          }
-        ]
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~6:00+",
+        "threshold": "6:00+"
       },
       {
-        "id": "3km",
-        "label": "3 km",
-        "unit": "min:sec",
-        "note": "World record ~7:20 (men).",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~18:00+",
-            "threshold": "18:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 14:00\u201318:00",
-            "threshold": "14:00\u201318:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 11:30\u201314:00",
-            "threshold": "11:30\u201314:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 9:30\u201311:30",
-            "threshold": "9:30\u201311:30"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-9:30",
-            "threshold": "under 9:30"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-8:00",
-            "threshold": "under 8:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-7:21",
-            "threshold": "under 7:21"
-          }
-        ]
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 4:30\u20136:00",
+        "threshold": "4:30\u20136:00"
       },
       {
-        "id": "4km",
-        "label": "4 km",
-        "unit": "min:sec",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~24:00+",
-            "threshold": "24:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 18:00\u201324:00",
-            "threshold": "18:00\u201324:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 15:00\u201318:00",
-            "threshold": "15:00\u201318:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 12:30\u201315:00",
-            "threshold": "12:30\u201315:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-12:30",
-            "threshold": "under 12:30"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-10:30",
-            "threshold": "under 10:30"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-10:00",
-            "threshold": "under 10:00"
-          }
-        ]
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 3:45\u20134:30",
+        "threshold": "3:45\u20134:30"
       },
       {
-        "id": "5km",
-        "label": "5 km",
-        "unit": "min:sec",
-        "note": "Based on 736,928 race results \u2014 avg finish 34:29. Top 30% break 30:00, top 10% break 27:00, top 1% sub-18:40.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~40:00+",
-            "threshold": "40:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 35:00\u201340:00",
-            "threshold": "35:00\u201340:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 30:00\u201335:00",
-            "threshold": "30:00\u201335:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 25:00\u201330:00",
-            "threshold": "25:00\u201330:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-25:00",
-            "threshold": "under 25:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-15:00",
-            "threshold": "under 15:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-12:36",
-            "threshold": "under 12:36"
-          }
-        ]
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 3:10\u20133:45",
+        "threshold": "3:10\u20133:45"
       },
       {
-        "id": "10km",
-        "label": "10 km",
-        "unit": "min:sec",
-        "note": "Top 40% of 10K finishers break 1 hour.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~75:00+",
-            "threshold": "75:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 60:00\u201375:00",
-            "threshold": "60:00\u201375:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 under 60:00",
-            "threshold": "under 60:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 under 50:00",
-            "threshold": "under 50:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 under 40:00",
-            "threshold": "under 40:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-28:00",
-            "threshold": "under 28:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-26:18",
-            "threshold": "under 26:18"
-          }
-        ]
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-3:10",
+        "threshold": "under 3:10"
       },
       {
-        "id": "15km",
-        "label": "15 km",
-        "unit": "hr:min:sec",
-        "note": "World record ~41:05 (Kenenisa Bekele).",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~1:45:00+",
-            "threshold": "1:45:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 1:20:00\u20131:45:00",
-            "threshold": "1:20:00\u20131:45:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 1:05:00\u20131:20:00",
-            "threshold": "1:05:00\u20131:20:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 under 1:05:00",
-            "threshold": "under 1:05:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 under 52:00",
-            "threshold": "under 52:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-43:00",
-            "threshold": "under 43:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-41:06",
-            "threshold": "under 41:06"
-          }
-        ]
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-2:30",
+        "threshold": "under 2:30"
       },
       {
-        "id": "20km",
-        "label": "20 km",
-        "unit": "hr:min:sec",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~2:20:00+",
-            "threshold": "2:20:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 1:50:00\u20132:20:00",
-            "threshold": "1:50:00\u20132:20:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 1:35:00\u20131:50:00",
-            "threshold": "1:35:00\u20131:50:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 under 1:35:00",
-            "threshold": "under 1:35:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 under 1:10:00",
-            "threshold": "under 1:10:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-57:00",
-            "threshold": "under 57:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-55:00",
-            "threshold": "under 55:21"
-          }
-        ]
-      },
-      {
-        "id": "half_marathon",
-        "label": "Half Marathon (21.1 km)",
-        "unit": "hr:min:sec",
-        "note": "Median men 1:59, women 2:24. Top 10% men sub-1:47, top 1% men sub-1:18.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~2:45:00+",
-            "threshold": "2:45:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 2:15:00\u20132:45:00",
-            "threshold": "2:15:00\u20132:45:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 2:00:00\u20132:15:00",
-            "threshold": "2:00:00\u20132:15:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 sub-2:00:00",
-            "threshold": "under 2:00:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-1:47 (men) / 1:57 (women)",
-            "threshold": "under 1:47:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-1:18:00",
-            "threshold": "under 1:18:38"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-58:00",
-            "threshold": "under 57:32"
-          }
-        ]
-      },
-      {
-        "id": "marathon",
-        "label": "Marathon (42.2 km)",
-        "unit": "hr:min:sec",
-        "note": "Median ~4:20\u20134:30. Top 25% under 3:55. Based on 107M+ race results.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing, ~6:00:00+",
-            "threshold": "6:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 4:45:00\u20136:00:00",
-            "threshold": "4:45:00\u20136:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 4:00:00\u20134:45:00",
-            "threshold": "4:00:00\u20134:45:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 sub-4:00:00",
-            "threshold": "under 4:00:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-3:30:00",
-            "threshold": "under 3:30:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-2:30:00",
-            "threshold": "under 2:30:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-2:01",
-            "threshold": "under 2:00:35"
-          }
-        ]
-      },
-      {
-        "id": "25km",
-        "label": "25 km Ultra",
-        "unit": "hr:min:sec",
-        "note": "World record ~1:11:28.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~3:00:00+",
-            "threshold": "3:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 2:15:00\u20133:00:00",
-            "threshold": "2:15:00\u20133:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 1:50:00\u20132:15:00",
-            "threshold": "1:50:00\u20132:15:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 1:35:00\u20131:50:00",
-            "threshold": "1:35:00\u20131:50:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-1:20:00",
-            "threshold": "under 1:20:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-1:12:00",
-            "threshold": "under 1:12:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-1:11:29",
-            "threshold": "under 1:11:29"
-          }
-        ]
-      },
-      {
-        "id": "50km",
-        "label": "50 km Ultra",
-        "unit": "hr:min:sec",
-        "note": "World record ~2:43:38.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~7:00:00+",
-            "threshold": "7:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 5:30:00\u20137:00:00",
-            "threshold": "5:30:00\u20137:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 4:45:00\u20135:30:00",
-            "threshold": "4:45:00\u20135:30:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 4:00:00\u20134:45:00",
-            "threshold": "4:00:00\u20134:45:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-3:15:00",
-            "threshold": "under 3:15:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-2:50:00",
-            "threshold": "under 2:50:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-2:44",
-            "threshold": "under 2:43:39"
-          }
-        ]
-      },
-      {
-        "id": "75km",
-        "label": "75 km Ultra",
-        "unit": "hr:min:sec",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~11:00:00+",
-            "threshold": "11:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 9:00:00\u201311:00:00",
-            "threshold": "9:00:00\u201311:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 7:30:00\u20139:00:00",
-            "threshold": "7:30:00\u20139:00:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 6:15:00\u20137:30:00",
-            "threshold": "6:15:00\u20137:30:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-5:15:00",
-            "threshold": "under 5:15:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-4:45:00",
-            "threshold": "under 4:45:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-4:32",
-            "threshold": "under 4:31:13"
-          }
-        ]
-      },
-      {
-        "id": "100km",
-        "label": "100 km Ultra",
-        "unit": "hr:min:sec",
-        "note": "World record ~6:33:11.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not started",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 finishing ~17:00:00+",
-            "threshold": "17:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 14:00:00\u201317:00:00",
-            "threshold": "14:00:00\u201317:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 11:00:00\u201314:00:00",
-            "threshold": "11:00:00\u201314:00:00"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 9:00:00\u201311:00:00",
-            "threshold": "9:00:00\u201311:00:00"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-7:30:00",
-            "threshold": "under 7:30:00"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-6:45:00",
-            "threshold": "under 6:45:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-6:34",
-            "threshold": "under 6:33:12"
-          }
-        ]
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-2:12",
+        "threshold": "under 2:12"
       }
     ]
   },
-  "Sprinting": {
+  "2 km Run": {
     "type": "metric",
-    "classes": [
+    "unit": "min:sec",
+    "note": "World record ~4:44. Relative to trained runners.",
+    "ranks": [
       {
-        "id": "100m",
-        "label": "100 m",
-        "unit": "seconds",
-        "note": "World record 9.58s (Bolt). Relative to trained sprinters.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not trained",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 16s+ (untrained)",
-            "threshold": "16s+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 12.5\u201316s",
-            "threshold": "12.5\u201316s"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 11.0\u201312.5s",
-            "threshold": "11.0\u201312.5s"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 10.5\u201311.0s",
-            "threshold": "10.5\u201311.0s"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 10.0\u201310.5s (national)",
-            "threshold": "10.0\u201310.5s"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-10.0s (pro)",
-            "threshold": "under 10.0s"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-9.6s",
-            "threshold": "under 9.59s"
-          }
-        ]
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
       },
       {
-        "id": "200m",
-        "label": "200 m",
-        "unit": "seconds",
-        "note": "World record 19.19s (Bolt).",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not trained",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 32s+",
-            "threshold": "32s+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 26\u201332s",
-            "threshold": "26\u201332s"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 22\u201326s",
-            "threshold": "22\u201326s"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 20\u201322s",
-            "threshold": "20\u201322s"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-20s (national)",
-            "threshold": "under 20s"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-19.5s (pro)",
-            "threshold": "under 19.5s"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-19.2s",
-            "threshold": "under 19.20s"
-          }
-        ]
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~12:00+",
+        "threshold": "12:00+"
       },
       {
-        "id": "400m",
-        "label": "400 m",
-        "unit": "seconds",
-        "note": "World record 43.03s.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not trained",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 75s+",
-            "threshold": "75s+"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 60\u201375s",
-            "threshold": "60\u201375s"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 52\u201360s",
-            "threshold": "52\u201360s"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 47\u201352s",
-            "threshold": "47\u201352s"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 sub-47s (national)",
-            "threshold": "under 47s"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 sub-44s (pro)",
-            "threshold": "under 44s"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 sub-43.1s",
-            "threshold": "under 43.04s"
-          }
-        ]
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 9:00\u201312:00",
+        "threshold": "9:00\u201312:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 7:30\u20139:00",
+        "threshold": "7:30\u20139:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 6:15\u20137:30",
+        "threshold": "6:15\u20137:30"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-6:15",
+        "threshold": "under 6:15"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-5:15",
+        "threshold": "under 5:15"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-4:45",
+        "threshold": "under 4:45"
+      }
+    ]
+  },
+  "3 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "World record ~7:20 (men).",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~18:00+",
+        "threshold": "18:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 14:00\u201318:00",
+        "threshold": "14:00\u201318:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 11:30\u201314:00",
+        "threshold": "11:30\u201314:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 9:30\u201311:30",
+        "threshold": "9:30\u201311:30"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-9:30",
+        "threshold": "under 9:30"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-8:00",
+        "threshold": "under 8:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-7:21",
+        "threshold": "under 7:21"
+      }
+    ]
+  },
+  "4 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~24:00+",
+        "threshold": "24:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 18:00\u201324:00",
+        "threshold": "18:00\u201324:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 15:00\u201318:00",
+        "threshold": "15:00\u201318:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 12:30\u201315:00",
+        "threshold": "12:30\u201315:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-12:30",
+        "threshold": "under 12:30"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-10:30",
+        "threshold": "under 10:30"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-10:00",
+        "threshold": "under 10:00"
+      }
+    ]
+  },
+  "5 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "Based on 736,928 race results \u2014 avg finish 34:29. Top 30% break 30:00, top 10% break 27:00, top 1% sub-18:40.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~40:00+",
+        "threshold": "40:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 35:00\u201340:00",
+        "threshold": "35:00\u201340:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 30:00\u201335:00",
+        "threshold": "30:00\u201335:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 25:00\u201330:00",
+        "threshold": "25:00\u201330:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-25:00",
+        "threshold": "under 25:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-15:00",
+        "threshold": "under 15:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-12:36",
+        "threshold": "under 12:36"
+      }
+    ]
+  },
+  "10 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "Top 40% of 10K finishers break 1 hour.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~75:00+",
+        "threshold": "75:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 60:00\u201375:00",
+        "threshold": "60:00\u201375:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 under 60:00",
+        "threshold": "under 60:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 under 50:00",
+        "threshold": "under 50:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 under 40:00",
+        "threshold": "under 40:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-28:00",
+        "threshold": "under 28:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-26:18",
+        "threshold": "under 26:18"
+      }
+    ]
+  },
+  "15 km Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~41:05 (Kenenisa Bekele).",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~1:45:00+",
+        "threshold": "1:45:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 1:20:00\u20131:45:00",
+        "threshold": "1:20:00\u20131:45:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 1:05:00\u20131:20:00",
+        "threshold": "1:05:00\u20131:20:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 under 1:05:00",
+        "threshold": "under 1:05:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 under 52:00",
+        "threshold": "under 52:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-43:00",
+        "threshold": "under 43:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-41:06",
+        "threshold": "under 41:06"
+      }
+    ]
+  },
+  "20 km Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~2:20:00+",
+        "threshold": "2:20:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 1:50:00\u20132:20:00",
+        "threshold": "1:50:00\u20132:20:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 1:35:00\u20131:50:00",
+        "threshold": "1:35:00\u20131:50:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 under 1:35:00",
+        "threshold": "under 1:35:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 under 1:10:00",
+        "threshold": "under 1:10:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-57:00",
+        "threshold": "under 57:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-55:00",
+        "threshold": "under 55:21"
+      }
+    ]
+  },
+  "Half Marathon (21.1 km) Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "Median men 1:59, women 2:24. Top 10% men sub-1:47, top 1% men sub-1:18.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~2:45:00+",
+        "threshold": "2:45:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 2:15:00\u20132:45:00",
+        "threshold": "2:15:00\u20132:45:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 2:00:00\u20132:15:00",
+        "threshold": "2:00:00\u20132:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 sub-2:00:00",
+        "threshold": "under 2:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-1:47 (men) / 1:57 (women)",
+        "threshold": "under 1:47:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-1:18:00",
+        "threshold": "under 1:18:38"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-58:00",
+        "threshold": "under 57:32"
+      }
+    ]
+  },
+  "Marathon (42.2 km) Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "Median ~4:20\u20134:30. Top 25% under 3:55. Based on 107M+ race results.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing, ~6:00:00+",
+        "threshold": "6:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 4:45:00\u20136:00:00",
+        "threshold": "4:45:00\u20136:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 4:00:00\u20134:45:00",
+        "threshold": "4:00:00\u20134:45:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 sub-4:00:00",
+        "threshold": "under 4:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-3:30:00",
+        "threshold": "under 3:30:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-2:30:00",
+        "threshold": "under 2:30:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-2:01",
+        "threshold": "under 2:00:35"
+      }
+    ]
+  },
+  "25 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~1:11:28.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~3:00:00+",
+        "threshold": "3:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 2:15:00\u20133:00:00",
+        "threshold": "2:15:00\u20133:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 1:50:00\u20132:15:00",
+        "threshold": "1:50:00\u20132:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 1:35:00\u20131:50:00",
+        "threshold": "1:35:00\u20131:50:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-1:20:00",
+        "threshold": "under 1:20:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-1:12:00",
+        "threshold": "under 1:12:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-1:11:29",
+        "threshold": "under 1:11:29"
+      }
+    ]
+  },
+  "50 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~2:43:38.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~7:00:00+",
+        "threshold": "7:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 5:30:00\u20137:00:00",
+        "threshold": "5:30:00\u20137:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 4:45:00\u20135:30:00",
+        "threshold": "4:45:00\u20135:30:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 4:00:00\u20134:45:00",
+        "threshold": "4:00:00\u20134:45:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-3:15:00",
+        "threshold": "under 3:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-2:50:00",
+        "threshold": "under 2:50:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-2:44",
+        "threshold": "under 2:43:39"
+      }
+    ]
+  },
+  "75 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~11:00:00+",
+        "threshold": "11:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 9:00:00\u201311:00:00",
+        "threshold": "9:00:00\u201311:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 7:30:00\u20139:00:00",
+        "threshold": "7:30:00\u20139:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 6:15:00\u20137:30:00",
+        "threshold": "6:15:00\u20137:30:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-5:15:00",
+        "threshold": "under 5:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-4:45:00",
+        "threshold": "under 4:45:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-4:32",
+        "threshold": "under 4:31:13"
+      }
+    ]
+  },
+  "100 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~6:33:11.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 finishing ~17:00:00+",
+        "threshold": "17:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 14:00:00\u201317:00:00",
+        "threshold": "14:00:00\u201317:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 11:00:00\u201314:00:00",
+        "threshold": "11:00:00\u201314:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 9:00:00\u201311:00:00",
+        "threshold": "9:00:00\u201311:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-7:30:00",
+        "threshold": "under 7:30:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-6:45:00",
+        "threshold": "under 6:45:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-6:34",
+        "threshold": "under 6:33:12"
+      }
+    ]
+  },
+  "100m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 9.58s (Bolt). Relative to trained sprinters.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not trained",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 16s+ (untrained)",
+        "threshold": "16s+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 12.5\u201316s",
+        "threshold": "12.5\u201316s"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 11.0\u201312.5s",
+        "threshold": "11.0\u201312.5s"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 10.5\u201311.0s",
+        "threshold": "10.5\u201311.0s"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 10.0\u201310.5s (national)",
+        "threshold": "10.0\u201310.5s"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-10.0s (pro)",
+        "threshold": "under 10.0s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-9.6s",
+        "threshold": "under 9.59s"
+      }
+    ]
+  },
+  "200m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 19.19s (Bolt).",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not trained",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 32s+",
+        "threshold": "32s+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 26\u201332s",
+        "threshold": "26\u201332s"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 22\u201326s",
+        "threshold": "22\u201326s"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 20\u201322s",
+        "threshold": "20\u201322s"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-20s (national)",
+        "threshold": "under 20s"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-19.5s (pro)",
+        "threshold": "under 19.5s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-19.2s",
+        "threshold": "under 19.20s"
+      }
+    ]
+  },
+  "400m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 43.03s.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not trained",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 75s+",
+        "threshold": "75s+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 60\u201375s",
+        "threshold": "60\u201375s"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 52\u201360s",
+        "threshold": "52\u201360s"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 47\u201352s",
+        "threshold": "47\u201352s"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 sub-47s (national)",
+        "threshold": "under 47s"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 sub-44s (pro)",
+        "threshold": "under 44s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 sub-43.1s",
+        "threshold": "under 43.04s"
+      }
+    ]
+  },
+  "50 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner \u2014 can complete 50 m",
+        "threshold": "2:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational \u2014 steady pace",
+        "threshold": "1:20\u20132:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate \u2014 comfortable effort",
+        "threshold": "1:00\u20131:20"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "40\u201360s"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive swimmer",
+        "threshold": "under 30s"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 23s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 20.91s"
+      }
+    ]
+  },
+  "100 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner \u2014 can complete 100 m",
+        "threshold": "3:30+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "2:30\u20133:30"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "1:45\u20132:30"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "1:10\u20131:45"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 1:10"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 54s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 46.92s"
+      }
+    ]
+  },
+  "200 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner \u2014 can complete 200 m",
+        "threshold": "8:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "5:30\u20138:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "4:00\u20135:30"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "2:45\u20134:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 2:45"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 2:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 1:42.00"
+      }
+    ]
+  },
+  "400 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner \u2014 can complete 400 m",
+        "threshold": "15:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "10:00\u201315:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "7:30\u201310:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "5:30\u20137:30"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 5:30"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 4:15"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 3:40.07"
+      }
+    ]
+  },
+  "1500 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner \u2014 can complete 1500 m",
+        "threshold": "60:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "42:00\u201360:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "30:00\u201342:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "22:00\u201330:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 22:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 17:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 14:31"
+      }
+    ]
+  },
+  "1 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First open water swim",
+        "threshold": "30:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational OW swimmer",
+        "threshold": "22:00\u201330:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable in open water",
+        "threshold": "17:00\u201322:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club OW / triathlon level",
+        "threshold": "13:00\u201317:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive OW swimmer",
+        "threshold": "under 13:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national OW",
+        "threshold": "under 11:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 10:00"
+      }
+    ]
+  },
+  "2 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 2 km OW attempt",
+        "threshold": "70:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "50:00\u201370:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable",
+        "threshold": "38:00\u201350:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club / triathlon level",
+        "threshold": "28:00\u201338:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 28:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national",
+        "threshold": "under 22:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 20:00"
+      }
+    ]
+  },
+  "5 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 5 km OW attempt",
+        "threshold": "3:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "2:15:00\u20133:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable marathon swimmer",
+        "threshold": "1:45:00\u20132:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club / event finisher",
+        "threshold": "1:20:00\u20131:45:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 1:20:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national",
+        "threshold": "under 1:04:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 58:00"
+      }
+    ]
+  },
+  "10 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 10 km OW attempt",
+        "threshold": "5:30:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "4:00:00\u20135:30:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable marathon swimmer",
+        "threshold": "3:00:00\u20134:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Event finisher, solid pace",
+        "threshold": "2:30:00\u20133:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 2:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / Olympic level",
+        "threshold": "under 1:55:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 1:49:34"
       }
     ]
   },
   "Chess": {
     "type": "metric",
-    "classes": [
+    "unit": "ELO",
+    "note": "Chess.com median ~500, Lichess median ~1400 (different scales). FIDE: 2200+ = FIDE Master, 2500+ = GM. Use either platform \u2014 Lichess runs ~200\u2013300pts higher.",
+    "ranks": [
       {
-        "id": "elo",
-        "label": "ELO Rating",
-        "unit": "ELO",
-        "note": "Chess.com median ~500, Lichess median ~1400 (different scales). FIDE: 2200+ = FIDE Master, 2500+ = GM. Use either platform \u2014 Lichess runs ~200\u2013300pts higher.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Knows the rules, unrated",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 Chess.com under 800 / Lichess under 1000",
-            "threshold": "CC <800 / LC <1000"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 CC 800\u20131200 / LC 1000\u20131400",
-            "threshold": "CC 800\u20131200"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 CC 1200\u20131500 / LC 1400\u20131700",
-            "threshold": "CC 1200\u20131500"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 CC 1500\u20131800 / LC 1700\u20132000",
-            "threshold": "CC 1500\u20131800"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 CC 1800\u20132200 / LC 2000\u20132400",
-            "threshold": "CC 1800\u20132200"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 FIDE Master (ELO 2200+ / GM 2500+)",
-            "threshold": "FIDE 2200+"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 Super-GM (2700+)",
-            "threshold": "FIDE 2700+"
-          }
-        ]
-      }
-    ]
-  },
-  "Swimming": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "50m",
-        "label": "50 m",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never swum laps",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "Beginner \u2014 can complete 50 m",
-            "threshold": "2:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational \u2014 steady pace",
-            "threshold": "1:20\u20132:00"
-          },
-          {
-            "rank": "C",
-            "label": "Intermediate \u2014 comfortable effort",
-            "threshold": "1:00\u20131:20"
-          },
-          {
-            "rank": "B",
-            "label": "Club level",
-            "threshold": "40\u201360s"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive swimmer",
-            "threshold": "under 30s"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national level",
-            "threshold": "under 23s"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 20.91s"
-          }
-        ]
+        "rank": "F",
+        "label": "Knows the rules, unrated",
+        "threshold": null
       },
       {
-        "id": "100m",
-        "label": "100 m",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never swum laps",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "Beginner \u2014 can complete 100 m",
-            "threshold": "3:30+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "2:30\u20133:30"
-          },
-          {
-            "rank": "C",
-            "label": "Intermediate",
-            "threshold": "1:45\u20132:30"
-          },
-          {
-            "rank": "B",
-            "label": "Club level",
-            "threshold": "1:10\u20131:45"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 1:10"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national level",
-            "threshold": "under 54s"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 46.92s"
-          }
-        ]
+        "rank": "E",
+        "label": "First steps \u2014 Chess.com under 800 / Lichess under 1000",
+        "threshold": "CC <800 / LC <1000"
       },
       {
-        "id": "200m",
-        "label": "200 m",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never swum laps",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "Beginner \u2014 can complete 200 m",
-            "threshold": "8:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "5:30\u20138:00"
-          },
-          {
-            "rank": "C",
-            "label": "Intermediate",
-            "threshold": "4:00\u20135:30"
-          },
-          {
-            "rank": "B",
-            "label": "Club level",
-            "threshold": "2:45\u20134:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 2:45"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national level",
-            "threshold": "under 2:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 1:42.00"
-          }
-        ]
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 CC 800\u20131200 / LC 1000\u20131400",
+        "threshold": "CC 800\u20131200"
       },
       {
-        "id": "400m",
-        "label": "400 m",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never swum laps",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "Beginner \u2014 can complete 400 m",
-            "threshold": "15:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "10:00\u201315:00"
-          },
-          {
-            "rank": "C",
-            "label": "Intermediate",
-            "threshold": "7:30\u201310:00"
-          },
-          {
-            "rank": "B",
-            "label": "Club level",
-            "threshold": "5:30\u20137:30"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 5:30"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national level",
-            "threshold": "under 4:15"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 3:40.07"
-          }
-        ]
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 CC 1200\u20131500 / LC 1400\u20131700",
+        "threshold": "CC 1200\u20131500"
       },
       {
-        "id": "1500m",
-        "label": "1500 m",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Never swum laps",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "Beginner \u2014 can complete 1500 m",
-            "threshold": "60:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "42:00\u201360:00"
-          },
-          {
-            "rank": "C",
-            "label": "Intermediate",
-            "threshold": "30:00\u201342:00"
-          },
-          {
-            "rank": "B",
-            "label": "Club level",
-            "threshold": "22:00\u201330:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 22:00"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national level",
-            "threshold": "under 17:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 14:31"
-          }
-        ]
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 CC 1500\u20131800 / LC 1700\u20132000",
+        "threshold": "CC 1500\u20131800"
       },
       {
-        "id": "1km_ow",
-        "label": "1 km (open water)",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "No open water swimming",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First open water swim",
-            "threshold": "30:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational OW swimmer",
-            "threshold": "22:00\u201330:00"
-          },
-          {
-            "rank": "C",
-            "label": "Comfortable in open water",
-            "threshold": "17:00\u201322:00"
-          },
-          {
-            "rank": "B",
-            "label": "Club OW / triathlon level",
-            "threshold": "13:00\u201317:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive OW swimmer",
-            "threshold": "under 13:00"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national OW",
-            "threshold": "under 11:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 10:00"
-          }
-        ]
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 CC 1800\u20132200 / LC 2000\u20132400",
+        "threshold": "CC 1800\u20132200"
       },
       {
-        "id": "2km_ow",
-        "label": "2 km (open water)",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "No open water swimming",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First 2 km OW attempt",
-            "threshold": "70:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "50:00\u201370:00"
-          },
-          {
-            "rank": "C",
-            "label": "Comfortable",
-            "threshold": "38:00\u201350:00"
-          },
-          {
-            "rank": "B",
-            "label": "Club / triathlon level",
-            "threshold": "28:00\u201338:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 28:00"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national",
-            "threshold": "under 22:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 20:00"
-          }
-        ]
+        "rank": "S",
+        "label": "Top 0.001% \u2014 FIDE Master (ELO 2200+ / GM 2500+)",
+        "threshold": "FIDE 2200+"
       },
       {
-        "id": "5km_ow",
-        "label": "5 km (open water)",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "No open water swimming",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First 5 km OW attempt",
-            "threshold": "3:00:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "2:15:00\u20133:00:00"
-          },
-          {
-            "rank": "C",
-            "label": "Comfortable marathon swimmer",
-            "threshold": "1:45:00\u20132:15:00"
-          },
-          {
-            "rank": "B",
-            "label": "Club / event finisher",
-            "threshold": "1:20:00\u20131:45:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 1:20:00"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / national",
-            "threshold": "under 1:04:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 58:00"
-          }
-        ]
-      },
-      {
-        "id": "10km_ow",
-        "label": "10 km (open water)",
-        "unit": "time (mm:ss)",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "No open water swimming",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First 10 km OW attempt",
-            "threshold": "5:30:00+"
-          },
-          {
-            "rank": "D",
-            "label": "Recreational",
-            "threshold": "4:00:00\u20135:30:00"
-          },
-          {
-            "rank": "C",
-            "label": "Comfortable marathon swimmer",
-            "threshold": "3:00:00\u20134:00:00"
-          },
-          {
-            "rank": "B",
-            "label": "Event finisher, solid pace",
-            "threshold": "2:30:00\u20133:00:00"
-          },
-          {
-            "rank": "A",
-            "label": "Competitive",
-            "threshold": "under 2:15:00"
-          },
-          {
-            "rank": "S",
-            "label": "Elite / Olympic level",
-            "threshold": "under 1:55:00"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory",
-            "threshold": "under 1:49:34"
-          }
-        ]
+        "rank": "S+",
+        "label": "World record territory \u2014 Super-GM (2700+)",
+        "threshold": "FIDE 2700+"
       }
     ]
   },
   "Typing": {
     "type": "metric",
-    "classes": [
+    "unit": "WPM (99%+ accuracy)",
+    "note": "Average office typist 40 WPM. Touch-typist 60\u201380. Competitive 120+. TypeRacer / Monkeytype data.",
+    "ranks": [
       {
-        "id": "wpm",
-        "label": "Words Per Minute (WPM)",
-        "unit": "WPM (99%+ accuracy)",
-        "note": "Average office typist 40 WPM. Touch-typist 60\u201380. Competitive 120+. TypeRacer / Monkeytype data.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Hunt-and-peck, under 20 WPM",
-            "threshold": "under 20"
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 20\u201335 WPM",
-            "threshold": "20\u201335"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 40\u201360 WPM",
-            "threshold": "40\u201360"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 65\u201385 WPM",
-            "threshold": "65\u201385"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 90\u2013110 WPM",
-            "threshold": "90\u2013110"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 120\u2013140 WPM",
-            "threshold": "120\u2013140"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 160\u2013180 WPM",
-            "threshold": "160\u2013180"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 200+ WPM",
-            "threshold": "200+"
-          }
-        ]
+        "rank": "F",
+        "label": "Hunt-and-peck, under 20 WPM",
+        "threshold": "under 20"
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 20\u201335 WPM",
+        "threshold": "20\u201335"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 40\u201360 WPM",
+        "threshold": "40\u201360"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 65\u201385 WPM",
+        "threshold": "65\u201385"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 90\u2013110 WPM",
+        "threshold": "90\u2013110"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 120\u2013140 WPM",
+        "threshold": "120\u2013140"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 160\u2013180 WPM",
+        "threshold": "160\u2013180"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 200+ WPM",
+        "threshold": "200+"
       }
     ]
   },
   "Valorant": {
     "type": "metric",
-    "classes": [
+    "unit": "rank tier",
+    "note": "Iron ~35%, Bronze ~25%, Silver ~20%, Gold ~12%, Platinum ~5%, Diamond ~2%, Ascendant ~0.7%, Radiant ~0.03%. Riot Games data.",
+    "ranks": [
       {
-        "id": "rank",
-        "label": "Act Rank",
-        "unit": "rank tier",
-        "note": "Iron ~35%, Bronze ~25%, Silver ~20%, Gold ~12%, Platinum ~5%, Diamond ~2%, Ascendant ~0.7%, Radiant ~0.03%. Riot Games data.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Unranked",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 Iron 1\u20133",
-            "threshold": "Iron"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 Bronze\u2013Silver",
-            "threshold": "Bronze\u2013Silver"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 Gold 1\u20133",
-            "threshold": "Gold"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 Platinum 1\u20133",
-            "threshold": "Platinum"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 Diamond / Ascendant",
-            "threshold": "Diamond\u2013Ascendant"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 Radiant",
-            "threshold": "Radiant"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 pro scene",
-            "threshold": "VCT Pro"
-          }
-        ]
+        "rank": "F",
+        "label": "Unranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 Iron 1\u20133",
+        "threshold": "Iron"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 Bronze\u2013Silver",
+        "threshold": "Bronze\u2013Silver"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 Gold 1\u20133",
+        "threshold": "Gold"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 Platinum 1\u20133",
+        "threshold": "Platinum"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 Diamond / Ascendant",
+        "threshold": "Diamond\u2013Ascendant"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 Radiant",
+        "threshold": "Radiant"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 pro scene",
+        "threshold": "VCT Pro"
       }
     ]
   },
   "League of Legends": {
     "type": "metric",
-    "classes": [
+    "unit": "rank tier",
+    "note": "~150M players. Iron\u2013Bronze ~40%, Silver ~25%, Gold ~20%, Platinum ~10%, Diamond ~2%, Master+ ~0.5%. Riot Games.",
+    "ranks": [
       {
-        "id": "rank",
-        "label": "Ranked Tier",
-        "unit": "rank tier",
-        "note": "~150M players. Iron\u2013Bronze ~40%, Silver ~25%, Gold ~20%, Platinum ~10%, Diamond ~2%, Master+ ~0.5%. Riot Games.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Unranked",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 Iron",
-            "threshold": "Iron"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 Bronze\u2013Silver",
-            "threshold": "Bronze\u2013Silver"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 Gold",
-            "threshold": "Gold"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 Platinum\u2013Emerald",
-            "threshold": "Platinum\u2013Emerald"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 Diamond\u2013Master",
-            "threshold": "Diamond\u2013Master"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 Grandmaster / Challenger",
-            "threshold": "Grandmaster+"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 pro scene",
-            "threshold": "LCS / LEC Pro"
-          }
-        ]
+        "rank": "F",
+        "label": "Unranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 Iron",
+        "threshold": "Iron"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 Bronze\u2013Silver",
+        "threshold": "Bronze\u2013Silver"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 Gold",
+        "threshold": "Gold"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 Platinum\u2013Emerald",
+        "threshold": "Platinum\u2013Emerald"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 Diamond\u2013Master",
+        "threshold": "Diamond\u2013Master"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 Grandmaster / Challenger",
+        "threshold": "Grandmaster+"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 pro scene",
+        "threshold": "LCS / LEC Pro"
       }
     ]
   },
   "CS2": {
     "type": "metric",
-    "classes": [
+    "unit": "rank / ELO",
+    "note": "CS2 Premier Rating. FACEIT ELO 500\u20134000. Valve / ESIC data.",
+    "ranks": [
       {
-        "id": "rank",
-        "label": "CS2 / FACEIT Rating",
-        "unit": "rank / ELO",
-        "note": "CS2 Premier Rating. FACEIT ELO 500\u20134000. Valve / ESIC data.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not played ranked",
-            "threshold": null
-          },
-          {
-            "rank": "E",
-            "label": "First steps \u2014 CS2 Rating under 5000",
-            "threshold": "under 5000"
-          },
-          {
-            "rank": "D",
-            "label": "Top 70\u201399% \u2014 5000\u201310000",
-            "threshold": "5000\u201310000"
-          },
-          {
-            "rank": "C",
-            "label": "Top 40\u201370% \u2014 10000\u201315000",
-            "threshold": "10000\u201315000"
-          },
-          {
-            "rank": "B",
-            "label": "Top 20\u201340% \u2014 15000\u201320000",
-            "threshold": "15000\u201320000"
-          },
-          {
-            "rank": "A",
-            "label": "Top 1\u201310% \u2014 20000\u201325000 / FACEIT 3000+",
-            "threshold": "20000+ / FC 3000+"
-          },
-          {
-            "rank": "S",
-            "label": "Top 0.001% \u2014 FACEIT 3500+ (pro level)",
-            "threshold": "FACEIT 3500+"
-          },
-          {
-            "rank": "S+",
-            "label": "World record territory \u2014 pro scene",
-            "threshold": "Major Pro"
-          }
-        ]
+        "rank": "F",
+        "label": "Not played ranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps \u2014 CS2 Rating under 5000",
+        "threshold": "under 5000"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70\u201399% \u2014 5000\u201310000",
+        "threshold": "5000\u201310000"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40\u201370% \u2014 10000\u201315000",
+        "threshold": "10000\u201315000"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20\u201340% \u2014 15000\u201320000",
+        "threshold": "15000\u201320000"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1\u201310% \u2014 20000\u201325000 / FACEIT 3000+",
+        "threshold": "20000+ / FC 3000+"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% \u2014 FACEIT 3500+ (pro level)",
+        "threshold": "FACEIT 3500+"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory \u2014 pro scene",
+        "threshold": "Major Pro"
       }
     ]
   },
-  "Guitar": {
-    "type": "exp",
-    "classes": [
+  "Clash Royale \u2013 Trophy Road": {
+    "type": "metric",
+    "unit": "trophies",
+    "note": "14,000 trophies = max Trophy Road. Path of Legends eligible at 13,000.",
+    "ranks": [
       {
-        "id": "acoustic",
-        "label": "Acoustic"
+        "rank": "F",
+        "label": "Under 1500 \u2014 early arenas",
+        "threshold": "under 1500"
       },
       {
-        "id": "electric",
-        "label": "Electric"
+        "rank": "E",
+        "label": "1500\u20134000 \u2014 casual play",
+        "threshold": "1500\u20134000"
       },
       {
-        "id": "classical",
-        "label": "Classical"
+        "rank": "D",
+        "label": "4000\u20136500 \u2014 mid arenas",
+        "threshold": "4000\u20136500"
       },
       {
-        "id": "bass",
-        "label": "Bass"
+        "rank": "C",
+        "label": "6500\u20139000 \u2014 above average",
+        "threshold": "6500\u20139000"
+      },
+      {
+        "rank": "B",
+        "label": "9000\u201311500 \u2014 skilled player",
+        "threshold": "9000\u201311500"
+      },
+      {
+        "rank": "A",
+        "label": "11500\u201313000 \u2014 very skilled, pushing top",
+        "threshold": "11500\u201313000"
+      },
+      {
+        "rank": "S",
+        "label": "13000\u201313500 \u2014 PoL eligible",
+        "threshold": "13000\u201313500"
+      },
+      {
+        "rank": "S+",
+        "label": "13500\u201314000 \u2014 max Trophy Road",
+        "threshold": "13500\u201314000"
       }
     ]
   },
-  "Piano": {
-    "type": "exp",
-    "classes": [
+  "Clash Royale \u2013 Path of Legends": {
+    "type": "metric",
+    "unit": "PoL tier (all-time max)",
+    "note": "Seasonal \u2014 rank stored as all-time max so season resets don't drop user rank. 10 tiers: Challenger I-III, Master I-III, Champion, Grand Champion, Royal Champion, Ultimate Champion.",
+    "ranks": [
       {
-        "id": "classical",
-        "label": "Classical"
+        "rank": "F",
+        "label": "Not eligible \u2014 under 13000 trophies",
+        "threshold": "not eligible"
       },
       {
-        "id": "jazz",
-        "label": "Jazz"
+        "rank": "E",
+        "label": "Challenger I\u2013II",
+        "threshold": "Challenger I\u2013II"
       },
       {
-        "id": "pop",
-        "label": "Pop & Contemporary"
+        "rank": "D",
+        "label": "Challenger III \u2013 Master I",
+        "threshold": "Challenger III \u2013 Master I"
+      },
+      {
+        "rank": "C",
+        "label": "Master II \u2013 Master III",
+        "threshold": "Master II\u2013III"
+      },
+      {
+        "rank": "B",
+        "label": "Champion \u2013 Grand Champion",
+        "threshold": "Champion\u2013Grand Champion"
+      },
+      {
+        "rank": "A",
+        "label": "Royal Champion",
+        "threshold": "Royal Champion"
+      },
+      {
+        "rank": "S",
+        "label": "Ultimate Champion",
+        "threshold": "Ultimate Champion"
+      },
+      {
+        "rank": "S+",
+        "label": "UC Top 1000 global",
+        "threshold": "Ultimate Champion Top 1000"
       }
     ]
   },
-  "Violin": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "classical",
-        "label": "Classical"
-      },
-      {
-        "id": "folk",
-        "label": "Folk / Fiddle"
-      },
-      {
-        "id": "jazz",
-        "label": "Jazz"
-      }
-    ]
+  "Acoustic Guitar": {
+    "type": "exp"
   },
-  "Drums": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "acoustic_drums",
-        "label": "Acoustic"
-      },
-      {
-        "id": "electronic_drums",
-        "label": "Electronic"
-      }
-    ]
+  "Electric Guitar": {
+    "type": "exp"
   },
-  "Singing": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "classical",
-        "label": "Classical"
-      },
-      {
-        "id": "pop",
-        "label": "Pop/RnB"
-      },
-      {
-        "id": "rap",
-        "label": "Rap/Hip-Hop"
-      }
-    ]
+  "Classical Guitar": {
+    "type": "exp"
   },
-  "Music Production": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "beats",
-        "label": "Beatmaking"
-      },
-      {
-        "id": "mixing",
-        "label": "Mixing"
-      },
-      {
-        "id": "sound_design",
-        "label": "Sound Design"
-      }
-    ]
+  "Bass Guitar": {
+    "type": "exp"
   },
-  "DJing": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "club",
-        "label": "Club & EDM"
-      },
-      {
-        "id": "hiphop",
-        "label": "Hip-Hop & Scratch"
-      },
-      {
-        "id": "events",
-        "label": "Events & Mobile"
-      }
-    ]
+  "Classical Piano": {
+    "type": "exp"
   },
-  "Dancing": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "hip_hop",
-        "label": "Hip-Hop"
-      },
-      {
-        "id": "contemporary",
-        "label": "Contemporary"
-      },
-      {
-        "id": "classical",
-        "label": "Classical/Ballet"
-      },
-      {
-        "id": "folk",
-        "label": "Folk/Cultural"
-      }
-    ]
+  "Jazz Piano": {
+    "type": "exp"
   },
-  "Drawing": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "sketch",
-        "label": "Sketch"
-      },
-      {
-        "id": "digital",
-        "label": "Digital Art"
-      },
-      {
-        "id": "illustration",
-        "label": "Illustration"
-      },
-      {
-        "id": "portrait",
-        "label": "Portrait"
-      }
-    ]
+  "Pop Piano": {
+    "type": "exp"
   },
-  "Painting": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "oil",
-        "label": "Oil"
-      },
-      {
-        "id": "watercolor",
-        "label": "Watercolour"
-      },
-      {
-        "id": "acrylic",
-        "label": "Acrylic"
-      },
-      {
-        "id": "digital",
-        "label": "Digital"
-      }
-    ]
+  "Classical Violin": {
+    "type": "exp"
   },
-  "Photography": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "portrait",
-        "label": "Portrait"
-      },
-      {
-        "id": "landscape",
-        "label": "Landscape"
-      },
-      {
-        "id": "street",
-        "label": "Street"
-      },
-      {
-        "id": "product",
-        "label": "Product"
-      }
-    ]
+  "Folk Violin / Fiddle": {
+    "type": "exp"
   },
-  "Videography": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "film",
-        "label": "Film/Cinema"
-      },
-      {
-        "id": "documentary",
-        "label": "Documentary"
-      },
-      {
-        "id": "content",
-        "label": "Content Creation"
-      }
-    ]
+  "Jazz Violin": {
+    "type": "exp"
   },
-  "Graphic Design": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "brand",
-        "label": "Branding"
-      },
-      {
-        "id": "ui",
-        "label": "UI/UX"
-      },
-      {
-        "id": "motion",
-        "label": "Motion"
-      }
-    ]
+  "Acoustic Drums": {
+    "type": "exp"
   },
-  "Cooking": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "stovetop",
-        "label": "Stovetop / Pan"
-      },
-      {
-        "id": "grilling",
-        "label": "BBQ / Grilling"
-      },
-      {
-        "id": "baking",
-        "label": "Baking / Roasting"
-      },
-      {
-        "id": "meal_prep",
-        "label": "Meal Prep"
-      }
-    ]
+  "Electronic Drums": {
+    "type": "exp"
   },
-  "Baking": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "bread",
-        "label": "Bread/Sourdough"
-      },
-      {
-        "id": "pastry",
-        "label": "Pastry/Cake"
-      },
-      {
-        "id": "cookies",
-        "label": "Cookies/Biscuits"
-      }
-    ]
+  "Classical / Opera Singing": {
+    "type": "exp"
   },
-  "Pottery": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "wheel",
-        "label": "Wheel Throwing"
-      },
-      {
-        "id": "hand",
-        "label": "Hand Building"
-      }
-    ]
+  "Pop Singing": {
+    "type": "exp"
   },
-  "Tailoring": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "garments",
-        "label": "Garments"
-      },
-      {
-        "id": "alterations",
-        "label": "Alterations"
-      },
-      {
-        "id": "embroidery",
-        "label": "Embroidery"
-      }
-    ]
+  "Rap / Hip-Hop Vocals": {
+    "type": "exp"
   },
-  "Woodworking": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "furniture",
-        "label": "Furniture"
-      },
-      {
-        "id": "carving",
-        "label": "Carving"
-      },
-      {
-        "id": "turning",
-        "label": "Lathe Turning"
-      }
-    ]
+  "Beatmaking": {
+    "type": "exp"
   },
-  "Jewelry Making": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "metalsmith",
-        "label": "Metalsmithing"
-      },
-      {
-        "id": "beading",
-        "label": "Beading/Wire"
-      }
-    ]
+  "Mixing & Mastering": {
+    "type": "exp"
   },
-  "Electronics": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "repair",
-        "label": "Repair"
-      },
-      {
-        "id": "diy",
-        "label": "DIY/Build"
-      },
-      {
-        "id": "iot",
-        "label": "IoT/Embedded"
-      }
-    ]
+  "Sound Design": {
+    "type": "exp"
   },
-  "Software Development": {
+  "Club DJing": {
+    "type": "exp"
+  },
+  "Scratch DJing": {
+    "type": "exp"
+  },
+  "Events DJing": {
+    "type": "exp"
+  },
+  "Hip-Hop Dance": {
+    "type": "exp"
+  },
+  "Contemporary Dance": {
+    "type": "exp"
+  },
+  "Ballet": {
+    "type": "exp"
+  },
+  "Folk / Cultural Dance": {
+    "type": "exp"
+  },
+  "Pencil / Sketch": {
+    "type": "exp"
+  },
+  "Digital Illustration": {
+    "type": "exp"
+  },
+  "Comic & Manga Art": {
+    "type": "exp"
+  },
+  "Portrait Drawing": {
+    "type": "exp"
+  },
+  "Oil Painting": {
+    "type": "exp"
+  },
+  "Watercolour Painting": {
+    "type": "exp"
+  },
+  "Acrylic Painting": {
+    "type": "exp"
+  },
+  "Digital Painting": {
+    "type": "exp"
+  },
+  "Portrait Photography": {
+    "type": "exp"
+  },
+  "Landscape Photography": {
+    "type": "exp"
+  },
+  "Street Photography": {
+    "type": "exp"
+  },
+  "Product Photography": {
+    "type": "exp"
+  },
+  "Cinematic / Film": {
+    "type": "exp"
+  },
+  "Documentary Filmmaking": {
+    "type": "exp"
+  },
+  "Content Creation Video": {
+    "type": "exp"
+  },
+  "Brand & Logo Design": {
+    "type": "exp"
+  },
+  "UI/UX Design": {
+    "type": "exp"
+  },
+  "Motion Design": {
+    "type": "exp"
+  },
+  "Stovetop Cooking": {
+    "type": "exp"
+  },
+  "BBQ & Grilling": {
+    "type": "exp"
+  },
+  "Baking & Roasting": {
+    "type": "exp"
+  },
+  "Meal Prep": {
+    "type": "exp"
+  },
+  "Bread & Sourdough": {
+    "type": "exp"
+  },
+  "Pastry & Cakes": {
+    "type": "exp"
+  },
+  "Cookies & Biscuits": {
+    "type": "exp"
+  },
+  "Wheel Throwing": {
+    "type": "exp"
+  },
+  "Hand-Building Pottery": {
+    "type": "exp"
+  },
+  "Garment Making": {
+    "type": "exp"
+  },
+  "Alterations & Repair": {
+    "type": "exp"
+  },
+  "Hand Embroidery": {
+    "type": "exp"
+  },
+  "Furniture Making": {
+    "type": "exp"
+  },
+  "Wood Carving": {
+    "type": "exp"
+  },
+  "Lathe Turning": {
+    "type": "exp"
+  },
+  "Metalsmithing": {
+    "type": "exp"
+  },
+  "Beading & Wire Jewelry": {
+    "type": "exp"
+  },
+  "Electronics Repair": {
+    "type": "exp"
+  },
+  "DIY Electronics Build": {
+    "type": "exp"
+  },
+  "IoT & Embedded Systems": {
+    "type": "exp"
+  },
+  "Web Development": {
     "type": "exp",
-    "classes": [
-      {
-        "id": "web",
-        "label": "Web"
-      },
-      {
-        "id": "mobile",
-        "label": "Mobile"
-      },
-      {
-        "id": "systems",
-        "label": "Systems/Backend"
-      },
-      {
-        "id": "ml",
-        "label": "ML/AI"
-      },
-      {
-        "id": "game",
-        "label": "Game Dev"
-      }
-    ]
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Mobile Development": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Systems & Backend": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "ML & AI Engineering": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Game Development": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Hatha Yoga": {
+    "type": "exp"
+  },
+  "Ashtanga Yoga": {
+    "type": "exp"
+  },
+  "Aerial Yoga": {
+    "type": "exp"
+  },
+  "Fiction Writing": {
+    "type": "exp"
+  },
+  "Non-Fiction / Essays": {
+    "type": "exp"
+  },
+  "Poetry": {
+    "type": "exp"
+  },
+  "Debate": {
+    "type": "exp"
+  },
+  "Presentations": {
+    "type": "exp"
+  },
+  "Stand-up Comedy": {
+    "type": "exp"
+  },
+  "Close-Up Magic": {
+    "type": "exp"
+  },
+  "Stage Magic": {
+    "type": "exp"
+  },
+  "Mehendi / Henna Art": {
+    "type": "exp"
+  },
+  "Rangoli": {
+    "type": "exp"
+  },
+  "Kolam Art": {
+    "type": "exp"
+  },
+  "Hindustani Classical Singing": {
+    "type": "exp"
+  },
+  "Carnatic Singing": {
+    "type": "exp"
+  },
+  "Madhubani Painting": {
+    "type": "exp"
+  },
+  "Warli Art": {
+    "type": "exp"
+  },
+  "Manga Art": {
+    "type": "exp"
+  },
+  "Ikebana": {
+    "type": "exp"
+  },
+  "Japanese Calligraphy (Shodo)": {
+    "type": "exp"
+  },
+  "Origami Art": {
+    "type": "exp"
+  },
+  "Bonsai": {
+    "type": "exp"
+  },
+  "Webtoon Art": {
+    "type": "exp"
+  },
+  "K-Pop Dance Cover": {
+    "type": "exp"
+  },
+  "Chinese Ink Painting": {
+    "type": "exp"
+  },
+  "Chinese Calligraphy": {
+    "type": "exp"
+  },
+  "Folk Art Painting": {
+    "type": "exp"
+  },
+  "Lace Making": {
+    "type": "exp"
+  },
+  "Nail Art": {
+    "type": "exp"
+  },
+  "Cosplay Making": {
+    "type": "exp"
+  },
+  "Fashion Illustration": {
+    "type": "exp"
+  },
+  "Interior Design": {
+    "type": "exp"
+  },
+  "Zentangle & Mandala Art": {
+    "type": "exp"
+  },
+  "Arabic Calligraphy": {
+    "type": "exp"
+  },
+  "Western Calligraphy": {
+    "type": "exp"
+  },
+  "Street Art & Murals": {
+    "type": "exp"
+  },
+  "Food Styling": {
+    "type": "exp"
+  },
+  "Tattooing": {
+    "type": "exp"
+  },
+  "Body Painting": {
+    "type": "exp"
+  },
+  "Screenwriting": {
+    "type": "exp"
+  },
+  "Podcast Production": {
+    "type": "exp"
+  },
+  "Book Cover Design": {
+    "type": "exp"
+  },
+  "Album Art Design": {
+    "type": "exp"
+  },
+  "Aerial Photography": {
+    "type": "exp"
+  },
+  "Macro Photography": {
+    "type": "exp"
+  },
+  "Wedding Photography": {
+    "type": "exp"
+  },
+  "Furniture Restoration": {
+    "type": "exp"
+  },
+  "Candle Making": {
+    "type": "exp"
+  },
+  "Soap Making": {
+    "type": "exp"
+  },
+  "Leather Crafting": {
+    "type": "exp"
   },
   "Football": {
-    "type": "exp",
+    "type": "unranked",
     "classes": []
   },
   "Basketball": {
-    "type": "exp",
+    "type": "unranked",
     "classes": []
   },
   "Cricket": {
-    "type": "exp",
+    "type": "unranked",
     "classes": [
       {
         "id": "batting",
@@ -1918,7 +1938,7 @@
     ]
   },
   "Volleyball": {
-    "type": "exp",
+    "type": "unranked",
     "classes": [
       {
         "id": "volleyball",
@@ -1931,7 +1951,7 @@
     ]
   },
   "Skateboarding": {
-    "type": "exp",
+    "type": "unranked",
     "classes": [
       {
         "id": "street",
@@ -1948,7 +1968,7 @@
     ]
   },
   "Surfing": {
-    "type": "exp",
+    "type": "unranked",
     "classes": [
       {
         "id": "shortboard",
@@ -1961,76 +1981,12 @@
     ]
   },
   "Breakdancing": {
-    "type": "exp",
+    "type": "unranked",
     "classes": []
   },
   "Parkour": {
-    "type": "exp",
+    "type": "unranked",
     "classes": []
-  },
-  "Yoga": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "hatha",
-        "label": "Hatha"
-      },
-      {
-        "id": "ashtanga",
-        "label": "Ashtanga"
-      },
-      {
-        "id": "aerial",
-        "label": "Aerial"
-      }
-    ]
-  },
-  "Writing": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "fiction",
-        "label": "Fiction"
-      },
-      {
-        "id": "nonfiction",
-        "label": "Non-Fiction"
-      },
-      {
-        "id": "poetry",
-        "label": "Poetry"
-      }
-    ]
-  },
-  "Public Speaking": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "debate",
-        "label": "Debate"
-      },
-      {
-        "id": "presentation",
-        "label": "Presentation"
-      },
-      {
-        "id": "standup",
-        "label": "Stand-up Comedy"
-      }
-    ]
-  },
-  "Magic": {
-    "type": "exp",
-    "classes": [
-      {
-        "id": "close_up",
-        "label": "Close-Up"
-      },
-      {
-        "id": "stage",
-        "label": "Stage"
-      }
-    ]
   },
   "Competitive Mathematics": {
     "type": "unranked",
@@ -2947,40 +2903,6 @@
     "type": "unranked",
     "classes": []
   },
-  "Ballet": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "classical",
-        "label": "Classical Ballet"
-      },
-      {
-        "id": "contemporary",
-        "label": "Contemporary Ballet"
-      }
-    ]
-  },
-  "Hip-Hop Dance": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "popping",
-        "label": "Popping & Locking"
-      },
-      {
-        "id": "waacking",
-        "label": "Waacking"
-      },
-      {
-        "id": "krump",
-        "label": "Krump"
-      }
-    ]
-  },
-  "Contemporary Dance": {
-    "type": "unranked",
-    "classes": []
-  },
   "Salsa": {
     "type": "unranked",
     "classes": [
@@ -3300,23 +3222,6 @@
       }
     ]
   },
-  "Comic & Manga Art": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "manga",
-        "label": "Manga"
-      },
-      {
-        "id": "comic",
-        "label": "Western Comic"
-      },
-      {
-        "id": "webtoon",
-        "label": "Webtoon"
-      }
-    ]
-  },
   "Sculpture": {
     "type": "unranked",
     "classes": [
@@ -3414,23 +3319,6 @@
       }
     ]
   },
-  "UI/UX Design": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "ui",
-        "label": "UI Design"
-      },
-      {
-        "id": "ux",
-        "label": "UX Research"
-      },
-      {
-        "id": "product",
-        "label": "Product Design"
-      }
-    ]
-  },
   "Motion Graphics": {
     "type": "unranked",
     "classes": []
@@ -3455,10 +3343,6 @@
         "label": "VFX / Visual Effects"
       }
     ]
-  },
-  "Screenwriting": {
-    "type": "unranked",
-    "classes": []
   },
   "Mosaic": {
     "type": "unranked",
@@ -3489,14 +3373,6 @@
     "classes": []
   },
   "Macram\u00e9": {
-    "type": "unranked",
-    "classes": []
-  },
-  "Candle Making": {
-    "type": "unranked",
-    "classes": []
-  },
-  "Soap Making": {
     "type": "unranked",
     "classes": []
   },
@@ -3711,27 +3587,6 @@
       }
     ]
   },
-  "Game Development": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "indie",
-        "label": "Indie / Solo"
-      },
-      {
-        "id": "unity",
-        "label": "Unity"
-      },
-      {
-        "id": "unreal",
-        "label": "Unreal Engine"
-      },
-      {
-        "id": "godot",
-        "label": "Godot"
-      }
-    ]
-  },
   "Robotics": {
     "type": "unranked",
     "classes": [
@@ -3842,23 +3697,6 @@
     "type": "unranked",
     "classes": []
   },
-  "Debate": {
-    "type": "unranked",
-    "classes": [
-      {
-        "id": "parliamentary",
-        "label": "Parliamentary"
-      },
-      {
-        "id": "mun",
-        "label": "Model UN"
-      },
-      {
-        "id": "competitive",
-        "label": "Competitive Debate"
-      }
-    ]
-  },
   "Acting": {
     "type": "unranked",
     "classes": [
@@ -3879,10 +3717,6 @@
         "label": "Voice Acting"
       }
     ]
-  },
-  "Stand-up Comedy": {
-    "type": "unranked",
-    "classes": []
   },
   "Storytelling": {
     "type": "unranked",
@@ -4140,107 +3974,6 @@
       {
         "id": "astrophotography",
         "label": "Astrophotography"
-      }
-    ]
-  },
-  "Clash Royale": {
-    "type": "metric",
-    "classes": [
-      {
-        "id": "trophy_road",
-        "label": "Trophy Road",
-        "unit": "trophies",
-        "note": "14,000 trophies = max Trophy Road. Path of Legends eligible at 13,000.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Under 1500 \u2014 early arenas",
-            "threshold": "under 1500"
-          },
-          {
-            "rank": "E",
-            "label": "1500\u20134000 \u2014 casual play",
-            "threshold": "1500\u20134000"
-          },
-          {
-            "rank": "D",
-            "label": "4000\u20136500 \u2014 mid arenas",
-            "threshold": "4000\u20136500"
-          },
-          {
-            "rank": "C",
-            "label": "6500\u20139000 \u2014 above average",
-            "threshold": "6500\u20139000"
-          },
-          {
-            "rank": "B",
-            "label": "9000\u201311500 \u2014 skilled player",
-            "threshold": "9000\u201311500"
-          },
-          {
-            "rank": "A",
-            "label": "11500\u201313000 \u2014 very skilled, pushing top",
-            "threshold": "11500\u201313000"
-          },
-          {
-            "rank": "S",
-            "label": "13000\u201313500 \u2014 PoL eligible",
-            "threshold": "13000\u201313500"
-          },
-          {
-            "rank": "S+",
-            "label": "13500\u201314000 \u2014 max Trophy Road",
-            "threshold": "13500\u201314000"
-          }
-        ]
-      },
-      {
-        "id": "path_of_legends",
-        "label": "Path of Legends",
-        "unit": "PoL tier (all-time max)",
-        "note": "Seasonal \u2014 rank stored as all-time max so season resets don't drop user rank. 10 tiers: Challenger I-III, Master I-III, Champion, Grand Champion, Royal Champion, Ultimate Champion.",
-        "ranks": [
-          {
-            "rank": "F",
-            "label": "Not eligible \u2014 under 13000 trophies",
-            "threshold": "not eligible"
-          },
-          {
-            "rank": "E",
-            "label": "Challenger I\u2013II",
-            "threshold": "Challenger I\u2013II"
-          },
-          {
-            "rank": "D",
-            "label": "Challenger III \u2013 Master I",
-            "threshold": "Challenger III \u2013 Master I"
-          },
-          {
-            "rank": "C",
-            "label": "Master II \u2013 Master III",
-            "threshold": "Master II\u2013III"
-          },
-          {
-            "rank": "B",
-            "label": "Champion \u2013 Grand Champion",
-            "threshold": "Champion\u2013Grand Champion"
-          },
-          {
-            "rank": "A",
-            "label": "Royal Champion",
-            "threshold": "Royal Champion"
-          },
-          {
-            "rank": "S",
-            "label": "Ultimate Champion",
-            "threshold": "Ultimate Champion"
-          },
-          {
-            "rank": "S+",
-            "label": "UC Top 1000 global",
-            "threshold": "Ultimate Champion Top 1000"
-          }
-        ]
       }
     ]
   }

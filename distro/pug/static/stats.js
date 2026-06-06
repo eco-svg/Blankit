@@ -66,80 +66,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const q = (skillAdderInput.value || '').toLowerCase().trim();
         if (!skillAdderRes) return;
         if (!q || !benchmarks) { skillAdderRes.innerHTML = ''; return; }
-        const matches = Object.keys(benchmarks).filter(k => k.toLowerCase().includes(q)).slice(0, 7);
+        const matches = Object.keys(benchmarks).filter(k => k.toLowerCase().includes(q)).slice(0, 9);
         if (!matches.length) {
             skillAdderRes.innerHTML = '<div class="skill-adder-nomatch">Not in the database yet.<br><span>You can request it from the <strong>Requests</strong> tab.</span></div>';
             return;
         }
-        skillAdderRes.innerHTML = matches.map(k =>
-            `<div class="skill-add-row" data-skill="${k}">
+        skillAdderRes.innerHTML = matches.map(k => {
+            const bm   = benchmarks[k];
+            const tag  = bm?.type === 'metric' ? 'metric' : bm?.type === 'unranked' ? 'unranked' : 'exp';
+            return `<div class="skill-add-row" data-skill="${k}" data-type="${tag}">
                 <div class="skill-add-row-header">
                     <span class="skill-add-name">${k}</span>
-                    <span class="skill-add-arrow">›</span>
+                    <span class="skill-add-type-badge skill-add-type-${tag}">${tag}</span>
                 </div>
-                <div class="skill-add-class-picker hidden"></div>
-            </div>`
-        ).join('');
+                <div class="skill-add-notice hidden"></div>
+            </div>`;
+        }).join('');
         skillAdderRes.querySelectorAll('.skill-add-row').forEach(row => {
             row.querySelector('.skill-add-row-header')?.addEventListener('click', () => {
-                // Collapse any other open row
-                skillAdderRes.querySelectorAll('.skill-add-row.open').forEach(r => {
-                    if (r !== row) {
-                        r.classList.remove('open');
-                        r.querySelector('.skill-add-class-picker')?.classList.add('hidden');
-                    }
-                });
-                const skillName = row.dataset.skill;
-                const bm        = benchmarks[skillName];
-                const picker    = row.querySelector('.skill-add-class-picker');
-                if (!picker) return;
-                // Toggle
-                if (row.classList.contains('open')) {
-                    row.classList.remove('open');
-                    picker.classList.add('hidden');
-                    return;
-                }
-                row.classList.add('open');
-                picker.classList.remove('hidden');
-                const classes   = bm?.classes || [];
+                const skillName  = row.dataset.skill;
+                const bm         = benchmarks[skillName];
                 const isUnranked = bm?.type === 'unranked';
-                const noProgressNotice = isUnranked
-                    ? `<div class="skill-add-noprog">No progression system yet — <a class="skill-add-noprog-link" href="#requests">request one from the Requests tab</a>.</div>`
-                    : '';
-                if (!isUnranked && classes.length === 0) {
+                if (!isUnranked) {
                     addSkillManual(skillName, '', '');
                     return;
                 }
-                if (!isUnranked && classes.length === 1) {
-                    // Auto-add; skip class tag if label is same as skill name
-                    const c = classes[0];
-                    const sameAsSkill = c.label.toLowerCase().replace(/\W/g,'').includes(skillName.toLowerCase().replace(/\W/g,''));
-                    addSkillManual(skillName, sameAsSkill ? '' : c.id, sameAsSkill ? '' : c.label);
-                    return;
+                // Unranked: show notice on first click, add on second
+                const notice = row.querySelector('.skill-add-notice');
+                if (!notice) return;
+                if (notice.classList.contains('hidden')) {
+                    notice.innerHTML = `<div class="skill-add-noprog">No progression system yet — <a class="skill-add-noprog-link" href="#requests">request one from the Requests tab</a>.</div><button class="skill-add-confirm">Add anyway</button>`;
+                    notice.classList.remove('hidden');
+                    notice.querySelector('.skill-add-confirm')?.addEventListener('click', () => addSkillManual(skillName, '', ''));
                 }
-                if (classes.length === 0) {
-                    // Unranked + no classes: show notice + simple add button
-                    picker.innerHTML = `${noProgressNotice}<button class="skill-add-confirm">Add anyway</button>`;
-                    picker.querySelector('.skill-add-confirm')?.addEventListener('click', () => {
-                        addSkillManual(skillName, '', '');
-                    });
-                    return;
-                }
-                const opts = classes.map(c => `<option value="${c.id}" data-label="${c.label}">${c.label}</option>`).join('');
-                picker.innerHTML = `
-                    ${noProgressNotice}
-                    <select class="skill-add-select">
-                        <option value="">Select class…</option>
-                        ${opts}
-                    </select>
-                    <button class="skill-add-confirm">Add</button>`;
-                picker.querySelector('.skill-add-confirm')?.addEventListener('click', () => {
-                    const sel      = picker.querySelector('.skill-add-select');
-                    const classId  = sel?.value || '';
-                    const classLabel = sel?.options[sel.selectedIndex]?.dataset.label || '';
-                    if (classes.length > 0 && !isUnranked && !classId) return;
-                    addSkillManual(skillName, classId, classLabel);
-                });
             });
         });
     });
@@ -325,16 +284,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const verified = s.verified !== false;
         const context  = s.context ? `<span class="skill-context">${s.context}</span>` : '';
         const note     = s.note    ? `<span class="skill-note">${s.note}</span>`    : '';
-        const classTag = s.class_label ? `<span class="skill-class-tag">· ${s.class_label}</span>` : '';
         const bm       = getBenchmark(s.name);
         const isExp    = bm?.type === 'exp';
-        const hasClass = !!(s.class_id || s.class_label);
+        const isUnranked = bm?.type === 'unranked';
+        // flat ranks: bm.ranks (new) or bm.classes[0].ranks (legacy)
+        const flatRanks = bm?.ranks || bm?.classes?.[0]?.ranks || [];
 
         let badgeHtml;
         if (isExp) {
             const expRank  = computeExpRank(s.exp || 0);
             const expColor = RANK_COLORS[expRank] || '#888';
             badgeHtml = `<span class="rank-badge" style="color:${expColor};">${expRank}</span>`;
+        } else if (isUnranked) {
+            badgeHtml = `<span class="rank-badge" style="opacity:0.3">—</span>`;
         } else if (verified) {
             badgeHtml = `<span class="rank-badge" style="color:${color};${glow}">${rank}</span>`;
         } else {
@@ -343,11 +305,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!withProgression) return `
             <div class="skill-row">
-                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
+                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${context}${note}</span>
                 ${badgeHtml}
             </div>`;
 
-        let progressBar = '', nextLine = '', expandBtn = '';
+        let progressBar = '', nextLine = '';
 
         if (bm) {
             if (isExp) {
@@ -357,42 +319,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 const { pct, xpInTier, tierSize } = expTierProgress(exp);
                 progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:${pct}%;background:${expColor};opacity:0.85;"></div></div>`;
                 nextLine = `<div class="skill-next skill-exp-hint">${fmtExp(xpInTier)} / ${fmtExp(tierSize)} XP</div>`;
-                if (!hasClass && bm.classes?.length > 0) {
-                    expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="exp" data-class-id="${s.class_id||''}" title="Choose class">···</button>`;
-                }
-            } else {
-                const lockedCls = hasClass
-                    ? (bm.classes?.find(c => c.id === s.class_id) || bm.classes?.[0])
-                    : bm.classes?.[0];
-                const cls = lockedCls;
-                if (cls && verified) {
-                    const pct  = Math.round(rankProgress(cls, rank) * 100);
-                    const next = nextRankInClass(cls, rank);
+            } else if (!isUnranked && flatRanks.length) {
+                const pseudoCls = { ranks: flatRanks };
+                if (verified) {
+                    const pct  = Math.round(rankProgress(pseudoCls, rank) * 100);
+                    const next = nextRankInClass(pseudoCls, rank);
                     progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:${pct}%;background:${color};box-shadow:0 0 6px ${color}33;"></div></div>`;
                     if (next && rank !== 'S+') {
                         nextLine = `<div class="skill-next">next <span class="skill-next-rank" style="color:${RANK_COLORS[next.rank]||'#aaa'}">${next.rank}</span> — ${next.label}${next.threshold ? ` <span class="skill-threshold">(${next.threshold})</span>` : ''}</div>`;
                     } else if (rank === 'S+') {
                         nextLine = `<div class="skill-next skill-maxed">peak rank achieved</div>`;
                     }
-                } else if (!verified) {
+                } else {
                     progressBar = `<div class="skill-progress-track"><div class="skill-progress-fill" style="width:8%;background:${color}44;"></div></div>`;
                     nextLine = `<div class="skill-next skill-unverified-hint">${s.note || 'Add proof in Achievements to unlock rank'}</div>`;
-                }
-                if (!hasClass) {
-                    expandBtn = `<button class="skill-ladder-btn" data-skill="${s.name}" data-bm-type="metric" title="Show rank ladder">···</button>`;
                 }
             }
         }
 
-        // Layout: rank badge lives at the right end of the progress bar row
-        const removeBtn = `<button class="skill-remove-btn" data-skill="${s.name}" data-cid="${s.class_id||''}" title="Remove skill">×</button>`;
+        const removeBtn = `<button class="skill-remove-btn" data-skill="${s.name}" data-cid="" title="Remove skill">×</button>`;
         const nameRow = `
             <div class="skill-row-main">
-                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${classTag}${context}${note}</span>
-                <div class="skill-row-right">${expandBtn}${removeBtn}</div>
+                <span class="skill-name-wrap"><span class="skill-name">${s.name||'—'}</span>${context}${note}</span>
+                <div class="skill-row-right">${removeBtn}</div>
             </div>`;
 
-        const barRow = bm
+        const barRow = (bm && !isUnranked)
             ? `<div class="skill-bar-row">${progressBar || '<div class="skill-progress-track"><div class="skill-progress-fill" style="width:0%"></div></div>'}${badgeHtml}</div>`
             : `<div class="skill-row-main" style="margin-top:2px;"><span></span><div class="skill-row-right">${badgeHtml}</div></div>`;
 
@@ -406,54 +358,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Ladder HTML (metric) ─────────────────────────────────────────────────
     function metricLadderHTML(skillName, currentRank, bm) {
-        const rank    = normaliseRank(currentRank);
-        const tabs = bm.classes.map((cls, i) => `
-            <button class="ladder-class-tab${i===0?' active':''}" data-cls-idx="${i}">${cls.label}</button>`
-        ).join('');
-
-        const classBlocks = bm.classes.map((cls, i) => {
-            const rows = [...cls.ranks].reverse().map(r => {
-                const isCurrent = r.rank === rank || r.rank === rank.replace(/[+-]/,'');
-                const c = RANK_COLORS[r.rank] || '#888';
-                const bullet = isCurrent ? `<span style="color:${c};font-weight:700;">▶</span>` : `<span style="opacity:0.2">·</span>`;
-                const activeStyle = isCurrent ? `background:rgba(${hexToRgb(c)},0.12);border-color:${c}40;` : '';
-                return `
-                <div class="ladder-row${isCurrent?' ladder-current':''}" style="${activeStyle}">
-                    ${bullet}
-                    <span class="ladder-rank" style="color:${c}">${r.rank}</span>
-                    <span class="ladder-label">${r.label}</span>
-                    ${r.threshold ? `<span class="ladder-proof">${r.threshold}</span>` : ''}
-                </div>`;
-            }).join('');
-            return `<div class="ladder-class-block${i===0?'':' hidden'}" data-cls-idx="${i}">${rows}</div>`;
+        const rank  = normaliseRank(currentRank);
+        const ranks = bm.ranks || bm.classes?.[0]?.ranks || [];
+        const note  = bm.note  || bm.classes?.[0]?.note  || '';
+        const rows  = [...ranks].reverse().map(r => {
+            const isCurrent = r.rank === rank || r.rank === rank.replace(/[+-]/,'');
+            const c = RANK_COLORS[r.rank] || '#888';
+            const bullet = isCurrent ? `<span style="color:${c};font-weight:700;">▶</span>` : `<span style="opacity:0.2">·</span>`;
+            const activeStyle = isCurrent ? `background:rgba(${hexToRgb(c)},0.12);border-color:${c}40;` : '';
+            return `
+            <div class="ladder-row${isCurrent?' ladder-current':''}" style="${activeStyle}">
+                ${bullet}
+                <span class="ladder-rank" style="color:${c}">${r.rank}</span>
+                <span class="ladder-label">${r.label}</span>
+                ${r.threshold ? `<span class="ladder-proof">${r.threshold}</span>` : ''}
+            </div>`;
         }).join('');
-
-        const note = bm.classes[0]?.note ? `<div class="ladder-note">${bm.classes[0].note}</div>` : '';
-
         return `
         <div class="skill-ladder skill-ladder-metric">
-            ${bm.classes.length > 1 ? `<div class="ladder-class-tabs">${tabs}</div>` : ''}
-            ${note}
-            <div class="ladder-class-blocks">${classBlocks}</div>
+            ${note ? `<div class="ladder-note">${note}</div>` : ''}
+            <div class="ladder-class-blocks"><div class="ladder-class-block">${rows}</div></div>
         </div>`;
     }
 
     // ── EXP ladder HTML ──────────────────────────────────────────────────────
-    function expLadderHTML(bm, activeClassId) {
-        const chips = (bm.classes || []).map(c => {
-            const active = c.id === activeClassId;
-            return `<span class="exp-class-chip${active ? ' active' : ''}" data-class-id="${c.id}" data-class-label="${c.label}">${c.label}</span>`;
-        }).join('');
-
-        const lockNote = activeClassId
-            ? `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Class locked: ${bm?.classes?.find(c=>c.id===activeClassId)?.label||activeClassId}</span>`
-            : `<span class="exp-lock-note" style="opacity:0.45;font-size:0.68rem;">Tap a class to select it — one-time per skill entry.</span>`;
-
+    function expLadderHTML(bm) {
         return `
         <div class="skill-ladder skill-ladder-exp">
-            <div class="exp-ladder-classes">${chips}</div>
-            ${lockNote}
-            <div class="exp-ladder-msg" style="margin-top:8px;">
+            <div class="exp-ladder-msg">
                 <span style="opacity:0.5;font-size:0.72rem;">EXP from: likes · comments · shares · saves · DMs · collabs · hires</span>
                 <br><span style="opacity:0.35;font-size:0.65rem;">Retroactive — every post counts from day one.</span>
             </div>
@@ -475,13 +407,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bm        = getBenchmark(skillName);
                 if (!bm) return;
 
-                const saved = getSavedClass(skillName);
-                const activeClassId = saved?.id || '';
-
                 const rankEl = row.querySelector('.rank-badge');
                 const rank   = rankEl?.textContent?.trim() || 'F';
                 const html   = bm.type === 'exp'
-                    ? expLadderHTML(bm, activeClassId)
+                    ? expLadderHTML(bm)
                     : metricLadderHTML(skillName, rank, bm);
 
                 row.insertAdjacentHTML('beforeend', html);
@@ -562,14 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const sorted = [...sheet.skills].sort((a, b) =>
             RANK_ORDER.indexOf(normaliseRank(a.rank)) - RANK_ORDER.indexOf(normaliseRank(b.rank)));
-        // Merge localStorage class into each skill before rendering
-        sorted.forEach(s => {
-            const saved = getSavedClass(s.name);
-            if (saved?.id)    s.class_id    = saved.id;
-            if (saved?.label) s.class_label = saved.label;
-        });
         skillsMainList.innerHTML = sorted.map(s => skillRowHTML(s, true)).join('');
-        wireSkillLadderBtns();
         wireRemoveBtns();
         renderSuggestions(sheet.suggestions || []);
     }

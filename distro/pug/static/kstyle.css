@@ -3904,6 +3904,23 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .skill-add-confirm:hover { background: rgba(212,165,116,0.15); }
 
+.skill-add-type-badge {
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.skill-add-type-metric  { background: rgba(90,143,200,0.18); color: #5a8fc8; }
+.skill-add-type-exp     { background: rgba(212,165,116,0.18); color: var(--accent); }
+.skill-add-type-unranked{ background: rgba(255,255,255,0.06); color: var(--text-dim); }
+.skill-add-row-header   { display:flex; align-items:center; gap:8px; }
+.skill-add-name         { flex:1; }
+.skill-add-notice       { padding: 6px 8px 4px; }
+.skill-add-notice.hidden{ display:none; }
+
 .skill-add-noprog {
   font-size: 0.72rem;
   color: var(--text);
