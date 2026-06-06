@@ -215,14 +215,21 @@ document.addEventListener('DOMContentLoaded', () => {
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e.currentTarget));
 
-        // Buy / Learn buttons — open DM
+        // ShowOff action buttons — open DM with contextual auto-message
+        const _ACTION_MESSAGES = {
+            'comm-action-hire':   () => `Hey! ${_myName} wants to hire you! 👋`,
+            'comm-action-collab': () => `Hey! ${_myName} wants to collab with you! 🤝`,
+            'comm-action-learn':  () => `Hey! ${_myName} wants to learn from you! 📚`,
+        };
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 if (this.dataset.mine) return;
                 const uid      = parseInt(this.dataset.uid);
                 const username = this.dataset.username;
+                const cls      = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
+                const autoMessage = cls ? _ACTION_MESSAGES[cls]() : null;
                 document.getElementById('commDmLbar')?.classList.add('open');
-                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
             });
         });
 
@@ -249,8 +256,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
                             b.addEventListener('click', function() {
                                 if (this.dataset.mine) return;
+                                const cls2 = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
+                                const autoMessage = cls2 ? _ACTION_MESSAGES[cls2]() : null;
                                 document.getElementById('commDmLbar')?.classList.add('open');
-                                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username } }));
+                                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username, autoMessage } }));
                             });
                         });
                     }
