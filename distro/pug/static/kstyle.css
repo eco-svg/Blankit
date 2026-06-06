@@ -3904,6 +3904,23 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .skill-add-confirm:hover { background: rgba(212,165,116,0.15); }
 
+.skill-add-noprog {
+  font-size: 0.72rem;
+  color: var(--text);
+  opacity: 0.7;
+  padding: 5px 8px;
+  margin-bottom: 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 5px;
+  line-height: 1.4;
+}
+.skill-add-noprog-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+.skill-add-noprog-link:hover { text-decoration: underline; }
+
 /* ── Detected Activity (suggestions) ────────────────── */
 .skill-suggestions-header {
   font-family: var(--font-mono);

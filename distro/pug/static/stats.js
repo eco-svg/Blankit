@@ -101,20 +101,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 row.classList.add('open');
                 picker.classList.remove('hidden');
-                const classes = bm?.classes || [];
-                if (classes.length === 0) {
+                const classes   = bm?.classes || [];
+                const isUnranked = bm?.type === 'unranked';
+                const noProgressNotice = isUnranked
+                    ? `<div class="skill-add-noprog">No progression system yet — <a class="skill-add-noprog-link" href="#requests">request one from the Requests tab</a>.</div>`
+                    : '';
+                if (!isUnranked && classes.length === 0) {
                     addSkillManual(skillName, '', '');
                     return;
                 }
-                if (classes.length === 1) {
+                if (!isUnranked && classes.length === 1) {
                     // Auto-add; skip class tag if label is same as skill name
                     const c = classes[0];
                     const sameAsSkill = c.label.toLowerCase().replace(/\W/g,'').includes(skillName.toLowerCase().replace(/\W/g,''));
                     addSkillManual(skillName, sameAsSkill ? '' : c.id, sameAsSkill ? '' : c.label);
                     return;
                 }
+                if (classes.length === 0) {
+                    // Unranked + no classes: show notice + simple add button
+                    picker.innerHTML = `${noProgressNotice}<button class="skill-add-confirm">Add anyway</button>`;
+                    picker.querySelector('.skill-add-confirm')?.addEventListener('click', () => {
+                        addSkillManual(skillName, '', '');
+                    });
+                    return;
+                }
                 const opts = classes.map(c => `<option value="${c.id}" data-label="${c.label}">${c.label}</option>`).join('');
                 picker.innerHTML = `
+                    ${noProgressNotice}
                     <select class="skill-add-select">
                         <option value="">Select class…</option>
                         ${opts}
@@ -122,9 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     <button class="skill-add-confirm">Add</button>`;
                 picker.querySelector('.skill-add-confirm')?.addEventListener('click', () => {
                     const sel      = picker.querySelector('.skill-add-select');
-                    const classId  = sel?.value;
+                    const classId  = sel?.value || '';
                     const classLabel = sel?.options[sel.selectedIndex]?.dataset.label || '';
-                    if (!classId) return;
+                    if (classes.length > 0 && !isUnranked && !classId) return;
                     addSkillManual(skillName, classId, classLabel);
                 });
             });
