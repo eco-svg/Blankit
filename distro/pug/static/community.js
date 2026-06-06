@@ -180,7 +180,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         el.innerHTML = `
             <div class="comm-post-header">
-                <div class="comm-avatar">${initials}</div>
+                <div class="comm-avatar-wrap">
+                    <div class="comm-avatar">${initials}</div>
+                    <span class="online-dot${p.is_online ? ' is-online' : ''}"></span>
+                </div>
                 <div class="comm-meta">
                     ${typeSwitcher}
                     ${usernameHtml}
@@ -616,22 +619,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    const pubConnections  = document.getElementById('pubProfileConnections');
+    const pubOnlineDot    = document.getElementById('pubOnlineDot');
+    const pubOnlineLabel  = document.getElementById('pubProfileOnlineLabel');
+
     function openProfile(uid, username, isMine = false) {
         if (!pubModal) return;
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
-        if (pubAvatar) pubAvatar.textContent = (username||'?')[0].toUpperCase();
-        if (pubName)   pubName.textContent   = username;
-        if (pubRank)   pubRank.textContent   = '';
-        if (pubClass)  pubClass.textContent  = '';
-        if (pubSkills) pubSkills.innerHTML   = '';
-        if (pubEmpty)  pubEmpty.classList.add('hidden');
-        if (pubActions) pubActions.classList.toggle('hidden', isMine);
+        if (pubAvatar)      pubAvatar.textContent      = (username||'?')[0].toUpperCase();
+        if (pubName)        pubName.textContent        = username;
+        if (pubRank)        pubRank.textContent        = '';
+        if (pubClass)       pubClass.textContent       = '';
+        if (pubConnections) pubConnections.textContent = '';
+        if (pubOnlineLabel) { pubOnlineLabel.textContent = ''; pubOnlineLabel.className = 'pps-online-label'; }
+        if (pubOnlineDot)   { pubOnlineDot.className = 'online-dot'; }
+        if (pubSkills)      pubSkills.innerHTML        = '';
+        if (pubEmpty)       pubEmpty.classList.add('hidden');
+        if (pubActions)     pubActions.classList.toggle('hidden', isMine);
         fetch(`/pug/api/users/${uid}/profile`)
             .then(r => r.json())
             .then(data => {
                 if (data.rank && pubRank) { pubRank.textContent = data.rank; pubRank.style.color = data.rank_color||'#888'; }
+                if (pubConnections && data.connections !== undefined)
+                    pubConnections.textContent = `${data.connections} connection${data.connections !== 1 ? 's' : ''}`;
+                if (data.is_online) {
+                    if (pubOnlineDot)   pubOnlineDot.classList.add('is-online');
+                    if (pubOnlineLabel) { pubOnlineLabel.textContent = '● Online'; pubOnlineLabel.classList.add('is-online'); }
+                } else {
+                    if (pubOnlineLabel) pubOnlineLabel.textContent = '○ Offline';
+                }
                 const sheet = data.sheet;
                 if (!sheet) { pubEmpty?.classList.remove('hidden'); return; }
                 if (pubClass && sheet.class_official) pubClass.textContent = sheet.class_official;
@@ -640,9 +658,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const RC = {'S+':'#ffd700','S':'#ffb700','S-':'#ffa500','A+':'#ff7c4d','A':'#ff8c42','A-':'#e8854a','B+':'#5a8fc8','B':'#4a7aaa','B-':'#4070a0','C+':'#8ac888','C':'#78b878','C-':'#68a068','D+':'#a0a0a0','D':'#888888','D-':'#707070','E':'#c06030','F':'#803010'};
                 skills.forEach(s => {
                     const row = document.createElement('div');
-                    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);';
+                    row.className = 'pps-skill-row';
                     const ok = s.verified !== false;
-                    row.innerHTML = `<span style="font-size:0.82rem;color:var(--text);">${esc(s.name)}</span><span style="font-family:var(--font-mono);font-size:0.72rem;font-weight:700;color:${ok ? (RC[s.rank]||'#888') : 'var(--text-dim)'};">${ok ? s.rank : '?'}</span>`;
+                    row.innerHTML = `<span>${esc(s.name)}</span><span class="pps-skill-rank" style="color:${ok ? (RC[s.rank]||'#888') : 'var(--text-dim)'};">${ok ? s.rank : '?'}</span>`;
                     pubSkills.appendChild(row);
                 });
             })

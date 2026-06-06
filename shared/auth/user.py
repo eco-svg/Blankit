@@ -19,6 +19,7 @@ class User(db.Model):
     student_id_url       = db.Column(db.String(500), nullable=True)   # MinIO object name for uploaded ID
     student_submitted_at = db.Column(db.DateTime, nullable=True)
     created_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    last_seen        = db.Column(db.DateTime, nullable=True)
 
     habits  = db.relationship('Habit', backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)
     todos   = db.relationship('Todo',  backref='user', lazy=True, cascade='all, delete-orphan', passive_deletes=True)

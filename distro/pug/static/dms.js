@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dmUserSearch    = document.getElementById('dmUserSearch');
     const dmUserResults   = document.getElementById('dmUserResults');
     const dmCardTitle     = document.getElementById('dmCardTitle');
+    const dmChatStatus    = document.getElementById('dmChatStatus');
     const dmAttachBtn     = document.getElementById('dmAttachBtn');
     const dmFileInput     = document.getElementById('dmFileInput');
     const dmMediaPreview  = document.getElementById('dmMediaPreview');
@@ -163,7 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const initials = (c.username || '?')[0].toUpperCase();
                     const timeStr  = c.last_time ? fmtTimeAgo(c.last_time) : '';
                     el.innerHTML = `
-                        <div class="dm-conv-avatar">${initials}</div>
+                        <div class="dm-conv-avatar-wrap">
+                            <div class="dm-conv-avatar">${initials}</div>
+                            <span class="online-dot${c.is_online ? ' is-online' : ''}"></span>
+                        </div>
                         <div class="dm-conv-body">
                             <div class="dm-conv-row">
                                 <span class="dm-conv-name">${esc(c.username)}</span>
@@ -172,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             </div>
                             <div class="dm-conv-preview">${esc(c.last_msg)}</div>
                         </div>`;
-                    el.addEventListener('click', () => openChat(c.other_id, c.username));
+                    el.addEventListener('click', () => openChat(c.other_id, c.username, c.is_online, c.connections));
                     convList.appendChild(el);
                 });
             })
@@ -180,10 +184,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Open / close chat ─────────────────────────────────────────────────────
-    function openChat(otherId, username) {
+    function openChat(otherId, username, isOnline, connections) {
         currentOtherId   = otherId;
         currentOtherName = username;
         dmChatName.textContent = username;
+        if (dmChatStatus) {
+            if (isOnline !== undefined) {
+                const onlineTxt = isOnline ? '● Online' : '○ Offline';
+                const connTxt   = connections !== undefined ? ` · ${connections} connection${connections !== 1 ? 's' : ''}` : '';
+                dmChatStatus.textContent = onlineTxt + connTxt;
+                dmChatStatus.className   = 'dm-chat-status' + (isOnline ? ' is-online' : '');
+            } else {
+                dmChatStatus.textContent = '';
+                dmChatStatus.className   = 'dm-chat-status';
+            }
+        }
         lastMsgCount = 0;
         convList.classList.add('hidden');
         chatView.classList.remove('hidden');

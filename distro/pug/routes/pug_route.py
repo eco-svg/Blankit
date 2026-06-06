@@ -792,6 +792,21 @@ pug_bp = Blueprint(
     template_folder='../templates',
 )
 
+@pug_bp.before_request
+def _ping_last_seen():
+    uid = session.get('user_id')
+    if not uid:
+        return
+    now = datetime.utcnow()
+    from shared.auth.user import User
+    try:
+        u = User.query.get(uid)
+        if u and (u.last_seen is None or (now - u.last_seen).total_seconds() > 120):
+            u.last_seen = now
+            db.session.commit()
+    except Exception:
+        pass
+
 MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
 MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
@@ -1248,11 +1263,13 @@ def get_user_profile(uid):
             pass
     rank, color = _net_rank_for_user(uid)
     return jsonify({
-        'id':         uid,
-        'username':   u.username,
-        'rank':       rank,
-        'rank_color': color,
-        'sheet':      sheet,
+        'id':          uid,
+        'username':    u.username,
+        'rank':        rank,
+        'rank_color':  color,
+        'sheet':       sheet,
+        'is_online':   _is_online(u),
+        'connections': _connection_count(uid),
     })
 
 
@@ -1736,6 +1753,28 @@ def _user_has_skill(uid, skill_name):
         return False
 
 
+def _is_online(u):
+    if not u or not u.last_seen:
+        return False
+    return (datetime.utcnow() - u.last_seen).total_seconds() < 300
+
+def _connection_count(uid):
+    from sqlalchemy import distinct as _distinct
+    sent = db.session.query(_distinct(Note.mood)).filter(
+        Note.user_id == uid, Note.entry_type == 'dm', Note.is_deleted == False
+    ).all()
+    recv = db.session.query(_distinct(Note.user_id)).filter(
+        Note.mood == str(uid), Note.entry_type == 'dm', Note.is_deleted == False
+    ).all()
+    ids = set()
+    for r in sent:
+        if r[0] and str(r[0]).lstrip('-').isdigit():
+            ids.add(int(r[0]))
+    for r in recv:
+        ids.add(r[0])
+    return len(ids)
+
+
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     err = login_required_api()
@@ -1784,6 +1823,7 @@ def get_community_feed():
             'rank':        rank,
             'rank_color':  color,
             'is_mine':     p.user_id == me,
+            'is_online':   _is_online(u),
             'created_at':  p.created_at.isoformat() if p.created_at else None,
         }
 
@@ -2076,11 +2116,13 @@ def list_dms():
             except Exception:
                 pass
         result.append({
-            'other_id':  other_id,
-            'username':  u.username,
-            'last_msg':  raw_body[:60],
-            'last_time': last_msg.created_at.isoformat() if last_msg.created_at else None,
-            'unread':    unread_count > 0,
+            'other_id':    other_id,
+            'username':    u.username,
+            'last_msg':    raw_body[:60],
+            'last_time':   last_msg.created_at.isoformat() if last_msg.created_at else None,
+            'unread':      unread_count > 0,
+            'is_online':   _is_online(u),
+            'connections': _connection_count(other_id),
         })
     return jsonify(result)
 
