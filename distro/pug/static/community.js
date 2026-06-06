@@ -131,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
-    const MARKET_LABELS = { buy:'Buy', hire:'Hire', learn:'Learn', collab:'Collab', sell:'Buy', teach:'Learn' };
 
     function makePost(p) {
         const el       = document.createElement('div');
@@ -159,15 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-username">${esc(p.username)}</span>`
             : `<button class="comm-username comm-username-link" data-uid="${p.user_id}">${esc(p.username)}</button>`;
 
-        // Marketplace CTA — action button on all typed posts
-        let ctaHtml = '';
-        if (p.post_type) {
-            const label = MARKET_LABELS[p.post_type] || p.post_type;
-            ctaHtml = `<button class="comm-market-cta comm-market-cta-${p.post_type}" data-uid="${p.user_id}" data-username="${esc(p.username)}" data-mine="${p.is_mine ? '1' : ''}">${label}</button>`;
-        }
+        const isShowOff = p.post_type === 'showoff';
+        const mine      = p.is_mine ? '1' : '';
+        const uid_      = p.user_id;
+        const uname_    = esc(p.username);
 
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
         const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
+
+        // ShowOff-only buttons
+        const showOffBtns = isShowOff ? `
+            <button class="comm-action-btn comm-action-buy"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
+            <button class="comm-action-btn comm-action-learn" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : '';
 
         el.innerHTML = `
             <div class="comm-post-header">
@@ -184,12 +186,18 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             ${mediaHtml}
             ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
-            ${ctaHtml}
-            <div class="comm-post-footer">
-                <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
-                <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
-                <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
-                <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
+            <div class="comm-post-actions">
+                <div class="comm-post-actions-left">
+                    <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
+                    <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
+                    ${showOffBtns}
+                </div>
+                <div class="comm-post-actions-right">
+                    <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
+                    <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
+                    <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
+                    <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
+                </div>
             </div>
             <div class="comm-post-comments hidden">
                 <div class="comm-comments-list"></div>
@@ -202,13 +210,15 @@ document.addEventListener('DOMContentLoaded', () => {
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
 
-        // Marketplace CTA — open DM (skip on own posts)
-        el.querySelector('.comm-market-cta')?.addEventListener('click', function() {
-            if (this.dataset.mine) return;
-            const uid      = parseInt(this.dataset.uid);
-            const username = this.dataset.username;
-            document.getElementById('commDmLbar')?.classList.add('open');
-            document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+        // Action buttons (Hire / Collab / Buy / Learn) — open DM
+        el.querySelectorAll('.comm-action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.dataset.mine) return;
+                const uid      = parseInt(this.dataset.uid);
+                const username = this.dataset.username;
+                document.getElementById('commDmLbar')?.classList.add('open');
+                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+            });
         });
 
         // Reactions
