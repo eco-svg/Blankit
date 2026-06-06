@@ -195,9 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${deleteBtn}
                 </div>
             </div>
-            ${mediaHtml}
-            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
-            <div class="comm-post-footer">
+            <div class="comm-post-bar">
                 <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
                     <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
@@ -206,6 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="comm-action-btns">${actionBtns}</div>
             </div>
+            ${mediaHtml}
+            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
             <div class="comm-comments-preview"></div>
             <div class="comm-post-comments hidden">
                 <div class="comm-comments-list"></div>
@@ -266,23 +266,28 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const action = btn.dataset.action;
                 if (action === 'share') {
-                    const shareText = p.text ? p.text.slice(0, 200) : location.href;
-                    function copyFb(t) {
-                        if (navigator.clipboard) { navigator.clipboard.writeText(t).catch(() => {}); return; }
+                    const shareUrl  = location.href;
+                    const shareText = (p.text ? p.text.slice(0, 120) + '\n' : '') + shareUrl;
+                    const origHtml  = btn.innerHTML;
+                    function showOk() { btn.innerHTML = '✓'; setTimeout(() => { btn.innerHTML = origHtml; }, 1600); }
+                    function execCopy() {
                         const ta = document.createElement('textarea');
-                        ta.value = t; ta.style.cssText = 'position:fixed;opacity:0;top:-9999px';
+                        ta.value = shareText; ta.style.cssText = 'position:fixed;opacity:0;top:-9999px';
                         document.body.appendChild(ta); ta.select();
-                        try { document.execCommand('copy'); } catch(e) {}
+                        try { document.execCommand('copy'); showOk(); } catch(e) {}
                         document.body.removeChild(ta);
                     }
-                    if (navigator.share) {
-                        navigator.share({ text: shareText, url: location.href }).catch(() => copyFb(shareText));
-                    } else {
-                        copyFb(shareText);
+                    function copyToClipboard() {
+                        if (navigator.clipboard) { navigator.clipboard.writeText(shareText).then(showOk).catch(execCopy); }
+                        else { execCopy(); }
                     }
-                    const origHtml = btn.innerHTML;
-                    btn.innerHTML = '✓';
-                    setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
+                    if (navigator.share) {
+                        navigator.share({ title: 'Veyra', url: shareUrl })
+                            .then(showOk)
+                            .catch(err => { if (err.name !== 'AbortError') copyToClipboard(); });
+                    } else {
+                        copyToClipboard();
+                    }
                     return;
                 }
                 if (action === 'comment') {
@@ -320,6 +325,19 @@ document.addEventListener('DOMContentLoaded', () => {
             loadPreviewComments(p.id, el);
         }
 
+        // Double-click anywhere on the post (not a button/link) to auto-like
+        el.addEventListener('dblclick', e => {
+            if (e.target.closest('button,a,input')) return;
+            el.querySelector('[data-action="like"]')?.click();
+            const heart = document.createElement('span');
+            heart.className = 'heart-pop';
+            heart.textContent = '❤️';
+            heart.style.left = e.clientX + 'px';
+            heart.style.top  = e.clientY + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 800);
+        });
+
         return el;
     }
 
@@ -327,10 +345,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const pinBtn = c.can_pin
             ? `<button class="comm-pin-btn${c.is_pinned ? ' pinned' : ''}" data-cid="${c.id}" title="${c.is_pinned ? 'Unpin' : 'Pin'}">📌</button>` : '';
         const pinBadge = c.is_pinned ? `<span class="comm-pin-badge">pinned</span>` : '';
+        const likeAct = c.my_reaction === 'like'    ? ' active' : '';
+        const disAct  = c.my_reaction === 'dislike' ? ' active' : '';
         const row = document.createElement('div');
         row.className = 'comm-comment-row';
         row.dataset.cid = c.id;
-        row.innerHTML = `${pinBadge}<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span><span class="comm-comment-ago">${timeAgo(c.created_at)}</span>${pinBtn}`;
+        row.innerHTML = `${pinBadge}<div class="comm-comment-content"><span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">👍 <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">👎 <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">↩</button>${pinBtn}</div>`;
         return row;
     }
 
@@ -351,6 +371,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     row.querySelector('.comm-pin-btn')?.addEventListener('click', function() {
                         fetch(`/pug/api/community/${pid}/comment/${c.id}/pin`, { method: 'POST' })
                             .then(r => r.json()).then(() => loadComments(pid, commentsEl, isMine)).catch(() => {});
+                    });
+                    row.querySelectorAll('.comm-comment-react').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const action = this.dataset.action;
+                            if (action === 'reply') {
+                                const input = commentsEl.querySelector('.comm-comment-input');
+                                if (input) { input.value = `@${this.dataset.username} `; input.focus(); }
+                                return;
+                            }
+                            fetch(`/pug/api/community/${pid}/comment/${this.dataset.cid}/react`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ type: action })
+                            }).then(r => r.json()).then(data => {
+                                row.querySelector('[data-action="like"] .cmt-cnt').textContent    = data.likes    || 0;
+                                row.querySelector('[data-action="dislike"] .cmt-cnt').textContent = data.dislikes || 0;
+                                row.querySelector('[data-action="like"]').classList.toggle('active',    data.my_reaction === 'like');
+                                row.querySelector('[data-action="dislike"]').classList.toggle('active', data.my_reaction === 'dislike');
+                            }).catch(() => {});
+                        });
                     });
                     list.appendChild(row);
                 });

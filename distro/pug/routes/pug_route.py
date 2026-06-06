@@ -1963,13 +1963,42 @@ def react_post(pid):
     return jsonify({'likes': likes, 'dislikes': dislikes, 'my_reaction': my_react})
 
 
+@pug_bp.route('/pug/api/community/<int:pid>/comment/<int:cid>/react', methods=['POST'])
+def react_comment(pid, cid):
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    data = request.get_json(silent=True) or {}
+    rtype = (data.get('type') or '').strip()
+    if rtype not in ('like', 'dislike'):
+        return jsonify({'error': 'Invalid'}), 400
+    existing = Note.query.filter_by(
+        user_id=me, entry_type='comment_react', mood=str(cid), is_deleted=False
+    ).first()
+    if existing:
+        if (existing.is_finished and rtype == 'like') or (not existing.is_finished and rtype == 'dislike'):
+            existing.is_deleted = True
+        else:
+            existing.is_finished = (rtype == 'like')
+    else:
+        n = Note(user_id=me, entry_type='comment_react', is_deleted=False,
+                 mood=str(cid), is_finished=(rtype == 'like'))
+        db.session.add(n)
+    db.session.commit()
+    rows = Note.query.filter_by(entry_type='comment_react', mood=str(cid), is_deleted=False).all()
+    likes    = sum(1 for r in rows if r.is_finished)
+    dislikes = sum(1 for r in rows if not r.is_finished)
+    my_row   = next((r for r in rows if r.user_id == me), None)
+    my_react = ('like' if my_row.is_finished else 'dislike') if my_row else None
+    return jsonify({'likes': likes, 'dislikes': dislikes, 'my_reaction': my_react})
+
+
 @pug_bp.route('/pug/api/community/<int:pid>/comments', methods=['GET'])
 def get_post_comments(pid):
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
     me = session['user_id']
-    # Get pinned_cid from the parent post
     parent = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
     pinned_cid = None
     post_author = None
@@ -1982,20 +2011,37 @@ def get_post_comments(pid):
     comments = Note.query.filter_by(
         entry_type='post_comment', mood=str(pid), is_deleted=False
     ).order_by(Note.created_at.asc()).limit(50).all()
+    comment_ids = [c.id for c in comments]
+    creact_rows = Note.query.filter(
+        Note.entry_type == 'comment_react',
+        Note.mood.in_([str(i) for i in comment_ids]),
+        Note.is_deleted == False
+    ).all() if comment_ids else []
+    c_likes, c_dislikes, c_mine = {}, {}, {}
+    for r in creact_rows:
+        cid = int(r.mood)
+        if r.is_finished:
+            c_likes[cid] = c_likes.get(cid, 0) + 1
+        else:
+            c_dislikes[cid] = c_dislikes.get(cid, 0) + 1
+        if r.user_id == me:
+            c_mine[cid] = 'like' if r.is_finished else 'dislike'
     result = []
     for c in comments:
         u = User.query.get(c.user_id)
         if not u: continue
         result.append({
-            'id':         c.id,
-            'username':   u.username,
-            'text':       c.body,
-            'created_at': c.created_at.isoformat() if c.created_at else None,
-            'is_mine':    c.user_id == me,
-            'is_pinned':  c.id == pinned_cid,
-            'can_pin':    post_author == me,
+            'id':          c.id,
+            'username':    u.username,
+            'text':        c.body,
+            'created_at':  c.created_at.isoformat() if c.created_at else None,
+            'is_mine':     c.user_id == me,
+            'is_pinned':   c.id == pinned_cid,
+            'can_pin':     post_author == me,
+            'likes':       c_likes.get(c.id, 0),
+            'dislikes':    c_dislikes.get(c.id, 0),
+            'my_reaction': c_mine.get(c.id),
         })
-    # Pinned comment floats to top
     result.sort(key=lambda c: (0 if c['is_pinned'] else 1, 0))
     return jsonify(result)
 

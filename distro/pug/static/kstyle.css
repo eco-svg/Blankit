@@ -59,7 +59,7 @@
   border-bottom-color: rgba(0,0,0,0.07);
 }
 [data-theme="light"] .comm-post:hover { background: rgba(0,0,0,0.03); }
-[data-theme="light"] .comm-post-footer { border-top-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .comm-post-bar { border-bottom-color: rgba(0,0,0,0.08); }
 [data-theme="light"] .comm-post-comments { border-top-color: rgba(0,0,0,0.06); }
 [data-theme="light"] .modal-content {
   background: rgba(255,255,255,0.97);
@@ -3056,15 +3056,15 @@ div.infinite-canvas video {
 .comm-type-sw-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
 .comm-type-sw-btn.active { background: rgba(255,200,60,0.14); color: #ffc83c; }
 
-/* ── Post footer (Buy/Learn + reactions) ─────────────────── */
-.comm-post-footer {
+/* ── Post action bar (reactions + Buy/Learn/Hire/Collab) — sits just below the header ── */
+.comm-post-bar {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: 6px;
-    margin-top: 10px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 .comm-action-btns {
     display: flex;
@@ -3131,9 +3131,16 @@ div.infinite-canvas video {
 .comm-comment-row {
     display: flex;
     gap: 6px;
-    align-items: baseline;
-    padding: 3px 0;
+    align-items: center;
+    padding: 4px 0;
     font-size: 0.78rem;
+}
+.comm-comment-content {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex: 1;
+    min-width: 0;
 }
 .comm-comment-user {
     font-weight: 700;
@@ -3146,11 +3153,50 @@ div.infinite-canvas video {
     flex: 1;
     word-break: break-word;
 }
+.comm-comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
 .comm-comment-ago {
     color: var(--text-dim);
     font-size: 0.66rem;
     flex-shrink: 0;
     font-family: var(--font-mono);
+    margin-right: 4px;
+}
+.comm-comment-react {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.66rem;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    transition: background 0.12s, color 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+.comm-comment-react:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+.comm-comment-react.active { color: var(--accent); }
+.comm-comment-react .cmt-cnt { font-size: 0.62rem; }
+
+/* ── Double-click heart animation ────────────────────────── */
+.heart-pop {
+    position: fixed;
+    font-size: 2rem;
+    pointer-events: none;
+    z-index: 9999;
+    animation: heartPop 0.8s ease-out forwards;
+}
+@keyframes heartPop {
+    0%  { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+    55% { transform: translate(-50%, -50%) scale(1.6); opacity: 1; }
+    100%{ transform: translate(-50%, -120%) scale(1.2); opacity: 0; }
 }
 .comm-no-comments, .comm-comments-loading {
     font-size: 0.74rem;
