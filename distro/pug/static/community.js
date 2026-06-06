@@ -166,21 +166,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
         const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
 
-        // Buy + Learn only on ShowOff posts (bottom right)
-        const showOffBtns = isShowOff ? `
-            <button class="comm-action-btn comm-action-buy"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-            <button class="comm-action-btn comm-action-learn" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : '';
+        // Hire+Collab always; Buy+Learn only on ShowOff (all right side)
+        const actionBtns = `
+            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
+            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>${isShowOff ? `
+            <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
+            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : ''}`;
 
+        // Type switcher — compact inline pill in the post header (own posts only)
         const typeSwitcher = p.is_mine ? `
-            <div class="comm-type-switcher">
+            <div class="comm-type-sw-inline">
                 <button class="comm-type-sw-btn${!isShowOff ? ' active' : ''}" data-type="blog">Blog</button>
-                <button class="comm-type-sw-btn${isShowOff ? ' active' : ''}" data-type="showoff">ShowOff ✦</button>
+                <button class="comm-type-sw-btn${isShowOff ? ' active' : ''}" data-type="showoff">ShowOff</button>
             </div>` : '';
 
         el.innerHTML = `
             <div class="comm-post-header">
                 <div class="comm-avatar">${initials}</div>
                 <div class="comm-meta">
+                    ${typeSwitcher}
                     ${usernameHtml}
                     ${rankHtml}
                     <span class="comm-distro-tag">${esc(p.distro)}</span>
@@ -192,15 +196,14 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             ${mediaHtml}
             ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
-            ${typeSwitcher}
             <div class="comm-post-footer">
-                <div class="comm-showoff-btns">${showOffBtns}</div>
                 <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
                     <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
                     <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
                     <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
                 </div>
+                <div class="comm-action-btns">${actionBtns}</div>
             </div>
             <div class="comm-comments-preview"></div>
             <div class="comm-post-comments hidden">
@@ -238,12 +241,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.querySelectorAll('.comm-type-sw-btn').forEach(b =>
                         b.classList.toggle('active', b.dataset.type === newType));
                     const nowShowOff = newType === 'showoff';
-                    const showOffContainer = el.querySelector('.comm-showoff-btns');
-                    if (showOffContainer) {
-                        showOffContainer.innerHTML = nowShowOff ? `
-                            <button class="comm-action-btn comm-action-buy"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-                            <button class="comm-action-btn comm-action-learn" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : '';
-                        showOffContainer.querySelectorAll('.comm-action-btn').forEach(b => {
+                    const actionContainer = el.querySelector('.comm-action-btns');
+                    if (actionContainer) {
+                        actionContainer.innerHTML = `
+                            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>
+                            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>${nowShowOff ? `
+                            <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
+                            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>` : ''}`;
+                        actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
                             b.addEventListener('click', function() {
                                 if (this.dataset.mine) return;
                                 document.getElementById('commDmLbar')?.classList.add('open');
@@ -260,9 +265,23 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const action = btn.dataset.action;
                 if (action === 'share') {
-                    navigator.clipboard?.writeText(p.text || location.href).catch(() => {});
-                    btn.textContent = '✓';
-                    setTimeout(() => { btn.textContent = '↗'; }, 1500);
+                    const shareText = p.text ? p.text.slice(0, 200) : location.href;
+                    function copyFb(t) {
+                        if (navigator.clipboard) { navigator.clipboard.writeText(t).catch(() => {}); return; }
+                        const ta = document.createElement('textarea');
+                        ta.value = t; ta.style.cssText = 'position:fixed;opacity:0;top:-9999px';
+                        document.body.appendChild(ta); ta.select();
+                        try { document.execCommand('copy'); } catch(e) {}
+                        document.body.removeChild(ta);
+                    }
+                    if (navigator.share) {
+                        navigator.share({ text: shareText, url: location.href }).catch(() => copyFb(shareText));
+                    } else {
+                        copyFb(shareText);
+                    }
+                    const origHtml = btn.innerHTML;
+                    btn.innerHTML = '✓';
+                    setTimeout(() => { btn.innerHTML = origHtml; }, 1500);
                     return;
                 }
                 if (action === 'comment') {

@@ -32,23 +32,48 @@
 
 /* ── Light ───────────────────────────────────────────────────── */
 [data-theme="light"] {
-  --bg:           #f2ede6;
-  --bg-card:      rgba(0,0,0,0.05);
-  --surface:      rgba(0,0,0,0.05);
-  --border:       rgba(0,0,0,0.09);
-  --border2:      rgba(0,0,0,0.15);
-  --border-hover: rgba(130,90,40,0.30);
-  --text:         #1e1810;
-  --text-muted:   rgba(30,24,16,0.68);
-  --text-dim:     rgba(30,24,16,0.48);
-  --accent:       #9a6535;
-  --accent-glow:  #9a653518;
+  --bg:           #f4f4f4;
+  --bg-card:      rgba(255,255,255,0.80);
+  --surface:      rgba(255,255,255,0.80);
+  --border:       rgba(0,0,0,0.10);
+  --border2:      rgba(0,0,0,0.16);
+  --border-hover: rgba(90,60,20,0.28);
+  --text:         #1a1a1a;
+  --text-muted:   rgba(26,26,26,0.68);
+  --text-dim:     rgba(26,26,26,0.46);
+  --accent:       #7a5028;
+  --accent-glow:  #7a502818;
   --accent2:      #b83a18;
-  --green:        #3a8a3a;
-  --blue:         #2e5f8a;
-  --bg-gradient:  radial-gradient(ellipse at 28% 25%, #ede3d4 0%, #f2ede6 55%, #ece6dc 100%);
+  --green:        #2e7a2e;
+  --blue:         #2055a0;
+  --bg-gradient:  radial-gradient(ellipse at 28% 25%, #e8e8e8 0%, #f4f4f4 55%, #ebebeb 100%);
   --text-on-accent: #fff;
 }
+
+/* Light-mode overrides for dark-hardcoded elements */
+[data-theme="light"] .card {
+  background: rgba(255,255,255,0.75);
+  border-color: rgba(0,0,0,0.10);
+}
+[data-theme="light"] .comm-post {
+  border-bottom-color: rgba(0,0,0,0.07);
+}
+[data-theme="light"] .comm-post:hover { background: rgba(0,0,0,0.03); }
+[data-theme="light"] .comm-post-footer { border-top-color: rgba(0,0,0,0.08); }
+[data-theme="light"] .comm-post-comments { border-top-color: rgba(0,0,0,0.06); }
+[data-theme="light"] .modal-content {
+  background: rgba(255,255,255,0.97);
+  border-color: rgba(0,0,0,0.10);
+}
+[data-theme="light"] .comm-type-sw-inline,
+[data-theme="light"] .comm-type-switcher { border-color: rgba(0,0,0,0.14); }
+[data-theme="light"] .comm-type-sw-btn { color: rgba(0,0,0,0.50); }
+[data-theme="light"] .comm-type-sw-btn + .comm-type-sw-btn { border-left-color: rgba(0,0,0,0.12); }
+[data-theme="light"] .comm-type-sw-btn:hover { background: rgba(0,0,0,0.05); color: var(--text); }
+[data-theme="light"] .comm-type-sw-btn.active { background: rgba(0,0,0,0.12); color: var(--text); }
+[data-theme="light"] .nav-pill { border-color: rgba(0,0,0,0.14); }
+[data-theme="light"] .lbar-item:hover,
+[data-theme="light"] .nav-tab:hover { background: rgba(0,0,0,0.05); }
 
 /* ── Astro Blue (deep space) ─────────────────────────────────── */
 [data-theme="astro-blue"] {
@@ -3002,6 +3027,19 @@ div.infinite-canvas video {
     overflow: hidden;
     border: 1px solid rgba(255,255,255,0.1);
 }
+/* Compact inline version lives in the post header */
+.comm-type-sw-inline {
+    display: inline-flex;
+    gap: 0;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.12);
+    flex-shrink: 0;
+}
+.comm-type-sw-inline .comm-type-sw-btn {
+    padding: 1px 7px;
+    font-size: 0.60rem;
+}
 .comm-type-sw-btn {
     background: transparent;
     border: none;
@@ -3028,14 +3066,15 @@ div.infinite-canvas video {
     padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,0.08);
 }
-.comm-showoff-btns {
+.comm-action-btns {
     display: flex;
     gap: 6px;
-    margin-right: auto;
+    flex-shrink: 0;
 }
 .comm-post-reactions {
     display: flex;
     gap: 3px;
+    margin-right: auto;
 }
 
 /* Action buttons — Hire / Collab / Buy / Learn */
