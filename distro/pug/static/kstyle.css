@@ -3079,25 +3079,26 @@ div.infinite-canvas video {
 
 /* Action buttons — Hire / Collab / Buy / Learn */
 .comm-action-btn {
-    padding: 4px 13px;
+    padding: 5px 14px;
     border-radius: 7px;
-    font-size: 0.76rem;
+    font-size: 0.78rem;
     font-family: var(--font-mono);
     font-weight: 700;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    transition: opacity 0.14s, transform 0.1s;
-    border-width: 1.5px;
+    transition: opacity 0.14s, transform 0.1s, background 0.12s;
+    border-width: 2px;
     border-style: solid;
+    text-transform: uppercase;
 }
-.comm-action-btn:hover  { opacity: 0.82; transform: translateY(-1px); }
-.comm-action-btn[data-mine="1"] { cursor: default; opacity: 0.5; }
-.comm-action-btn[data-mine="1"]:hover { opacity: 0.5; transform: none; }
+.comm-action-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+.comm-action-btn[data-mine="1"] { cursor: default; opacity: 0.4; }
+.comm-action-btn[data-mine="1"]:hover { opacity: 0.4; transform: none; }
 
-.comm-action-hire   { background: rgba(255,160,72,0.15);  border-color: #ffa048; color: #ffa048; }
-.comm-action-collab { background: rgba(255,100,180,0.15); border-color: #ff64b4; color: #ff64b4; }
-.comm-action-buy    { background: rgba(77,158,255,0.15);  border-color: #4d9eff; color: #4d9eff; }
-.comm-action-learn  { background: rgba(72,220,220,0.15);  border-color: #48dcdc; color: #48dcdc; }
+.comm-action-hire   { background: rgba(255,160,72,0.22);  border-color: #ffa048; color: #ffb86c; }
+.comm-action-collab { background: rgba(255,100,180,0.22); border-color: #ff64b4; color: #ff82c4; }
+.comm-action-buy    { background: rgba(77,158,255,0.22);  border-color: #4d9eff; color: #72b3ff; }
+.comm-action-learn  { background: rgba(72,220,220,0.22);  border-color: #48dcdc; color: #6ee8e8; }
 
 /* Reaction buttons (right side of action row) */
 .comm-react-btn {
