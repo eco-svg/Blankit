@@ -220,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             'comm-action-hire':   () => `Hey! ${_myName} wants to hire you! 👋`,
             'comm-action-collab': () => `Hey! ${_myName} wants to collab with you! 🤝`,
             'comm-action-learn':  () => `Hey! ${_myName} wants to learn from you! 📚`,
+            'comm-action-buy':    () => `Hey! ${_myName} wants to buy from you! 🛒`,
         };
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
