@@ -40,7 +40,48 @@ document.addEventListener('DOMContentLoaded', () => {
     let myLat = null, myLng = null;
     let activeSkill    = '';
     let activePostType = null;
+    let activeSkillTag = null;
     let feedMode       = localStorage.getItem('veyra-comm-mode') || 'radar';
+
+    // ── Skill picker ───────────────────────────────────────────────────────────
+    const skillPickerEl = document.getElementById('commSkillPicker');
+    let _mySkills = null;
+
+    function loadMySkills(cb) {
+        if (_mySkills !== null) { cb(_mySkills); return; }
+        fetch('/pug/api/stats?cache_only=true')
+            .then(r => r.json())
+            .then(data => {
+                _mySkills = (data.skills || []).map(s => s.name).filter(Boolean);
+                cb(_mySkills);
+            }).catch(() => { _mySkills = []; cb([]); });
+    }
+
+    function renderSkillPicker(skills) {
+        if (!skillPickerEl) return;
+        skillPickerEl.innerHTML = '';
+        activeSkillTag = null;
+        if (!skills.length) {
+            skillPickerEl.innerHTML = '<span style="font-size:0.7rem;color:var(--text-dim);">No skills added yet.</span>';
+            return;
+        }
+        skills.forEach(name => {
+            const chip = document.createElement('button');
+            chip.className = 'comm-skill-tag-chip';
+            chip.textContent = name;
+            chip.addEventListener('click', () => {
+                if (activeSkillTag === name) {
+                    activeSkillTag = null;
+                    chip.classList.remove('active');
+                } else {
+                    activeSkillTag = name;
+                    skillPickerEl.querySelectorAll('.comm-skill-tag-chip').forEach(c => c.classList.remove('active'));
+                    chip.classList.add('active');
+                }
+            });
+            skillPickerEl.appendChild(chip);
+        });
+    }
 
     // ── Feed mode toggle ───────────────────────────────────────────────────────
     document.querySelectorAll('.comm-mode-btn').forEach(btn => {
@@ -164,12 +205,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
         const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
 
-        // ShowOff only: Buy, Collab, Learn, Hire — Blog has no action buttons
-        const actionBtns = isShowOff ? `
-            <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
-            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>
-            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>` : '';
+        // ShowOff only: Buy, Collab, Learn, Hire — only on OTHER people's posts
+        const actionBtns = (isShowOff && !p.is_mine) ? `
+            <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}">Buy</button>
+            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}">Collab</button>
+            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}">Learn</button>
+            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}">Hire</button>` : '';
+
+        const skillTagHtml = p.skill_tag
+            ? `<span class="comm-skill-tag-badge">${esc(p.skill_tag)}</span>` : '';
 
         // Type switcher — compact inline pill in the post header (own posts only)
         const typeSwitcher = p.is_mine ? `
@@ -189,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${usernameHtml}
                     ${rankHtml}
                     <span class="comm-distro-tag">${esc(p.distro)}</span>
+                    ${skillTagHtml}
                 </div>
                 <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
@@ -215,20 +260,31 @@ document.addEventListener('DOMContentLoaded', () => {
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e.currentTarget));
 
-        // ShowOff action buttons — open DM with contextual auto-message
+        // ShowOff action buttons — open DM + award EXP to post author
         const _ACTION_MESSAGES = {
             'comm-action-hire':   () => `Hey! ${_myName} wants to hire you! 👋`,
             'comm-action-collab': () => `Hey! ${_myName} wants to collab with you! 🤝`,
             'comm-action-learn':  () => `Hey! ${_myName} wants to learn from you! 📚`,
             'comm-action-buy':    () => `Hey! ${_myName} wants to buy from you! 🛒`,
         };
+        const _ACTION_KEY = {
+            'comm-action-hire': 'hire', 'comm-action-collab': 'collab',
+            'comm-action-learn': 'learn', 'comm-action-buy': 'buy',
+        };
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                if (this.dataset.mine) return;
                 const uid      = parseInt(this.dataset.uid);
                 const username = this.dataset.username;
                 const cls      = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
                 const autoMessage = cls ? _ACTION_MESSAGES[cls]() : null;
+                const actionKey   = cls ? _ACTION_KEY[cls] : null;
+                if (actionKey) {
+                    fetch(`/pug/api/community/${p.id}/action`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: actionKey })
+                    }).catch(() => {});
+                }
                 document.getElementById('commDmLbar')?.classList.add('open');
                 document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
             });
@@ -249,20 +305,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     const nowShowOff = newType === 'showoff';
                     const actionContainer = el.querySelector('.comm-action-btns');
                     if (actionContainer) {
-                        actionContainer.innerHTML = nowShowOff ? `
-                            <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Buy</button>
-                            <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Collab</button>
-                            <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Learn</button>
-                            <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}" data-mine="${mine}">Hire</button>` : '';
-                        actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
-                            b.addEventListener('click', function() {
-                                if (this.dataset.mine) return;
-                                const cls2 = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
-                                const autoMessage = cls2 ? _ACTION_MESSAGES[cls2]() : null;
-                                document.getElementById('commDmLbar')?.classList.add('open');
-                                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username, autoMessage } }));
+                        if (nowShowOff) {
+                            actionContainer.innerHTML = `
+                                <button class="comm-action-btn comm-action-buy"    data-uid="${uid_}" data-username="${uname_}">Buy</button>
+                                <button class="comm-action-btn comm-action-collab" data-uid="${uid_}" data-username="${uname_}">Collab</button>
+                                <button class="comm-action-btn comm-action-learn"  data-uid="${uid_}" data-username="${uname_}">Learn</button>
+                                <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}">Hire</button>`;
+                            actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
+                                b.addEventListener('click', function() {
+                                    const cls2 = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
+                                    const autoMessage = cls2 ? _ACTION_MESSAGES[cls2]() : null;
+                                    const actionKey2  = cls2 ? _ACTION_KEY[cls2] : null;
+                                    if (actionKey2) fetch(`/pug/api/community/${p.id}/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: actionKey2 }) }).catch(() => {});
+                                    document.getElementById('commDmLbar')?.classList.add('open');
+                                    document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username, autoMessage } }));
+                                });
                             });
-                        });
+                        } else {
+                            actionContainer.innerHTML = '';
+                        }
                     }
                 }).catch(() => {});
             });
@@ -485,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     function openModal() {
-        pendingMedia = null; pendingQuick = null; activePostType = null;
+        pendingMedia = null; pendingQuick = null; activePostType = null; activeSkillTag = null;
         document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
         if (modalInput) modalInput.textContent = '';
         if (modalCharCount) modalCharCount.textContent = `0 / ${MAX_LEN}`;
@@ -500,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
         composeBtn && (composeBtn.style.display = 'none');
         cancelPostBtn && (cancelPostBtn.style.display = '');
         inlineCompose?.classList.remove('hidden');
+        loadMySkills(renderSkillPicker);
         setTimeout(() => modalInput?.focus(), 60);
     }
 
@@ -508,8 +570,9 @@ document.addEventListener('DOMContentLoaded', () => {
         commTitleBlock?.classList.remove('hidden');
         composeBtn && (composeBtn.style.display = '');
         cancelPostBtn && (cancelPostBtn.style.display = 'none');
-        pendingMedia = null; pendingQuick = null; activePostType = null;
+        pendingMedia = null; pendingQuick = null; activePostType = null; activeSkillTag = null;
         document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
+        if (skillPickerEl) skillPickerEl.innerHTML = '';
     }
 
     modalInput?.addEventListener('input', () => {
@@ -629,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (confirmPostBtn) confirmPostBtn.disabled = true;
         const payload = { text, media_key };
         if (activePostType) payload.post_type = activePostType;
+        if (activeSkillTag) payload.skill_tag = activeSkillTag;
         fetch('/pug/api/community', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

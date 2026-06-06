@@ -3146,6 +3146,39 @@ div.infinite-canvas video {
 .comm-react-btn .react-count { font-size: 0.74rem; font-weight: 600; }
 .comm-share-btn { margin-left: 2px; }
 
+/* ── Skill tag picker (compose) + badge (post card) ──────── */
+.comm-skill-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 24px;
+    margin-bottom: 4px;
+}
+.comm-skill-tag-chip {
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    transition: background .12s, border-color .12s, color .12s;
+}
+.comm-skill-tag-chip:hover  { border-color: var(--accent); color: var(--text); }
+.comm-skill-tag-chip.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.comm-skill-tag-badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 20px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-family: var(--font-mono);
+    opacity: 0.85;
+    vertical-align: middle;
+}
+
 /* ── Share popup ──────────────────────────────────────────── */
 .comm-share-popup {
     position: absolute;

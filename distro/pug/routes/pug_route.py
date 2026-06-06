@@ -1583,6 +1583,17 @@ def _exp_rank(total_exp):
             return r
     return 'F'
 
+def _post_skill_tag(post):
+    """Extract the skill tag from a community post Note, or None."""
+    body = post.body or ''
+    if body.startswith('{'):
+        try:
+            return json.loads(body).get('sk') or None
+        except Exception:
+            pass
+    return None
+
+
 def award_exp(user_id, skill_name, action, count=1):
     """Award EXP to a named skill for a community action. Returns updated exp total."""
     cfg     = _get_exp_config()
@@ -1799,7 +1810,7 @@ def get_community_feed():
     def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
         body = p.body or ''
-        text, media_key, post_type, pinned_cid, text_order = body, None, None, None, 'tm'
+        text, media_key, post_type, pinned_cid, text_order, skill_tag = body, None, None, None, 'tm', None
         if body.startswith('{'):
             try:
                 bd = json.loads(body)
@@ -1808,6 +1819,7 @@ def get_community_feed():
                 post_type  = bd.get('pt')
                 pinned_cid = bd.get('pin')
                 text_order = bd.get('to', 'tm')
+                skill_tag  = bd.get('sk')
             except Exception:
                 pass
         media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
@@ -1819,6 +1831,7 @@ def get_community_feed():
             'post_type':   post_type,
             'pinned_cid':  pinned_cid,
             'text_order':  text_order,
+            'skill_tag':   skill_tag,
             'username':    u.username,
             'user_id':     p.user_id,
             'distro':      p.mood or 'Ocellus',
@@ -1928,8 +1941,9 @@ def create_community_post():
     text_order = (data.get('text_order') or '').strip() or None
     if text_order not in (None, 'tm', 'mt'):
         text_order = None
-    if media_key or post_type or text_order:
-        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order}.items() if v})
+    skill_tag = (data.get('skill_tag') or '').strip() or None
+    if media_key or post_type or text_order or skill_tag:
+        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order, 'sk': skill_tag}.items() if v})
     else:
         body_val = text
     p = Note(
@@ -1960,7 +1974,7 @@ def get_community_post(pid):
 
     rank, color = _net_rank_for_user(p.user_id)
     body = p.body or ''
-    text, media_key, post_type, pinned_cid, text_order = body, None, None, None, 'tm'
+    text, media_key, post_type, pinned_cid, text_order, skill_tag = body, None, None, None, 'tm', None
     if body.startswith('{'):
         try:
             bd = json.loads(body)
@@ -1969,6 +1983,7 @@ def get_community_post(pid):
             post_type  = bd.get('pt')
             pinned_cid = bd.get('pin')
             text_order = bd.get('to', 'tm')
+            skill_tag  = bd.get('sk')
         except Exception:
             pass
     media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
@@ -1980,6 +1995,7 @@ def get_community_post(pid):
         'post_type':   post_type,
         'pinned_cid':  pinned_cid,
         'text_order':  text_order,
+        'skill_tag':   skill_tag,
         'username':    u.username,
         'user_id':     p.user_id,
         'distro':      p.mood or 'Ocellus',
@@ -2044,6 +2060,13 @@ def react_post(pid):
         n = Note(user_id=me, entry_type='post_react', is_deleted=False,
                  mood=str(pid), is_finished=(rtype == 'like'))
         db.session.add(n)
+        # award EXP to post author on a new like (not on toggle/remove)
+        if rtype == 'like':
+            post = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
+            if post and post.user_id != me:
+                sk = _post_skill_tag(post)
+                if sk:
+                    award_exp(post.user_id, sk, 'like')
     db.session.commit()
     rows = Note.query.filter_by(entry_type='post_react', mood=str(pid), is_deleted=False).all()
     likes    = sum(1 for r in rows if r.is_finished)
@@ -2155,7 +2178,37 @@ def add_post_comment(pid):
     c.body = text
     db.session.add(c)
     db.session.commit()
+    if parent.user_id != me:
+        sk = _post_skill_tag(parent)
+        if sk:
+            award_exp(parent.user_id, sk, 'comment')
     return jsonify({'id': c.id, 'ok': True}), 201
+
+
+_ACTION_EXP_MAP = {
+    'hire':   'purchase_hire',
+    'buy':    'purchase_hire',
+    'collab': 'collab_request',
+    'learn':  'collab_request',
+}
+
+@pug_bp.route('/pug/api/community/<int:pid>/action', methods=['POST'])
+@limiter.limit("30 per hour; 5 per minute")
+def community_post_action(pid):
+    err = login_required_api()
+    if err: return err
+    me   = session['user_id']
+    data = request.get_json(force=True) or {}
+    action = (data.get('action') or '').strip().lower()
+    if action not in _ACTION_EXP_MAP:
+        return jsonify({'error': 'Invalid action'}), 400
+    post = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
+    if not post or post.user_id == me:
+        return jsonify({'ok': True})
+    sk = _post_skill_tag(post)
+    if sk:
+        award_exp(post.user_id, sk, _ACTION_EXP_MAP[action])
+    return jsonify({'ok': True})
 
 
 @pug_bp.route('/pug/api/community/<int:pid>/comment/<int:cid>/pin', methods=['POST'])
