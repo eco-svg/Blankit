@@ -1890,6 +1890,7 @@ def get_community_feed():
 
 
 @pug_bp.route('/pug/api/community', methods=['POST'])
+@limiter.limit("5 per hour; 1 per minute")
 def create_community_post():
     err = login_required_api()
     if err: return err
@@ -1906,6 +1907,24 @@ def create_community_post():
         return jsonify({'error': 'Too long (max 500 chars)'}), 400
     if media_key and not media_key.startswith('shared/'):
         return jsonify({'error': 'Invalid media key'}), 400
+    # duplicate guard: same text posted by this user in the last 10 minutes
+    if text:
+        from datetime import datetime, timedelta
+        cutoff = datetime.utcnow() - timedelta(minutes=10)
+        dup = Note.query.filter(
+            Note.user_id    == session['user_id'],
+            Note.entry_type == 'community_post',
+            Note.is_deleted == False,
+            Note.created_at >= cutoff
+        ).all()
+        for d in dup:
+            b = d.body or ''
+            existing_text = b
+            if b.startswith('{'):
+                try: existing_text = json.loads(b).get('t', '')
+                except Exception: pass
+            if existing_text.strip() == text:
+                return jsonify({'error': 'You already posted this recently.'}), 429
     text_order = (data.get('text_order') or '').strip() or None
     if text_order not in (None, 'tm', 'mt'):
         text_order = None
@@ -1924,6 +1943,72 @@ def create_community_post():
     db.session.add(p)
     db.session.commit()
     return jsonify({'id': p.id, 'ok': True}), 201
+
+
+@pug_bp.route('/pug/api/community/<int:pid>', methods=['GET'])
+def get_community_post(pid):
+    err = login_required_api()
+    if err: return err
+    from shared.auth.user import User
+    me = session['user_id']
+    p = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False, mood='Ocellus').first()
+    if not p:
+        return jsonify({'error': 'Not found'}), 404
+    u = User.query.get(p.user_id)
+    if not u:
+        return jsonify({'error': 'Not found'}), 404
+
+    rank, color = _net_rank_for_user(p.user_id)
+    body = p.body or ''
+    text, media_key, post_type, pinned_cid, text_order = body, None, None, None, 'tm'
+    if body.startswith('{'):
+        try:
+            bd = json.loads(body)
+            text       = bd.get('t', '')
+            media_key  = bd.get('m')
+            post_type  = bd.get('pt')
+            pinned_cid = bd.get('pin')
+            text_order = bd.get('to', 'tm')
+        except Exception:
+            pass
+    media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
+    row = {
+        'id':          p.id,
+        'text':        text,
+        'media_key':   media_key,
+        'media_url':   media_url,
+        'post_type':   post_type,
+        'pinned_cid':  pinned_cid,
+        'text_order':  text_order,
+        'username':    u.username,
+        'user_id':     p.user_id,
+        'distro':      p.mood or 'Ocellus',
+        'rank':        rank,
+        'rank_color':  color,
+        'is_mine':     p.user_id == me,
+        'is_online':   _is_online(u),
+        'created_at':  p.created_at.isoformat() if p.created_at else None,
+    }
+    # enrich with reactions + comment count
+    pids = [str(p.id)]
+    reacts = Note.query.filter(
+        Note.entry_type == 'post_react',
+        Note.mood.in_(pids),
+        Note.is_deleted == False
+    ).all()
+    likes = dislikes = 0
+    my_reaction = None
+    for r in reacts:
+        if r.is_finished: likes += 1
+        else: dislikes += 1
+        if r.user_id == me:
+            my_reaction = 'like' if r.is_finished else 'dislike'
+    cc = Note.query.filter_by(entry_type='post_comment', mood=str(p.id), is_deleted=False).count()
+    row['likes'] = likes
+    row['dislikes'] = dislikes
+    row['my_reaction'] = my_reaction
+    row['comment_count'] = cc
+    return jsonify(row)
 
 
 @pug_bp.route('/pug/api/community/<int:pid>', methods=['DELETE'])
@@ -2052,6 +2137,7 @@ def get_post_comments(pid):
 
 
 @pug_bp.route('/pug/api/community/<int:pid>/comment', methods=['POST'])
+@limiter.limit("30 per hour; 5 per minute")
 def add_post_comment(pid):
     err = login_required_api()
     if err: return err

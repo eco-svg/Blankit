@@ -263,26 +263,37 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.addEventListener('click', () => {
                 const action = btn.dataset.action;
                 if (action === 'share') {
-                    const shareText = (p.text ? p.text.slice(0, 100) + ' — ' : '') + location.href;
-                    const origHtml  = btn.innerHTML;
+                    const postUrl  = `${location.origin}${location.pathname}?post=${p.id}`;
+                    const origHtml = btn.innerHTML;
                     function done() {
                         btn.textContent = '✓';
                         btn.style.color = '#48dc70';
                         setTimeout(() => { btn.innerHTML = origHtml; btn.style.color = ''; }, 2000);
                     }
+                    function copyFallback() {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(postUrl).then(done).catch(legacyCopy);
+                        } else {
+                            legacyCopy();
+                        }
+                    }
                     function legacyCopy() {
                         const ta = document.createElement('textarea');
-                        ta.value = shareText;
+                        ta.value = postUrl;
                         ta.style.cssText = 'position:fixed;opacity:0;top:-9999px;left:-9999px';
                         document.body.appendChild(ta);
                         ta.focus(); ta.select();
                         try { if (document.execCommand('copy')) done(); } catch(e) {}
                         document.body.removeChild(ta);
                     }
-                    if (navigator.clipboard && window.isSecureContext) {
-                        navigator.clipboard.writeText(shareText).then(done).catch(legacyCopy);
+                    const isMobile = navigator.maxTouchPoints > 0 && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+                    if (navigator.share && isMobile) {
+                        navigator.share({
+                            title: p.text ? p.text.slice(0, 80) : 'Check this out on Veyra',
+                            url:   postUrl
+                        }).catch(() => copyFallback());
                     } else {
-                        legacyCopy();
+                        copyFallback();
                     }
                     return;
                 }
@@ -644,10 +655,13 @@ document.addEventListener('DOMContentLoaded', () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
-        .then(r => r.json())
-        .then(data => {
+        .then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })))
+        .then(({ ok, status, data }) => {
             posting = false; if (confirmPostBtn) confirmPostBtn.disabled = false;
-            if (data.error) { if (modalError) modalError.textContent = data.error; return; }
+            if (!ok) {
+                if (modalError) modalError.textContent = data.error || (status === 429 ? 'Slow down — too many posts.' : 'Something went wrong.');
+                return;
+            }
             closeModal(); lastPostCount = 0; loadFeed();
         })
         .catch(() => { posting = false; if (confirmPostBtn) confirmPostBtn.disabled = false; });
@@ -753,6 +767,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Init ───────────────────────────────────────────────────────────────────
+    const linkedPostId = new URLSearchParams(location.search).get('post');
+
+    function highlightPost(el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('comm-post-highlighted');
+        setTimeout(() => el.classList.remove('comm-post-highlighted'), 3000);
+    }
+
+    function maybeInjectLinkedPost(pid) {
+        const existing = feed.querySelector(`[data-id="${pid}"]`);
+        if (existing) { highlightPost(existing); return; }
+        fetch(`/pug/api/community/${pid}`)
+            .then(r => r.ok ? r.json() : null)
+            .then(p => {
+                if (!p || p.error) return;
+                const banner = document.createElement('div');
+                banner.className = 'comm-linked-banner';
+                banner.textContent = 'Shared post';
+                const postEl = makePost(p);
+                postEl.prepend(banner);
+                feed.prepend(postEl);
+                highlightPost(postEl);
+            }).catch(() => {});
+    }
+
+    const origLoadFeed = loadFeed;
+    if (linkedPostId) {
+        const _origLoad = loadFeed;
+        loadFeed = function() {
+            const result = _origLoad.apply(this, arguments);
+            // after fetch settles, try to highlight
+            setTimeout(() => maybeInjectLinkedPost(parseInt(linkedPostId)), 600);
+            return result;
+        };
+        // clean the URL so sharing again doesn't re-trigger
+        history.replaceState(null, '', location.pathname);
+    }
+
     loadFeed();
-    setInterval(loadFeed, 15000);
+    setInterval(origLoadFeed, 15000);
 });

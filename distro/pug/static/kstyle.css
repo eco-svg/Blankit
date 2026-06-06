@@ -3145,6 +3145,20 @@ div.infinite-canvas video {
 .comm-react-btn.active { color: var(--accent); }
 .comm-react-btn .react-count { font-size: 0.74rem; font-weight: 600; }
 .comm-share-btn { margin-left: 2px; }
+.comm-post-highlighted { animation: comm-highlight-pulse 3s ease-out forwards; }
+@keyframes comm-highlight-pulse {
+    0%   { box-shadow: 0 0 0 3px var(--accent); }
+    70%  { box-shadow: 0 0 0 3px var(--accent); }
+    100% { box-shadow: none; }
+}
+.comm-linked-banner {
+    font-size: 0.72rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.8;
+}
 
 /* ── Inline comments section ──────────────────────────── */
 .comm-post-comments {
