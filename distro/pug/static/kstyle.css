@@ -3145,6 +3145,58 @@ div.infinite-canvas video {
 .comm-react-btn.active { color: var(--accent); }
 .comm-react-btn .react-count { font-size: 0.74rem; font-weight: 600; }
 .comm-share-btn { margin-left: 2px; }
+
+/* ── Share popup ──────────────────────────────────────────── */
+.comm-share-popup {
+    position: absolute;
+    z-index: 9999;
+    background: var(--bg-card);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+    padding: 12px 14px;
+    min-width: 210px;
+    animation: csp-in .15s ease;
+}
+@keyframes csp-in { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+.csp-copied {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding-bottom: 10px;
+}
+.csp-copied.done .csp-copied-icon { color: #48dc70; }
+.csp-copied.done .csp-copied-text { color: var(--text); }
+.csp-copied-icon { font-size: 1rem; transition: color .2s; }
+.csp-divider { height: 1px; background: var(--border); margin-bottom: 10px; }
+.csp-platforms { display: flex; gap: 8px; }
+.csp-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+    flex: 1;
+}
+.csp-btn:hover { background: var(--accent-glow); border-color: var(--accent); color: var(--text); }
+.csp-btn svg { width: 20px; height: 20px; }
+.csp-wa  { color: #25d366; }
+.csp-tg  { color: #229ed9; }
+.csp-x   { color: var(--text-muted); }
+.csp-copy { color: var(--text-muted); }
+
 .comm-post-highlighted { animation: comm-highlight-pulse 3s ease-out forwards; }
 @keyframes comm-highlight-pulse {
     0%   { box-shadow: 0 0 0 3px var(--accent); }
