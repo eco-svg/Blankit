@@ -1760,12 +1760,13 @@ def get_community_feed():
     def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
         body = p.body or ''
-        text, media_key = body, None
+        text, media_key, post_type = body, None, None
         if body.startswith('{'):
             try:
                 bd = json.loads(body)
                 text      = bd.get('t', '')
                 media_key = bd.get('m')
+                post_type = bd.get('pt')
             except Exception:
                 pass
         media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
@@ -1774,6 +1775,7 @@ def get_community_feed():
             'text':       text,
             'media_key':  media_key,
             'media_url':  media_url,
+            'post_type':  post_type,
             'username':   u.username,
             'user_id':    p.user_id,
             'distro':     p.mood or 'Ocellus',
@@ -1817,13 +1819,20 @@ def create_community_post():
     data      = request.get_json(force=True) or {}
     text      = (data.get('text') or '').strip()
     media_key = (data.get('media_key') or '').strip()
+    post_type = (data.get('post_type') or '').strip().lower()
+    VALID_TYPES = {'sell', 'buy', 'hire', 'teach', 'learn', 'collab'}
+    if post_type and post_type not in VALID_TYPES:
+        post_type = ''
     if not text and not media_key:
         return jsonify({'error': 'Empty post'}), 400
     if len(text) > 500:
         return jsonify({'error': 'Too long (max 500 chars)'}), 400
     if media_key and not media_key.startswith('shared/'):
         return jsonify({'error': 'Invalid media key'}), 400
-    body_val = json.dumps({'t': text, 'm': media_key}) if media_key else text
+    if media_key or post_type:
+        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None}.items() if v})
+    else:
+        body_val = text
     p = Note(
         user_id    = session['user_id'],
         entry_type = 'community_post',

@@ -39,6 +39,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeTab      = 'write';
     let myLat = null, myLng = null;
     let activeSkill    = '';
+    let activePostType = null;
+
+    // ── Post type pills ────────────────────────────────────────────────────────
+    document.querySelectorAll('.comm-type-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const t = pill.dataset.type;
+            if (activePostType === t) {
+                activePostType = null;
+                pill.classList.remove('active');
+            } else {
+                document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
+                activePostType = t;
+                pill.classList.add('active');
+            }
+        });
+    });
 
     // ── Skill filter chips ──────────────────────────────────────────────────────
     document.querySelectorAll('.comm-skill-chip').forEach(chip => {
@@ -109,6 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
         const deleteBtn = p.is_mine
             ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>` : '';
+        const typeBadge = p.post_type
+            ? `<span class="comm-post-type-badge comm-post-type-${p.post_type}">${p.post_type}</span>` : '';
 
         let mediaHtml = '';
         if (p.media_url) {
@@ -133,8 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${rankHtml}
                     <span class="comm-distro-tag">${esc(p.distro)}</span>
                 </div>
-                <span class="comm-ago">${ago}</span>
-                ${deleteBtn}
+                <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
+                    ${typeBadge}
+                    <span class="comm-ago">${ago}</span>
+                    ${deleteBtn}
+                </div>
             </div>
             ${mediaHtml}
             ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}`;
@@ -186,7 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     function openModal() {
-        pendingMedia = null; pendingQuick = null;
+        pendingMedia = null; pendingQuick = null; activePostType = null;
+        document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
         if (modalInput) modalInput.textContent = '';
         if (modalCharCount) modalCharCount.textContent = `0 / ${MAX_LEN}`;
         if (modalError) modalError.textContent = '';
@@ -208,7 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
         commTitleBlock?.classList.remove('hidden');
         composeBtn && (composeBtn.style.display = '');
         cancelPostBtn && (cancelPostBtn.style.display = 'none');
-        pendingMedia = null; pendingQuick = null;
+        pendingMedia = null; pendingQuick = null; activePostType = null;
+        document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
     }
 
     modalInput?.addEventListener('input', () => {
@@ -326,10 +349,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         posting = true;
         if (confirmPostBtn) confirmPostBtn.disabled = true;
+        const payload = { text, media_key };
+        if (activePostType) payload.post_type = activePostType;
         fetch('/pug/api/community', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text, media_key })
+            body: JSON.stringify(payload)
         })
         .then(r => r.json())
         .then(data => {

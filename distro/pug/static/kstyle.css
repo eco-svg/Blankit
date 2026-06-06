@@ -4572,6 +4572,51 @@ button.nav-pill:not(.btn-ghost):hover {
   font-weight: 600;
 }
 
+/* Marketplace type pills in compose */
+.comm-type-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 4px;
+}
+.comm-type-pill {
+  padding: 3px 11px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.74rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.comm-type-pill:hover { border-color: var(--accent); color: var(--text); }
+.comm-type-pill[data-type="sell"].active  { background: rgba(72,200,120,0.18); border-color: #48c878; color: #48c878; }
+.comm-type-pill[data-type="buy"].active   { background: rgba(77,158,255,0.18); border-color: #4d9eff; color: #4d9eff; }
+.comm-type-pill[data-type="hire"].active  { background: rgba(255,160,72,0.18); border-color: #ffa048; color: #ffa048; }
+.comm-type-pill[data-type="teach"].active { background: rgba(180,100,255,0.18); border-color: #b464ff; color: #b464ff; }
+.comm-type-pill[data-type="learn"].active { background: rgba(72,220,220,0.18); border-color: #48dcdc; color: #48dcdc; }
+.comm-type-pill[data-type="collab"].active{ background: rgba(255,100,180,0.18); border-color: #ff64b4; color: #ff64b4; }
+
+/* Post type badge on feed posts */
+.comm-post-type-badge {
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.67rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.comm-post-type-sell  { background: rgba(72,200,120,0.15); color: #48c878; border: 1px solid rgba(72,200,120,0.3); }
+.comm-post-type-buy   { background: rgba(77,158,255,0.15); color: #4d9eff; border: 1px solid rgba(77,158,255,0.3); }
+.comm-post-type-hire  { background: rgba(255,160,72,0.15); color: #ffa048; border: 1px solid rgba(255,160,72,0.3); }
+.comm-post-type-teach { background: rgba(180,100,255,0.15); color: #b464ff; border: 1px solid rgba(180,100,255,0.3); }
+.comm-post-type-learn { background: rgba(72,220,220,0.15); color: #48dcdc; border: 1px solid rgba(72,220,220,0.3); }
+.comm-post-type-collab{ background: rgba(255,100,180,0.15); color: #ff64b4; border: 1px solid rgba(255,100,180,0.3); }
+
 .comm-modal-textarea {
   width: 100%;
   min-height: 110px;
