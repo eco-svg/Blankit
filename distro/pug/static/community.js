@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeSkill    = '';
     let activePostType = null;
     let activeSkillTag = null;
+    let activeUserId   = null;
     let feedMode       = localStorage.getItem('veyra-comm-mode') || 'radar';
 
     // ── Skill picker ───────────────────────────────────────────────────────────
@@ -121,6 +122,69 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // ── User search ────────────────────────────────────────────────────────────
+    const searchBtn        = document.getElementById('commSearchBtn');
+    const searchPanel      = document.getElementById('commSearchPanel');
+    const searchInput      = document.getElementById('commSearchInput');
+    const searchResults    = document.getElementById('commSearchResults');
+    const userFilterBar    = document.getElementById('commUserFilterBar');
+    const userFilterBack   = document.getElementById('commUserFilterBack');
+    const userFilterLabel  = document.getElementById('commUserFilterLabel');
+
+    searchBtn?.addEventListener('click', () => {
+        const open = searchPanel.classList.toggle('hidden') === false;
+        if (open) setTimeout(() => searchInput?.focus(), 60);
+        else { searchResults.innerHTML = ''; searchInput.value = ''; }
+    });
+
+    let _searchTimer = null;
+    searchInput?.addEventListener('input', () => {
+        clearTimeout(_searchTimer);
+        const q = searchInput.value.trim();
+        if (q.length < 2) { searchResults.innerHTML = ''; return; }
+        _searchTimer = setTimeout(() => {
+            fetch(`/pug/api/users/search?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(users => {
+                    searchResults.innerHTML = '';
+                    if (!users.length) {
+                        searchResults.innerHTML = '<div class="comm-search-empty">No users found.</div>';
+                        return;
+                    }
+                    users.forEach(u => {
+                        const row = document.createElement('div');
+                        row.className = 'comm-search-user-row';
+                        row.innerHTML = `
+                            <div class="comm-avatar comm-search-av">${u.username[0].toUpperCase()}</div>
+                            <span class="comm-search-uname">${esc(u.username)}</span>
+                            ${u.rank ? `<span class="comm-rank-badge" style="color:${u.rank_color}">${esc(u.rank)}</span>` : ''}
+                            <span class="online-dot${u.is_online ? ' is-online' : ''}" style="margin-left:auto;"></span>`;
+                        row.addEventListener('click', () => openUserFilter(u.id, u.username));
+                        searchResults.appendChild(row);
+                    });
+                }).catch(() => {});
+        }, 280);
+    });
+
+    function openUserFilter(uid, username) {
+        activeUserId = uid;
+        lastPostCount = 0;
+        searchPanel.classList.add('hidden');
+        searchInput.value = '';
+        searchResults.innerHTML = '';
+        userFilterBar.classList.remove('hidden');
+        userFilterLabel.textContent = `Posts by ${username}`;
+        loadFeed();
+    }
+
+    userFilterBack?.addEventListener('click', () => {
+        activeUserId = null;
+        lastPostCount = 0;
+        userFilterBar.classList.add('hidden');
+        userFilterLabel.textContent = '';
+        loadFeed();
+    });
+
     // ── Geolocation ────────────────────────────────────────────────────────────
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(pos => {
@@ -144,7 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
             params.push(`lat=${myLat}`);
             params.push(`lng=${myLng}`);
         }
-        if (activeSkill) params.push(`skill=${encodeURIComponent(activeSkill)}`);
+        if (activeSkill)  params.push(`skill=${encodeURIComponent(activeSkill)}`);
+        if (activeUserId) params.push(`user_id=${activeUserId}`);
         if (params.length) url += '?' + params.join('&');
         fetch(url)
             .then(r => r.json())

@@ -3146,6 +3146,49 @@ div.infinite-canvas video {
 .comm-react-btn .react-count { font-size: 0.74rem; font-weight: 600; }
 .comm-share-btn { margin-left: 2px; }
 
+/* ── Community search ─────────────────────────────────────── */
+.comm-search-panel {
+    padding: 8px 0 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.comm-search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 7px 12px;
+    font-size: 0.85rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.comm-search-input:focus { border-color: var(--accent); }
+.comm-search-results { display: flex; flex-direction: column; gap: 2px; }
+.comm-search-user-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .12s;
+}
+.comm-search-user-row:hover { background: var(--surface); }
+.comm-search-av { width: 30px; height: 30px; font-size: 0.85rem; flex-shrink: 0; }
+.comm-search-uname { font-size: 0.85rem; font-weight: 600; }
+.comm-search-empty { font-size: 0.78rem; color: var(--text-dim); padding: 6px 10px; }
+.comm-user-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0 4px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+}
+
 /* ── Skill tag picker (compose) + badge (post card) ──────── */
 .comm-skill-picker {
     display: flex;

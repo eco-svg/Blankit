@@ -1802,10 +1802,12 @@ def get_community_feed():
         use_location = False
 
     skill_filter = (request.args.get('skill') or '').strip().lower()
+    user_filter  = request.args.get('user_id', type=int)
 
-    posts = Note.query.filter_by(
-        entry_type='community_post', is_deleted=False, mood='Ocellus'
-    ).order_by(Note.created_at.desc()).limit(200).all()
+    q = Note.query.filter_by(entry_type='community_post', is_deleted=False, mood='Ocellus')
+    if user_filter:
+        q = q.filter_by(user_id=user_filter)
+    posts = q.order_by(Note.created_at.desc()).limit(200).all()
 
     def _build_row(p, u):
         rank, color = _net_rank_for_user(p.user_id)
@@ -1875,7 +1877,7 @@ def get_community_feed():
             row['comment_count'] = cmap.get(str(row['id']), 0)
         return posts_list
 
-    if use_location:
+    if use_location and not user_filter:
         for radius_km in (50, 100, 250, None):
             result = []
             for p in posts:
@@ -2261,17 +2263,37 @@ def search_users():
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
-    from sqlalchemy import or_
     q = (request.args.get('q') or '').strip()
     if len(q) < 2:
         return jsonify([])
     me = session['user_id']
-    users = User.query.filter(
+    # match by username
+    by_name = User.query.filter(
         User.username.ilike(f'%{q}%'),
         User.id != me,
         User.distro == 'Ocellus'
     ).limit(10).all()
-    return jsonify([{'id': u.id, 'username': u.username} for u in users])
+    found = {u.id: u for u in by_name}
+    # also match by skill tag on community posts
+    skill_posts = Note.query.filter(
+        Note.entry_type == 'community_post',
+        Note.is_deleted == False,
+        Note.mood == 'Ocellus',
+        Note.body.ilike(f'%"sk": "%{q}%"%')
+    ).limit(50).all()
+    for sp in skill_posts:
+        if sp.user_id == me or sp.user_id in found:
+            continue
+        u = User.query.get(sp.user_id)
+        if u and u.distro == 'Ocellus':
+            found[u.id] = u
+        if len(found) >= 10:
+            break
+    result = []
+    for u in list(found.values())[:10]:
+        rank, color = _net_rank_for_user(u.id)
+        result.append({'id': u.id, 'username': u.username, 'rank': rank, 'rank_color': color, 'is_online': _is_online(u)})
+    return jsonify(result)
 
 
 @pug_bp.route('/pug/api/dms', methods=['GET'])

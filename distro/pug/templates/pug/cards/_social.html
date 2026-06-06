@@ -50,8 +50,20 @@
         </div>
         <span class="comm-field-label" id="commRangeLabel">📍 radar</span>
       </div>
+      <button class="icon-btn" id="commSearchBtn" title="Search users">🔍</button>
       <button class="icon-btn" id="commComposeBtn" title="New post">+</button>
       <button class="icon-btn" id="cancelCommPostBtn" title="Cancel" style="display:none;">✕</button>
+    </div>
+
+    <!-- Search panel -->
+    <div id="commSearchPanel" class="comm-search-panel hidden">
+      <input type="text" id="commSearchInput" class="comm-search-input" placeholder="Search by name or skill…" autocomplete="off">
+      <div id="commSearchResults" class="comm-search-results"></div>
+    </div>
+    <!-- User filter bar (shown when viewing a specific user's posts) -->
+    <div id="commUserFilterBar" class="comm-user-filter-bar hidden">
+      <button id="commUserFilterBack" class="icon-btn">←</button>
+      <span id="commUserFilterLabel"></span>
     </div>
 
     <!-- Inline compose pane -->
