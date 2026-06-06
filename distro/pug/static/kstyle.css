@@ -3021,16 +3021,18 @@ div.infinite-canvas video {
 }
 .comm-post-content .comm-media-img,
 .comm-post-content .comm-media-video {
-    flex-shrink: 0;
-    width: 46%;
-    max-height: 160px;
+    max-width: 52%;
+    width: auto;
+    height: auto;
+    max-height: none;
     margin-top: 0;
-    object-fit: cover;
+    object-fit: initial;
+    flex-shrink: 1;
 }
 .comm-post-content .comm-media-audio {
-    flex-shrink: 0;
-    width: 46%;
+    max-width: 52%;
     margin-top: 0;
+    flex-shrink: 1;
 }
 .comm-del-btn {
     background: transparent;
@@ -3150,7 +3152,7 @@ div.infinite-canvas video {
     padding-top: 8px;
     border-top: 1px solid rgba(255,255,255,0.05);
 }
-.comm-comments-list { margin-bottom: 8px; padding-left: 10px; }
+.comm-comments-list { margin-bottom: 8px; padding-left: 20px; }
 .comm-comment-row {
     display: flex;
     gap: 6px;
