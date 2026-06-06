@@ -115,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => {});
     }
 
+    const MARKET_LABELS = { sell:'Buy', buy:'Sell', hire:'Apply', teach:'Learn', learn:'Teach', collab:'Collab' };
+
     function makePost(p) {
         const el       = document.createElement('div');
         el.className   = 'comm-post';
@@ -125,8 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
         const deleteBtn = p.is_mine
             ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>` : '';
-        const typeBadge = p.post_type
-            ? `<span class="comm-post-type-badge comm-post-type-${p.post_type}">${p.post_type}</span>` : '';
 
         let mediaHtml = '';
         if (p.media_url) {
@@ -143,6 +143,20 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-username">${esc(p.username)}</span>`
             : `<button class="comm-username comm-username-link" data-uid="${p.user_id}">${esc(p.username)}</button>`;
 
+        // Marketplace CTA — action button for viewers, label for own posts
+        let ctaHtml = '';
+        if (p.post_type) {
+            if (p.is_mine) {
+                ctaHtml = `<div class="comm-post-type-own comm-post-type-own-${p.post_type}">${p.post_type}</div>`;
+            } else {
+                const label = MARKET_LABELS[p.post_type] || p.post_type;
+                ctaHtml = `<button class="comm-market-cta comm-market-cta-${p.post_type}" data-uid="${p.user_id}" data-username="${esc(p.username)}">${label}</button>`;
+            }
+        }
+
+        const likeActive    = p.my_reaction === 'like'    ? ' active' : '';
+        const dislikeActive = p.my_reaction === 'dislike' ? ' active' : '';
+
         el.innerHTML = `
             <div class="comm-post-header">
                 <div class="comm-avatar">${initials}</div>
@@ -152,17 +166,116 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="comm-distro-tag">${esc(p.distro)}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-                    ${typeBadge}
                     <span class="comm-ago">${ago}</span>
                     ${deleteBtn}
                 </div>
             </div>
             ${mediaHtml}
-            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}`;
+            ${p.text ? `<div class="comm-post-body">${esc(p.text)}</div>` : ''}
+            ${ctaHtml}
+            <div class="comm-post-footer">
+                <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
+                <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
+                <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
+                <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
+            </div>
+            <div class="comm-post-comments hidden">
+                <div class="comm-comments-list"></div>
+                <div class="comm-comment-input-row">
+                    <input type="text" class="comm-comment-input" placeholder="Add a comment..." maxlength="300" autocomplete="off">
+                    <button class="comm-comment-send">→</button>
+                </div>
+            </div>`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
         el.querySelector('.comm-username-link')?.addEventListener('click', () => openProfile(p.user_id, p.username));
+
+        // Marketplace CTA — open DM
+        el.querySelector('.comm-market-cta')?.addEventListener('click', function() {
+            const uid      = parseInt(this.dataset.uid);
+            const username = this.dataset.username;
+            document.getElementById('commDmLbar')?.classList.add('open');
+            document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username } }));
+        });
+
+        // Reactions
+        el.querySelectorAll('.comm-react-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.dataset.action;
+                if (action === 'share') {
+                    navigator.clipboard?.writeText(p.text || location.href).catch(() => {});
+                    btn.textContent = '✓';
+                    setTimeout(() => { btn.textContent = '↗'; }, 1500);
+                    return;
+                }
+                if (action === 'comment') {
+                    const commentsEl = el.querySelector('.comm-post-comments');
+                    const nowVisible = commentsEl.classList.toggle('hidden') === false;
+                    if (nowVisible && commentsEl.dataset.loaded !== 'true') {
+                        loadComments(p.id, commentsEl);
+                    }
+                    return;
+                }
+                fetch(`/pug/api/community/${p.id}/react`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: action })
+                }).then(r => r.json()).then(data => {
+                    el.querySelector('[data-action="like"] .react-count').textContent  = data.likes    || 0;
+                    el.querySelector('[data-action="dislike"] .react-count').textContent = data.dislikes || 0;
+                    el.querySelector('[data-action="like"]').classList.toggle('active',    data.my_reaction === 'like');
+                    el.querySelector('[data-action="dislike"]').classList.toggle('active', data.my_reaction === 'dislike');
+                }).catch(() => {});
+            });
+        });
+
+        // Comments
+        const commentsEl  = el.querySelector('.comm-post-comments');
+        const commentInput = el.querySelector('.comm-comment-input');
+        const commentSend  = el.querySelector('.comm-comment-send');
+        commentSend?.addEventListener('click', () => sendComment(p.id, commentInput, commentsEl));
+        commentInput?.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(p.id, commentInput, commentsEl); });
+
         return el;
+    }
+
+    function loadComments(pid, commentsEl) {
+        const list = commentsEl.querySelector('.comm-comments-list');
+        commentsEl.dataset.loaded = 'true';
+        list.innerHTML = '<div class="comm-comments-loading">loading…</div>';
+        fetch(`/pug/api/community/${pid}/comments`)
+            .then(r => r.json())
+            .then(comments => {
+                list.innerHTML = '';
+                if (!comments.length) {
+                    list.innerHTML = '<div class="comm-no-comments">No comments yet.</div>';
+                    return;
+                }
+                comments.forEach(c => {
+                    const row = document.createElement('div');
+                    row.className = 'comm-comment-row';
+                    row.innerHTML = `<span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span><span class="comm-comment-ago">${timeAgo(c.created_at)}</span>`;
+                    list.appendChild(row);
+                });
+            })
+            .catch(() => { list.innerHTML = ''; });
+    }
+
+    function sendComment(pid, input, commentsEl) {
+        const text = (input?.value || '').trim();
+        if (!text) return;
+        fetch(`/pug/api/community/${pid}/comment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        }).then(r => r.json()).then(data => {
+            if (data.error) return;
+            input.value = '';
+            commentsEl.dataset.loaded = 'false';
+            loadComments(pid, commentsEl);
+            const countEl = commentsEl.closest('.comm-post')?.querySelector('[data-action="comment"] .react-count');
+            if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
+        }).catch(() => {});
     }
 
     function deletePost(id) {

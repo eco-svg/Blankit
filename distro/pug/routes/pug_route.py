@@ -1785,6 +1785,39 @@ def get_community_feed():
             'created_at': p.created_at.isoformat() if p.created_at else None,
         }
 
+    def _enrich(posts_list):
+        if not posts_list:
+            return posts_list
+        from sqlalchemy import func as sqlfunc
+        pids = [str(r['id']) for r in posts_list]
+        reacts = Note.query.filter(
+            Note.entry_type == 'post_react',
+            Note.mood.in_(pids),
+            Note.is_deleted == False
+        ).all()
+        rm = {}
+        for r in reacts:
+            rm.setdefault(r.mood, {'likes': 0, 'dislikes': 0, 'my_reaction': None})
+            if r.is_finished:
+                rm[r.mood]['likes'] += 1
+            else:
+                rm[r.mood]['dislikes'] += 1
+            if r.user_id == me:
+                rm[r.mood]['my_reaction'] = 'like' if r.is_finished else 'dislike'
+        cc = db.session.query(Note.mood, sqlfunc.count(Note.id)).filter(
+            Note.entry_type == 'post_comment',
+            Note.mood.in_(pids),
+            Note.is_deleted == False
+        ).group_by(Note.mood).all()
+        cmap = {pid_s: cnt for pid_s, cnt in cc}
+        for row in posts_list:
+            d = rm.get(str(row['id']), {})
+            row['likes']         = d.get('likes', 0)
+            row['dislikes']      = d.get('dislikes', 0)
+            row['my_reaction']   = d.get('my_reaction')
+            row['comment_count'] = cmap.get(str(row['id']), 0)
+        return posts_list
+
     if use_location:
         for radius_km in (50, 100, 250, None):
             result = []
@@ -1799,7 +1832,7 @@ def get_community_feed():
                     continue
                 result.append(_build_row(p, u))
             if len(result) >= 5 or radius_km is None:
-                return jsonify({'posts': result, 'radius_km': radius_km})
+                return jsonify({'posts': _enrich(result), 'radius_km': radius_km})
         return jsonify({'posts': [], 'radius_km': None})
 
     result = []
@@ -1809,7 +1842,7 @@ def get_community_feed():
         if skill_filter and not _user_has_skill(p.user_id, skill_filter):
             continue
         result.append(_build_row(p, u))
-    return jsonify({'posts': result, 'radius_km': None})
+    return jsonify({'posts': _enrich(result), 'radius_km': None})
 
 
 @pug_bp.route('/pug/api/community', methods=['POST'])
@@ -1856,6 +1889,80 @@ def delete_community_post(pid):
     p.is_deleted = True
     db.session.commit()
     return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/react', methods=['POST'])
+def react_post(pid):
+    err = login_required_api()
+    if err: return err
+    me   = session['user_id']
+    data = request.get_json(force=True) or {}
+    rtype = (data.get('type') or '').strip()
+    if rtype not in ('like', 'dislike'):
+        return jsonify({'error': 'Invalid'}), 400
+    existing = Note.query.filter_by(
+        user_id=me, entry_type='post_react', mood=str(pid), is_deleted=False
+    ).first()
+    if existing:
+        if (existing.is_finished and rtype == 'like') or (not existing.is_finished and rtype == 'dislike'):
+            existing.is_deleted = True
+        else:
+            existing.is_finished = (rtype == 'like')
+    else:
+        n = Note(user_id=me, entry_type='post_react', is_deleted=False,
+                 mood=str(pid), is_finished=(rtype == 'like'))
+        db.session.add(n)
+    db.session.commit()
+    rows = Note.query.filter_by(entry_type='post_react', mood=str(pid), is_deleted=False).all()
+    likes    = sum(1 for r in rows if r.is_finished)
+    dislikes = sum(1 for r in rows if not r.is_finished)
+    my_row   = next((r for r in rows if r.user_id == me), None)
+    my_react = ('like' if my_row.is_finished else 'dislike') if my_row else None
+    return jsonify({'likes': likes, 'dislikes': dislikes, 'my_reaction': my_react})
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/comments', methods=['GET'])
+def get_post_comments(pid):
+    err = login_required_api()
+    if err: return err
+    from shared.auth.user import User
+    me = session['user_id']
+    comments = Note.query.filter_by(
+        entry_type='post_comment', mood=str(pid), is_deleted=False
+    ).order_by(Note.created_at.asc()).limit(50).all()
+    result = []
+    for c in comments:
+        u = User.query.get(c.user_id)
+        if not u: continue
+        result.append({
+            'id':         c.id,
+            'username':   u.username,
+            'text':       c.body,
+            'created_at': c.created_at.isoformat() if c.created_at else None,
+            'is_mine':    c.user_id == me,
+        })
+    return jsonify(result)
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/comment', methods=['POST'])
+def add_post_comment(pid):
+    err = login_required_api()
+    if err: return err
+    me   = session['user_id']
+    data = request.get_json(force=True) or {}
+    text = (data.get('text') or '').strip()
+    if not text:
+        return jsonify({'error': 'Empty'}), 400
+    if len(text) > 300:
+        return jsonify({'error': 'Too long (max 300 chars)'}), 400
+    parent = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
+    if not parent:
+        return jsonify({'error': 'Post not found'}), 404
+    c = Note(user_id=me, entry_type='post_comment', is_deleted=False, mood=str(pid))
+    c.body = text
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({'id': c.id, 'ok': True}), 201
 
 
 @pug_bp.route('/pug/api/users/search')

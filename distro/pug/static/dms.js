@@ -409,6 +409,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
+    // ── Cross-module DM open (from community marketplace CTAs) ────────────────
+    document.addEventListener('veyra:open-dm', e => {
+        openChat(e.detail.uid, e.detail.username);
+    });
+
     // ── Init ──────────────────────────────────────────────────────────────────
     loadConvs();
     startPolling();

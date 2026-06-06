@@ -2973,6 +2973,138 @@ div.infinite-canvas video {
 .comm-del-btn:hover { opacity: 0.9; }
 .comm-range-label { flex-shrink: 0; }
 
+/* ── Post reactions footer ────────────────────────────── */
+.comm-post-footer {
+    display: flex;
+    gap: 2px;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.comm-react-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.12s, color 0.12s;
+    font-family: var(--font-mono);
+}
+.comm-react-btn:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.comm-react-btn.active { color: var(--accent); }
+.comm-react-btn .react-count { font-size: 0.72rem; }
+.comm-share-btn { margin-left: auto; }
+
+/* ── Marketplace CTA button ───────────────────────────── */
+.comm-market-cta {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 16px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+}
+.comm-market-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+.comm-market-cta-sell  { background: rgba(72,200,120,0.18); border: 1px solid #48c878; color: #48c878; }
+.comm-market-cta-buy   { background: rgba(77,158,255,0.18); border: 1px solid #4d9eff; color: #4d9eff; }
+.comm-market-cta-hire  { background: rgba(255,160,72,0.18); border: 1px solid #ffa048; color: #ffa048; }
+.comm-market-cta-teach { background: rgba(180,100,255,0.18); border: 1px solid #b464ff; color: #b464ff; }
+.comm-market-cta-learn { background: rgba(72,220,220,0.18); border: 1px solid #48dcdc; color: #48dcdc; }
+.comm-market-cta-collab{ background: rgba(255,100,180,0.18); border: 1px solid #ff64b4; color: #ff64b4; }
+
+/* Own-post type label */
+.comm-post-type-own {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.68rem;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+.comm-post-type-own-sell  { background: rgba(72,200,120,0.1); color: #48c878; }
+.comm-post-type-own-buy   { background: rgba(77,158,255,0.1); color: #4d9eff; }
+.comm-post-type-own-hire  { background: rgba(255,160,72,0.1); color: #ffa048; }
+.comm-post-type-own-teach { background: rgba(180,100,255,0.1); color: #b464ff; }
+.comm-post-type-own-learn { background: rgba(72,220,220,0.1); color: #48dcdc; }
+.comm-post-type-own-collab{ background: rgba(255,100,180,0.1); color: #ff64b4; }
+
+/* ── Inline comments section ──────────────────────────── */
+.comm-post-comments {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+.comm-comments-list { margin-bottom: 8px; }
+.comm-comment-row {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    padding: 3px 0;
+    font-size: 0.78rem;
+}
+.comm-comment-user {
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 0.72rem;
+}
+.comm-comment-text {
+    color: var(--text);
+    flex: 1;
+    word-break: break-word;
+}
+.comm-comment-ago {
+    color: var(--text-dim);
+    font-size: 0.66rem;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+}
+.comm-no-comments, .comm-comments-loading {
+    font-size: 0.74rem;
+    color: var(--text-dim);
+    padding: 4px 0;
+}
+.comm-comment-input-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.comm-comment-input {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 5px 10px;
+    color: var(--text);
+    font-size: 0.78rem;
+    font-family: var(--font-ui);
+}
+.comm-comment-input:focus { outline: none; border-color: rgba(212,165,116,0.35); }
+.comm-comment-send {
+    background: rgba(212,165,116,0.15);
+    border: 1px solid rgba(212,165,116,0.3);
+    border-radius: 8px;
+    padding: 5px 10px;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: background 0.12s;
+}
+.comm-comment-send:hover { background: rgba(212,165,116,0.28); }
+
 /* ── Confirm button hover (keep dark text on gold bg) ─── */
 button.nav-pill:not(.btn-ghost):hover {
   color: #111 !important;
