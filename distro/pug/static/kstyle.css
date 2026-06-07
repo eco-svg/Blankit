@@ -6604,7 +6604,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .credits-warn-tooltip {
   display: none;
   position: absolute;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);
   width: 280px;
@@ -6616,7 +6616,7 @@ button.nav-pill:not(.btn-ghost):hover {
   color: #c8bfad;
   line-height: 1.6;
   pointer-events: none;
-  z-index: 200;
+  z-index: 500;
   text-align: left;
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
@@ -6625,11 +6625,11 @@ button.nav-pill:not(.btn-ghost):hover {
 .credits-warn-tooltip::after {
   content: '';
   position: absolute;
-  top: 100%;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: rgba(251,191,36,0.3);
+  border-bottom-color: rgba(251,191,36,0.3);
 }
 .credits-warn-icon:hover .credits-warn-tooltip,
 .credits-warn-icon:focus .credits-warn-tooltip {
