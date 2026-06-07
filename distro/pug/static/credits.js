@@ -41,7 +41,7 @@
           ${status}
           <span class="credits-tx-date">${date}</span>
         </div>
-        <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} VC</span>
+        <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
       </div>`;
     }).join('');
   }
@@ -54,7 +54,7 @@
         const balEl = document.getElementById('creditsBalance');
         if (balEl) balEl.textContent = fmt(_balance);
         const hint = document.getElementById('sellbackBalanceHint');
-        if (hint) hint.textContent = `Available: ${fmt(_balance)} VC`;
+        if (hint) hint.textContent = `Available: ${fmt(_balance)} Eyes`;
         renderTxList(data.transactions || []);
       })
       .catch(() => {});
