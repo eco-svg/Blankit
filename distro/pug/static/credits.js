@@ -144,7 +144,7 @@
       return `<div class="credits-tx-row">
         <div class="credits-tx-info">
           <span class="credits-tx-label">${label}</span>
-          ${hint}${status}
+          ${status}${hint}
           <span class="credits-tx-date">${date}</span>
         </div>
         <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
