@@ -32,7 +32,63 @@
     'AE':'AED','SA':'SAR','QA':'QAR','IL':'ILS','KZ':'KZT',
   };
 
+  // timezone → ISO 4217: more reliable than language tag
+  const TZ_CURRENCY = {
+    'Asia/Kolkata':'INR','Asia/Calcutta':'INR',
+    'Asia/Karachi':'PKR',
+    'Asia/Dhaka':'BDT',
+    'Asia/Kathmandu':'NPR',
+    'Asia/Colombo':'LKR',
+    'Asia/Rangoon':'MMK','Asia/Yangon':'MMK',
+    'Asia/Tokyo':'JPY',
+    'Asia/Shanghai':'CNY','Asia/Chongqing':'CNY','Asia/Harbin':'CNY',
+    'Asia/Hong_Kong':'HKD',
+    'Asia/Seoul':'KRW',
+    'Asia/Singapore':'SGD',
+    'Asia/Taipei':'TWD',
+    'Asia/Jakarta':'IDR','Asia/Makassar':'IDR','Asia/Jayapura':'IDR',
+    'Asia/Manila':'PHP',
+    'Asia/Bangkok':'THB',
+    'Asia/Ho_Chi_Minh':'VND','Asia/Saigon':'VND',
+    'Asia/Kuala_Lumpur':'MYR',
+    'Asia/Dubai':'AED',
+    'Asia/Riyadh':'SAR',
+    'Asia/Qatar':'QAR','Asia/Doha':'QAR',
+    'Asia/Jerusalem':'ILS','Asia/Tel_Aviv':'ILS',
+    'Asia/Almaty':'KZT',
+    'Europe/London':'GBP',
+    'Europe/Berlin':'EUR','Europe/Paris':'EUR','Europe/Rome':'EUR',
+    'Europe/Madrid':'EUR','Europe/Lisbon':'EUR','Europe/Amsterdam':'EUR',
+    'Europe/Brussels':'EUR','Europe/Vienna':'EUR','Europe/Helsinki':'EUR',
+    'Europe/Athens':'EUR','Europe/Luxembourg':'EUR','Europe/Dublin':'EUR',
+    'Europe/Warsaw':'PLN','Europe/Prague':'CZK','Europe/Budapest':'HUF',
+    'Europe/Bucharest':'RON','Europe/Sofia':'BGN',
+    'Europe/Moscow':'RUB','Europe/Samara':'RUB','Europe/Volgograd':'RUB',
+    'Europe/Kyiv':'UAH','Europe/Kiev':'UAH',
+    'Europe/Istanbul':'TRY',
+    'Europe/Zurich':'CHF',
+    'Europe/Stockholm':'SEK','Europe/Oslo':'NOK','Europe/Copenhagen':'DKK',
+    'America/New_York':'USD','America/Chicago':'USD','America/Denver':'USD',
+    'America/Los_Angeles':'USD','America/Phoenix':'USD','America/Anchorage':'USD',
+    'America/Honolulu':'USD','America/Indiana/Indianapolis':'USD','America/Detroit':'USD',
+    'America/Toronto':'CAD','America/Vancouver':'CAD','America/Edmonton':'CAD',
+    'America/Winnipeg':'CAD','America/Halifax':'CAD','America/St_Johns':'CAD',
+    'America/Mexico_City':'MXN','America/Cancun':'MXN',
+    'America/Sao_Paulo':'BRL','America/Manaus':'BRL','America/Belem':'BRL',
+    'America/Buenos_Aires':'ARS','America/Argentina/Buenos_Aires':'ARS',
+    'America/Bogota':'COP','America/Lima':'PEN','America/Santiago':'CLP',
+    'Africa/Lagos':'NGN','Africa/Nairobi':'KES','Africa/Johannesburg':'ZAR',
+    'Africa/Cairo':'EGP','Africa/Accra':'GHS','Africa/Dar_es_Salaam':'TZS',
+    'Pacific/Auckland':'NZD','Pacific/Chatham':'NZD',
+    'Australia/Sydney':'AUD','Australia/Melbourne':'AUD','Australia/Brisbane':'AUD',
+    'Australia/Adelaide':'AUD','Australia/Perth':'AUD',
+  };
+
   function detectCurrency() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (TZ_CURRENCY[tz]) return TZ_CURRENCY[tz];
+    } catch (_) {}
     try {
       const lang   = navigator.language || 'en-US';
       const region = (lang.split('-')[1] || lang.split('_')[1] || '').toUpperCase();
@@ -109,6 +165,24 @@
       bar.textContent = `${min} Eyes = ${buyAmt} to buy · ${sellAmt} to sell back`;
     } else if (bar) {
       bar.textContent = 'Rate unavailable';
+    }
+
+    // Update sell-back warning tooltip with local currency example
+    const tooltipEx = document.getElementById('warnTooltipExample');
+    if (tooltipEx && r) {
+      const eg    = 1000;
+      const paid  = localAmt(eg, r.buy_rate);
+      const back  = localAmt(eg, r.sell_rate);
+      const sym   = (r.symbol) || _currency;
+      const diff  = ((eg * r.buy_rate) - (eg * r.sell_rate));
+      const diffFmt = diff >= 1000
+        ? `${sym}${Math.round(diff).toLocaleString()}`
+        : `${sym}${diff.toFixed(2)}`;
+      tooltipEx.innerHTML =
+        `<em>Example in your currency:</em> 1,000 Eyes bought for <strong>${paid}</strong> → ` +
+        `sold back for <strong>${back}</strong>. The <strong>${diffFmt} difference</strong> ` +
+        `is the spread — that's money lost twice (once buying, once selling), so any ` +
+        `cross-currency arbitrage always ends in a net loss.`;
     }
 
     // Update local currency sub-labels on preset buttons

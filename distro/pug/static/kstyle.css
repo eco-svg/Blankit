@@ -6349,6 +6349,8 @@ button.nav-pill:not(.btn-ghost):hover {
   flex-direction: column;
   gap: 20px;
   padding: 20px;
+  height: auto !important;
+  cursor: default;
 }
 .credits-header {
   display: flex;
