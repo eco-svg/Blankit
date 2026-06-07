@@ -3173,8 +3173,8 @@ def wallet_topup():
         return jsonify({'error': 'unauth'}), 401
     body   = request.get_json(silent=True) or {}
     amount = body.get('amount')
-    if not isinstance(amount, int) or amount < 100:
-        return jsonify({'error': 'Minimum top-up is 100 credits'}), 400
+    if not isinstance(amount, int) or amount < 20:
+        return jsonify({'error': 'Minimum top-up is 20 Eyes'}), 400
     if amount > 500000:
         return jsonify({'error': 'Maximum top-up is 500,000 credits per request'}), 400
     tx = WalletTx(
@@ -3197,8 +3197,8 @@ def wallet_sellback():
         return jsonify({'error': 'unauth'}), 401
     body   = request.get_json(silent=True) or {}
     amount = body.get('amount')
-    if not isinstance(amount, int) or amount < 100:
-        return jsonify({'error': 'Minimum sell-back is 100 credits'}), 400
+    if not isinstance(amount, int) or amount < 20:
+        return jsonify({'error': 'Minimum sell-back is 20 Eyes'}), 400
     w = _get_or_create_wallet(uid)
     if w.balance < amount:
         return jsonify({'error': 'Insufficient balance'}), 400

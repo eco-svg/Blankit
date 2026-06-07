@@ -100,7 +100,7 @@
     });
 
     submit.addEventListener('click', () => {
-      if (!_topupSelected || _topupSelected < 100) return;
+      if (!_topupSelected || _topupSelected < 20) return;
       submit.disabled = true;
       msg.textContent = '';
       fetch('/pug/api/wallet/topup', {
@@ -132,12 +132,12 @@
 
     input.addEventListener('input', () => {
       const v = parseInt(input.value, 10);
-      submit.disabled = isNaN(v) || v < 100 || v > _balance;
+      submit.disabled = isNaN(v) || v < 20 || v > _balance;
     });
 
     submit.addEventListener('click', () => {
       const v = parseInt(input.value, 10);
-      if (isNaN(v) || v < 100) return;
+      if (isNaN(v) || v < 20) return;
       submit.disabled = true;
       msg.textContent = '';
       fetch('/pug/api/wallet/sellback', {
