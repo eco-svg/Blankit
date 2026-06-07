@@ -9,6 +9,7 @@
     'support':  ['sec-profile'],
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats-wrapper'],
+    'credits':  ['sec-credits'],
   };
 
   const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);
@@ -70,6 +71,7 @@
     });
 
     if (push) history.pushState({ route }, '', '#' + route);
+    document.dispatchEvent(new CustomEvent('veyra:navigate', { detail: { route } }));
   }
 
   window._veyraNavigate = navigate;

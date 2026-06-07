@@ -93,6 +93,7 @@
     <button class="lbar-capsule" data-route="notes">Notes</button>
     <button class="lbar-capsule" data-route="skills">Skills</button>
     <button class="lbar-capsule" data-route="habits">Habits</button>
+    <button class="lbar-capsule" data-route="credits">Credits</button>
     <button class="lbar-capsule lbar-capsule-soon" id="physiqueCapsule">Physique</button>
   </div>
 
@@ -114,6 +115,7 @@
       {% include 'pug/cards/_habits.html' %}
       {% include 'pug/cards/_buddybot.html' %}
       {% include 'pug/cards/_stats.html' %}
+      {% include 'pug/cards/_credits.html' %}
 
     </main>
 
@@ -373,7 +375,8 @@
   <script src="{{ url_for('pug.static', filename='community.js') }}?v=11"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=3"></script></script>
-  <script src="{{ url_for('pug.static', filename='router.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='credits.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='router.js') }}?v=3"></script>
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
@@ -891,6 +894,10 @@
     <button class="mbb-tab" data-route="skills" aria-label="Skills">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10l6-6 6 6v10"/><path d="M10 20v-5h4v5"/></svg>
       <span>Skills</span>
+    </button>
+    <button class="mbb-tab" data-route="credits" aria-label="Credits">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span>Credits</span>
     </button>
     <button class="mbb-menu" id="mbbMenuBtn" aria-label="Menu">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>

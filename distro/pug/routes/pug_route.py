@@ -14,7 +14,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note
+from .notes import Note, Wallet, WalletTx
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -3130,3 +3130,91 @@ echo ""
     r.headers['Content-Type']        = 'text/plain; charset=utf-8'
     r.headers['Content-Disposition'] = 'inline'
     return r
+
+
+# ── Wallet / Credits ──────────────────────────────────────────────────────────
+
+def _get_or_create_wallet(user_id):
+    w = Wallet.query.filter_by(user_id=user_id).first()
+    if not w:
+        w = Wallet(user_id=user_id, balance=0)
+        db.session.add(w)
+        db.session.commit()
+    return w
+
+
+@pug_bp.route('/pug/api/wallet', methods=['GET'])
+def get_wallet():
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    w = _get_or_create_wallet(uid)
+    txs = (WalletTx.query
+           .filter_by(user_id=uid)
+           .order_by(WalletTx.created_at.desc())
+           .limit(20).all())
+    return jsonify({
+        'balance': w.balance,
+        'transactions': [{
+            'id':         t.id,
+            'tx_type':    t.tx_type,
+            'amount':     t.amount,
+            'note':       t.note,
+            'status':     t.status,
+            'created_at': t.created_at.isoformat() if t.created_at else None,
+        } for t in txs],
+    })
+
+
+@pug_bp.route('/pug/api/wallet/topup', methods=['POST'])
+def wallet_topup():
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    body   = request.get_json(silent=True) or {}
+    amount = body.get('amount')
+    if not isinstance(amount, int) or amount < 100:
+        return jsonify({'error': 'Minimum top-up is 100 credits'}), 400
+    if amount > 500000:
+        return jsonify({'error': 'Maximum top-up is 500,000 credits per request'}), 400
+    tx = WalletTx(
+        user_id = uid,
+        tx_type = 'topup_request',
+        amount  = amount,
+        note    = f'Top-up request for {amount} credits',
+        status  = 'pending',
+    )
+    db.session.add(tx)
+    db.session.commit()
+    return jsonify({'ok': True, 'tx_id': tx.id,
+                    'message': 'Top-up request received. Credits will be added after payment is confirmed.'})
+
+
+@pug_bp.route('/pug/api/wallet/sellback', methods=['POST'])
+def wallet_sellback():
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    body   = request.get_json(silent=True) or {}
+    amount = body.get('amount')
+    if not isinstance(amount, int) or amount < 100:
+        return jsonify({'error': 'Minimum sell-back is 100 credits'}), 400
+    w = _get_or_create_wallet(uid)
+    if w.balance < amount:
+        return jsonify({'error': 'Insufficient balance'}), 400
+    tx = WalletTx(
+        user_id = uid,
+        tx_type = 'sellback_request',
+        amount  = -amount,
+        note    = f'Sell-back request for {amount} credits',
+        status  = 'pending',
+    )
+    db.session.add(tx)
+    db.session.commit()
+    return jsonify({'ok': True, 'tx_id': tx.id,
+                    'message': 'Sell-back request received. Your payout will be processed within 3–5 business days.'})
+
+
+@pug_bp.route('/pug/terms')
+def pug_terms():
+    return render_template('pug/terms.html')

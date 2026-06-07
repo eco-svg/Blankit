@@ -46,3 +46,24 @@ class Note(db.Model):
             'created_at':     self.created_at.isoformat()     if self.created_at     else None,
             'updated_at':     self.updated_at.isoformat()     if self.updated_at     else None,
         }
+
+
+class Wallet(db.Model):
+    __tablename__ = 'wallets'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), unique=True, nullable=False)
+    balance    = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class WalletTx(db.Model):
+    __tablename__ = 'wallet_transactions'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    tx_type    = db.Column(db.String(30), nullable=False)  # topup_request|topup_paid|spend|earn|sellback_request|sellback_paid|payout_request|payout_sent
+    amount     = db.Column(db.Integer, nullable=False)     # credits; positive = added, negative = deducted
+    ref_id     = db.Column(db.String(100))                 # order/post id if relevant
+    note       = db.Column(db.String(300))
+    status     = db.Column(db.String(20), default='pending')  # pending|completed|rejected
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

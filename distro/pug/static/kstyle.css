@@ -6342,3 +6342,214 @@ button.nav-pill:not(.btn-ghost):hover {
   font-style: italic;
   opacity: 0.4;
 }
+
+/* ── Credits / Wallet ──────────────────────────────────────────────────────── */
+.credits-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+.credits-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.credits-balance-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: 1;
+}
+.credits-balance-label {
+  font-size: 0.8rem;
+  opacity: 0.55;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.credits-balance-val {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.credits-balance-unit {
+  font-size: 0.85rem;
+  opacity: 0.55;
+}
+.credits-refresh-btn {
+  opacity: 0.55;
+  font-size: 1.1rem;
+  transition: opacity 0.15s;
+}
+.credits-refresh-btn:hover { opacity: 1; }
+
+/* Two-column cards row */
+.credits-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .credits-cards-row { grid-template-columns: 1fr; }
+}
+.credits-sub-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.credits-sub-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.credits-sub-desc {
+  font-size: 0.82rem;
+  opacity: 0.55;
+  line-height: 1.45;
+}
+
+/* Amount grid */
+.credits-amount-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.credits-amt-btn {
+  padding: 9px 6px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.credits-amt-btn:hover {
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.06);
+}
+.credits-amt-btn.active {
+  border-color: var(--accent, #7c6cfa);
+  background: rgba(124,108,250,0.12);
+  color: var(--accent, #7c6cfa);
+}
+
+/* Custom input row */
+.credits-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.credits-custom-input {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.12);
+  border-radius: 9px;
+  color: inherit;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.credits-custom-input:focus { border-color: var(--accent, #7c6cfa); }
+.credits-unit-label {
+  font-size: 0.8rem;
+  opacity: 0.55;
+}
+
+/* Selected row */
+.credits-selected-row {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Balance hint */
+.credits-balance-hint {
+  font-size: 0.82rem;
+  opacity: 0.55;
+}
+
+/* Action button */
+.credits-action-btn {
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: var(--accent, #7c6cfa);
+  color: #fff;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  align-self: flex-start;
+}
+.credits-action-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.credits-action-btn:not(:disabled):hover { opacity: 0.85; }
+
+/* Status messages */
+.credits-msg {
+  font-size: 0.82rem;
+  min-height: 1em;
+}
+.credits-msg-ok  { color: #4caf87; }
+.credits-msg-err { color: #f87171; }
+
+/* Fine print */
+.credits-fine-print {
+  font-size: 0.75rem;
+  opacity: 0.4;
+  line-height: 1.4;
+  margin: 0;
+}
+.credits-fine-print a { color: inherit; text-decoration: underline; }
+
+/* Transaction list */
+.credits-tx-section { display: flex; flex-direction: column; gap: 10px; }
+.credits-tx-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.45;
+}
+.credits-tx-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.credits-tx-empty {
+  font-size: 0.85rem;
+  opacity: 0.4;
+  padding: 8px 0;
+}
+.credits-tx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 10px;
+  gap: 10px;
+}
+.credits-tx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.credits-tx-label { font-size: 0.88rem; }
+.credits-tx-date  { font-size: 0.75rem; opacity: 0.45; }
+.credits-tx-status {
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+}
+.credits-tx-status-pending  { background: rgba(251,191,36,0.18); color: #fbbf24; }
+.credits-tx-status-rejected { background: rgba(248,113,113,0.18); color: #f87171; }
+.credits-tx-amt { font-size: 0.92rem; font-weight: 600; }
+.credits-tx-pos { color: #4caf87; }
+.credits-tx-neg { color: #f87171; }

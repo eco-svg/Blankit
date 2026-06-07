@@ -66,6 +66,40 @@ def _migrate_schema():
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
 
+    # ── wallet tables ──
+    tables = inspector.get_table_names()
+    if 'wallets' not in tables:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('''
+                    CREATE TABLE wallets (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+                        balance INTEGER NOT NULL DEFAULT 0,
+                        created_at TIMESTAMP DEFAULT NOW(),
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                '''))
+        except Exception as e:
+            import warnings; warnings.warn(f'[migrate] wallets: {e}')
+    if 'wallet_transactions' not in tables:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('''
+                    CREATE TABLE wallet_transactions (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                        tx_type VARCHAR(30) NOT NULL,
+                        amount INTEGER NOT NULL,
+                        ref_id VARCHAR(100),
+                        note VARCHAR(300),
+                        status VARCHAR(20) NOT NULL DEFAULT \'pending\',
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                '''))
+        except Exception as e:
+            import warnings; warnings.warn(f'[migrate] wallet_transactions: {e}')
+
     # ── user_badges migration ──
     if 'user_badges' in inspector.get_table_names():
         columns = {c['name'] for c in inspector.get_columns('user_badges')}

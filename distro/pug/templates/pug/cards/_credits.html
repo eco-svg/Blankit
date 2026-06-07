@@ -1,0 +1,63 @@
+<!-- Credits / Wallet card -->
+<div class="card credits-card full-row" id="sec-credits">
+
+  <div class="credits-header">
+    <div class="credits-balance-block">
+      <span class="credits-balance-label">Balance</span>
+      <span class="credits-balance-val" id="creditsBalance">—</span>
+      <span class="credits-balance-unit">VC</span>
+    </div>
+    <button class="credits-refresh-btn icon-btn" id="creditsRefreshBtn" title="Refresh">↻</button>
+  </div>
+
+  <div class="credits-cards-row">
+
+    <!-- TopUp card -->
+    <div class="credits-sub-card" id="creditsTopupCard">
+      <div class="credits-sub-title">Top Up</div>
+      <div class="credits-sub-desc">Buy Veyra Credits to use on the platform.</div>
+      <div class="credits-amount-grid" id="topupAmountGrid">
+        <button class="credits-amt-btn" data-amount="100">100 VC</button>
+        <button class="credits-amt-btn" data-amount="500">500 VC</button>
+        <button class="credits-amt-btn" data-amount="1000">1,000 VC</button>
+        <button class="credits-amt-btn" data-amount="5000">5,000 VC</button>
+      </div>
+      <div class="credits-custom-row">
+        <input type="number" id="topupCustomAmt" class="credits-custom-input"
+               placeholder="Custom amount" min="100" step="1">
+        <span class="credits-unit-label">VC</span>
+      </div>
+      <div class="credits-selected-row" id="topupSelectedRow" style="display:none;">
+        Selected: <strong id="topupSelectedVal">—</strong> VC
+      </div>
+      <button class="credits-action-btn" id="topupSubmitBtn" disabled>Request Top Up</button>
+      <div class="credits-msg" id="topupMsg"></div>
+      <p class="credits-fine-print">Credits are added after payment is confirmed by our team. <a href="/pug/terms#credits" target="_blank">Terms apply.</a></p>
+    </div>
+
+    <!-- SellBack card -->
+    <div class="credits-sub-card" id="creditsSellbackCard">
+      <div class="credits-sub-title">Sell Back</div>
+      <div class="credits-sub-desc">Convert your unused credits back to cash. Processed within 3–5 business days.</div>
+      <div class="credits-custom-row">
+        <input type="number" id="sellbackAmt" class="credits-custom-input"
+               placeholder="Amount to sell back" min="100" step="1">
+        <span class="credits-unit-label">VC</span>
+      </div>
+      <div class="credits-balance-hint" id="sellbackBalanceHint"></div>
+      <button class="credits-action-btn" id="sellbackSubmitBtn" disabled>Request Sell Back</button>
+      <div class="credits-msg" id="sellbackMsg"></div>
+      <p class="credits-fine-print">Sell-back is subject to availability and processed at Veyra's current rate. <a href="/pug/terms#credits" target="_blank">Terms apply.</a></p>
+    </div>
+
+  </div>
+
+  <!-- Recent transactions -->
+  <div class="credits-tx-section">
+    <div class="credits-tx-title">Recent Transactions</div>
+    <div id="creditsTxList" class="credits-tx-list">
+      <div class="credits-tx-empty">No transactions yet.</div>
+    </div>
+  </div>
+
+</div>
