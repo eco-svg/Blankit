@@ -22,10 +22,10 @@
       <div class="credits-sub-title">Top Up</div>
       <div class="credits-sub-desc">Buy Eyes to use on the platform.</div>
       <div class="credits-amount-grid" id="topupAmountGrid">
-        <button class="credits-amt-btn" data-amount="100">100 Eyes</button>
-        <button class="credits-amt-btn" data-amount="500">500 Eyes</button>
-        <button class="credits-amt-btn" data-amount="1000">1,000 Eyes</button>
-        <button class="credits-amt-btn" data-amount="5000">5,000 Eyes</button>
+        <button class="credits-amt-btn" data-amount="100"><span class="amt-eyes">100 Eyes</span><span class="amt-local"></span></button>
+        <button class="credits-amt-btn" data-amount="500"><span class="amt-eyes">500 Eyes</span><span class="amt-local"></span></button>
+        <button class="credits-amt-btn" data-amount="1000"><span class="amt-eyes">1,000 Eyes</span><span class="amt-local"></span></button>
+        <button class="credits-amt-btn" data-amount="5000"><span class="amt-eyes">5,000 Eyes</span><span class="amt-local"></span></button>
       </div>
       <div class="credits-custom-row">
         <input type="number" id="topupCustomAmt" class="credits-custom-input"
@@ -39,6 +39,7 @@
       </div>
       <button class="credits-action-btn" id="topupSubmitBtn" disabled>Request Top Up</button>
       <div class="credits-msg" id="topupMsg"></div>
+      <div class="credits-payment-inst" id="topupPaymentInst" style="display:none;"></div>
       <p class="credits-fine-print">Eyes are added after payment is confirmed by our team. <a href="/pug/terms#credits" target="_blank">Terms apply.</a></p>
     </div>
 

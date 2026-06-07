@@ -43,14 +43,8 @@
   function fmt(n) { return Number(n).toLocaleString(); }
 
   function fmtLocal(eyes, useRate) {
-    const r = _rates[_currency];
-    if (!r || !eyes) return '';
-    const val = eyes * useRate;
-    const sym = r.symbol || _currency;
-    // Use compact formatting for large numbers
-    if (val >= 1000) return `≈ ${sym}${Math.round(val).toLocaleString()}`;
-    if (val >= 1)    return `≈ ${sym}${val.toFixed(2)}`;
-    return `≈ ${sym}${val.toFixed(4)}`;
+    const v = localAmt(eyes, useRate);
+    return v ? `≈ ${v}` : '';
   }
 
   function getCurrencyMin() {
@@ -88,6 +82,16 @@
     }).join('');
   }
 
+  function localAmt(eyes, rate) {
+    if (!rate || !eyes) return '';
+    const val = eyes * rate;
+    const r   = _rates[_currency];
+    const sym = (r && r.symbol) || _currency;
+    if (val >= 1000) return `${sym}${Math.round(val).toLocaleString()}`;
+    if (val >= 1)    return `${sym}${val.toFixed(2)}`;
+    return `${sym}${val.toFixed(4)}`;
+  }
+
   function updateRateUI() {
     const r   = _rates[_currency];
     const tag = document.getElementById('creditsCurrencyTag');
@@ -97,24 +101,23 @@
 
     if (tag) tag.textContent = _currency;
 
+    const min = getCurrencyMin();
+
     if (r && bar) {
-      const min  = r.min_topup;
-      const sym  = r.symbol || _currency;
-      const buy  = r.buy_rate;
-      const sell = r.sell_rate;
-      // Show rate in a way that makes sense for the currency scale
-      const perEye = buy >= 1
-        ? `${sym}${buy.toFixed(2)}`
-        : `${sym}${buy.toFixed(4)}`;
-      const sellPerEye = sell >= 1
-        ? `${sym}${sell.toFixed(2)}`
-        : `${sym}${sell.toFixed(4)}`;
-      bar.textContent = `1 Eye = ${perEye} (buy) · ${sellPerEye} (sell) · min ${min} Eyes`;
+      const buyAmt  = localAmt(min, r.buy_rate);
+      const sellAmt = localAmt(min, r.sell_rate);
+      bar.textContent = `${min} Eyes = ${buyAmt} to buy · ${sellAmt} to sell back`;
     } else if (bar) {
-      bar.textContent = 'Rate unavailable — showing Eyes only';
+      bar.textContent = 'Rate unavailable';
     }
 
-    const min = getCurrencyMin();
+    // Update local currency sub-labels on preset buttons
+    document.querySelectorAll('#topupAmountGrid .credits-amt-btn').forEach(btn => {
+      const eyes  = parseInt(btn.dataset.amount, 10);
+      const label = btn.querySelector('.amt-local');
+      if (label) label.textContent = r ? localAmt(eyes, r.buy_rate) : '';
+    });
+
     if (topupMinNote)    topupMinNote.textContent    = `Minimum ${min} Eyes for custom amounts.`;
     if (sellbackMinNote) sellbackMinNote.textContent = `Minimum ${min} Eyes.`;
 
@@ -194,8 +197,10 @@
     submit.addEventListener('click', () => {
       const min = getCurrencyMin();
       if (!_topupSelected || _topupSelected < min) return;
+      const inst = document.getElementById('topupPaymentInst');
       submit.disabled = true;
       msg.textContent = '';
+      if (inst) inst.style.display = 'none';
       fetch('/pug/api/wallet/topup', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,7 +209,18 @@
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
           if (ok) {
-            setMsg(msg, d.message || 'Request submitted!', false);
+            setMsg(msg, `Request #${d.tx_id} created for ${fmt(_topupSelected)} Eyes.`, false);
+            if (inst) {
+              const r      = _rates[_currency];
+              const payAmt = r ? localAmt(_topupSelected, r.buy_rate) : `${_topupSelected} Eyes`;
+              inst.innerHTML =
+                `<div class="cpi-title">To complete your top-up, send payment:</div>` +
+                `<div class="cpi-row"><span class="cpi-label">Amount</span><strong>${payAmt}</strong></div>` +
+                `<div class="cpi-row"><span class="cpi-label">Pay to</span><strong>veyrasupportus@gmail.com</strong></div>` +
+                `<div class="cpi-row"><span class="cpi-label">Reference</span><strong>Eyes TopUp #${d.tx_id}</strong></div>` +
+                `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>`;
+              inst.style.display = '';
+            }
             loadWallet();
           } else {
             setMsg(msg, d.error || 'Something went wrong', true);

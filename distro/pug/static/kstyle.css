@@ -6452,6 +6452,10 @@ button.nav-pill:not(.btn-ghost):hover {
   font-size: 0.88rem;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 .credits-amt-btn:hover {
   border-color: rgba(255,255,255,0.4);
@@ -6462,6 +6466,8 @@ button.nav-pill:not(.btn-ghost):hover {
   background: rgba(124,108,250,0.12);
   color: var(--accent, #7c6cfa);
 }
+.amt-eyes { font-size: 0.85rem; font-weight: 500; }
+.amt-local { font-size: 0.72rem; opacity: 0.6; }
 
 /* Custom input row */
 .credits-custom-row {
@@ -6634,4 +6640,45 @@ button.nav-pill:not(.btn-ghost):hover {
 .credits-warn-icon:hover .credits-warn-tooltip,
 .credits-warn-icon:focus .credits-warn-tooltip {
   display: block;
+}
+
+/* Payment instructions block (shown after topup request is created) */
+.credits-payment-inst {
+  background: rgba(124,108,250,0.08);
+  border: 1px solid rgba(124,108,250,0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.83rem;
+}
+.cpi-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #c8bfad;
+  margin-bottom: 2px;
+}
+.cpi-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.cpi-label {
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+.cpi-row strong {
+  font-weight: 600;
+  color: #ede7d4;
+  text-align: right;
+  word-break: break-all;
+}
+.cpi-note {
+  font-size: 0.75rem;
+  opacity: 0.45;
+  margin-top: 2px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
 }
