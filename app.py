@@ -99,6 +99,21 @@ def _migrate_schema():
                 '''))
         except Exception as e:
             import warnings; warnings.warn(f'[migrate] wallet_transactions: {e}')
+    if 'eye_rates' not in tables:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('''
+                    CREATE TABLE eye_rates (
+                        currency  VARCHAR(10) PRIMARY KEY,
+                        buy_rate  NUMERIC(18,8) NOT NULL,
+                        sell_rate NUMERIC(18,8) NOT NULL,
+                        min_topup INTEGER NOT NULL DEFAULT 20,
+                        symbol    VARCHAR(10) DEFAULT \'\',
+                        updated_at TIMESTAMP DEFAULT NOW()
+                    )
+                '''))
+        except Exception as e:
+            import warnings; warnings.warn(f'[migrate] eye_rates: {e}')
 
     # ── user_badges migration ──
     if 'user_badges' in inspector.get_table_names():
@@ -326,6 +341,8 @@ def create_app():
         _migrate_distro_names()
         _sync_sequences()
         seed_badges()
+        from distro.pug.routes.notes import refresh_eye_rates
+        refresh_eye_rates()
 
     return app
 

@@ -14,7 +14,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note, Wallet, WalletTx
+from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -3166,28 +3166,51 @@ def get_wallet():
     })
 
 
+@pug_bp.route('/pug/api/wallet/rates', methods=['GET'])
+def get_eye_rates():
+    refresh_eye_rates()  # no-op if fresh
+    rows = EyeRate.query.all()
+    return jsonify({r.currency: {
+        'buy_rate':  float(r.buy_rate),
+        'sell_rate': float(r.sell_rate),
+        'min_topup': r.min_topup,
+        'symbol':    r.symbol,
+    } for r in rows})
+
+
+def _currency_min(currency):
+    """Return min_topup for a currency code, defaulting to 20 if unknown."""
+    if not currency:
+        return 20
+    r = EyeRate.query.get(currency.upper())
+    return r.min_topup if r else 20
+
+
 @pug_bp.route('/pug/api/wallet/topup', methods=['POST'])
 def wallet_topup():
     uid = session.get('user_id')
     if not uid:
         return jsonify({'error': 'unauth'}), 401
-    body   = request.get_json(silent=True) or {}
-    amount = body.get('amount')
-    if not isinstance(amount, int) or amount < 20:
-        return jsonify({'error': 'Minimum top-up is 20 Eyes'}), 400
+    body     = request.get_json(silent=True) or {}
+    amount   = body.get('amount')
+    currency = (body.get('currency') or 'USD').upper()
+    min_eyes = _currency_min(currency)
+    if not isinstance(amount, int) or amount < min_eyes:
+        return jsonify({'error': f'Minimum top-up is {min_eyes} Eyes for {currency}'}), 400
     if amount > 500000:
-        return jsonify({'error': 'Maximum top-up is 500,000 credits per request'}), 400
+        return jsonify({'error': 'Maximum top-up is 500,000 Eyes per request'}), 400
     tx = WalletTx(
         user_id = uid,
         tx_type = 'topup_request',
         amount  = amount,
-        note    = f'Top-up request for {amount} credits',
+        ref_id  = currency,
+        note    = f'Top-up request: {amount} Eyes ({currency})',
         status  = 'pending',
     )
     db.session.add(tx)
     db.session.commit()
     return jsonify({'ok': True, 'tx_id': tx.id,
-                    'message': 'Top-up request received. Credits will be added after payment is confirmed.'})
+                    'message': 'Top-up request received. Eyes will be added after payment is confirmed.'})
 
 
 @pug_bp.route('/pug/api/wallet/sellback', methods=['POST'])
@@ -3195,10 +3218,12 @@ def wallet_sellback():
     uid = session.get('user_id')
     if not uid:
         return jsonify({'error': 'unauth'}), 401
-    body   = request.get_json(silent=True) or {}
-    amount = body.get('amount')
-    if not isinstance(amount, int) or amount < 20:
-        return jsonify({'error': 'Minimum sell-back is 20 Eyes'}), 400
+    body     = request.get_json(silent=True) or {}
+    amount   = body.get('amount')
+    currency = (body.get('currency') or 'USD').upper()
+    min_eyes = _currency_min(currency)
+    if not isinstance(amount, int) or amount < min_eyes:
+        return jsonify({'error': f'Minimum sell-back is {min_eyes} Eyes for {currency}'}), 400
     w = _get_or_create_wallet(uid)
     if w.balance < amount:
         return jsonify({'error': 'Insufficient balance'}), 400
@@ -3206,13 +3231,14 @@ def wallet_sellback():
         user_id = uid,
         tx_type = 'sellback_request',
         amount  = -amount,
-        note    = f'Sell-back request for {amount} credits',
+        ref_id  = currency,
+        note    = f'Sell-back request: {amount} Eyes ({currency})',
         status  = 'pending',
     )
     db.session.add(tx)
     db.session.commit()
     return jsonify({'ok': True, 'tx_id': tx.id,
-                    'message': 'Sell-back request received. Your payout will be processed within 3–5 business days.'})
+                    'message': 'Sell-back request received. Payout will be processed within 3–5 business days.'})
 
 
 @pug_bp.route('/pug/terms')

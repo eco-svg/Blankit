@@ -7,8 +7,13 @@
       <span class="credits-balance-val" id="creditsBalance">—</span>
       <span class="credits-balance-unit">Eyes</span>
     </div>
-    <button class="credits-refresh-btn icon-btn" id="creditsRefreshBtn" title="Refresh">↻</button>
+    <div class="credits-header-right">
+      <span class="credits-currency-tag" id="creditsCurrencyTag">—</span>
+      <button class="credits-refresh-btn icon-btn" id="creditsRefreshBtn" title="Refresh">↻</button>
+    </div>
   </div>
+
+  <div class="credits-rate-bar" id="creditsRateBar">Loading rates…</div>
 
   <div class="credits-cards-row">
 
@@ -27,9 +32,10 @@
                placeholder="Custom amount" min="20" step="1">
         <span class="credits-unit-label">Eyes</span>
       </div>
-      <p class="credits-min-note">Minimum 20 Eyes for custom amounts.</p>
+      <p class="credits-min-note" id="topupMinNote">Minimum 20 Eyes for custom amounts.</p>
       <div class="credits-selected-row" id="topupSelectedRow" style="display:none;">
         Selected: <strong id="topupSelectedVal">—</strong> Eyes
+        <span class="credits-conv-hint" id="topupConvHint"></span>
       </div>
       <button class="credits-action-btn" id="topupSubmitBtn" disabled>Request Top Up</button>
       <div class="credits-msg" id="topupMsg"></div>
@@ -46,7 +52,7 @@
             <strong>Why you get back less than you paid</strong><br><br>
             Eyes are bought and sold at different rates — the buy rate (what you paid) is always higher than the sell-back rate (what we pay you).<br><br>
             This gap, called the <em>spread</em>, is intentional. It protects the platform from currency tricks: if someone bought Eyes cheap in one country and tried to sell back in another country's currency for profit, the spread makes that trade a net loss — always.<br><br>
-            Example: 1,000 Eyes bought for ₹930 → sold back for ₹760. The ₹170 difference is the spread.
+            Example: 1,000 Eyes bought for ₹924 → sold back for ₹756. The ₹168 difference is the spread.
           </span>
         </span>
       </div>
@@ -56,7 +62,8 @@
                placeholder="Amount to sell back" min="20" step="1">
         <span class="credits-unit-label">Eyes</span>
       </div>
-      <p class="credits-min-note">Minimum 20 Eyes.</p>
+      <p class="credits-min-note" id="sellbackMinNote">Minimum 20 Eyes.</p>
+      <div class="credits-conv-hint" id="sellbackConvHint"></div>
       <div class="credits-balance-hint" id="sellbackBalanceHint"></div>
       <button class="credits-action-btn" id="sellbackSubmitBtn" disabled>Request Sell Back</button>
       <div class="credits-msg" id="sellbackMsg"></div>

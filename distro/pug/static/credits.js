@@ -1,8 +1,10 @@
 (function () {
   'use strict';
 
-  let _balance = 0;
+  let _balance      = 0;
   let _topupSelected = null;
+  let _rates        = {};   // { 'INR': { buy_rate, sell_rate, min_topup, symbol }, ... }
+  let _currency     = 'USD';
 
   const TX_LABELS = {
     topup_request:    'Top-up requested',
@@ -15,7 +17,46 @@
     payout_sent:      'Payout sent',
   };
 
-  function fmt(n) { return n.toLocaleString(); }
+  // browser locale → ISO 4217 currency code
+  const COUNTRY_CURRENCY = {
+    'IN':'INR','PK':'PKR','BD':'BDT','NP':'NPR','LK':'LKR','MM':'MMK',
+    'US':'USD','CA':'CAD','GB':'GBP','AU':'AUD','NZ':'NZD',
+    'DE':'EUR','FR':'EUR','IT':'EUR','ES':'EUR','PT':'EUR','NL':'EUR',
+    'BE':'EUR','AT':'EUR','IE':'EUR','FI':'EUR','GR':'EUR','LU':'EUR',
+    'JP':'JPY','CN':'CNY','SG':'SGD','HK':'HKD','KR':'KRW','TW':'TWD',
+    'CH':'CHF','SE':'SEK','NO':'NOK','DK':'DKK','PL':'PLN','CZ':'CZK',
+    'HU':'HUF','RO':'RON','BG':'BGN','RU':'RUB','UA':'UAH','TR':'TRY',
+    'MX':'MXN','BR':'BRL','AR':'ARS','CO':'COP','PE':'PEN',
+    'ID':'IDR','MY':'MYR','PH':'PHP','TH':'THB','VN':'VND',
+    'NG':'NGN','KE':'KES','ZA':'ZAR','EG':'EGP','GH':'GHS','TZ':'TZS',
+    'AE':'AED','SA':'SAR','QA':'QAR','IL':'ILS','KZ':'KZT',
+  };
+
+  function detectCurrency() {
+    try {
+      const lang   = navigator.language || 'en-US';
+      const region = (lang.split('-')[1] || lang.split('_')[1] || '').toUpperCase();
+      return COUNTRY_CURRENCY[region] || 'USD';
+    } catch (_) { return 'USD'; }
+  }
+
+  function fmt(n) { return Number(n).toLocaleString(); }
+
+  function fmtLocal(eyes, useRate) {
+    const r = _rates[_currency];
+    if (!r || !eyes) return '';
+    const val = eyes * useRate;
+    const sym = r.symbol || _currency;
+    // Use compact formatting for large numbers
+    if (val >= 1000) return `≈ ${sym}${Math.round(val).toLocaleString()}`;
+    if (val >= 1)    return `≈ ${sym}${val.toFixed(2)}`;
+    return `≈ ${sym}${val.toFixed(4)}`;
+  }
+
+  function getCurrencyMin() {
+    const r = _rates[_currency];
+    return r ? r.min_topup : 20;
+  }
 
   function setMsg(el, msg, isErr) {
     el.textContent = msg;
@@ -30,11 +71,12 @@
       return;
     }
     list.innerHTML = txs.map(t => {
-      const sign    = t.amount >= 0 ? '+' : '';
-      const cls     = t.amount >= 0 ? 'credits-tx-pos' : 'credits-tx-neg';
-      const label   = TX_LABELS[t.tx_type] || t.tx_type;
-      const date    = t.created_at ? new Date(t.created_at).toLocaleDateString() : '';
-      const status  = t.status !== 'completed' ? `<span class="credits-tx-status credits-tx-status-${t.status}">${t.status}</span>` : '';
+      const sign   = t.amount >= 0 ? '+' : '';
+      const cls    = t.amount >= 0 ? 'credits-tx-pos' : 'credits-tx-neg';
+      const label  = TX_LABELS[t.tx_type] || t.tx_type;
+      const date   = t.created_at ? new Date(t.created_at).toLocaleDateString() : '';
+      const status = t.status !== 'completed'
+        ? `<span class="credits-tx-status credits-tx-status-${t.status}">${t.status}</span>` : '';
       return `<div class="credits-tx-row">
         <div class="credits-tx-info">
           <span class="credits-tx-label">${label}</span>
@@ -44,6 +86,53 @@
         <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
       </div>`;
     }).join('');
+  }
+
+  function updateRateUI() {
+    const r   = _rates[_currency];
+    const tag = document.getElementById('creditsCurrencyTag');
+    const bar = document.getElementById('creditsRateBar');
+    const topupMinNote    = document.getElementById('topupMinNote');
+    const sellbackMinNote = document.getElementById('sellbackMinNote');
+
+    if (tag) tag.textContent = _currency;
+
+    if (r && bar) {
+      const min  = r.min_topup;
+      const sym  = r.symbol || _currency;
+      const buy  = r.buy_rate;
+      const sell = r.sell_rate;
+      // Show rate in a way that makes sense for the currency scale
+      const perEye = buy >= 1
+        ? `${sym}${buy.toFixed(2)}`
+        : `${sym}${buy.toFixed(4)}`;
+      const sellPerEye = sell >= 1
+        ? `${sym}${sell.toFixed(2)}`
+        : `${sym}${sell.toFixed(4)}`;
+      bar.textContent = `1 Eye = ${perEye} (buy) · ${sellPerEye} (sell) · min ${min} Eyes`;
+    } else if (bar) {
+      bar.textContent = 'Rate unavailable — showing Eyes only';
+    }
+
+    const min = getCurrencyMin();
+    if (topupMinNote)    topupMinNote.textContent    = `Minimum ${min} Eyes for custom amounts.`;
+    if (sellbackMinNote) sellbackMinNote.textContent = `Minimum ${min} Eyes.`;
+
+    // re-validate current topup selection
+    if (_topupSelected !== null) updateTopupSelected(_topupSelected);
+    // re-validate sellback input
+    const sbInput = document.getElementById('sellbackAmt');
+    if (sbInput && sbInput.value) sbInput.dispatchEvent(new Event('input'));
+  }
+
+  function loadRates() {
+    fetch('/pug/api/wallet/rates')
+      .then(r => r.json())
+      .then(data => {
+        _rates = data;
+        updateRateUI();
+      })
+      .catch(() => {});
   }
 
   function loadWallet() {
@@ -60,16 +149,19 @@
       .catch(() => {});
   }
 
-  // ── TopUp amount selector ──
+  // ── TopUp ─────────────────────────────────────────────────────────────────
 
   function updateTopupSelected(amount) {
-    _topupSelected = amount;
-    const row = document.getElementById('topupSelectedRow');
-    const val = document.getElementById('topupSelectedVal');
-    const btn = document.getElementById('topupSubmitBtn');
-    if (amount && amount >= 100) {
+    _topupSelected      = amount;
+    const min           = getCurrencyMin();
+    const row           = document.getElementById('topupSelectedRow');
+    const val           = document.getElementById('topupSelectedVal');
+    const hint          = document.getElementById('topupConvHint');
+    const btn           = document.getElementById('topupSubmitBtn');
+    if (amount && amount >= min) {
       row.style.display = '';
       val.textContent   = fmt(amount);
+      if (hint) hint.textContent = fmtLocal(amount, (_rates[_currency] || {}).buy_rate || 0);
       btn.disabled      = false;
     } else {
       row.style.display = 'none';
@@ -100,13 +192,14 @@
     });
 
     submit.addEventListener('click', () => {
-      if (!_topupSelected || _topupSelected < 20) return;
+      const min = getCurrencyMin();
+      if (!_topupSelected || _topupSelected < min) return;
       submit.disabled = true;
       msg.textContent = '';
       fetch('/pug/api/wallet/topup', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ amount: _topupSelected }),
+        body:    JSON.stringify({ amount: _topupSelected, currency: _currency }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
@@ -122,34 +215,43 @@
     });
   }
 
-  // ── SellBack ──
+  // ── SellBack ──────────────────────────────────────────────────────────────
 
   function initSellback() {
     const input  = document.getElementById('sellbackAmt');
     const submit = document.getElementById('sellbackSubmitBtn');
     const msg    = document.getElementById('sellbackMsg');
+    const hint   = document.getElementById('sellbackConvHint');
     if (!input) return;
 
     input.addEventListener('input', () => {
-      const v = parseInt(input.value, 10);
-      submit.disabled = isNaN(v) || v < 20 || v > _balance;
+      const v   = parseInt(input.value, 10);
+      const min = getCurrencyMin();
+      submit.disabled = isNaN(v) || v < min || v > _balance;
+      if (hint) {
+        hint.textContent = (!isNaN(v) && v > 0)
+          ? fmtLocal(v, (_rates[_currency] || {}).sell_rate || 0)
+          : '';
+      }
     });
 
     submit.addEventListener('click', () => {
-      const v = parseInt(input.value, 10);
-      if (isNaN(v) || v < 20) return;
+      const v   = parseInt(input.value, 10);
+      const min = getCurrencyMin();
+      if (isNaN(v) || v < min) return;
       submit.disabled = true;
       msg.textContent = '';
       fetch('/pug/api/wallet/sellback', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ amount: v }),
+        body:    JSON.stringify({ amount: v, currency: _currency }),
       })
         .then(r => r.json().then(d => ({ ok: r.ok, d })))
         .then(({ ok, d }) => {
           if (ok) {
             setMsg(msg, d.message || 'Request submitted!', false);
             input.value = '';
+            if (hint) hint.textContent = '';
             submit.disabled = true;
             loadWallet();
           } else {
@@ -161,11 +263,15 @@
     });
   }
 
+  // ── Init ──────────────────────────────────────────────────────────────────
+
   function init() {
+    _currency = detectCurrency();
     const refreshBtn = document.getElementById('creditsRefreshBtn');
-    if (refreshBtn) refreshBtn.addEventListener('click', loadWallet);
+    if (refreshBtn) refreshBtn.addEventListener('click', () => { loadRates(); loadWallet(); });
     initTopup();
     initSellback();
+    loadRates();
     loadWallet();
   }
 
@@ -175,8 +281,7 @@
     init();
   }
 
-  // reload wallet when navigating to credits tab
   document.addEventListener('veyra:navigate', e => {
-    if (e.detail && e.detail.route === 'credits') loadWallet();
+    if (e.detail && e.detail.route === 'credits') { loadRates(); loadWallet(); }
   });
 })();
