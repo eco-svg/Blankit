@@ -3159,6 +3159,7 @@ def get_wallet():
             'id':         t.id,
             'tx_type':    t.tx_type,
             'amount':     t.amount,
+            'ref_id':     t.ref_id,
             'note':       t.note,
             'status':     t.status,
             'created_at': t.created_at.isoformat() if t.created_at else None,

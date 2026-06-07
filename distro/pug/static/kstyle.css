@@ -6588,6 +6588,45 @@ button.nav-pill:not(.btn-ghost):hover {
 .credits-tx-pos { color: #4caf87; }
 .credits-tx-neg { color: #f87171; }
 
+/* Pending topup hint icon + tooltip */
+.credits-tx-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #fbbf24;
+  cursor: pointer;
+  margin-left: 4px;
+  user-select: none;
+}
+.credits-tx-hint-tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 260px;
+  background: #1e1a2e;
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: #d4cfc8;
+  z-index: 500;
+  pointer-events: none;
+}
+.credits-tx-hint-tooltip strong { color: #fbbf24; display: block; margin-bottom: 8px; }
+.credits-tx-hint-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 10px;
+  border: 6px solid transparent;
+  border-top-color: rgba(251,191,36,0.3);
+}
+.credits-tx-hint:hover .credits-tx-hint-tooltip,
+.credits-tx-hint:focus .credits-tx-hint-tooltip { display: block; }
+
 /* Min note */
 .credits-min-note {
   font-size: 0.75rem;

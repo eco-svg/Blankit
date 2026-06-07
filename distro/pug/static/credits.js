@@ -127,10 +127,24 @@
       const date   = t.created_at ? new Date(t.created_at).toLocaleDateString() : '';
       const status = t.status !== 'completed'
         ? `<span class="credits-tx-status credits-tx-status-${t.status}">${t.status}</span>` : '';
+
+      let hint = '';
+      if (t.tx_type === 'topup_request' && t.status === 'pending') {
+        const r      = _rates[t.ref_id] || _rates[_currency];
+        const payAmt = r ? localAmt(t.amount, r.buy_rate) : `${fmt(t.amount)} Eyes`;
+        hint = `<span class="credits-tx-hint" tabindex="0">⚠<span class="credits-tx-hint-tooltip">` +
+          `<strong>To complete your top-up, send payment:</strong>` +
+          `<div class="cpi-row"><span class="cpi-label">Amount</span><strong>${payAmt}</strong></div>` +
+          `<div class="cpi-row"><span class="cpi-label">Pay to</span><strong>veyrasupportus@gmail.com</strong></div>` +
+          `<div class="cpi-row"><span class="cpi-label">Reference</span><strong>Eyes TopUp #${t.id}</strong></div>` +
+          `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>` +
+          `</span></span>`;
+      }
+
       return `<div class="credits-tx-row">
         <div class="credits-tx-info">
           <span class="credits-tx-label">${label}</span>
-          ${status}
+          ${status}${hint}
           <span class="credits-tx-date">${date}</span>
         </div>
         <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
