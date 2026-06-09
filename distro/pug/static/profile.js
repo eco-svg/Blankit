@@ -96,51 +96,13 @@ function applyPalette(name) {
     }
 }
 
-function applyMode(name) {
-    const html = document.documentElement;
-    localStorage.setItem('veyra-pug-mode', name);
-    if (name === 'space') {
-        html.setAttribute('data-mode', 'space');
-        if (html.getAttribute('data-theme') === 'light') html.removeAttribute('data-theme');
-        const savedPalette = localStorage.getItem('veyra-pug-palette') || 'dark';
-        if (savedPalette !== 'light') applyPalette(savedPalette);
-        const savedWp = localStorage.getItem('veyra-pug-wallpaper') || 'default';
-        applyWallpaper(savedWp);
-    } else {
-        html.removeAttribute('data-mode');
-        html.removeAttribute('data-wallpaper');
-        _stopStarfield();
-        if (name === 'light') {
-            html.setAttribute('data-theme', 'light');
-            localStorage.setItem('veyra-pug-palette', 'light');
-        } else {
-            if (html.getAttribute('data-theme') === 'light') html.removeAttribute('data-theme');
-            const savedPalette = localStorage.getItem('veyra-pug-palette') || 'dark';
-            if (savedPalette !== 'light') applyPalette(savedPalette);
-        }
-    }
-    document.querySelectorAll('.pp-mode-pill').forEach(b =>
-        b.classList.toggle('active', b.dataset.modePick === name));
-}
-
 function applyWallpaper(name) {
     _stopStarfield();
-    if (!name || name === 'default') {
-        document.documentElement.removeAttribute('data-wallpaper');
-    } else {
-        document.documentElement.setAttribute('data-wallpaper', name);
-        if (name === 'starfield') _startStarfield();
-    }
+    document.documentElement.setAttribute('data-wallpaper', name || 'default');
+    if (name === 'starfield') _startStarfield();
 }
 
 function initThemeSwatches() {
-    // Mode pills
-    const savedMode = localStorage.getItem('veyra-pug-mode') || 'dark';
-    document.querySelectorAll('.pp-mode-pill').forEach(btn => {
-        if (btn.dataset.modePick === savedMode) btn.classList.add('active');
-        btn.addEventListener('click', () => applyMode(btn.dataset.modePick));
-    });
-
     // Color palette (full theme swap)
     const savedPalette = localStorage.getItem('veyra-pug-palette') || 'dark';
     applyPalette(savedPalette);
