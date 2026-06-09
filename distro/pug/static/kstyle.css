@@ -3741,6 +3741,7 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .dm-input-row {
   display: flex;
+  align-items: center;
   gap: 8px;
   padding: 10px 12px;
   border-top: 1px solid var(--border);
@@ -3758,7 +3759,7 @@ button.nav-pill:not(.btn-ghost):hover {
   outline: none;
 }
 .dm-input-row input:focus { border-color: var(--accent); }
-.dm-input-row button {
+#dmSendBtn {
   background: var(--accent);
   color: #111;
   border: none;
@@ -3767,9 +3768,10 @@ button.nav-pill:not(.btn-ghost):hover {
   font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
   transition: opacity 0.15s;
 }
-.dm-input-row button:hover { opacity: 0.85; }
+#dmSendBtn:hover { opacity: 0.85; }
 
 /* Inline DM search */
 .dm-inline-search {
