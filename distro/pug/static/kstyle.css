@@ -3296,11 +3296,14 @@ div.infinite-canvas video {
 
 /* ── Inline comments section ──────────────────────────── */
 .comm-post-comments {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid rgba(212,165,116,0.12);
+    background: rgba(0,0,0,0.22);
+    border-radius: 0 0 10px 10px;
+    padding: 10px 10px 4px 10px;
 }
-.comm-comments-list { margin-bottom: 8px; padding-left: 20px; }
+.comm-comments-list { margin-bottom: 8px; }
 .comm-comment-row {
     display: flex;
     gap: 6px;
@@ -3338,10 +3341,20 @@ div.infinite-canvas video {
     font-weight: 700;
     color: var(--accent);
     flex-shrink: 0;
-    font-size: 0.72rem;
+    font-size: 0.70rem;
     cursor: pointer;
+    font-family: var(--font-mono);
+    background: rgba(212,165,116,0.08);
+    border: 1px solid rgba(212,165,116,0.18);
+    border-radius: 4px;
+    padding: 1px 5px;
+    letter-spacing: 0.02em;
+    transition: background 0.15s;
 }
-.comm-comment-user:hover { text-decoration: underline; }
+.comm-comment-user:hover {
+    background: rgba(212,165,116,0.18);
+    text-decoration: none;
+}
 .comm-comment-text {
     color: var(--text);
     flex: 1;
@@ -3399,7 +3412,13 @@ div.infinite-canvas video {
 }
 
 /* ── Comments preview (top 3, always visible) ────────────── */
-.comm-comments-preview { margin-top: 6px; padding-left: 20px; }
+.comm-comments-preview {
+    margin-top: 8px;
+    padding: 8px 10px 4px 10px;
+    background: rgba(0,0,0,0.18);
+    border-top: 1px solid rgba(212,165,116,0.10);
+    border-radius: 0 0 8px 8px;
+}
 .comm-comment-preview-row {
     display: flex;
     gap: 6px;
@@ -3485,10 +3504,12 @@ div.infinite-canvas video {
     width: 272px;
     max-height: 62vh;
     overflow-y: auto;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
+    background: rgba(12, 10, 7, 0.96);
+    backdrop-filter: blur(48px) saturate(1.6);
+    -webkit-backdrop-filter: blur(48px) saturate(1.6);
+    border: 1px solid rgba(212,165,116,0.18);
     border-radius: 14px;
-    box-shadow: 0 8px 36px rgba(0,0,0,0.55);
+    box-shadow: 0 12px 48px rgba(0,0,0,0.80), 0 0 0 1px rgba(0,0,0,0.5);
     z-index: 9100;
     padding: 14px;
 }

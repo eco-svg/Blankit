@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
-        el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e.currentTarget));
+        el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e));
 
         // ShowOff action buttons — open DM + award EXP to post author
         const _ACTION_MESSAGES = {
@@ -513,7 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('click', e => {
                 e.stopPropagation();
                 const uid = parseInt(el.dataset.uid);
-                if (uid) openProfile(uid, c.username, c.is_mine, e.currentTarget);
+                if (uid) openProfile(uid, c.username, c.is_mine, e);
             });
         });
         return row;
@@ -869,19 +869,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const pubOnlineDot    = document.getElementById('pubOnlineDot');
     const pubOnlineLabel  = document.getElementById('pubProfileOnlineLabel');
 
-    function openProfile(uid, username, isMine = false, anchorEl = null) {
+    function openProfile(uid, username, isMine = false, evt = null) {
         if (!pubModal) return;
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
-        // Position near the clicked element
-        if (anchorEl) {
-            const rect = anchorEl.getBoundingClientRect();
+        // Position at cursor — clientX/Y is viewport-relative and works inside scrollable containers
+        if (evt && evt.clientX != null) {
             const W = 278, H = 360;
-            let left = rect.left;
-            // prefer above; fall back to below if not enough room
-            let top = rect.top - H - 6;
-            if (top < 8) top = rect.bottom + 6;
+            let left = evt.clientX;
+            let top  = evt.clientY - H - 6;  // prefer above cursor
+            if (top < 8) top = evt.clientY + 14;  // fall back to below
             if (top + H > window.innerHeight - 8) top = Math.max(8, window.innerHeight - H - 8);
             if (left + W > window.innerWidth  - 8) left = window.innerWidth  - W - 8;
             if (left < 8) left = 8;
