@@ -128,7 +128,8 @@
       const status = t.status !== 'completed'
         ? `<span class="credits-tx-status credits-tx-status-${t.status}">${t.status}</span>` : '';
 
-      let hint = '';
+      let hint   = '';
+      let cancel = '';
       if (t.tx_type === 'topup_request' && t.status === 'pending') {
         const r      = _rates[t.ref_id] || _rates[_currency];
         const payAmt = r ? localAmt(t.amount, r.buy_rate) : `${fmt(t.amount)} Eyes`;
@@ -136,12 +137,16 @@
           payInstructions(payAmt, t.id, { inline: true }) +
           `</span></span>`;
       }
+      if ((t.tx_type === 'topup_request' || t.tx_type === 'sellback_request') && t.status === 'pending') {
+        cancel = `<button class="credits-tx-cancel" data-tx="${t.id}">Cancel</button>`;
+      }
 
       return `<div class="credits-tx-row">
         <div class="credits-tx-info">
           <span class="credits-tx-label">${label}</span>
           ${status}${hint}
           <span class="credits-tx-date">${date}</span>
+          ${cancel}
         </div>
         <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
       </div>`;
@@ -257,6 +262,13 @@
         if (hint) hint.textContent = `Available: ${fmt(_balance)} Eyes`;
         renderTxList(data.transactions || []);
       })
+      .catch(() => {});
+  }
+
+  function cancelTx(txId) {
+    fetch(`/pug/api/wallet/tx/${txId}/cancel`, { method: 'POST' })
+      .then(r => r.json())
+      .then(d => { if (d.ok) loadWallet(); })
       .catch(() => {});
   }
 
@@ -388,6 +400,11 @@
     _currency = detectCurrency();
     const refreshBtn = document.getElementById('creditsRefreshBtn');
     if (refreshBtn) refreshBtn.addEventListener('click', () => { loadRates(); loadWallet(); });
+    const txList = document.getElementById('creditsTxList');
+    if (txList) txList.addEventListener('click', e => {
+      const btn = e.target.closest('.credits-tx-cancel');
+      if (btn) cancelTx(parseInt(btn.dataset.tx, 10));
+    });
     initTopup();
     initSellback();
     loadRates();

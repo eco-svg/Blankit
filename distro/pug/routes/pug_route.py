@@ -3242,6 +3242,23 @@ def wallet_sellback():
                     'message': 'Sell-back request received. Payout will be processed within 3–5 business days.'})
 
 
+@pug_bp.route('/pug/api/wallet/tx/<int:tx_id>/cancel', methods=['POST'])
+def cancel_wallet_tx(tx_id):
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    tx = WalletTx.query.filter_by(id=tx_id, user_id=uid).first()
+    if not tx:
+        return jsonify({'error': 'Not found'}), 404
+    if tx.status != 'pending':
+        return jsonify({'error': 'Only pending requests can be cancelled'}), 400
+    if tx.tx_type not in ('topup_request', 'sellback_request'):
+        return jsonify({'error': 'This transaction cannot be cancelled'}), 400
+    tx.status = 'cancelled'
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/terms')
 def pug_terms():
     return render_template('pug/terms.html')

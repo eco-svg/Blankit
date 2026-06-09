@@ -1692,7 +1692,7 @@ body.header-hidden .l-bar {
 div.infinite-canvas img,
 div.infinite-canvas video {
     display: block !important;
-    max-width: 100%;
+    max-width: 33%;
     height: auto;
     margin: 15px 0 !important;
     border-radius: 10px !important;
@@ -6582,9 +6582,23 @@ button.nav-pill:not(.btn-ghost):hover {
   border-radius: 4px;
   align-self: flex-start;
 }
-.credits-tx-status-pending  { background: rgba(251,191,36,0.18); color: #fbbf24; }
-.credits-tx-status-rejected { background: rgba(248,113,113,0.18); color: #f87171; }
+.credits-tx-status-pending   { background: rgba(251,191,36,0.18);  color: #fbbf24; }
+.credits-tx-status-rejected  { background: rgba(248,113,113,0.18); color: #f87171; }
+.credits-tx-status-cancelled { background: rgba(148,163,184,0.18); color: #94a3b8; }
 .credits-tx-amt { font-size: 0.92rem; font-weight: 600; }
+.credits-tx-cancel {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  border-radius: 5px;
+  border: 1px solid rgba(248,113,113,0.4);
+  color: #f87171;
+  background: transparent;
+  cursor: pointer;
+  line-height: 1.6;
+}
+.credits-tx-cancel:hover { background: rgba(248,113,113,0.12); }
 .credits-tx-pos { color: #4caf87; }
 .credits-tx-neg { color: #f87171; }
 
