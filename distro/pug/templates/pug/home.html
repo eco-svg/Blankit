@@ -45,7 +45,10 @@
       </div>
     </div>
 
-    <nav class="header-nav">
+    <!-- Dream banner lives in the header now -->
+    <div class="header-dream" id="dreamContainer"></div>
+
+    <nav class="header-nav header-nav-right">
       <a href="#notes" class="nav-pill" data-home="true">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
       <a href="#social"   class="nav-pill">Community</a>
@@ -104,9 +107,9 @@
       {% include 'pug/cards/_profile.html' %}
       {% include 'pug/cards/_request.html' %}
 
-      <!-- Long-term Dream — compact full-row card -->
-      <div class="card dream dream-standalone" id="sec-dream">
-        <div id="dreamContainer" class="dream-inner"></div>
+      <!-- Wisdom line — always visible, replaces dream standalone slot -->
+      <div class="wisdom-bar wisdom-bar-top">
+        <span class="quote-text random-quote">Loading wisdom...</span>
       </div>
 
       {% include 'pug/cards/_notes.html' %}
@@ -116,11 +119,6 @@
       {% include 'pug/cards/_buddybot.html' %}
       {% include 'pug/cards/_stats.html' %}
       {% include 'pug/cards/_credits.html' %}
-
-      <!-- Wisdom + ads — always visible below cards on every tab -->
-      <div class="wisdom-bar">
-        <span class="quote-text random-quote">Loading wisdom...</span>
-      </div>
       <div class="adbox-row">
         <div class="add1"></div>
         <div class="add2"></div>

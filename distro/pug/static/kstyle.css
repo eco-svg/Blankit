@@ -268,6 +268,11 @@ body::after {
   justify-content: center;
   gap: 4px;
 }
+.header-nav-right {
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  margin-left: auto;
+}
 
 .nav-pill {
   font-family: var(--font-mono);
@@ -4466,6 +4471,42 @@ button.nav-pill:not(.btn-ghost):hover {
 .dream-inner .gap-bar {
   position: static;
   width: 100%;
+}
+
+/* Dream text in the header */
+.header-dream {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 16px;
+  overflow: hidden;
+  min-width: 0;
+}
+.header-dream .dream-text {
+  font-size: 0.90rem !important;
+  letter-spacing: 0.12em !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  filter: drop-shadow(0 0 8px rgba(212,165,116,0.35)) !important;
+}
+.header-dream .dream-input {
+  font-size: 0.78rem;
+  min-width: 0;
+  width: 100%;
+  padding: 6px 14px;
+  letter-spacing: 0.10em;
+}
+
+/* Wisdom bar in top slot — replaces dream card */
+.wisdom-bar-top {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  margin-top: 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(212,165,116,0.10);
+  padding-bottom: 12px;
 }
 
 /* ── Avatar image overlay ─────────────────────────────── */
