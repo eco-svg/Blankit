@@ -1,6 +1,8 @@
 // Apply saved palette immediately on script load (prevents flash of wrong theme)
 (function() {
+    const VALID = ['dark', 'astro', 'red', 'gold'];
     const p = localStorage.getItem('veyra-pug-palette');
+    if (p && !VALID.includes(p)) { localStorage.removeItem('veyra-pug-palette'); return; }
     if (p && p !== 'dark') document.documentElement.setAttribute('data-theme', p);
 })();
 
@@ -104,7 +106,10 @@ function applyWallpaper(name) {
 
 function initThemeSwatches() {
     // Color palette (full theme swap)
-    const savedPalette = localStorage.getItem('veyra-pug-palette') || 'dark';
+    const VALID_PALETTES = ['dark', 'astro', 'red', 'gold'];
+    const raw = localStorage.getItem('veyra-pug-palette') || 'dark';
+    const savedPalette = VALID_PALETTES.includes(raw) ? raw : 'dark';
+    if (!VALID_PALETTES.includes(raw)) localStorage.removeItem('veyra-pug-palette');
     applyPalette(savedPalette);
     document.querySelectorAll('.palette-swatch').forEach(btn => {
         if (btn.dataset.palette === savedPalette) btn.classList.add('theme-swatch-active');
