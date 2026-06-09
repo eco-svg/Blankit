@@ -1,5 +1,38 @@
 document.addEventListener('DOMContentLoaded', () => {
 
+    // ── Buy info modal ────────────────────────────────────────────────────
+    let _pendingBuy = null;
+    const buyOverlay  = document.getElementById('buyInfoOverlay');
+    const buyBtnCont  = document.getElementById('buyInfoContinue');
+    const buyBtnCred  = document.getElementById('buyInfoCredits');
+    if (buyOverlay) {
+        buyOverlay.addEventListener('click', e => { if (e.target === buyOverlay) closeBuyModal(); });
+        buyBtnCont?.addEventListener('click', () => {
+            if (_pendingBuy) {
+                const { uid, username, postId, autoMessage } = _pendingBuy;
+                fetch(`/pug/api/community/${postId}/action`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'buy' })
+                }).catch(() => {});
+                document.getElementById('commDmLbar')?.classList.add('open');
+                document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
+            }
+            closeBuyModal();
+        });
+        buyBtnCred?.addEventListener('click', () => {
+            closeBuyModal();
+            document.dispatchEvent(new CustomEvent('veyra:navigate', { detail: { route: 'credits' } }));
+        });
+    }
+    function openBuyModal(uid, username, postId, autoMessage) {
+        _pendingBuy = { uid, username, postId, autoMessage };
+        buyOverlay?.classList.remove('hidden');
+    }
+    function closeBuyModal() {
+        _pendingBuy = null;
+        buyOverlay?.classList.add('hidden');
+    }
+
     const feed            = document.getElementById('commFeed');
     const composeBtn      = document.getElementById('commComposeBtn');
     const cancelPostBtn   = document.getElementById('cancelCommPostBtn');
@@ -338,11 +371,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                const uid      = parseInt(this.dataset.uid);
-                const username = this.dataset.username;
-                const cls      = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
+                const uid         = parseInt(this.dataset.uid);
+                const username    = this.dataset.username;
+                const cls         = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
                 const autoMessage = cls ? _ACTION_MESSAGES[cls]() : null;
                 const actionKey   = cls ? _ACTION_KEY[cls] : null;
+                if (cls === 'comm-action-buy') {
+                    openBuyModal(uid, username, p.id, autoMessage);
+                    return;
+                }
                 if (actionKey) {
                     fetch(`/pug/api/community/${p.id}/action`, {
                         method: 'POST',
@@ -378,12 +415,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}">Hire</button>`;
                             actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
                                 b.addEventListener('click', function() {
-                                    const cls2 = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
+                                    const uid2        = parseInt(this.dataset.uid);
+                                    const username2   = this.dataset.username;
+                                    const cls2        = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
                                     const autoMessage = cls2 ? _ACTION_MESSAGES[cls2]() : null;
                                     const actionKey2  = cls2 ? _ACTION_KEY[cls2] : null;
+                                    if (cls2 === 'comm-action-buy') {
+                                        openBuyModal(uid2, username2, p.id, autoMessage);
+                                        return;
+                                    }
                                     if (actionKey2) fetch(`/pug/api/community/${p.id}/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: actionKey2 }) }).catch(() => {});
                                     document.getElementById('commDmLbar')?.classList.add('open');
-                                    document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: parseInt(this.dataset.uid), username: this.dataset.username, autoMessage } }));
+                                    document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: uid2, username: username2, autoMessage } }));
                                 });
                             });
                         } else {
