@@ -249,13 +249,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 const posts  = Array.isArray(data) ? data : (data.posts || []);
                 const radius = Array.isArray(data) ? null : data.radius_km;
+                const _pinSvg  = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+                const _globeSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>`;
                 if (rangeLabel) {
                     if (feedMode === 'global') {
-                        rangeLabel.textContent = '🌐 global feed';
+                        rangeLabel.innerHTML = `${_globeSvg} global feed`;
                     } else if (radius) {
-                        rangeLabel.textContent = `📍 within ${radius} km`;
+                        rangeLabel.innerHTML = `${_pinSvg} within ${radius} km`;
                     } else {
-                        rangeLabel.textContent = '📍 radar';
+                        rangeLabel.innerHTML = `${_pinSvg} radar`;
                     }
                 }
                 if (posts.length === lastPostCount) return;
@@ -334,10 +336,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${skillTagHtml}
                 </div>
                 <div class="comm-post-reactions">
-                    <button class="comm-react-btn${likeActive}" data-action="like">👍 <span class="react-count">${p.likes||0}</span></button>
-                    <button class="comm-react-btn${dislikeActive}" data-action="dislike">👎 <span class="react-count">${p.dislikes||0}</span></button>
-                    <button class="comm-react-btn" data-action="comment">💬 <span class="react-count">${p.comment_count||0}</span></button>
-                    <button class="comm-react-btn comm-share-btn" data-action="share">↗</button>
+                    <button class="comm-react-btn${likeActive}" data-action="like"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg> <span class="react-count">${p.likes||0}</span></button>
+                    <button class="comm-react-btn${dislikeActive}" data-action="dislike"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg> <span class="react-count">${p.dislikes||0}</span></button>
+                    <button class="comm-react-btn" data-action="comment"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> <span class="react-count">${p.comment_count||0}</span></button>
+                    <button class="comm-react-btn comm-share-btn" data-action="share"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></button>
                 </div>
                 <div class="comm-action-btns">${actionBtns}</div>
                 <div class="comm-post-hdr-right">
@@ -508,7 +510,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const row = document.createElement('div');
         row.className = 'comm-comment-row';
         row.dataset.cid = c.id;
-        row.innerHTML = `${pinBadge}<div class="comm-comment-av comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${initials}</div><div class="comm-comment-content"><span class="comm-comment-user comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">👍 <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">👎 <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">↩</button>${pinBtn}</div>`;
+        const _thumbUp   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>`;
+        const _thumbDown = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>`;
+        const _replyIco  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
+        row.innerHTML = `${pinBadge}<div class="comm-comment-av comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${initials}</div><div class="comm-comment-content"><span class="comm-comment-user comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">${_thumbUp} <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">${_thumbDown} <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">${_replyIco}</button>${pinBtn}</div>`;
         row.querySelectorAll('.comm-username-link').forEach(el => {
             el.addEventListener('click', e => {
                 e.stopPropagation();

@@ -3134,21 +3134,23 @@ div.infinite-canvas video {
 
 /* Reaction buttons — inline in post header */
 .comm-react-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     background: transparent;
     border: none;
     cursor: pointer;
-    color: var(--text);
+    color: var(--text-muted);
     font-size: 0.74rem;
-    padding: 3px 5px;
+    padding: 4px 7px;
     border-radius: 6px;
-    transition: background 0.12s;
+    transition: background 0.12s, color 0.12s;
     font-family: var(--font-mono);
     font-weight: 500;
+    line-height: 1;
 }
-.comm-react-btn:hover { background: rgba(255,255,255,0.07); }
+.comm-react-btn svg { flex-shrink: 0; }
+.comm-react-btn:hover { background: rgba(255,255,255,0.07); color: var(--text); }
 .comm-react-btn.active { color: var(--accent); }
 .comm-react-btn .react-count { font-size: 0.74rem; font-weight: 600; }
 .comm-share-btn { margin-left: 2px; }
@@ -3381,14 +3383,16 @@ div.infinite-canvas video {
     cursor: pointer;
     color: var(--text-dim);
     font-size: 0.66rem;
-    padding: 1px 4px;
+    padding: 2px 5px;
     border-radius: 4px;
     font-family: var(--font-mono);
     transition: background 0.12s, color 0.12s;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 2px;
+    gap: 3px;
+    line-height: 1;
 }
+.comm-comment-react svg { flex-shrink: 0; }
 .comm-comment-react:hover { background: rgba(255,255,255,0.07); color: var(--text); }
 .comm-comment-react.active { color: var(--accent); }
 .comm-comment-react .cmt-cnt { font-size: 0.62rem; }
