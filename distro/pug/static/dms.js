@@ -255,7 +255,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const bodyHtml = m.body ? `<div class="dm-bubble">${esc(m.body)}</div>` : '';
+        let bodyHtml = '';
+        if (m.body) {
+            const qMatch = m.body.match(/^§§POST§§([\s\S]*?)§§END§§\n?([\s\S]*)$/);
+            if (qMatch) {
+                const quoteText = esc(qMatch[1].trim());
+                const msgText   = esc(qMatch[2].trim());
+                bodyHtml = `<div class="dm-bubble"><div class="dm-post-quote"><span class="dm-post-quote-label">Post</span>${quoteText}</div>${msgText}</div>`;
+            } else {
+                bodyHtml = `<div class="dm-bubble">${esc(m.body)}</div>`;
+            }
+        }
         el.innerHTML = `${mediaHtml}${bodyHtml}<div class="dm-time">${time}</div>`;
         return el;
     }

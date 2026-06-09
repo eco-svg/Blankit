@@ -374,9 +374,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const uid         = parseInt(this.dataset.uid);
                 const username    = this.dataset.username;
                 const cls         = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
-                const snippet     = p.body ? p.body.replace(/<[^>]+>/g, '').trim().substring(0, 60) : '';
-                const postRef     = snippet ? ` — re: "${snippet}${snippet.length >= 60 ? '…' : ''}"` : '';
-                const autoMessage = cls ? _ACTION_MESSAGES[cls]() + postRef : null;
+                const snippet     = p.body ? p.body.replace(/<[^>]+>/g, '').trim().substring(0, 80) : '';
+                const autoMessage = cls ? (snippet ? `§§POST§§${snippet}${snippet.length >= 80 ? '…' : ''}§§END§§\n` : '') + _ACTION_MESSAGES[cls]() : null;
                 const actionKey   = cls ? _ACTION_KEY[cls] : null;
                 if (cls === 'comm-action-buy') {
                     openBuyModal(uid, username, p.id, autoMessage);
@@ -420,9 +419,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const uid2        = parseInt(this.dataset.uid);
                                     const username2   = this.dataset.username;
                                     const cls2        = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
-                                    const snippet2    = p.body ? p.body.replace(/<[^>]+>/g, '').trim().substring(0, 60) : '';
-                                    const postRef2    = snippet2 ? ` — re: "${snippet2}${snippet2.length >= 60 ? '…' : ''}"` : '';
-                                    const autoMessage = cls2 ? _ACTION_MESSAGES[cls2]() + postRef2 : null;
+                                    const snippet2    = p.body ? p.body.replace(/<[^>]+>/g, '').trim().substring(0, 80) : '';
+                                    const autoMessage = cls2 ? (snippet2 ? `§§POST§§${snippet2}${snippet2.length >= 80 ? '…' : ''}§§END§§\n` : '') + _ACTION_MESSAGES[cls2]() : null;
                                     const actionKey2  = cls2 ? _ACTION_KEY[cls2] : null;
                                     if (cls2 === 'comm-action-buy') {
                                         openBuyModal(uid2, username2, p.id, autoMessage);

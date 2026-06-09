@@ -3732,6 +3732,25 @@ button.nav-pill:not(.btn-ghost):hover {
   color: var(--text);
   border-bottom-left-radius: 4px;
 }
+.dm-post-quote {
+  background: rgba(255,255,255,0.07);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+  padding: 5px 8px 5px 9px;
+  font-size: 0.78rem;
+  opacity: 0.8;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dm-post-quote-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  display: block;
+}
 .dm-time {
   font-size: 0.62rem;
   color: var(--text-dim);
