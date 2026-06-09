@@ -158,11 +158,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     convList.innerHTML = '<div class="dm-empty">No messages yet.<br>Hit <b>+</b> to start a chat.</div>';
                     return;
                 }
+                let totalUnread = 0;
                 convs.forEach(c => {
                     const el       = document.createElement('div');
                     el.className   = 'dm-conv-item' + (c.unread ? ' dm-unread' : '');
                     const initials = (c.username || '?')[0].toUpperCase();
                     const timeStr  = c.last_time ? fmtTimeAgo(c.last_time) : '';
+                    const cnt      = c.unread_count || 0;
+                    totalUnread   += cnt;
                     el.innerHTML = `
                         <div class="dm-conv-avatar-wrap">
                             <div class="dm-conv-avatar">${initials}</div>
@@ -171,14 +174,23 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="dm-conv-body">
                             <div class="dm-conv-row">
                                 <span class="dm-conv-name">${esc(c.username)}</span>
-                                ${c.unread ? '<span class="dm-unread-dot"></span>' : ''}
                                 <span class="dm-conv-time">${timeStr}</span>
                             </div>
                             <div class="dm-conv-preview">${esc(c.last_msg)}</div>
-                        </div>`;
+                        </div>
+                        ${cnt > 0 ? `<span class="dm-conv-badge">${cnt > 99 ? '99+' : cnt}</span>` : ''}`;
                     el.addEventListener('click', () => openChat(c.other_id, c.username, c.is_online, c.connections));
                     convList.appendChild(el);
                 });
+                const badge = document.getElementById('dmUnreadDot');
+                if (badge) {
+                    if (totalUnread > 0) {
+                        badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
             })
             .catch(() => {});
     }
@@ -258,10 +270,15 @@ document.addEventListener('DOMContentLoaded', () => {
         let bodyHtml = '';
         if (m.body) {
             const qMatch = m.body.match(/^§§POST§§([\s\S]*?)§§END§§\n?([\s\S]*)$/);
+            const nMatch = m.body.match(/^§§NOTIF§§([\s\S]*?)§§END§§\n?([\s\S]*)$/);
             if (qMatch) {
                 const quoteText = esc(qMatch[1].trim());
                 const msgText   = esc(qMatch[2].trim());
                 bodyHtml = `<div class="dm-bubble"><div class="dm-post-quote"><span class="dm-post-quote-label">Post</span>${quoteText}</div>${msgText}</div>`;
+            } else if (nMatch) {
+                const notifCtx  = esc(nMatch[1].trim());
+                const notifText = esc(nMatch[2].trim());
+                bodyHtml = `<div class="dm-bubble dm-notif-bubble"><span class="dm-notif-label">💬 Comment reply</span><div class="dm-notif-ctx">${notifCtx}</div>${notifText}</div>`;
             } else {
                 bodyHtml = `<div class="dm-bubble">${esc(m.body)}</div>`;
             }

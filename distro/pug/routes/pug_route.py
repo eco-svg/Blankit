@@ -2184,6 +2184,14 @@ def add_post_comment(pid):
         sk = _post_skill_tag(parent)
         if sk:
             award_exp(parent.user_id, sk, 'comment')
+        from shared.auth.user import User
+        commenter = User.query.get(me)
+        post_snippet = (parent.body or '').strip()[:60]
+        notif_body = f'§§NOTIF§§{commenter.username} commented on your post: "{post_snippet}{"…" if len(parent.body or "") > 60 else ""}"§§END§§💬 "{text[:80]}{"…" if len(text) > 80 else ""}"'
+        notif = Note(user_id=me, entry_type='dm', is_deleted=False,
+                     mood=str(parent.user_id), body=notif_body, is_finished=False)
+        db.session.add(notif)
+        db.session.commit()
     return jsonify({'id': c.id, 'ok': True}), 201
 
 
@@ -2333,6 +2341,7 @@ def list_dms():
             'last_msg':    raw_body[:60],
             'last_time':   last_msg.created_at.isoformat() if last_msg.created_at else None,
             'unread':      unread_count > 0,
+            'unread_count': unread_count,
             'is_online':   _is_online(u),
             'connections': _connection_count(other_id),
         })
