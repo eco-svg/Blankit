@@ -261,8 +261,8 @@ document.querySelectorAll('[data-tab]').forEach(el => {
     if (!active) return;
     var raw = active.value.replace(/\D/g, '');
     if (raw.length < 8) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
-    var m = parseInt(raw.substring(0, 2), 10);
-    var d = parseInt(raw.substring(2, 4), 10);
+    var d = parseInt(raw.substring(0, 2), 10);
+    var m = parseInt(raw.substring(2, 4), 10);
     var y = parseInt(raw.substring(4, 8), 10);
     if (!m || m > 12 || !d || d > 31 || y < 1904 || y > 2099) { regBtn.style.opacity = '0.4'; regBtn.style.pointerEvents = 'none'; return; }
     var today = new Date(), born = new Date(y, m - 1, d);
@@ -430,8 +430,8 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const dobEl    = (window.innerWidth <= 700 && document.getElementById('regDobInline')) ? document.getElementById('regDobInline') : document.getElementById('regDob');
   const dobErrId = (window.innerWidth <= 700 && document.getElementById('regAgeErrInline')) ? 'regAgeErrInline' : 'regAgeErr';
   const dobRaw   = (dobEl?.value || '').replace(/\D/g, '');
-  const dobMonth = parseInt(dobRaw.substring(0, 2), 10);
-  const dobDay   = parseInt(dobRaw.substring(2, 4), 10);
+  const dobDay   = parseInt(dobRaw.substring(0, 2), 10);
+  const dobMonth = parseInt(dobRaw.substring(2, 4), 10);
   const dobYear  = parseInt(dobRaw.substring(4, 8), 10);
   const termsOk  = document.getElementById('regTermsCheck')?.checked;
   const ageOk    = document.getElementById('regAgeCheck')?.checked;
