@@ -2871,7 +2871,7 @@ div.infinite-canvas video {
   min-height: 0;
 }
 .comm-dm-lbar-body .dm-conv-list { flex: 1; overflow-y: auto; }
-.comm-dm-lbar-body .dm-chat-view { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+.comm-dm-lbar-body .dm-chat-view { flex: 1; overflow: hidden; display: flex; flex-direction: column; width: 100%; max-width: 100%; }
 .comm-dm-lbar-body .dm-messages  { flex: 1; overflow-y: auto; }
 
 /* ── Community main area ─────────────────────────────── */
@@ -3801,6 +3801,7 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .dm-input-row input {
   flex: 1;
+  min-width: 0;
   background: rgba(255,255,255,0.05);
   border: 1px solid var(--border2);
   border-radius: 8px;
