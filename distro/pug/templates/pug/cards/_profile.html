@@ -42,6 +42,13 @@
         <div class="pp-label">Theme</div>
         <div class="pp-theme-box">
 
+          <div class="pp-theme-row-label">Mode</div>
+          <div class="pp-mode-pills">
+            <button class="pp-mode-pill" data-mode-pick="dark">Dark</button>
+            <button class="pp-mode-pill" data-mode-pick="light">Light</button>
+            <button class="pp-mode-pill" data-mode-pick="space">Space</button>
+          </div>
+
           <div class="pp-theme-row-label">Color Theme</div>
           <div class="theme-swatches theme-palette-swatches" style="margin-bottom:2px;">
             <button class="theme-swatch palette-swatch" data-palette="dark"       title="Dark"        style="background:radial-gradient(135deg,#1a110a,#0d0b08);border-color:rgba(212,165,116,0.5)!important;"></button>
@@ -64,43 +71,45 @@
             <button class="theme-swatch filter-swatch" data-filter="dreamy"  title="Dreamy" style="background:linear-gradient(135deg,rgba(180,160,255,0.5),rgba(100,160,255,0.35));backdrop-filter:blur(2px);"></button>
           </div>
 
-          <div class="pp-theme-row-label" style="margin-top:10px;">Background</div>
-          <div class="theme-swatches" style="margin-bottom:2px;">
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="default"   title="Blackhole (default)" style="background:radial-gradient(ellipse at 40% 30%,#26180e,#0d0a07);border-color:rgba(212,165,116,0.45)!important;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="nebula"    title="Nebula"    style="background:radial-gradient(ellipse at 30% 40%,rgba(130,0,230,0.7),#040010);"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="starfield" title="Starfield" style="background:#020408;background-image:radial-gradient(1px 1px at 25% 30%,#fff,transparent),radial-gradient(1px 1px at 60% 15%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fff,transparent);"></button>
-          </div>
+          <div class="pp-space-only">
+            <div class="pp-theme-row-label" style="margin-top:10px;">Background</div>
+            <div class="theme-swatches" style="margin-bottom:2px;">
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="default"   title="Blackhole (default)" style="background:radial-gradient(ellipse at 40% 30%,#26180e,#0d0a07);border-color:rgba(212,165,116,0.45)!important;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="nebula"    title="Nebula"    style="background:radial-gradient(ellipse at 30% 40%,rgba(130,0,230,0.7),#040010);"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="starfield" title="Starfield" style="background:#020408;background-image:radial-gradient(1px 1px at 25% 30%,#fff,transparent),radial-gradient(1px 1px at 60% 15%,#fff,transparent),radial-gradient(1px 1px at 80% 70%,#fff,transparent);"></button>
+            </div>
 
-          <div class="pp-theme-row-label" style="margin-top:10px;">Wallpaper — Space</div>
-          <div class="theme-swatches" style="margin-bottom:2px;">
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_space_rings"     title="Space Rings"    style="background:url('/static/pug_space_rings.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_blackhole_swirl" title="Black Hole"     style="background:url('/static/pug_blackhole_swirl.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_atom_cosmos"     title="Atom Cosmos"    style="background:url('/static/pug_atom_cosmos.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_helix_nebula"    title="Helix Nebula"   style="background:url('/static/pug_helix_nebula.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_crimson_nebula"  title="Crimson Nebula" style="background:url('/static/pug_crimson_nebula.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_orion_nebula"    title="Orion Nebula"   style="background:url('/static/pug_orion_nebula.jpeg') center/cover;"></button>
-          </div>
+            <div class="pp-theme-row-label" style="margin-top:10px;">Wallpaper — Space</div>
+            <div class="theme-swatches" style="margin-bottom:2px;">
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_space_rings"     title="Space Rings"    style="background:url('/static/pug_space_rings.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_blackhole_swirl" title="Black Hole"     style="background:url('/static/pug_blackhole_swirl.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_atom_cosmos"     title="Atom Cosmos"    style="background:url('/static/pug_atom_cosmos.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_helix_nebula"    title="Helix Nebula"   style="background:url('/static/pug_helix_nebula.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_crimson_nebula"  title="Crimson Nebula" style="background:url('/static/pug_crimson_nebula.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_orion_nebula"    title="Orion Nebula"   style="background:url('/static/pug_orion_nebula.jpeg') center/cover;"></button>
+            </div>
 
-          <div class="pp-theme-row-label" style="margin-top:8px;">Moon &amp; Night</div>
-          <div class="theme-swatches" style="margin-bottom:2px;">
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_red_moon"       title="Red Moon"       style="background:url('/static/pug_red_moon.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_synthwave_moon" title="Synthwave Moon" style="background:url('/static/pug_synthwave_moon.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_eclipse_peak"   title="Eclipse Peak"   style="background:url('/static/pug_eclipse_peak.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_cherry_moon"    title="Cherry Moon"    style="background:url('/static/pug_cherry_moon.jpeg') center/cover;"></button>
-          </div>
+            <div class="pp-theme-row-label" style="margin-top:8px;">Moon &amp; Night</div>
+            <div class="theme-swatches" style="margin-bottom:2px;">
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_red_moon"       title="Red Moon"       style="background:url('/static/pug_red_moon.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_synthwave_moon" title="Synthwave Moon" style="background:url('/static/pug_synthwave_moon.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_eclipse_peak"   title="Eclipse Peak"   style="background:url('/static/pug_eclipse_peak.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_cherry_moon"    title="Cherry Moon"    style="background:url('/static/pug_cherry_moon.jpeg') center/cover;"></button>
+            </div>
 
-          <div class="pp-theme-row-label" style="margin-top:8px;">Nature</div>
-          <div class="theme-swatches" style="margin-bottom:2px;">
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_spirit_forest"   title="Spirit Forest"   style="background:url('/static/pug_spirit_forest.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_aurora_village"  title="Aurora Village"  style="background:url('/static/pug_aurora_village.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_snow_peaks"      title="Snow Peaks"      style="background:url('/static/pug_snow_peaks.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_teal_reflection" title="Teal Reflection" style="background:url('/static/pug_teal_reflection.jpeg') center/cover;"></button>
-          </div>
+            <div class="pp-theme-row-label" style="margin-top:8px;">Nature</div>
+            <div class="theme-swatches" style="margin-bottom:2px;">
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_spirit_forest"   title="Spirit Forest"   style="background:url('/static/pug_spirit_forest.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_aurora_village"  title="Aurora Village"  style="background:url('/static/pug_aurora_village.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_snow_peaks"      title="Snow Peaks"      style="background:url('/static/pug_snow_peaks.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_teal_reflection" title="Teal Reflection" style="background:url('/static/pug_teal_reflection.jpeg') center/cover;"></button>
+            </div>
 
-          <div class="pp-theme-row-label" style="margin-top:8px;">Chill</div>
-          <div class="theme-swatches">
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_pikachu_onsen" title="Pikachu Onsen" style="background:url('/static/pug_pikachu_onsen.jpeg') center/cover;"></button>
-            <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_dream_lake"    title="Dream Lake"    style="background:url('/static/pug_dream_lake.jpeg') center/cover;"></button>
+            <div class="pp-theme-row-label" style="margin-top:8px;">Chill</div>
+            <div class="theme-swatches">
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_pikachu_onsen" title="Pikachu Onsen" style="background:url('/static/pug_pikachu_onsen.jpeg') center/cover;"></button>
+              <button class="theme-swatch wallpaper-swatch" data-wallpaper="pug_dream_lake"    title="Dream Lake"    style="background:url('/static/pug_dream_lake.jpeg') center/cover;"></button>
+            </div>
           </div>
 
         </div>
