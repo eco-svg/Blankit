@@ -3310,12 +3310,33 @@ div.infinite-canvas video {
     flex: 1;
     min-width: 0;
 }
+.comm-comment-av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(212,165,116,0.12);
+    border: 1px solid rgba(212,165,116,0.22);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    user-select: none;
+}
+.comm-comment-av:hover { background: rgba(212,165,116,0.22); }
 .comm-comment-user {
     font-weight: 700;
     color: var(--accent);
     flex-shrink: 0;
     font-size: 0.72rem;
+    cursor: pointer;
 }
+.comm-comment-user:hover { text-decoration: underline; }
 .comm-comment-text {
     color: var(--text);
     flex: 1;

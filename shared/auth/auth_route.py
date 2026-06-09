@@ -662,6 +662,16 @@ def admin_student_id(object_name):
 @auth.route('/logout', methods=['POST'])
 @limiter.limit("5 per 15 minutes")
 def logout():
+    uid = session.get('user_id')
+    if uid:
+        try:
+            from shared.auth.user import User
+            u = User.query.get(uid)
+            if u:
+                u.last_seen = None
+                db.session.commit()
+        except Exception:
+            pass
     session.clear()
     return jsonify({'redirect': '/'}), 200
 

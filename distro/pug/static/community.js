@@ -504,10 +504,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const pinBadge = c.is_pinned ? `<span class="comm-pin-badge">pinned</span>` : '';
         const likeAct = c.my_reaction === 'like'    ? ' active' : '';
         const disAct  = c.my_reaction === 'dislike' ? ' active' : '';
+        const initials = (c.username || '?')[0].toUpperCase();
         const row = document.createElement('div');
         row.className = 'comm-comment-row';
         row.dataset.cid = c.id;
-        row.innerHTML = `${pinBadge}<div class="comm-comment-content"><span class="comm-comment-user">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">👍 <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">👎 <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">↩</button>${pinBtn}</div>`;
+        row.innerHTML = `${pinBadge}<div class="comm-comment-av comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${initials}</div><div class="comm-comment-content"><span class="comm-comment-user comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">👍 <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">👎 <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">↩</button>${pinBtn}</div>`;
+        row.querySelectorAll('.comm-username-link').forEach(el => {
+            el.addEventListener('click', e => {
+                e.stopPropagation();
+                const uid = parseInt(el.dataset.uid);
+                if (uid) openProfile(uid, c.username, c.is_mine, e.currentTarget);
+            });
+        });
         return row;
     }
 
@@ -871,10 +879,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const rect = anchorEl.getBoundingClientRect();
             const W = 278, H = 360;
             let left = rect.left;
-            let top  = rect.bottom + 6;
+            // prefer above; fall back to below if not enough room
+            let top = rect.top - H - 6;
+            if (top < 8) top = rect.bottom + 6;
+            if (top + H > window.innerHeight - 8) top = Math.max(8, window.innerHeight - H - 8);
             if (left + W > window.innerWidth  - 8) left = window.innerWidth  - W - 8;
             if (left < 8) left = 8;
-            if (top  + H > window.innerHeight - 8) top  = Math.max(8, rect.top - H - 6);
             pubModal.style.left = left + 'px';
             pubModal.style.top  = top  + 'px';
         }

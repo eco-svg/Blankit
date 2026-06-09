@@ -2147,6 +2147,7 @@ def get_post_comments(pid):
         if not u: continue
         result.append({
             'id':          c.id,
+            'user_id':     c.user_id,
             'username':    u.username,
             'text':        c.body,
             'created_at':  c.created_at.isoformat() if c.created_at else None,
