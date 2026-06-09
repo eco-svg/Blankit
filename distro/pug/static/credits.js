@@ -133,11 +133,7 @@
         const r      = _rates[t.ref_id] || _rates[_currency];
         const payAmt = r ? localAmt(t.amount, r.buy_rate) : `${fmt(t.amount)} Eyes`;
         hint = `<span class="credits-tx-hint" tabindex="0">⚠<span class="credits-tx-hint-tooltip">` +
-          `<strong>To complete your top-up, send payment:</strong>` +
-          `<div class="cpi-row"><span class="cpi-label">Amount</span><strong>${payAmt}</strong></div>` +
-          `<div class="cpi-row"><span class="cpi-label">Pay to</span><strong>veyrasupportus@gmail.com</strong></div>` +
-          `<div class="cpi-row"><span class="cpi-label">Reference</span><strong>Eyes TopUp #${t.id}</strong></div>` +
-          `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>` +
+          payInstructions(payAmt, t.id, { inline: true }) +
           `</span></span>`;
       }
 
@@ -160,6 +156,30 @@
     if (val >= 1000) return `${sym}${Math.round(val).toLocaleString()}`;
     if (val >= 1)    return `${sym}${val.toFixed(2)}`;
     return `${sym}${val.toFixed(4)}`;
+  }
+
+  const UPI_ID = 'veyra4ocellus@nyes';
+
+  function payInstructions(payAmt, txId, { inline = false } = {}) {
+    const isINR = _currency === 'INR';
+    const payTo = isINR
+      ? `<strong>${UPI_ID}</strong><span style="opacity:.45;font-size:.78rem;margin-left:4px;">(UPI)</span>`
+      : `<strong>veyrasupportus@gmail.com</strong>`;
+    const qr = isINR && !inline
+      ? `<img src="/pug_style/upi_qr.jpg" class="cpi-qr" alt="UPI QR code">`
+      : '';
+    const title = inline ? `<strong>To complete your top-up, send payment:</strong>` : `<div class="cpi-title">To complete your top-up, send payment:</div>`;
+    const wrap = (s) => inline ? s : `<div class="cpi-row">${s}</div>`;
+    return (
+      title +
+      wrap(`<span class="cpi-label">Amount</span><strong>${payAmt}</strong>`) +
+      wrap(`<span class="cpi-label">Pay to</span>${payTo}`) +
+      qr +
+      wrap(`<span class="cpi-label">Reference</span><strong>Eyes TopUp #${txId}</strong>`) +
+      (inline
+        ? `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>`
+        : `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>`)
+    );
   }
 
   function updateRateUI() {
@@ -301,12 +321,7 @@
             if (inst) {
               const r      = _rates[_currency];
               const payAmt = r ? localAmt(_topupSelected, r.buy_rate) : `${_topupSelected} Eyes`;
-              inst.innerHTML =
-                `<div class="cpi-title">To complete your top-up, send payment:</div>` +
-                `<div class="cpi-row"><span class="cpi-label">Amount</span><strong>${payAmt}</strong></div>` +
-                `<div class="cpi-row"><span class="cpi-label">Pay to</span><strong>veyrasupportus@gmail.com</strong></div>` +
-                `<div class="cpi-row"><span class="cpi-label">Reference</span><strong>Eyes TopUp #${d.tx_id}</strong></div>` +
-                `<div class="cpi-note">Eyes will be credited within 24 hours of payment confirmation.</div>`;
+              inst.innerHTML = payInstructions(payAmt, d.tx_id);
               inst.style.display = '';
             }
             loadWallet();
