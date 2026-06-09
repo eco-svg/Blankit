@@ -465,6 +465,7 @@ body.lbar-open .playground {
   display: flex;
   gap: var(--gap);
   height: 210px;
+  margin-top: 15px;
 }
 
 .add1, .add2, .add3, .add4, .add5 {
