@@ -231,7 +231,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(() => {});
             lastPostCount = 0;
             loadFeed();
-        }, () => {}, { timeout: 5000 });
+        }, () => {
+            if (rangeLabel) { rangeLabel.classList.remove('locating'); rangeLabel.style.display = 'none'; }
+        }, { timeout: 5000 });
     }
 
     // ── Feed ───────────────────────────────────────────────────────────────────
@@ -250,15 +252,17 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 const posts  = Array.isArray(data) ? data : (data.posts || []);
                 const radius = Array.isArray(data) ? null : data.radius_km;
-                const _pinSvg  = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
-                const _globeSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>`;
                 if (rangeLabel) {
+                    rangeLabel.classList.remove('locating', 'has-range');
                     if (feedMode === 'global') {
-                        rangeLabel.innerHTML = `${_globeSvg} global feed`;
+                        rangeLabel.style.display = 'none';
                     } else if (radius) {
-                        rangeLabel.innerHTML = `${_pinSvg} within ${radius} km`;
+                        rangeLabel.style.display = '';
+                        rangeLabel.classList.add('has-range');
+                        rangeLabel.textContent = `within ${radius} km`;
                     } else {
-                        rangeLabel.innerHTML = `${_pinSvg} radar`;
+                        rangeLabel.style.display = myLat !== null ? '' : 'none';
+                        rangeLabel.textContent = 'no location';
                     }
                 }
                 if (posts.length > 0 && posts.length === lastPostCount) return;
@@ -457,8 +461,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const commentsEl = el.querySelector('.comm-post-comments');
                     preview?.classList.add('hidden');
                     const nowVisible = commentsEl.classList.toggle('hidden') === false;
-                    if (nowVisible && commentsEl.dataset.loaded !== 'true') {
-                        loadComments(p.id, commentsEl, p.is_mine);
+                    if (nowVisible) {
+                        if (commentsEl.dataset.loaded !== 'true') {
+                            loadComments(p.id, commentsEl, p.is_mine);
+                        }
+                        clearInterval(commentsEl._pollTimer);
+                        commentsEl._pollTimer = setInterval(() => {
+                            if (commentsEl.classList.contains('hidden')) {
+                                clearInterval(commentsEl._pollTimer);
+                            } else {
+                                commentsEl.dataset.loaded = 'false';
+                                loadComments(p.id, commentsEl, p.is_mine);
+                            }
+                        }, 5000);
+                    } else {
+                        clearInterval(commentsEl._pollTimer);
                     }
                     return;
                 }
@@ -613,21 +630,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sendComment(pid, input, commentsEl, postEl) {
         const text = (input?.value || '').trim();
-        if (!text) return;
+        if (!text || input.dataset.sending) return;
+        input.dataset.sending = '1';
+        input.value = '';
         fetch(`/pug/api/community/${pid}/comment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
         }).then(r => r.json()).then(data => {
-            if (data.error) return;
-            input.value = '';
+            if (data.error) { input.value = text; return; }
             commentsEl.dataset.loaded = 'false';
             const isMine = postEl?.querySelector('.comm-del-btn') !== null;
             loadComments(pid, commentsEl, isMine);
             const countEl = postEl?.querySelector('[data-action="comment"] .react-count');
             if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
             loadPreviewComments(pid, postEl);
-        }).catch(() => {});
+        }).catch(() => { input.value = text; })
+          .finally(() => { delete input.dataset.sending; });
     }
 
     function deletePost(id) {

@@ -5600,6 +5600,26 @@ button.nav-pill:not(.btn-ghost):hover {
   opacity: 0.55;
   letter-spacing: 0.05em;
 }
+.comm-range-badge {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  opacity: 0.65;
+  white-space: nowrap;
+}
+.comm-range-badge.locating {
+  opacity: 0.38;
+  animation: range-blink 1.4s ease-in-out infinite;
+}
+.comm-range-badge.has-range {
+  opacity: 1;
+  color: var(--accent);
+}
+@keyframes range-blink {
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 0.65; }
+}
 
 /* ── Community skill filter chips ────────────────────────── */
 .comm-skill-filter {
