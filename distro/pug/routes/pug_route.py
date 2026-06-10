@@ -14,7 +14,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates
+from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -806,6 +806,8 @@ def _ping_last_seen():
             if u.distro == 'ThePug':
                 u.distro = 'Ocellus'
                 dirty = True
+            if dirty or session.get('distro') == 'ThePug':
+                session['distro'] = 'Ocellus'
             if u.last_seen is None or (now - u.last_seen).total_seconds() > 120:
                 u.last_seen = now
                 dirty = True
@@ -891,7 +893,9 @@ def home():
     guard = login_required_page()
     if guard:
         return guard
-    return render_template('pug/home.html', username=session.get('username', 'User'))
+    return render_template('pug/home.html',
+                           username=session.get('username', 'User'),
+                           distro=session.get('distro', 'Ocellus'))
 
 
 @pug_bp.route('/pug/api/notes', methods=['GET'])
@@ -3259,6 +3263,119 @@ def cancel_wallet_tx(tx_id):
     tx.status = 'cancelled'
     db.session.commit()
     return jsonify({'ok': True})
+
+
+# ── Ask Me Anything (human-answered) ─────────────────────────────────────────
+
+@pug_bp.route('/pug/api/ama', methods=['GET'])
+def ama_get():
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    msgs = AmaMessage.query.filter_by(user_id=uid).order_by(AmaMessage.created_at.asc()).all()
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = AmaMessage.query.filter(
+        AmaMessage.user_id == uid,
+        AmaMessage.is_admin == False,
+        AmaMessage.created_at >= today_start,
+    ).count()
+    w = _get_or_create_wallet(uid)
+    return jsonify({
+        'messages': [{'id': m.id, 'body': m.body, 'is_admin': m.is_admin,
+                      'created_at': m.created_at.isoformat()} for m in msgs],
+        'today_count': today_count,
+        'balance': w.balance,
+    })
+
+
+@pug_bp.route('/pug/api/ama', methods=['POST'])
+def ama_ask():
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'unauth'}), 401
+    body = request.get_json(silent=True) or {}
+    text = (body.get('text') or '').strip()
+    if not text:
+        return jsonify({'error': 'Empty question'}), 400
+    if len(text) > 2000:
+        return jsonify({'error': 'Question too long (max 2000 chars)'}), 400
+    today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = AmaMessage.query.filter(
+        AmaMessage.user_id == uid,
+        AmaMessage.is_admin == False,
+        AmaMessage.created_at >= today_start,
+    ).count()
+    if today_count >= 1:
+        w = _get_or_create_wallet(uid)
+        if w.balance < 1:
+            return jsonify({'error': 'insufficient_eyes',
+                            'message': 'You need 1 Eye for extra questions today.'}), 402
+        w.balance -= 1
+        db.session.add(WalletTx(
+            user_id=uid, tx_type='spend', amount=-1,
+            note='Ask Anything: extra question', status='completed',
+        ))
+    msg = AmaMessage(user_id=uid, body=text, is_admin=False)
+    db.session.add(msg)
+    db.session.commit()
+    return jsonify({'ok': True, 'id': msg.id, 'created_at': msg.created_at.isoformat()})
+
+
+@pug_bp.route('/pug/api/admin/ama', methods=['GET'])
+def admin_ama_list():
+    err = login_required_api()
+    if err: return err
+    from sqlalchemy import func
+    rows = (db.session.query(AmaMessage.user_id, func.max(AmaMessage.created_at).label('last_at'))
+            .group_by(AmaMessage.user_id)
+            .order_by(func.max(AmaMessage.created_at).desc())
+            .all())
+    from shared.auth.user import User
+    result = []
+    for row in rows:
+        u = User.query.get(row.user_id)
+        if not u:
+            continue
+        latest = AmaMessage.query.filter_by(user_id=row.user_id).order_by(AmaMessage.created_at.desc()).first()
+        result.append({
+            'user_id':       row.user_id,
+            'username':      u.username,
+            'last_at':       row.last_at.isoformat() if row.last_at else None,
+            'preview':       latest.body[:80] if latest else '',
+            'is_admin_last': latest.is_admin if latest else False,
+        })
+    return jsonify(result)
+
+
+@pug_bp.route('/pug/api/admin/ama/<int:uid>', methods=['GET'])
+def admin_ama_thread(uid):
+    err = login_required_api()
+    if err: return err
+    from shared.auth.user import User
+    u = User.query.get(uid)
+    msgs = AmaMessage.query.filter_by(user_id=uid).order_by(AmaMessage.created_at.asc()).all()
+    return jsonify({
+        'username': u.username if u else str(uid),
+        'messages': [{'id': m.id, 'body': m.body, 'is_admin': m.is_admin,
+                      'created_at': m.created_at.isoformat()} for m in msgs],
+    })
+
+
+@pug_bp.route('/pug/api/admin/ama/<int:uid>/reply', methods=['POST'])
+def admin_ama_reply(uid):
+    err = login_required_api()
+    if err: return err
+    from shared.auth.user import User
+    if not User.query.get(uid):
+        return jsonify({'error': 'User not found'}), 404
+    body = request.get_json(silent=True) or {}
+    text = (body.get('text') or '').strip()
+    if not text:
+        return jsonify({'error': 'Empty reply'}), 400
+    msg = AmaMessage(user_id=uid, body=text, is_admin=True)
+    db.session.add(msg)
+    db.session.commit()
+    return jsonify({'ok': True, 'id': msg.id, 'created_at': msg.created_at.isoformat()})
 
 
 @pug_bp.route('/pug/terms')

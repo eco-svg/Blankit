@@ -59,6 +59,9 @@
       </button>
       <a href="#request"  class="nav-pill">Request</a>
       <a href="#credits"  class="nav-pill">Eyes</a>
+      {% if distro == 'Ocellus' %}
+      <a href="#admin" class="nav-pill nav-pill-admin">Admin</a>
+      {% endif %}
     </nav>
 
     <div class="header-right">
@@ -117,8 +120,32 @@
       {% include 'pug/cards/_social.html' %}
       {% include 'pug/cards/_habits.html' %}
       {% include 'pug/cards/_buddybot.html' %}
+      {% include 'pug/cards/_ask.html' %}
       {% include 'pug/cards/_stats.html' %}
       {% include 'pug/cards/_credits.html' %}
+
+      <!-- Admin AMA inbox — only rendered for Ocellus -->
+      {% if distro == 'Ocellus' %}
+      <div class="page-hidden" id="sec-admin">
+        <div class="card admin-ama-card">
+          <div class="card-top-bar">
+            <h2 class="card-title">Ask Anything — Inbox</h2>
+            <button class="admin-ama-refresh" id="adminAmaRefresh" title="Refresh">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            </button>
+          </div>
+          <div class="admin-ama-wrap">
+            <div class="admin-ama-users" id="adminAmaUsers">
+              <div class="admin-ama-empty-users">No questions yet.</div>
+            </div>
+            <div class="admin-ama-thread" id="adminAmaThread">
+              <div class="admin-ama-thread-empty">Select a conversation</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
       <div class="adbox-row">
         <div class="add1"></div>
         <div class="add2"></div>
@@ -363,8 +390,8 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=8"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}?v=4"></script>
-  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=5"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}?v=13"></script>
+  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=6"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=14"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot.js') }}?v=3"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=3"></script></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=1"></script>

@@ -152,20 +152,29 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/pug/api/dms')
             .then(r => r.json())
             .then(convs => {
+                // always update header badge regardless of open chat
+                const totalUnread = convs.reduce((s, c) => s + (c.unread_count || 0), 0);
+                const badge = document.getElementById('dmUnreadDot');
+                if (badge) {
+                    if (totalUnread > 0) {
+                        badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
                 if (currentOtherId) return;
                 convList.innerHTML = '';
                 if (!convs.length) {
                     convList.innerHTML = '<div class="dm-empty">No messages yet.<br>Hit <b>+</b> to start a chat.</div>';
                     return;
                 }
-                let totalUnread = 0;
                 convs.forEach(c => {
                     const el       = document.createElement('div');
                     el.className   = 'dm-conv-item' + (c.unread ? ' dm-unread' : '');
                     const initials = (c.username || '?')[0].toUpperCase();
                     const timeStr  = c.last_time ? fmtTimeAgo(c.last_time) : '';
                     const cnt      = c.unread_count || 0;
-                    totalUnread   += cnt;
                     el.innerHTML = `
                         <div class="dm-conv-avatar-wrap">
                             <div class="dm-conv-avatar">${initials}</div>
@@ -182,15 +191,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.addEventListener('click', () => openChat(c.other_id, c.username, c.is_online, c.connections));
                     convList.appendChild(el);
                 });
-                const badge = document.getElementById('dmUnreadDot');
-                if (badge) {
-                    if (totalUnread > 0) {
-                        badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
-                        badge.style.display = '';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                }
             })
             .catch(() => {});
     }
