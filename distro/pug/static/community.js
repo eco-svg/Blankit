@@ -883,13 +883,14 @@ document.addEventListener('DOMContentLoaded', () => {
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
-        // Position at cursor — clientX/Y is viewport-relative and works inside scrollable containers
-        if (evt && evt.clientX != null) {
+        if (evt) {
+            const anchor = (evt.target || evt.currentTarget).closest('.comm-username-link') || evt.target;
+            const rect = anchor.getBoundingClientRect();
             const W = 278, H = 360;
-            let left = evt.clientX + 10;
-            let top  = evt.clientY + 10;
-            if (left + W > window.innerWidth  - 8) left = evt.clientX - W - 10;
-            if (top  + H > window.innerHeight - 8) top  = evt.clientY - H - 10;
+            let left = rect.left;
+            let top  = rect.bottom + 6;
+            if (top  + H > window.innerHeight - 8) top  = rect.top - H - 6;
+            if (left + W > window.innerWidth  - 8) left = window.innerWidth - W - 8;
             if (left < 8) left = 8;
             if (top  < 8) top  = 8;
             pubModal.style.left = left + 'px';
