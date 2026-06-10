@@ -125,6 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
             feedMode = btn.dataset.mode;
             localStorage.setItem('veyra-comm-mode', feedMode);
             document.querySelectorAll('.comm-mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === feedMode));
+            if (feedMode === 'radar' && myLat === null) locPrompt?.classList.remove('hidden');
+            else locPrompt?.classList.add('hidden');
             lastPostCount = 0;
             loadFeed();
         });
@@ -220,10 +222,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Geolocation ────────────────────────────────────────────────────────────
-    if (navigator.geolocation) {
+    const locPrompt    = document.getElementById('commLocPrompt');
+    const locPromptBtn = document.getElementById('commLocPromptBtn');
+
+    function requestLocation() {
+        if (!navigator.geolocation) return;
+        locPrompt?.classList.add('hidden');
         navigator.geolocation.getCurrentPosition(pos => {
             myLat = pos.coords.latitude;
             myLng = pos.coords.longitude;
+            locPrompt?.classList.add('hidden');
             fetch('/pug/api/location', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -233,8 +241,14 @@ document.addEventListener('DOMContentLoaded', () => {
             loadFeed();
         }, () => {
             if (rangeLabel) { rangeLabel.classList.remove('locating'); rangeLabel.style.display = 'none'; }
-        }, { timeout: 5000 });
+            locPrompt?.classList.add('hidden');
+        }, { timeout: 8000 });
     }
+
+    locPromptBtn?.addEventListener('click', requestLocation);
+
+    if (feedMode === 'radar') locPrompt?.classList.remove('hidden');
+    requestLocation();
 
     // ── Feed ───────────────────────────────────────────────────────────────────
     function loadFeed() {
@@ -280,6 +294,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+    function fmtDist(km) {
+        if (km === null || km === undefined) return '';
+        if (km < 1) return `${Math.round(km * 1000)} m`;
+        return `${km.toFixed(1)} km`;
+    }
+
     function makePost(p) {
         const el       = document.createElement('div');
         el.className   = 'comm-post';
@@ -290,6 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
         const deleteBtn = p.is_mine
             ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>` : '';
+        const distHtml = (!p.is_mine && feedMode === 'radar' && p.dist_km !== null && p.dist_km !== undefined)
+            ? `<span class="comm-dist-badge">${fmtDist(p.dist_km)}</span>` : '';
 
         let mediaHtml = '';
         if (p.media_url) {
@@ -350,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="comm-action-btns">${actionBtns}</div>
                 <div class="comm-post-hdr-right">
+                    ${distHtml}
                     <span class="comm-ago">${ago}</span>
                     ${deleteBtn}
                 </div>
