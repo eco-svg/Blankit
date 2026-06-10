@@ -279,16 +279,31 @@ document.addEventListener('DOMContentLoaded', () => {
                         rangeLabel.textContent = 'no location';
                     }
                 }
-                if (posts.length > 0 && posts.length === lastPostCount) return;
-                lastPostCount = posts.length;
-                feed.innerHTML = '';
+                // Diff update — never wipe the feed; preserves open comment sections
+                const renderedMap = {};
+                feed.querySelectorAll('.comm-post').forEach(el => { renderedMap[el.dataset.id] = el; });
+                const newIdSet = new Set(posts.map(p => String(p.id)));
+
+                // Remove posts no longer returned
+                Object.keys(renderedMap).forEach(id => { if (!newIdSet.has(id)) renderedMap[id].remove(); });
+
                 if (!posts.length) {
-                    feed.innerHTML = activeUserId
-                        ? '<div class="comm-empty">No posts by this user.</div>'
-                        : '<div class="comm-empty">No posts yet. Be the first.</div>';
+                    if (!feed.querySelector('.comm-post')) {
+                        feed.innerHTML = activeUserId
+                            ? '<div class="comm-empty">No posts by this user.</div>'
+                            : '<div class="comm-empty">No posts yet. Be the first.</div>';
+                    }
+                    lastPostCount = 0;
                     return;
                 }
-                posts.forEach(p => feed.appendChild(makePost(p)));
+                feed.querySelector('.comm-empty')?.remove();
+
+                // Prepend only genuinely new posts, maintaining newest-first order
+                const newPosts = posts.filter(p => !renderedMap[String(p.id)]);
+                for (let i = newPosts.length - 1; i >= 0; i--) {
+                    feed.insertBefore(makePost(newPosts[i]), feed.firstChild);
+                }
+                lastPostCount = posts.length;
             })
             .catch(() => {});
     }
