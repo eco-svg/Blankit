@@ -261,11 +261,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         rangeLabel.innerHTML = `${_pinSvg} radar`;
                     }
                 }
-                if (posts.length === lastPostCount) return;
+                if (posts.length > 0 && posts.length === lastPostCount) return;
                 lastPostCount = posts.length;
                 feed.innerHTML = '';
                 if (!posts.length) {
-                    feed.innerHTML = '<div class="comm-empty">No posts yet. Be the first.</div>';
+                    feed.innerHTML = activeUserId
+                        ? '<div class="comm-empty">No posts by this user.</div>'
+                        : '<div class="comm-empty">No posts yet. Be the first.</div>';
                     return;
                 }
                 posts.forEach(p => feed.appendChild(makePost(p)));
