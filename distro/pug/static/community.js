@@ -1010,19 +1010,9 @@ document.addEventListener('DOMContentLoaded', () => {
         pubModal.dataset.uid      = uid;
         pubModal.dataset.username = username;
         pubModal.classList.remove('hidden');
-        if (evt) {
-            const anchor = (evt.target || evt.currentTarget).closest('.comm-username-link') || evt.target;
-            const rect = anchor.getBoundingClientRect();
-            const W = 278, H = 360;
-            let left = rect.left;
-            let top  = rect.bottom + 6;
-            if (top  + H > window.innerHeight - 8) top  = rect.top - H - 6;
-            if (left + W > window.innerWidth  - 8) left = window.innerWidth - W - 8;
-            if (left < 8) left = 8;
-            if (top  < 8) top  = 8;
-            pubModal.style.left = left + 'px';
-            pubModal.style.top  = top  + 'px';
-        }
+        const W = 278, H = 360;
+        pubModal.style.left = Math.round((window.innerWidth  - W) / 2) + 'px';
+        pubModal.style.top  = Math.round((window.innerHeight - H) / 2) + 'px';
         if (pubAvatar)      pubAvatar.textContent      = (username||'?')[0].toUpperCase();
         if (pubName)        pubName.textContent        = username;
         if (pubRank)        pubRank.textContent        = '';
