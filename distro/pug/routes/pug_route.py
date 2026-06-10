@@ -1820,7 +1820,7 @@ def get_community_feed():
         q = q.filter_by(user_id=user_filter)
     posts = q.order_by(Note.created_at.desc()).limit(200).all()
 
-    def _build_row(p, u):
+    def _build_row(p, u, dist_km=None):
         rank, color = _net_rank_for_user(p.user_id)
         body = p.body or ''
         text, media_key, post_type, pinned_cid, text_order, skill_tag = body, None, None, None, 'tm', None
@@ -1853,6 +1853,7 @@ def get_community_feed():
             'is_mine':     p.user_id == me,
             'is_online':   _is_online(u),
             'created_at':  p.created_at.isoformat() if p.created_at else None,
+            'dist_km':     round(dist_km, 1) if dist_km is not None else None,
         }
 
     def _enrich(posts_list):
@@ -1894,13 +1895,14 @@ def get_community_feed():
             for p in posts:
                 u = User.query.get(p.user_id)
                 if not u: continue
+                plat, plng = _user_location(p.user_id)
+                dist = _haversine_km(my_lat, my_lng, plat, plng) if plat is not None else None
                 if radius_km is not None:
-                    plat, plng = _user_location(p.user_id)
-                    if plat is None or _haversine_km(my_lat, my_lng, plat, plng) > radius_km:
+                    if dist is None or dist > radius_km:
                         continue
                 if skill_filter and not _user_has_skill(p.user_id, skill_filter):
                     continue
-                result.append(_build_row(p, u))
+                result.append(_build_row(p, u, dist_km=dist))
             if len(result) >= 5 or radius_km is None:
                 return jsonify({'posts': _enrich(result), 'radius_km': radius_km})
         return jsonify({'posts': [], 'radius_km': None})
@@ -3206,6 +3208,15 @@ def wallet_topup():
         return jsonify({'error': f'Minimum top-up is {min_eyes} Eyes for {currency}'}), 400
     if amount > 500000:
         return jsonify({'error': 'Maximum top-up is 500,000 Eyes per request'}), 400
+    # idempotency: return existing pending request for same amount+currency within 5 min
+    from datetime import timedelta
+    cutoff = datetime.utcnow() - timedelta(minutes=5)
+    existing = WalletTx.query.filter_by(
+        user_id=uid, tx_type='topup_request', amount=amount, ref_id=currency, status='pending'
+    ).filter(WalletTx.created_at >= cutoff).first()
+    if existing:
+        return jsonify({'ok': True, 'tx_id': existing.id,
+                        'message': 'Top-up request already pending.'})
     tx = WalletTx(
         user_id = uid,
         tx_type = 'topup_request',

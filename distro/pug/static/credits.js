@@ -342,7 +342,11 @@
             submit.disabled = false;
           }
         })
-        .catch(() => { setMsg(msg, 'Network error', true); submit.disabled = false; });
+        .catch(() => {
+          setMsg(msg, 'Network error — your request may still be processing. Check pending transactions below before retrying.', true);
+          loadWallet();
+          setTimeout(() => { submit.disabled = false; }, 8000);
+        });
     });
   }
 
