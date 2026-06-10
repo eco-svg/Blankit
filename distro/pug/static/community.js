@@ -886,12 +886,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Position at cursor — clientX/Y is viewport-relative and works inside scrollable containers
         if (evt && evt.clientX != null) {
             const W = 278, H = 360;
-            let left = evt.clientX;
-            let top  = evt.clientY - H - 6;  // prefer above cursor
-            if (top < 8) top = evt.clientY + 14;  // fall back to below
-            if (top + H > window.innerHeight - 8) top = Math.max(8, window.innerHeight - H - 8);
-            if (left + W > window.innerWidth  - 8) left = window.innerWidth  - W - 8;
+            let left = evt.clientX + 10;
+            let top  = evt.clientY + 10;
+            if (left + W > window.innerWidth  - 8) left = evt.clientX - W - 10;
+            if (top  + H > window.innerHeight - 8) top  = evt.clientY - H - 10;
             if (left < 8) left = 8;
+            if (top  < 8) top  = 8;
             pubModal.style.left = left + 'px';
             pubModal.style.top  = top  + 'px';
         }
