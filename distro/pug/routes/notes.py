@@ -82,6 +82,15 @@ class EyeRate(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class AmaMessage(db.Model):
+    __tablename__ = 'ama_messages'
+    id         = db.Column(db.Integer, primary_key=True)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    body       = db.Column(db.Text, nullable=False)
+    is_admin   = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # ── Rate constants ────────────────────────────────────────────────────────────
 
 _EYE_USD  = 0.01   # 1 Eye = $0.01 (base)

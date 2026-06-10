@@ -1,0 +1,83 @@
+<!-- Ask Anything — human-answered flip card -->
+<div class="card ask-flip-card page-hidden" id="sec-ask">
+  <div class="ask-flip-inner" id="amaFlipInner">
+
+    <!-- FRONT: info + CTA -->
+    <div class="ask-face ask-front-face">
+      <div class="ask-front-header">
+        <div>
+          <div class="ask-front-badge">Human-answered</div>
+          <div class="ask-front-title">Ask Anything</div>
+          <div class="ask-front-tagline">Real answers. No filters. Completely private.</div>
+        </div>
+      </div>
+
+      <div class="ask-front-divider"></div>
+
+      <div class="ask-front-how">
+        <div class="ask-how-row">
+          <div class="ask-how-dot"></div>
+          <div>
+            <div class="ask-how-label">Actually private</div>
+            <div class="ask-how-desc">Your conversation is yours alone. Nobody else reads it.</div>
+          </div>
+        </div>
+        <div class="ask-how-row">
+          <div class="ask-how-dot"></div>
+          <div>
+            <div class="ask-how-label">No AI shortcuts</div>
+            <div class="ask-how-desc">Questions go to a real person. Replies come back when ready — check back later.</div>
+          </div>
+        </div>
+        <div class="ask-how-row">
+          <div class="ask-how-dot"></div>
+          <div>
+            <div class="ask-how-label">Ask anything</div>
+            <div class="ask-how-desc">Relationships, health, decisions, uncomfortable stuff — nothing is off-limits.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ask-front-divider"></div>
+
+      <div class="ask-front-quota">
+        <span class="ask-quota-free">1 free question per day</span>
+        <span class="ask-quota-sep">·</span>
+        <span class="ask-quota-paid">1 Eye for each extra question</span>
+      </div>
+
+      <button class="ask-open-btn" id="amaOpenBtn">Ask a Question</button>
+    </div>
+
+    <!-- BACK: chat interface -->
+    <div class="ask-face ask-back-face">
+      <div class="ask-chat-header">
+        <button class="ask-back-btn" id="amaBackBtn" title="Back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span class="ask-chat-title">Ask Anything</span>
+        <span class="ask-quota-pill" id="amaQuotaPill"></span>
+      </div>
+
+      <div class="ama-chat-window" id="amaChatWindow">
+        <div class="ama-empty-state" id="amaEmptyState">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:0.3;margin-bottom:8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <div>Nothing yet. Ask your first question below.</div>
+        </div>
+      </div>
+
+      <div class="ama-awaiting" id="amaAwaiting" style="display:none;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Awaiting reply...
+      </div>
+
+      <div class="ama-input-row">
+        <textarea class="ama-textarea" id="amaInput" placeholder="Type your question..." rows="1" maxlength="2000"></textarea>
+        <button class="ama-send-btn" id="amaSendBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
