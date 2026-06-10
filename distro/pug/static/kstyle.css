@@ -5476,6 +5476,86 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .comm-capture-btn:hover svg { opacity: 0.9; }
 
+/* ── Camera recorder modal ───────────────────────────────────────────────── */
+.cam-recorder-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cam-recorder-modal {
+  position: relative;
+  background: #111;
+  border-radius: 16px;
+  overflow: hidden;
+  width: min(480px, 95vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cam-recorder-close {
+  position: absolute;
+  top: 10px; right: 10px;
+  z-index: 2;
+  background: rgba(0,0,0,0.55);
+  border: none;
+  border-radius: 50%;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.cam-recorder-close:hover { background: rgba(0,0,0,0.8); }
+.cam-recorder-video {
+  width: 100%;
+  max-height: 60vh;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+.cam-recorder-actions {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  justify-content: center;
+  background: #111;
+  width: 100%;
+}
+.cam-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.cam-action-btn:active { transform: scale(0.96); }
+.cam-action-capture { background: var(--accent); color: #111; }
+.cam-action-capture:hover { background: #e8b97a; }
+.cam-action-record { background: #c0392b; color: #fff; }
+.cam-action-record:hover { background: #e74c3c; }
+.cam-action-stop { background: rgba(255,255,255,0.12); color: #fff; }
+.cam-action-stop:hover { background: rgba(255,255,255,0.2); }
+.cam-rec-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  animation: cam-rec-pulse 1s ease-in-out infinite;
+}
+@keyframes cam-rec-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
 .comm-quick-caption {
   width: 100%;
   margin-top: 10px;

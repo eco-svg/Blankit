@@ -727,8 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Quick tab media ────────────────────────────────────────────────────────
-    function handleQuickCapture(input) {
-        const file = input.files[0]; if (!file) return;
+    function uploadQuickFile(file) {
         const fd = new FormData(); fd.append('file', file);
         if (modalError) modalError.textContent = '';
         if (quickPlaceholder) quickPlaceholder.classList.add('hidden');
@@ -742,12 +741,119 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingQuick = data;
                 renderQuickPreview(data);
             });
-        input.value = '';
     }
-    document.getElementById('commCapturePhotoBtn')?.addEventListener('click', () => quickPhotoInput?.click());
-    document.getElementById('commCaptureVideoBtn')?.addEventListener('click', () => quickVideoInput?.click());
-    quickPhotoInput?.addEventListener('change', () => handleQuickCapture(quickPhotoInput));
-    quickVideoInput?.addEventListener('change', () => handleQuickCapture(quickVideoInput));
+
+    // Fallback file inputs (used when getUserMedia is denied/unavailable)
+    quickPhotoInput?.addEventListener('change', () => {
+        const f = quickPhotoInput.files[0]; if (!f) return;
+        uploadQuickFile(f); quickPhotoInput.value = '';
+    });
+    quickVideoInput?.addEventListener('change', () => {
+        const f = quickVideoInput.files[0]; if (!f) return;
+        uploadQuickFile(f); quickVideoInput.value = '';
+    });
+
+    // ── Camera recorder modal ──────────────────────────────────────────────────
+    const camOverlay    = document.getElementById('camRecorderOverlay');
+    const camVideo      = document.getElementById('camRecorderVideo');
+    const camCanvas     = document.getElementById('camRecorderCanvas');
+    const camActions    = document.getElementById('camRecorderActions');
+    const camClose      = document.getElementById('camRecorderClose');
+    let camStream       = null;
+    let mediaRecorder   = null;
+    let recordChunks    = [];
+
+    function stopCamStream() {
+        if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+        if (camVideo) camVideo.srcObject = null;
+    }
+
+    function closeCamModal() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        mediaRecorder = null; recordChunks = [];
+        stopCamStream();
+        camOverlay?.classList.add('hidden');
+        if (camActions) camActions.innerHTML = '';
+    }
+
+    async function openCameraModal(mode) {
+        camOverlay?.classList.remove('hidden');
+        if (camActions) camActions.innerHTML = '';
+
+        const constraints = mode === 'video'
+            ? { video: { facingMode: 'environment' }, audio: true }
+            : { video: { facingMode: 'environment' } };
+
+        try {
+            camStream = await navigator.mediaDevices.getUserMedia(constraints);
+            camVideo.srcObject = camStream;
+            if (mode === 'photo') buildPhotoCaptureBtn();
+            else buildVideoRecordBtns();
+        } catch (_) {
+            closeCamModal();
+            if (mode === 'photo') quickPhotoInput?.click();
+            else quickVideoInput?.click();
+        }
+    }
+
+    function buildPhotoCaptureBtn() {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'cam-action-btn cam-action-capture';
+        btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg><span>Capture</span>';
+        btn.addEventListener('click', () => {
+            const w = camVideo.videoWidth, h = camVideo.videoHeight;
+            camCanvas.width = w; camCanvas.height = h;
+            camCanvas.getContext('2d').drawImage(camVideo, 0, 0, w, h);
+            camCanvas.toBlob(blob => {
+                if (!blob) return;
+                closeCamModal();
+                uploadQuickFile(new File([blob], 'capture.jpg', { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.92);
+        });
+        camActions.appendChild(btn);
+    }
+
+    function buildVideoRecordBtns() {
+        const startBtn = document.createElement('button');
+        startBtn.type = 'button';
+        startBtn.className = 'cam-action-btn cam-action-record';
+        startBtn.innerHTML = '<span class="cam-rec-dot"></span><span>Record</span>';
+
+        const stopBtn = document.createElement('button');
+        stopBtn.type = 'button';
+        stopBtn.className = 'cam-action-btn cam-action-stop hidden';
+        stopBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg><span>Stop</span>';
+
+        startBtn.addEventListener('click', () => {
+            recordChunks = [];
+            const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+                ? 'video/webm;codecs=vp9' : 'video/webm';
+            mediaRecorder = new MediaRecorder(camStream, { mimeType: mime });
+            mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordChunks.push(e.data); };
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordChunks, { type: 'video/webm' });
+                closeCamModal();
+                uploadQuickFile(new File([blob], 'recording.webm', { type: 'video/webm' }));
+            };
+            mediaRecorder.start();
+            startBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+        });
+
+        stopBtn.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        });
+
+        camActions.appendChild(startBtn);
+        camActions.appendChild(stopBtn);
+    }
+
+    camClose?.addEventListener('click', closeCamModal);
+    camOverlay?.addEventListener('click', e => { if (e.target === camOverlay) closeCamModal(); });
+
+    document.getElementById('commCapturePhotoBtn')?.addEventListener('click', () => openCameraModal('photo'));
+    document.getElementById('commCaptureVideoBtn')?.addEventListener('click', () => openCameraModal('video'));
 
     function renderQuickPreview(media) {
         if (!quickPreview) return;

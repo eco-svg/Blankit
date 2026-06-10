@@ -151,6 +151,18 @@
 
 </div>
 
+<!-- Camera recorder modal -->
+<div id="camRecorderOverlay" class="cam-recorder-overlay hidden">
+  <div class="cam-recorder-modal">
+    <button class="cam-recorder-close" id="camRecorderClose" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <video id="camRecorderVideo" class="cam-recorder-video" autoplay muted playsinline></video>
+    <canvas id="camRecorderCanvas" style="display:none;"></canvas>
+    <div class="cam-recorder-actions" id="camRecorderActions"></div>
+  </div>
+</div>
+
 <!-- Buy info modal -->
 <div id="buyInfoOverlay" class="buy-info-overlay hidden">
   <div class="buy-info-modal">
