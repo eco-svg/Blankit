@@ -5,7 +5,6 @@
     'social':   ['sec-comms'],
     'habits':   ['sec-habits', 'sec-habit-pulse'],
     'buddybot': ['sec-buddybot', 'sec-ask'],
-    'admin':    ['sec-admin'],
     'request':  ['sec-request'],
     'support':  ['sec-profile'],
     'profile':  ['sec-profile'],

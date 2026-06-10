@@ -2638,6 +2638,8 @@ div.infinite-canvas video {
 .card.skills-main {
     background: rgba(100, 190, 130, 0.10);
     border-color: rgba(100, 190, 130, 0.12);
+    flex: 1;
+    min-width: 0;
 }
 
 .sec-profile-card,

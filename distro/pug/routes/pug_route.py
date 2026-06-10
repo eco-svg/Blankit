@@ -3328,6 +3328,18 @@ def ama_ask():
         ))
     msg = AmaMessage(user_id=uid, body=text, is_admin=False)
     db.session.add(msg)
+
+    # Forward question to Admin-Pug's DMs
+    from shared.auth.user import User
+    asker = User.query.get(uid)
+    admin = User.query.filter_by(username='Admin-Pug').first()
+    if admin and asker and admin.id != uid:
+        dm_body = f"[Ask Anything]\nFrom: {asker.username}\n\n{text}"
+        dm = Note(user_id=uid, entry_type='dm', is_deleted=False, is_finished=False)
+        dm.body = dm_body
+        dm.mood = str(admin.id)
+        db.session.add(dm)
+
     db.session.commit()
     return jsonify({'ok': True, 'id': msg.id, 'created_at': msg.created_at.isoformat()})
 
