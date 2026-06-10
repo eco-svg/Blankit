@@ -418,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         el.querySelectorAll('.comm-action-btn').forEach(btn => {
             btn.addEventListener('click', function() {
+                if (this.dataset.fired) return;
                 const uid         = parseInt(this.dataset.uid);
                 const username    = this.dataset.username;
                 const cls         = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
@@ -428,6 +429,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     openBuyModal(uid, username, p.id, autoMessage);
                     return;
                 }
+                this.dataset.fired = '1';
                 if (actionKey) {
                     fetch(`/pug/api/community/${p.id}/action`, {
                         method: 'POST',
@@ -463,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <button class="comm-action-btn comm-action-hire"   data-uid="${uid_}" data-username="${uname_}">Hire</button>`;
                             actionContainer.querySelectorAll('.comm-action-btn').forEach(b => {
                                 b.addEventListener('click', function() {
+                                    if (this.dataset.fired) return;
                                     const uid2        = parseInt(this.dataset.uid);
                                     const username2   = this.dataset.username;
                                     const cls2        = Array.from(this.classList).find(c => _ACTION_MESSAGES[c]);
@@ -473,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                         openBuyModal(uid2, username2, p.id, autoMessage);
                                         return;
                                     }
+                                    this.dataset.fired = '1';
                                     if (actionKey2) fetch(`/pug/api/community/${p.id}/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: actionKey2 }) }).catch(() => {});
                                     document.getElementById('commDmLbar')?.classList.add('open');
                                     document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: uid2, username: username2, autoMessage } }));

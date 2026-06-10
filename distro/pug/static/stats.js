@@ -103,7 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    let _addingSkill = false;
     async function addSkillManual(name, classId, classLabel) {
+        if (_addingSkill) return;
+        _addingSkill = true;
         try {
             const res = await fetch('/pug/api/stats/skill', {
                 method: 'POST',
@@ -114,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.sheet) { sheet = data.sheet; renderMainCard(); updateRankBadge(); }
             if (classId) saveClass(name, classId, classLabel);
         } catch {}
+        _addingSkill = false;
         skillAdder?.classList.add('hidden');
         if (skillAdderInput) skillAdderInput.value = '';
         if (skillAdderRes)   skillAdderRes.innerHTML = '';
@@ -144,7 +148,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const _removingSkills = new Set();
     async function removeSkill(name, classId) {
+        const key = `${name}:${classId}`;
+        if (_removingSkills.has(key)) return;
+        _removingSkills.add(key);
         try {
             const res = await fetch('/pug/api/stats/skill', {
                 method: 'DELETE',
@@ -159,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateRankBadge();
             }
         } catch {}
+        _removingSkills.delete(key);
     }
 
     function wireRemoveBtns() {

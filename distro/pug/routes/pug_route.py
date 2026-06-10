@@ -2229,9 +2229,18 @@ def community_post_action(pid):
     post = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False).first()
     if not post or post.user_id == me:
         return jsonify({'ok': True})
-    sk = _post_skill_tag(post)
-    if sk:
-        award_exp(post.user_id, sk, _ACTION_EXP_MAP[action])
+    # dedup: one EXP award per user per post per action
+    action_tag = f'{pid}:{action}'
+    already = Note.query.filter_by(
+        user_id=me, entry_type='post_action_log', mood=action_tag, is_deleted=False
+    ).first()
+    if not already:
+        log = Note(user_id=me, entry_type='post_action_log', mood=action_tag, is_deleted=False)
+        db.session.add(log)
+        db.session.commit()
+        sk = _post_skill_tag(post)
+        if sk:
+            award_exp(post.user_id, sk, _ACTION_EXP_MAP[action])
     return jsonify({'ok': True})
 
 
