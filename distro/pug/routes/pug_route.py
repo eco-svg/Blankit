@@ -2290,21 +2290,6 @@ def search_users():
         User.distro.in_(['Ocellus', 'ThePug'])
     ).limit(10).all()
     found = {u.id: u for u in by_name}
-    # also match by skill tag on community posts
-    skill_posts = Note.query.filter(
-        Note.entry_type == 'community_post',
-        Note.is_deleted == False,
-        Note.mood.in_(['Ocellus', 'ThePug']),
-        Note.body.ilike(f'%"sk": "%{q}%"%')
-    ).limit(50).all()
-    for sp in skill_posts:
-        if sp.user_id == me or sp.user_id in found:
-            continue
-        u = User.query.get(sp.user_id)
-        if u and u.distro in ('Ocellus', 'ThePug'):
-            found[u.id] = u
-        if len(found) >= 10:
-            break
     result = []
     for u in list(found.values())[:10]:
         rank, color = _net_rank_for_user(u.id)
