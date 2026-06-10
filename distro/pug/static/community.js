@@ -55,9 +55,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const progressBar     = document.getElementById('commProgressBar');
 
     // Quick tab
-    const quickZone       = document.getElementById('commQuickZone');
-    const quickFileInput  = document.getElementById('commQuickFileInput');
-    const quickPlaceholder= document.getElementById('commQuickPlaceholder');
+    const quickZone        = document.getElementById('commQuickZone');
+    const quickPhotoInput  = document.getElementById('commQuickPhotoInput');
+    const quickVideoInput  = document.getElementById('commQuickVideoInput');
+    const quickPlaceholder = document.getElementById('commQuickPlaceholder');
     const quickPreview    = document.getElementById('commQuickPreview');
     const quickProgress   = document.getElementById('commQuickProgress');
     const quickProgressBar= document.getElementById('commQuickProgressBar');
@@ -177,10 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (q.length < 2) { searchResults.innerHTML = ''; return; }
         _searchTimer = setTimeout(() => {
             fetch(`/pug/api/users/search?q=${encodeURIComponent(q)}`)
-                .then(r => r.json())
+                .then(r => r.ok ? r.json() : r.json().then(e => { throw e; }))
                 .then(users => {
                     searchResults.innerHTML = '';
-                    if (!users.length) {
+                    if (!Array.isArray(users) || !users.length) {
                         searchResults.innerHTML = '<div class="comm-search-empty">No users found.</div>';
                         return;
                     }
@@ -195,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         row.addEventListener('click', () => openUserFilter(u.id, u.username));
                         searchResults.appendChild(row);
                     });
-                }).catch(() => {});
+                }).catch(() => { searchResults.innerHTML = '<div class="comm-search-empty">No users found.</div>'; });
         }, 280);
     });
 
@@ -726,9 +727,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Quick tab media ────────────────────────────────────────────────────────
-    quickZone?.addEventListener('click', () => quickFileInput?.click());
-    quickFileInput?.addEventListener('change', () => {
-        const file = quickFileInput.files[0]; if (!file) return;
+    function handleQuickCapture(input) {
+        const file = input.files[0]; if (!file) return;
         const fd = new FormData(); fd.append('file', file);
         if (modalError) modalError.textContent = '';
         if (quickPlaceholder) quickPlaceholder.classList.add('hidden');
@@ -742,8 +742,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 pendingQuick = data;
                 renderQuickPreview(data);
             });
-        quickFileInput.value = '';
-    });
+        input.value = '';
+    }
+    document.getElementById('commCapturePhotoBtn')?.addEventListener('click', () => quickPhotoInput?.click());
+    document.getElementById('commCaptureVideoBtn')?.addEventListener('click', () => quickVideoInput?.click());
+    quickPhotoInput?.addEventListener('change', () => handleQuickCapture(quickPhotoInput));
+    quickVideoInput?.addEventListener('change', () => handleQuickCapture(quickVideoInput));
 
     function renderQuickPreview(media) {
         if (!quickPreview) return;

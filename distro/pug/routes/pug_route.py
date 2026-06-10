@@ -801,9 +801,16 @@ def _ping_last_seen():
     from shared.auth.user import User
     try:
         u = User.query.get(uid)
-        if u and (u.last_seen is None or (now - u.last_seen).total_seconds() > 120):
-            u.last_seen = now
-            db.session.commit()
+        if u:
+            dirty = False
+            if u.distro == 'ThePug':
+                u.distro = 'Ocellus'
+                dirty = True
+            if u.last_seen is None or (now - u.last_seen).total_seconds() > 120:
+                u.last_seen = now
+                dirty = True
+            if dirty:
+                db.session.commit()
     except Exception:
         pass
 
@@ -1804,7 +1811,7 @@ def get_community_feed():
     skill_filter = (request.args.get('skill') or '').strip().lower()
     user_filter  = request.args.get('user_id', type=int)
 
-    q = Note.query.filter_by(entry_type='community_post', is_deleted=False, mood='Ocellus')
+    q = Note.query.filter(Note.entry_type == 'community_post', Note.is_deleted == False, Note.mood.in_(['Ocellus', 'ThePug']))
     if user_filter:
         q = q.filter_by(user_id=user_filter)
     posts = q.order_by(Note.created_at.desc()).limit(200).all()
@@ -1967,7 +1974,7 @@ def get_community_post(pid):
     if err: return err
     from shared.auth.user import User
     me = session['user_id']
-    p = Note.query.filter_by(id=pid, entry_type='community_post', is_deleted=False, mood='Ocellus').first()
+    p = Note.query.filter(Note.id == pid, Note.entry_type == 'community_post', Note.is_deleted == False, Note.mood.in_(['Ocellus', 'ThePug'])).first()
     if not p:
         return jsonify({'error': 'Not found'}), 404
     u = User.query.get(p.user_id)
@@ -2280,21 +2287,21 @@ def search_users():
     by_name = User.query.filter(
         User.username.ilike(f'%{q}%'),
         User.id != me,
-        User.distro == 'Ocellus'
+        User.distro.in_(['Ocellus', 'ThePug'])
     ).limit(10).all()
     found = {u.id: u for u in by_name}
     # also match by skill tag on community posts
     skill_posts = Note.query.filter(
         Note.entry_type == 'community_post',
         Note.is_deleted == False,
-        Note.mood == 'Ocellus',
+        Note.mood.in_(['Ocellus', 'ThePug']),
         Note.body.ilike(f'%"sk": "%{q}%"%')
     ).limit(50).all()
     for sp in skill_posts:
         if sp.user_id == me or sp.user_id in found:
             continue
         u = User.query.get(sp.user_id)
-        if u and u.distro == 'Ocellus':
+        if u and u.distro in ('Ocellus', 'ThePug'):
             found[u.id] = u
         if len(found) >= 10:
             break
@@ -2388,7 +2395,7 @@ def send_dm(other_id):
     me = session['user_id']
     if other_id == me:
         return jsonify({'error': 'Cannot DM yourself'}), 400
-    recipient = User.query.filter_by(id=other_id, distro='Ocellus').first()
+    recipient = User.query.filter(User.id == other_id, User.distro.in_(['Ocellus', 'ThePug'])).first()
     if not recipient:
         return jsonify({'error': 'User not found'}), 404
     data      = request.get_json(force=True) or {}

@@ -423,11 +423,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (q.length < 2) { dmUserResults.innerHTML = ''; dmUserResults?.classList.add('hidden'); return; }
         searchTimer = setTimeout(() => {
             fetch(`/pug/api/users/search?q=${encodeURIComponent(q)}`)
-                .then(r => r.json())
+                .then(r => r.ok ? r.json() : r.json().then(e => { throw e; }))
                 .then(users => {
                     dmUserResults.innerHTML = '';
                     dmUserResults?.classList.remove('hidden');
-                    if (!users.length) {
+                    if (!Array.isArray(users) || !users.length) {
                         dmUserResults.innerHTML = '<div class="dm-search-empty">No users found.</div>';
                         return;
                     }
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         dmUserResults.appendChild(el);
                     });
                 })
-                .catch(() => {});
+                .catch(() => { dmUserResults.innerHTML = '<div class="dm-search-empty">No users found.</div>'; dmUserResults?.classList.remove('hidden'); });
         }, 300);
     });
 
