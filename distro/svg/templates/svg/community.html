@@ -9,19 +9,9 @@
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='community.css') }}" />
   <style>
-    .nav-soon-tag {
-      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
-      background: var(--accent-soft); color: var(--accent);
-      letter-spacing: 0.08em; margin-left: 4px;
-      display: inline-block; vertical-align: middle;
-    }
-    .nav-beta-tag {
-      font-size: 0.5rem; padding: 1px 6px; border-radius: 99px;
-      background: var(--accent-soft); color: var(--accent);
-      letter-spacing: 0.08em; margin-left: 4px;
-      display: inline-block; vertical-align: middle;
-    }
-    .sidebar-nav-item { white-space: nowrap; }
+    .nav-soon-tag { font-size:0.5rem; padding:1px 6px; border-radius:99px; background:var(--accent-soft); color:var(--accent); letter-spacing:0.08em; margin-left:4px; display:inline-block; vertical-align:middle; }
+    .nav-beta-tag { font-size:0.5rem; padding:1px 6px; border-radius:99px; background:var(--accent-soft); color:var(--accent); letter-spacing:0.08em; margin-left:4px; display:inline-block; vertical-align:middle; }
+    .sidebar-nav-item { white-space:nowrap; }
   </style>
 </head>
 <body>
@@ -29,10 +19,7 @@
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <span class="brand">
-        <span class="brand-icon">◈</span>
-        <span class="brand-name">{{ username }}</span>
-      </span>
+      <span class="brand"><span class="brand-icon">◈</span><span class="brand-name">{{ username }}</span></span>
       <button class="sidebar-close" id="sidebarClose">✕</button>
     </div>
     <nav class="sidebar-nav">
@@ -41,7 +28,7 @@
       <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
       <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
       <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
-      <a class="sidebar-nav-item active" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item active" href="/community"><span class="sidebar-nav-icon">⬡</span> Community</a>
       <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
       <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
@@ -59,13 +46,8 @@
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <a class="brand" href="/" style="text-decoration:none">
-      <span class="brand-icon">◈</span>
-      <span class="brand-name">{{ username }}</span>
-    </a>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu"><span></span><span></span><span></span></button>
+    <a class="brand" href="/" style="text-decoration:none"><span class="brand-icon">◈</span><span class="brand-name">{{ username }}</span></a>
     <div class="topbar-right">
       <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar">{{ username[:2].upper() }}</div>
@@ -73,88 +55,125 @@
   </header>
 
   <!-- MAIN -->
-  <main class="cs-main">
+  <main class="comm-main">
 
-    <div class="cs-hero">
-      <div class="cs-glyph">⬡</div>
-      <div class="cs-badge">Coming Soon</div>
-      <h1 class="cs-title">Community</h1>
-      <p class="cs-sub">Build habits together. Share streaks, compete on leaderboards, and keep each other accountable.</p>
+    <!-- PAGE HEADER -->
+    <div class="comm-page-header">
+      <div>
+        <h1 class="comm-title">Community ⬡</h1>
+        <p class="comm-sub">Connect, compete, and grow together</p>
+      </div>
+      <button class="comm-new-post-btn" id="newPostBtn">+ New Post</button>
     </div>
 
-    <div class="cs-blog">
-
-      <article class="cs-card cs-card--hero">
-        <div class="cs-card-tag">The Vision</div>
-        <h2 class="cs-card-title">Accountability is the ultimate habit hack</h2>
-        <p class="cs-card-body">
-          Research consistently shows that people who share their goals are significantly more likely
-          to follow through. Community brings that power to Veyra — your friends, your distro, your niche,
-          your leaderboard. All in one place.
-        </p>
-        <div class="cs-card-visual">
-          <div class="cs-mock-habits">
-            <div class="cs-mock-habit">🏆 User1 — 9 day streak</div>
-            <div class="cs-mock-habit">🔥 User2 — 7 day streak</div>
-            <div class="cs-mock-habit">⚡ User3 — 5 day streak</div>
-          </div>
-        </div>
-      </article>
-
-      <div class="cs-cards-row">
-        <article class="cs-card">
-          <div class="cs-card-tag">Distro Leaderboards</div>
-          <h2 class="cs-card-title">Compete within your circle</h2>
-          <p class="cs-card-body">Each distro gets its own leaderboard. See who has the longest streak, most habits completed, and highest consistency score this week.</p>
-          <div class="cs-feature-list">
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Weekly & all-time rankings</div>
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Habit-specific leaderboards</div>
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Distro vs distro challenges</div>
-          </div>
-        </article>
-        <article class="cs-card">
-          <div class="cs-card-tag">Habit Challenges</div>
-          <h2 class="cs-card-title">30-day challenges with friends</h2>
-          <p class="cs-card-body">Create a challenge, invite your friends, and track everyone's progress together. Miss a day? Everyone knows. Crush it? Everyone celebrates.</p>
-          <div class="cs-feature-list">
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Public or private challenges</div>
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Live group progress feed</div>
-            <div class="cs-feature-item"><span class="cs-feat-icon">◈</span> Badges for completion</div>
-          </div>
-        </article>
-      </div>
-
-      <div class="cs-cards-row">
-        <article class="cs-card">
-          <div class="cs-card-tag">Streak Sharing</div>
-          <h2 class="cs-card-title">Share your wins, not just your goals</h2>
-          <p class="cs-card-body">Hit a milestone? A 7-day, 30-day, or 100-day streak? Share it with your community with one tap. Let them react, cheer you on, and stay inspired.</p>
-          <div class="cs-oneclick">
-            <div class="cs-oneclick-btn">🔥 Share my 30-day streak</div>
-          </div>
-        </article>
-        <article class="cs-card">
-          <div class="cs-card-tag">Accountability Pairs</div>
-          <h2 class="cs-card-title">Find your habit partner</h2>
-          <p class="cs-card-body">Get matched with someone chasing a similar goal. You check on each other daily — a gentle nudge system that actually works because it's human, not just a notification.</p>
-          <div class="cs-regen-preview">
-            <div class="cs-regen-icon">◎</div>
-            <p class="cs-regen-label">Matched by goal similarity</p>
-          </div>
-        </article>
-      </div>
-
-      <div class="cs-notify-row">
-        <div class="cs-notify-text">
-          <span class="cs-notify-title">Be first when Community launches</span>
-          <span class="cs-notify-sub">Early users get founding member badges and priority matching.</span>
-        </div>
-        <button class="cs-notify-btn" id="notifyBtn">Notify me ⬡</button>
-      </div>
-      <div class="cs-notify-flash hidden" id="notifyFlash">✓ You're on the early access list!</div>
-
+    <!-- SCOPE TABS -->
+    <div class="comm-tabs">
+      <button class="comm-tab active" data-scope="local" id="tabLocal">⬡ Local</button>
+      <button class="comm-tab" data-scope="global" id="tabGlobal">🌐 Global</button>
     </div>
+
+    <!-- SECTION TABS -->
+    <div class="comm-section-tabs">
+      <button class="comm-section-tab active" data-section="feed">Feed</button>
+      <button class="comm-section-tab" data-section="leaderboard">Leaderboard</button>
+      <button class="comm-section-tab" data-section="challenges">Challenges</button>
+    </div>
+
+    <!-- FEED SECTION -->
+    <section class="comm-section" id="sectionFeed">
+      <div class="comm-feed" id="feedList">
+        <div class="comm-loading">Loading posts…</div>
+      </div>
+      <button class="comm-load-more" id="loadMoreBtn">Load more</button>
+    </section>
+
+    <!-- LEADERBOARD SECTION -->
+    <section class="comm-section hidden" id="sectionLeaderboard">
+      <div class="comm-leaderboard" id="leaderboardList">
+        <div class="comm-loading">Loading leaderboard…</div>
+      </div>
+    </section>
+
+    <!-- CHALLENGES SECTION -->
+    <section class="comm-section hidden" id="sectionChallenges">
+      <div class="comm-challenges-header">
+        <span class="comm-section-title">Active Challenges</span>
+        <button class="comm-new-challenge-btn" id="newChallengeBtn">+ New Challenge</button>
+      </div>
+      <div class="comm-challenges" id="challengesList">
+        <div class="comm-loading">Loading challenges…</div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- NEW POST MODAL -->
+  <div class="comm-modal-overlay hidden" id="postModal">
+    <div class="comm-modal">
+      <div class="comm-modal-header">
+        <span class="comm-modal-title">New Post</span>
+        <button class="comm-modal-close" id="postModalClose">✕</button>
+      </div>
+      <div class="comm-modal-body">
+        <div class="comm-tag-row">
+          <button class="comm-tag-btn active" data-tag="general">General</button>
+          <button class="comm-tag-btn" data-tag="question">Question</button>
+          <button class="comm-tag-btn" data-tag="motivation">Motivation</button>
+          <button class="comm-tag-btn" data-tag="win">Win</button>
+          <button class="comm-tag-btn" data-tag="challenge">Challenge</button>
+        </div>
+        <input class="comm-modal-input" type="text" id="postTitle" placeholder="Title (max 200 chars)…" maxlength="200" />
+        <textarea class="comm-modal-textarea" id="postBody" placeholder="Share your thoughts, questions, or wins… (max 2000 chars)" maxlength="2000"></textarea>
+        <div class="comm-char-count"><span id="bodyCount">0</span>/2000</div>
+        <button class="comm-modal-submit" id="postSubmit">Post</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMMENTS MODAL -->
+  <div class="comm-modal-overlay hidden" id="commentsModal">
+    <div class="comm-modal comm-modal--wide">
+      <div class="comm-modal-header">
+        <span class="comm-modal-title" id="commentsModalTitle">Comments</span>
+        <button class="comm-modal-close" id="commentsModalClose">✕</button>
+      </div>
+      <div class="comm-modal-body">
+        <div class="comm-comments-list" id="commentsList"></div>
+        <div class="comm-comment-input-row">
+          <input class="comm-modal-input" type="text" id="commentInput" placeholder="Add a comment…" maxlength="500" />
+          <button class="comm-comment-submit" id="commentSubmit">↵</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW CHALLENGE MODAL -->
+  <div class="comm-modal-overlay hidden" id="challengeModal">
+    <div class="comm-modal">
+      <div class="comm-modal-header">
+        <span class="comm-modal-title">New Challenge</span>
+        <button class="comm-modal-close" id="challengeModalClose">✕</button>
+      </div>
+      <div class="comm-modal-body">
+        <input class="comm-modal-input" type="text" id="challengeTitle" placeholder="Challenge title…" maxlength="200" />
+        <input class="comm-modal-input" type="text" id="challengeHabit" placeholder="Habit to track (e.g. Run 1km)…" maxlength="200" />
+        <select class="comm-modal-select" id="challengeDuration">
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="21">21 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="60">60 days</option>
+          <option value="90">90 days</option>
+        </select>
+        <select class="comm-modal-select" id="challengeScope">
+          <option value="local">Local (my distro only)</option>
+          <option value="global">Global (all distros)</option>
+        </select>
+        <button class="comm-modal-submit" id="challengeSubmit">Create Challenge</button>
+      </div>
+    </div>
+  </div>
+  <div class="comm-modal-backdrop hidden" id="modalBackdrop"></div>
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='community.js') }}"></script>

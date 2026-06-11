@@ -280,12 +280,14 @@ def create_app():
     from distro.svg.routes.api_route import api
     from distro.svg.routes.ai_route  import ai
     from shared.auth.auth_route import auth, init_mail
+    from distro.svg.routes.community_route import community_api
 
     init_mail(mail)
 
     app.register_blueprint(svg)
     app.register_blueprint(api)
     app.register_blueprint(ai)
+    app.register_blueprint(community_api)
     app.register_blueprint(auth)
     app.register_blueprint(catalystcrew_bp)
     app.register_blueprint(pug_bp)
