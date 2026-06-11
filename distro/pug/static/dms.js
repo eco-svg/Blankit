@@ -379,12 +379,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Polling ───────────────────────────────────────────────────────────────
+    // Near-realtime: every 2s hit the tiny version endpoint and only re-fetch
+    // messages/conversations when something actually changed.
+    let dmVersion = null;
+    function checkDmVersion() {
+        if (document.hidden) return;
+        fetch('/pug/api/dms/version')
+            .then(r => r.json())
+            .then(d => {
+                if (typeof d.v === 'undefined') return;
+                if (dmVersion !== null && d.v !== dmVersion) {
+                    if (currentOtherId) loadMessages();
+                    loadConvs(); // refreshes the list and the header unread badge
+                }
+                dmVersion = d.v;
+            }).catch(() => {});
+    }
+
     function startPolling() {
         stopPolling();
-        pollTimer = setInterval(() => {
-            if (currentOtherId) loadMessages();
-            else loadConvs();
-        }, 15000);
+        checkDmVersion();
+        pollTimer = setInterval(checkDmVersion, 2000);
     }
 
     function stopPolling() {
@@ -467,4 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Init ──────────────────────────────────────────────────────────────────
     loadConvs();
     startPolling();
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) checkDmVersion();
+    });
 });

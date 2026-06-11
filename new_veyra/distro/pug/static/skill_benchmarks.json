@@ -1,0 +1,4027 @@
+{
+  "1 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "World record ~2:11 (men). Relative to trained runners.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~6:00+",
+        "threshold": "6:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 4:30–6:00",
+        "threshold": "4:30–6:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 3:45–4:30",
+        "threshold": "3:45–4:30"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 3:10–3:45",
+        "threshold": "3:10–3:45"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-3:10",
+        "threshold": "under 3:10"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-2:30",
+        "threshold": "under 2:30"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-2:12",
+        "threshold": "under 2:12"
+      }
+    ]
+  },
+  "2 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "World record ~4:44. Relative to trained runners.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~12:00+",
+        "threshold": "12:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 9:00–12:00",
+        "threshold": "9:00–12:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 7:30–9:00",
+        "threshold": "7:30–9:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 6:15–7:30",
+        "threshold": "6:15–7:30"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-6:15",
+        "threshold": "under 6:15"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-5:15",
+        "threshold": "under 5:15"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-4:45",
+        "threshold": "under 4:45"
+      }
+    ]
+  },
+  "3 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "World record ~7:20 (men).",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~18:00+",
+        "threshold": "18:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 14:00–18:00",
+        "threshold": "14:00–18:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 11:30–14:00",
+        "threshold": "11:30–14:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 9:30–11:30",
+        "threshold": "9:30–11:30"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-9:30",
+        "threshold": "under 9:30"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-8:00",
+        "threshold": "under 8:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-7:21",
+        "threshold": "under 7:21"
+      }
+    ]
+  },
+  "4 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~24:00+",
+        "threshold": "24:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 18:00–24:00",
+        "threshold": "18:00–24:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 15:00–18:00",
+        "threshold": "15:00–18:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 12:30–15:00",
+        "threshold": "12:30–15:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-12:30",
+        "threshold": "under 12:30"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-10:30",
+        "threshold": "under 10:30"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-10:00",
+        "threshold": "under 10:00"
+      }
+    ]
+  },
+  "5 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "Based on 736,928 race results — avg finish 34:29. Top 30% break 30:00, top 10% break 27:00, top 1% sub-18:40.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~40:00+",
+        "threshold": "40:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 35:00–40:00",
+        "threshold": "35:00–40:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 30:00–35:00",
+        "threshold": "30:00–35:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 25:00–30:00",
+        "threshold": "25:00–30:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-25:00",
+        "threshold": "under 25:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-15:00",
+        "threshold": "under 15:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-12:36",
+        "threshold": "under 12:36"
+      }
+    ]
+  },
+  "10 km Run": {
+    "type": "metric",
+    "unit": "min:sec",
+    "note": "Top 40% of 10K finishers break 1 hour.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~75:00+",
+        "threshold": "75:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 60:00–75:00",
+        "threshold": "60:00–75:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — under 60:00",
+        "threshold": "under 60:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — under 50:00",
+        "threshold": "under 50:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — under 40:00",
+        "threshold": "under 40:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-28:00",
+        "threshold": "under 28:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-26:18",
+        "threshold": "under 26:18"
+      }
+    ]
+  },
+  "15 km Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~41:05 (Kenenisa Bekele).",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~1:45:00+",
+        "threshold": "1:45:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 1:20:00–1:45:00",
+        "threshold": "1:20:00–1:45:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 1:05:00–1:20:00",
+        "threshold": "1:05:00–1:20:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — under 1:05:00",
+        "threshold": "under 1:05:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — under 52:00",
+        "threshold": "under 52:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-43:00",
+        "threshold": "under 43:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-41:06",
+        "threshold": "under 41:06"
+      }
+    ]
+  },
+  "20 km Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~2:20:00+",
+        "threshold": "2:20:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 1:50:00–2:20:00",
+        "threshold": "1:50:00–2:20:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 1:35:00–1:50:00",
+        "threshold": "1:35:00–1:50:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — under 1:35:00",
+        "threshold": "under 1:35:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — under 1:10:00",
+        "threshold": "under 1:10:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-57:00",
+        "threshold": "under 57:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-55:00",
+        "threshold": "under 55:21"
+      }
+    ]
+  },
+  "Half Marathon (21.1 km) Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "Median men 1:59, women 2:24. Top 10% men sub-1:47, top 1% men sub-1:18.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~2:45:00+",
+        "threshold": "2:45:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 2:15:00–2:45:00",
+        "threshold": "2:15:00–2:45:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 2:00:00–2:15:00",
+        "threshold": "2:00:00–2:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — sub-2:00:00",
+        "threshold": "under 2:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-1:47 (men) / 1:57 (women)",
+        "threshold": "under 1:47:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-1:18:00",
+        "threshold": "under 1:18:38"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-58:00",
+        "threshold": "under 57:32"
+      }
+    ]
+  },
+  "Marathon (42.2 km) Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "Median ~4:20–4:30. Top 25% under 3:55. Based on 107M+ race results.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing, ~6:00:00+",
+        "threshold": "6:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 4:45:00–6:00:00",
+        "threshold": "4:45:00–6:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 4:00:00–4:45:00",
+        "threshold": "4:00:00–4:45:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — sub-4:00:00",
+        "threshold": "under 4:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-3:30:00",
+        "threshold": "under 3:30:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-2:30:00",
+        "threshold": "under 2:30:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-2:01",
+        "threshold": "under 2:00:35"
+      }
+    ]
+  },
+  "25 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~1:11:28.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~3:00:00+",
+        "threshold": "3:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 2:15:00–3:00:00",
+        "threshold": "2:15:00–3:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 1:50:00–2:15:00",
+        "threshold": "1:50:00–2:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 1:35:00–1:50:00",
+        "threshold": "1:35:00–1:50:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-1:20:00",
+        "threshold": "under 1:20:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-1:12:00",
+        "threshold": "under 1:12:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-1:11:29",
+        "threshold": "under 1:11:29"
+      }
+    ]
+  },
+  "50 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~2:43:38.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~7:00:00+",
+        "threshold": "7:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 5:30:00–7:00:00",
+        "threshold": "5:30:00–7:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 4:45:00–5:30:00",
+        "threshold": "4:45:00–5:30:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 4:00:00–4:45:00",
+        "threshold": "4:00:00–4:45:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-3:15:00",
+        "threshold": "under 3:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-2:50:00",
+        "threshold": "under 2:50:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-2:44",
+        "threshold": "under 2:43:39"
+      }
+    ]
+  },
+  "75 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~11:00:00+",
+        "threshold": "11:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 9:00:00–11:00:00",
+        "threshold": "9:00:00–11:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 7:30:00–9:00:00",
+        "threshold": "7:30:00–9:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 6:15:00–7:30:00",
+        "threshold": "6:15:00–7:30:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-5:15:00",
+        "threshold": "under 5:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-4:45:00",
+        "threshold": "under 4:45:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-4:32",
+        "threshold": "under 4:31:13"
+      }
+    ]
+  },
+  "100 km Ultra Run": {
+    "type": "metric",
+    "unit": "hr:min:sec",
+    "note": "World record ~6:33:11.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not started",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — finishing ~17:00:00+",
+        "threshold": "17:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 14:00:00–17:00:00",
+        "threshold": "14:00:00–17:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 11:00:00–14:00:00",
+        "threshold": "11:00:00–14:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 9:00:00–11:00:00",
+        "threshold": "9:00:00–11:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — sub-7:30:00",
+        "threshold": "under 7:30:00"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-6:45:00",
+        "threshold": "under 6:45:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-6:34",
+        "threshold": "under 6:33:12"
+      }
+    ]
+  },
+  "50 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner — can complete 50 m",
+        "threshold": "2:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational — steady pace",
+        "threshold": "1:20–2:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate — comfortable effort",
+        "threshold": "1:00–1:20"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "40–60s"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive swimmer",
+        "threshold": "under 30s"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 23s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 20.91s"
+      }
+    ]
+  },
+  "100 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner — can complete 100 m",
+        "threshold": "3:30+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "2:30–3:30"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "1:45–2:30"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "1:10–1:45"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 1:10"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 54s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 46.92s"
+      }
+    ]
+  },
+  "200 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner — can complete 200 m",
+        "threshold": "8:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "5:30–8:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "4:00–5:30"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "2:45–4:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 2:45"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 2:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 1:42.00"
+      }
+    ]
+  },
+  "400 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner — can complete 400 m",
+        "threshold": "15:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "10:00–15:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "7:30–10:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "5:30–7:30"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 5:30"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 4:15"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 3:40.07"
+      }
+    ]
+  },
+  "1500 m Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Never swum laps",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "Beginner — can complete 1500 m",
+        "threshold": "60:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "42:00–60:00"
+      },
+      {
+        "rank": "C",
+        "label": "Intermediate",
+        "threshold": "30:00–42:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club level",
+        "threshold": "22:00–30:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 22:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national level",
+        "threshold": "under 17:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 14:31"
+      }
+    ]
+  },
+  "1 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First open water swim",
+        "threshold": "30:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational OW swimmer",
+        "threshold": "22:00–30:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable in open water",
+        "threshold": "17:00–22:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club OW / triathlon level",
+        "threshold": "13:00–17:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive OW swimmer",
+        "threshold": "under 13:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national OW",
+        "threshold": "under 11:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 10:00"
+      }
+    ]
+  },
+  "2 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 2 km OW attempt",
+        "threshold": "70:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "50:00–70:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable",
+        "threshold": "38:00–50:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club / triathlon level",
+        "threshold": "28:00–38:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 28:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national",
+        "threshold": "under 22:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 20:00"
+      }
+    ]
+  },
+  "5 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 5 km OW attempt",
+        "threshold": "3:00:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "2:15:00–3:00:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable marathon swimmer",
+        "threshold": "1:45:00–2:15:00"
+      },
+      {
+        "rank": "B",
+        "label": "Club / event finisher",
+        "threshold": "1:20:00–1:45:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 1:20:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / national",
+        "threshold": "under 1:04:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 58:00"
+      }
+    ]
+  },
+  "10 km (open water) Swimming": {
+    "type": "metric",
+    "unit": "time (mm:ss)",
+    "note": "",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No open water swimming",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First 10 km OW attempt",
+        "threshold": "5:30:00+"
+      },
+      {
+        "rank": "D",
+        "label": "Recreational",
+        "threshold": "4:00:00–5:30:00"
+      },
+      {
+        "rank": "C",
+        "label": "Comfortable marathon swimmer",
+        "threshold": "3:00:00–4:00:00"
+      },
+      {
+        "rank": "B",
+        "label": "Event finisher, solid pace",
+        "threshold": "2:30:00–3:00:00"
+      },
+      {
+        "rank": "A",
+        "label": "Competitive",
+        "threshold": "under 2:15:00"
+      },
+      {
+        "rank": "S",
+        "label": "Elite / Olympic level",
+        "threshold": "under 1:55:00"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory",
+        "threshold": "under 1:49:34"
+      }
+    ]
+  },
+  "Chess": {
+    "type": "metric",
+    "unit": "ELO",
+    "note": "Chess.com median ~500, Lichess median ~1400 (different scales). FIDE: 2200+ = FIDE Master, 2500+ = GM. Use either platform — Lichess runs ~200–300pts higher.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Knows the rules, unrated",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — Chess.com under 800 / Lichess under 1000",
+        "threshold": "CC <800 / LC <1000"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — CC 800–1200 / LC 1000–1400",
+        "threshold": "CC 800–1200"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — CC 1200–1500 / LC 1400–1700",
+        "threshold": "CC 1200–1500"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — CC 1500–1800 / LC 1700–2000",
+        "threshold": "CC 1500–1800"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — CC 1800–2200 / LC 2000–2400",
+        "threshold": "CC 1800–2200"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — FIDE Master (ELO 2200+ / GM 2500+)",
+        "threshold": "FIDE 2200+"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — Super-GM (2700+)",
+        "threshold": "FIDE 2700+"
+      }
+    ]
+  },
+  "Typing": {
+    "type": "metric",
+    "unit": "WPM (99%+ accuracy)",
+    "note": "Average office typist 40 WPM. Touch-typist 60–80. Competitive 120+. TypeRacer / Monkeytype data.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Hunt-and-peck, under 20 WPM",
+        "threshold": "under 20"
+      },
+      {
+        "rank": "E",
+        "label": "First steps — 20–35 WPM",
+        "threshold": "20–35"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 40–60 WPM",
+        "threshold": "40–60"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 65–85 WPM",
+        "threshold": "65–85"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 90–110 WPM",
+        "threshold": "90–110"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — 120–140 WPM",
+        "threshold": "120–140"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — 160–180 WPM",
+        "threshold": "160–180"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — 200+ WPM",
+        "threshold": "200+"
+      }
+    ]
+  },
+  "Valorant": {
+    "type": "metric",
+    "unit": "rank tier",
+    "note": "Iron ~35%, Bronze ~25%, Silver ~20%, Gold ~12%, Platinum ~5%, Diamond ~2%, Ascendant ~0.7%, Radiant ~0.03%. Riot Games data.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Unranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — Iron 1–3",
+        "threshold": "Iron"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — Bronze–Silver",
+        "threshold": "Bronze–Silver"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — Gold 1–3",
+        "threshold": "Gold"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — Platinum 1–3",
+        "threshold": "Platinum"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — Diamond / Ascendant",
+        "threshold": "Diamond–Ascendant"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — Radiant",
+        "threshold": "Radiant"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — pro scene",
+        "threshold": "VCT Pro"
+      }
+    ]
+  },
+  "League of Legends": {
+    "type": "metric",
+    "unit": "rank tier",
+    "note": "~150M players. Iron–Bronze ~40%, Silver ~25%, Gold ~20%, Platinum ~10%, Diamond ~2%, Master+ ~0.5%. Riot Games.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Unranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — Iron",
+        "threshold": "Iron"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — Bronze–Silver",
+        "threshold": "Bronze–Silver"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — Gold",
+        "threshold": "Gold"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — Platinum–Emerald",
+        "threshold": "Platinum–Emerald"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — Diamond–Master",
+        "threshold": "Diamond–Master"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — Grandmaster / Challenger",
+        "threshold": "Grandmaster+"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — pro scene",
+        "threshold": "LCS / LEC Pro"
+      }
+    ]
+  },
+  "CS2": {
+    "type": "metric",
+    "unit": "rank / ELO",
+    "note": "CS2 Premier Rating. FACEIT ELO 500–4000. Valve / ESIC data.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not played ranked",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — CS2 Rating under 5000",
+        "threshold": "under 5000"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 5000–10000",
+        "threshold": "5000–10000"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 10000–15000",
+        "threshold": "10000–15000"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 15000–20000",
+        "threshold": "15000–20000"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — 20000–25000 / FACEIT 3000+",
+        "threshold": "20000+ / FC 3000+"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — FACEIT 3500+ (pro level)",
+        "threshold": "FACEIT 3500+"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — pro scene",
+        "threshold": "Major Pro"
+      }
+    ]
+  },
+  "Clash Royale – Trophy Road": {
+    "type": "metric",
+    "unit": "trophies",
+    "note": "14,000 trophies = max Trophy Road. Path of Legends eligible at 13,000.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Under 1500 — early arenas",
+        "threshold": "under 1500"
+      },
+      {
+        "rank": "E",
+        "label": "1500–4000 — casual play",
+        "threshold": "1500–4000"
+      },
+      {
+        "rank": "D",
+        "label": "4000–6500 — mid arenas",
+        "threshold": "4000–6500"
+      },
+      {
+        "rank": "C",
+        "label": "6500–9000 — above average",
+        "threshold": "6500–9000"
+      },
+      {
+        "rank": "B",
+        "label": "9000–11500 — skilled player",
+        "threshold": "9000–11500"
+      },
+      {
+        "rank": "A",
+        "label": "11500–13000 — very skilled, pushing top",
+        "threshold": "11500–13000"
+      },
+      {
+        "rank": "S",
+        "label": "13000–13500 — PoL eligible",
+        "threshold": "13000–13500"
+      },
+      {
+        "rank": "S+",
+        "label": "13500–14000 — max Trophy Road",
+        "threshold": "13500–14000"
+      }
+    ]
+  },
+  "Clash Royale – Path of Legends": {
+    "type": "metric",
+    "unit": "PoL tier (all-time max)",
+    "note": "Seasonal — rank stored as all-time max so season resets don't drop user rank. 10 tiers: Challenger I-III, Master I-III, Champion, Grand Champion, Royal Champion, Ultimate Champion.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not eligible — under 13000 trophies",
+        "threshold": "not eligible"
+      },
+      {
+        "rank": "E",
+        "label": "Challenger I–II",
+        "threshold": "Challenger I–II"
+      },
+      {
+        "rank": "D",
+        "label": "Challenger III – Master I",
+        "threshold": "Challenger III – Master I"
+      },
+      {
+        "rank": "C",
+        "label": "Master II – Master III",
+        "threshold": "Master II–III"
+      },
+      {
+        "rank": "B",
+        "label": "Champion – Grand Champion",
+        "threshold": "Champion–Grand Champion"
+      },
+      {
+        "rank": "A",
+        "label": "Royal Champion",
+        "threshold": "Royal Champion"
+      },
+      {
+        "rank": "S",
+        "label": "Ultimate Champion",
+        "threshold": "Ultimate Champion"
+      },
+      {
+        "rank": "S+",
+        "label": "UC Top 1000 global",
+        "threshold": "Ultimate Champion Top 1000"
+      }
+    ]
+  },
+  "Acoustic Guitar": {
+    "type": "exp"
+  },
+  "Electric Guitar": {
+    "type": "exp"
+  },
+  "Classical Guitar": {
+    "type": "exp"
+  },
+  "Bass Guitar": {
+    "type": "exp"
+  },
+  "Classical Piano": {
+    "type": "exp"
+  },
+  "Jazz Piano": {
+    "type": "exp"
+  },
+  "Pop Piano": {
+    "type": "exp"
+  },
+  "Classical Violin": {
+    "type": "exp"
+  },
+  "Folk Violin / Fiddle": {
+    "type": "exp"
+  },
+  "Jazz Violin": {
+    "type": "exp"
+  },
+  "Acoustic Drums": {
+    "type": "exp"
+  },
+  "Electronic Drums": {
+    "type": "exp"
+  },
+  "Classical / Opera Singing": {
+    "type": "exp"
+  },
+  "Pop Singing": {
+    "type": "exp"
+  },
+  "Rap / Hip-Hop Vocals": {
+    "type": "exp"
+  },
+  "Beatmaking": {
+    "type": "exp"
+  },
+  "Mixing & Mastering": {
+    "type": "exp"
+  },
+  "Sound Design": {
+    "type": "exp"
+  },
+  "Club DJing": {
+    "type": "exp"
+  },
+  "Scratch DJing": {
+    "type": "exp"
+  },
+  "Events DJing": {
+    "type": "exp"
+  },
+  "Hip-Hop Dance": {
+    "type": "exp"
+  },
+  "Contemporary Dance": {
+    "type": "exp"
+  },
+  "Ballet": {
+    "type": "exp"
+  },
+  "Folk / Cultural Dance": {
+    "type": "exp"
+  },
+  "Pencil / Sketch": {
+    "type": "exp"
+  },
+  "Digital Illustration": {
+    "type": "exp"
+  },
+  "Comic & Manga Art": {
+    "type": "exp"
+  },
+  "Portrait Drawing": {
+    "type": "exp"
+  },
+  "Oil Painting": {
+    "type": "exp"
+  },
+  "Watercolour Painting": {
+    "type": "exp"
+  },
+  "Acrylic Painting": {
+    "type": "exp"
+  },
+  "Digital Painting": {
+    "type": "exp"
+  },
+  "Portrait Photography": {
+    "type": "exp"
+  },
+  "Landscape Photography": {
+    "type": "exp"
+  },
+  "Street Photography": {
+    "type": "exp"
+  },
+  "Product Photography": {
+    "type": "exp"
+  },
+  "Cinematic / Film": {
+    "type": "exp"
+  },
+  "Documentary Filmmaking": {
+    "type": "exp"
+  },
+  "Content Creation Video": {
+    "type": "exp"
+  },
+  "Brand & Logo Design": {
+    "type": "exp"
+  },
+  "UI/UX Design": {
+    "type": "exp"
+  },
+  "Motion Design": {
+    "type": "exp"
+  },
+  "Stovetop Cooking": {
+    "type": "exp"
+  },
+  "BBQ & Grilling": {
+    "type": "exp"
+  },
+  "Baking & Roasting": {
+    "type": "exp"
+  },
+  "Meal Prep": {
+    "type": "exp"
+  },
+  "Bread & Sourdough": {
+    "type": "exp"
+  },
+  "Pastry & Cakes": {
+    "type": "exp"
+  },
+  "Cookies & Biscuits": {
+    "type": "exp"
+  },
+  "Wheel Throwing": {
+    "type": "exp"
+  },
+  "Hand-Building Pottery": {
+    "type": "exp"
+  },
+  "Garment Making": {
+    "type": "exp"
+  },
+  "Alterations & Repair": {
+    "type": "exp"
+  },
+  "Hand Embroidery": {
+    "type": "exp"
+  },
+  "Furniture Making": {
+    "type": "exp"
+  },
+  "Wood Carving": {
+    "type": "exp"
+  },
+  "Lathe Turning": {
+    "type": "exp"
+  },
+  "Metalsmithing": {
+    "type": "exp"
+  },
+  "Beading & Wire Jewelry": {
+    "type": "exp"
+  },
+  "Electronics Repair": {
+    "type": "exp"
+  },
+  "DIY Electronics Build": {
+    "type": "exp"
+  },
+  "IoT & Embedded Systems": {
+    "type": "exp"
+  },
+  "Web Development": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Mobile Development": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Systems & Backend": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "ML & AI Engineering": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Game Development": {
+    "type": "exp",
+    "note": "EXP from community engagement + 10 EXP per verified platform user"
+  },
+  "Hatha Yoga": {
+    "type": "exp"
+  },
+  "Ashtanga Yoga": {
+    "type": "exp"
+  },
+  "Aerial Yoga": {
+    "type": "exp"
+  },
+  "Fiction Writing": {
+    "type": "exp"
+  },
+  "Non-Fiction / Essays": {
+    "type": "exp"
+  },
+  "Poetry": {
+    "type": "exp"
+  },
+  "Debate": {
+    "type": "exp"
+  },
+  "Presentations": {
+    "type": "exp"
+  },
+  "Stand-up Comedy": {
+    "type": "exp"
+  },
+  "Close-Up Magic": {
+    "type": "exp"
+  },
+  "Stage Magic": {
+    "type": "exp"
+  },
+  "Mehendi / Henna Art": {
+    "type": "exp"
+  },
+  "Rangoli": {
+    "type": "exp"
+  },
+  "Kolam Art": {
+    "type": "exp"
+  },
+  "Hindustani Classical Singing": {
+    "type": "exp"
+  },
+  "Carnatic Singing": {
+    "type": "exp"
+  },
+  "Madhubani Painting": {
+    "type": "exp"
+  },
+  "Warli Art": {
+    "type": "exp"
+  },
+  "Manga Art": {
+    "type": "exp"
+  },
+  "Ikebana": {
+    "type": "exp"
+  },
+  "Japanese Calligraphy (Shodo)": {
+    "type": "exp"
+  },
+  "Origami Art": {
+    "type": "exp"
+  },
+  "Bonsai": {
+    "type": "exp"
+  },
+  "Webtoon Art": {
+    "type": "exp"
+  },
+  "K-Pop Dance Cover": {
+    "type": "exp"
+  },
+  "Chinese Ink Painting": {
+    "type": "exp"
+  },
+  "Chinese Calligraphy": {
+    "type": "exp"
+  },
+  "Folk Art Painting": {
+    "type": "exp"
+  },
+  "Lace Making": {
+    "type": "exp"
+  },
+  "Nail Art": {
+    "type": "exp"
+  },
+  "Cosplay Making": {
+    "type": "exp"
+  },
+  "Fashion Illustration": {
+    "type": "exp"
+  },
+  "Interior Design": {
+    "type": "exp"
+  },
+  "Zentangle & Mandala Art": {
+    "type": "exp"
+  },
+  "Arabic Calligraphy": {
+    "type": "exp"
+  },
+  "Western Calligraphy": {
+    "type": "exp"
+  },
+  "Street Art & Murals": {
+    "type": "exp"
+  },
+  "Food Styling": {
+    "type": "exp"
+  },
+  "Tattooing": {
+    "type": "exp"
+  },
+  "Body Painting": {
+    "type": "exp"
+  },
+  "Screenwriting": {
+    "type": "exp"
+  },
+  "Podcast Production": {
+    "type": "exp"
+  },
+  "Book Cover Design": {
+    "type": "exp"
+  },
+  "Album Art Design": {
+    "type": "exp"
+  },
+  "Aerial Photography": {
+    "type": "exp"
+  },
+  "Macro Photography": {
+    "type": "exp"
+  },
+  "Wedding Photography": {
+    "type": "exp"
+  },
+  "Furniture Restoration": {
+    "type": "exp"
+  },
+  "Candle Making": {
+    "type": "exp"
+  },
+  "Soap Making": {
+    "type": "exp"
+  },
+  "Leather Crafting": {
+    "type": "exp"
+  },
+  "Football": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Basketball": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Cricket": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "batting",
+        "label": "Batting"
+      },
+      {
+        "id": "bowling",
+        "label": "Bowling"
+      },
+      {
+        "id": "allround",
+        "label": "All-Round"
+      }
+    ]
+  },
+  "Volleyball": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "volleyball",
+        "label": "Volleyball"
+      },
+      {
+        "id": "beach",
+        "label": "Beach Volleyball"
+      }
+    ]
+  },
+  "Skateboarding": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "street",
+        "label": "Street"
+      },
+      {
+        "id": "vert",
+        "label": "Vert"
+      },
+      {
+        "id": "park",
+        "label": "Park"
+      }
+    ]
+  },
+  "Surfing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "shortboard",
+        "label": "Shortboard"
+      },
+      {
+        "id": "longboard",
+        "label": "Longboard"
+      }
+    ]
+  },
+  "Breakdancing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Parkour": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Competitive Mathematics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "national",
+        "label": "National Olympiad"
+      },
+      {
+        "id": "international",
+        "label": "International Olympiad (IMO)"
+      }
+    ]
+  },
+  "Competitive Programming": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "codeforces",
+        "label": "Codeforces"
+      },
+      {
+        "id": "atcoder",
+        "label": "AtCoder"
+      },
+      {
+        "id": "leetcode",
+        "label": "LeetCode"
+      }
+    ]
+  },
+  "Speed Cubing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "3x3",
+        "label": "3×3 Rubik's Cube"
+      },
+      {
+        "id": "2x2",
+        "label": "2×2"
+      },
+      {
+        "id": "4x4",
+        "label": "4×4"
+      },
+      {
+        "id": "5x5",
+        "label": "5×5"
+      },
+      {
+        "id": "blindfolded",
+        "label": "Blindfolded (BLD)"
+      },
+      {
+        "id": "one_handed",
+        "label": "One-Handed"
+      }
+    ]
+  },
+  "Weightlifting": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "powerlifting",
+        "label": "Powerlifting"
+      },
+      {
+        "id": "olympic",
+        "label": "Olympic Lifting"
+      },
+      {
+        "id": "bodybuilding",
+        "label": "Bodybuilding"
+      },
+      {
+        "id": "crossfit",
+        "label": "CrossFit"
+      },
+      {
+        "id": "strongman",
+        "label": "Strongman"
+      }
+    ]
+  },
+  "Language": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "english",
+        "label": "English"
+      },
+      {
+        "id": "spanish",
+        "label": "Spanish"
+      },
+      {
+        "id": "french",
+        "label": "French"
+      },
+      {
+        "id": "german",
+        "label": "German"
+      },
+      {
+        "id": "japanese",
+        "label": "Japanese"
+      },
+      {
+        "id": "mandarin",
+        "label": "Mandarin Chinese"
+      },
+      {
+        "id": "korean",
+        "label": "Korean"
+      },
+      {
+        "id": "arabic",
+        "label": "Arabic"
+      },
+      {
+        "id": "hindi",
+        "label": "Hindi"
+      },
+      {
+        "id": "portuguese",
+        "label": "Portuguese"
+      },
+      {
+        "id": "italian",
+        "label": "Italian"
+      },
+      {
+        "id": "russian",
+        "label": "Russian"
+      },
+      {
+        "id": "turkish",
+        "label": "Turkish"
+      },
+      {
+        "id": "dutch",
+        "label": "Dutch"
+      },
+      {
+        "id": "swedish",
+        "label": "Swedish"
+      }
+    ]
+  },
+  "Badminton": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "singles",
+        "label": "Singles"
+      },
+      {
+        "id": "doubles",
+        "label": "Doubles"
+      },
+      {
+        "id": "mixed_doubles",
+        "label": "Mixed Doubles"
+      }
+    ]
+  },
+  "Tennis": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "hard",
+        "label": "Hard Court"
+      },
+      {
+        "id": "clay",
+        "label": "Clay Court"
+      },
+      {
+        "id": "grass",
+        "label": "Grass Court"
+      }
+    ]
+  },
+  "Table Tennis": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "singles",
+        "label": "Singles"
+      },
+      {
+        "id": "doubles",
+        "label": "Doubles"
+      }
+    ]
+  },
+  "Squash": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "singles",
+        "label": "Singles"
+      },
+      {
+        "id": "doubles",
+        "label": "Doubles"
+      }
+    ]
+  },
+  "Pickleball": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "singles",
+        "label": "Singles"
+      },
+      {
+        "id": "doubles",
+        "label": "Doubles"
+      }
+    ]
+  },
+  "Racquetball": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Padel": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Shuttlecock / Jianzi": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Golf": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "stroke_play",
+        "label": "Stroke Play"
+      },
+      {
+        "id": "match_play",
+        "label": "Match Play"
+      },
+      {
+        "id": "disc_golf",
+        "label": "Disc Golf"
+      }
+    ]
+  },
+  "Darts": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "steel_tip",
+        "label": "Steel Tip"
+      },
+      {
+        "id": "soft_tip",
+        "label": "Soft Tip"
+      }
+    ]
+  },
+  "Bowling": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "ten_pin",
+        "label": "Ten-Pin"
+      },
+      {
+        "id": "nine_pin",
+        "label": "Nine-Pin"
+      },
+      {
+        "id": "candlepin",
+        "label": "Candlepin"
+      }
+    ]
+  },
+  "Archery": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "recurve",
+        "label": "Recurve"
+      },
+      {
+        "id": "compound",
+        "label": "Compound"
+      },
+      {
+        "id": "traditional",
+        "label": "Traditional"
+      }
+    ]
+  },
+  "Shooting": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "rifle",
+        "label": "Rifle"
+      },
+      {
+        "id": "pistol",
+        "label": "Pistol"
+      },
+      {
+        "id": "skeet",
+        "label": "Skeet / Trap"
+      }
+    ]
+  },
+  "Cycling": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "road",
+        "label": "Road Cycling"
+      },
+      {
+        "id": "mountain",
+        "label": "Mountain Biking"
+      },
+      {
+        "id": "track",
+        "label": "Track Cycling"
+      },
+      {
+        "id": "bmx",
+        "label": "BMX"
+      },
+      {
+        "id": "gravel",
+        "label": "Gravel / Cyclocross"
+      }
+    ]
+  },
+  "Inline Skating": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "speed",
+        "label": "Speed Skating"
+      },
+      {
+        "id": "aggressive",
+        "label": "Aggressive / Tricks"
+      },
+      {
+        "id": "fitness",
+        "label": "Fitness"
+      }
+    ]
+  },
+  "Longboarding": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Rock Climbing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "bouldering",
+        "label": "Bouldering"
+      },
+      {
+        "id": "sport",
+        "label": "Sport Climbing"
+      },
+      {
+        "id": "trad",
+        "label": "Traditional Climbing"
+      },
+      {
+        "id": "top_rope",
+        "label": "Top Rope"
+      }
+    ]
+  },
+  "Mountaineering": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Hiking": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "day_hike",
+        "label": "Day Hiking"
+      },
+      {
+        "id": "backpacking",
+        "label": "Backpacking / Multi-Day"
+      },
+      {
+        "id": "ultra_trail",
+        "label": "Ultra Trail"
+      }
+    ]
+  },
+  "Trail Running": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Triathlon": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "sprint",
+        "label": "Sprint Triathlon"
+      },
+      {
+        "id": "olympic",
+        "label": "Olympic Triathlon"
+      },
+      {
+        "id": "ironman",
+        "label": "Ironman"
+      }
+    ]
+  },
+  "Rowing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "indoor_ergo",
+        "label": "Indoor Ergo (Concept2)"
+      },
+      {
+        "id": "sweep",
+        "label": "Sweep Rowing"
+      },
+      {
+        "id": "scull",
+        "label": "Sculling"
+      }
+    ]
+  },
+  "Kayaking": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "flatwater",
+        "label": "Flatwater"
+      },
+      {
+        "id": "whitewater",
+        "label": "Whitewater"
+      },
+      {
+        "id": "sea",
+        "label": "Sea Kayaking"
+      }
+    ]
+  },
+  "Canoeing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Water Polo": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Diving": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "platform",
+        "label": "Platform"
+      },
+      {
+        "id": "springboard",
+        "label": "Springboard"
+      },
+      {
+        "id": "scuba",
+        "label": "Scuba Diving"
+      },
+      {
+        "id": "freediving",
+        "label": "Freediving"
+      }
+    ]
+  },
+  "Windsurfing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kitesurfing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Wakeboarding": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Skiing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "alpine",
+        "label": "Alpine / Downhill"
+      },
+      {
+        "id": "nordic",
+        "label": "Nordic / Cross-Country"
+      },
+      {
+        "id": "freestyle",
+        "label": "Freestyle / Park"
+      },
+      {
+        "id": "ski_jumping",
+        "label": "Ski Jumping"
+      }
+    ]
+  },
+  "Snowboarding": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "freestyle",
+        "label": "Freestyle / Park"
+      },
+      {
+        "id": "alpine",
+        "label": "Alpine / Carving"
+      },
+      {
+        "id": "backcountry",
+        "label": "Backcountry"
+      }
+    ]
+  },
+  "Ice Skating": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "figure",
+        "label": "Figure Skating"
+      },
+      {
+        "id": "speed",
+        "label": "Speed Skating"
+      },
+      {
+        "id": "hockey",
+        "label": "Ice Hockey"
+      }
+    ]
+  },
+  "Curling": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Brazilian Jiu-Jitsu": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "gi",
+        "label": "Gi"
+      },
+      {
+        "id": "nogi",
+        "label": "No-Gi"
+      }
+    ]
+  },
+  "Judo": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Karate": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "kata",
+        "label": "Kata"
+      },
+      {
+        "id": "kumite",
+        "label": "Kumite"
+      }
+    ]
+  },
+  "Taekwondo": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "forms",
+        "label": "Poomsae / Forms"
+      },
+      {
+        "id": "sparring",
+        "label": "Sparring"
+      }
+    ]
+  },
+  "Boxing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "amateur",
+        "label": "Amateur Boxing"
+      },
+      {
+        "id": "professional",
+        "label": "Professional Boxing"
+      }
+    ]
+  },
+  "Muay Thai": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kickboxing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Wrestling": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "freestyle",
+        "label": "Freestyle"
+      },
+      {
+        "id": "greco_roman",
+        "label": "Greco-Roman"
+      }
+    ]
+  },
+  "MMA": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kung Fu": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "wing_chun",
+        "label": "Wing Chun"
+      },
+      {
+        "id": "wushu",
+        "label": "Wushu"
+      },
+      {
+        "id": "shaolin",
+        "label": "Shaolin"
+      }
+    ]
+  },
+  "Capoeira": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Krav Maga": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Aikido": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Fencing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "foil",
+        "label": "Foil"
+      },
+      {
+        "id": "epee",
+        "label": "Épée"
+      },
+      {
+        "id": "sabre",
+        "label": "Sabre"
+      }
+    ]
+  },
+  "Gymnastics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "artistic",
+        "label": "Artistic"
+      },
+      {
+        "id": "rhythmic",
+        "label": "Rhythmic"
+      },
+      {
+        "id": "acrobatic",
+        "label": "Acrobatic"
+      },
+      {
+        "id": "trampoline",
+        "label": "Trampoline"
+      }
+    ]
+  },
+  "Cheerleading": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Aerial Silks": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Circus Arts": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "trapeze",
+        "label": "Trapeze"
+      },
+      {
+        "id": "juggling",
+        "label": "Juggling"
+      },
+      {
+        "id": "acrobatics",
+        "label": "Acrobatics"
+      },
+      {
+        "id": "tightrope",
+        "label": "Tightrope"
+      }
+    ]
+  },
+  "Calisthenics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "basics",
+        "label": "Fundamentals (push-ups, pull-ups)"
+      },
+      {
+        "id": "skills",
+        "label": "Skills (muscle-up, L-sit)"
+      },
+      {
+        "id": "advanced",
+        "label": "Advanced (planche, front lever)"
+      }
+    ]
+  },
+  "Powerlifting": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "squat",
+        "label": "Squat"
+      },
+      {
+        "id": "bench",
+        "label": "Bench Press"
+      },
+      {
+        "id": "deadlift",
+        "label": "Deadlift"
+      },
+      {
+        "id": "total",
+        "label": "Total (all three)"
+      }
+    ]
+  },
+  "CrossFit": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Bodybuilding": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Pilates": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "mat",
+        "label": "Mat Pilates"
+      },
+      {
+        "id": "reformer",
+        "label": "Reformer Pilates"
+      }
+    ]
+  },
+  "Meditation": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "mindfulness",
+        "label": "Mindfulness"
+      },
+      {
+        "id": "transcendental",
+        "label": "Transcendental"
+      },
+      {
+        "id": "vipassana",
+        "label": "Vipassana"
+      },
+      {
+        "id": "breathwork",
+        "label": "Breathwork"
+      }
+    ]
+  },
+  "Rugby": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "union",
+        "label": "Rugby Union"
+      },
+      {
+        "id": "league",
+        "label": "Rugby League"
+      },
+      {
+        "id": "sevens",
+        "label": "Rugby Sevens"
+      }
+    ]
+  },
+  "American Football": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Baseball": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "pitching",
+        "label": "Pitching"
+      },
+      {
+        "id": "hitting",
+        "label": "Hitting / Batting"
+      },
+      {
+        "id": "fielding",
+        "label": "Fielding"
+      }
+    ]
+  },
+  "Softball": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Hockey": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "ice",
+        "label": "Ice Hockey"
+      },
+      {
+        "id": "field",
+        "label": "Field Hockey"
+      },
+      {
+        "id": "roller",
+        "label": "Roller Hockey"
+      }
+    ]
+  },
+  "Handball": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Lacrosse": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kabaddi": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kho Kho": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Horse Riding": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "dressage",
+        "label": "Dressage"
+      },
+      {
+        "id": "show_jumping",
+        "label": "Show Jumping"
+      },
+      {
+        "id": "cross_country",
+        "label": "Cross Country"
+      },
+      {
+        "id": "endurance",
+        "label": "Endurance Riding"
+      }
+    ]
+  },
+  "Polo": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Salsa": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "on1",
+        "label": "On1 (LA Style)"
+      },
+      {
+        "id": "on2",
+        "label": "On2 (NY Style)"
+      },
+      {
+        "id": "cuban",
+        "label": "Cuban Salsa"
+      }
+    ]
+  },
+  "Bachata": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "sensual",
+        "label": "Sensual"
+      },
+      {
+        "id": "dominican",
+        "label": "Dominican"
+      }
+    ]
+  },
+  "Ballroom Dance": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "waltz",
+        "label": "Waltz"
+      },
+      {
+        "id": "tango",
+        "label": "Tango"
+      },
+      {
+        "id": "foxtrot",
+        "label": "Foxtrot"
+      },
+      {
+        "id": "quickstep",
+        "label": "Quickstep"
+      }
+    ]
+  },
+  "Latin Dance": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "rumba",
+        "label": "Rumba"
+      },
+      {
+        "id": "cha_cha",
+        "label": "Cha-Cha"
+      },
+      {
+        "id": "jive",
+        "label": "Jive"
+      },
+      {
+        "id": "samba",
+        "label": "Samba"
+      }
+    ]
+  },
+  "Flamenco": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Bhangra": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kathak": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Bharatanatyam": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Kuchipudi": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Odissi": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Irish Step Dance": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Tap Dance": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Pole Dance": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Swing Dance": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "lindy_hop",
+        "label": "Lindy Hop"
+      },
+      {
+        "id": "west_coast",
+        "label": "West Coast Swing"
+      }
+    ]
+  },
+  "K-Pop Dance": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Zumba": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Ukulele": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "soprano",
+        "label": "Soprano"
+      },
+      {
+        "id": "concert",
+        "label": "Concert"
+      },
+      {
+        "id": "baritone",
+        "label": "Baritone"
+      }
+    ]
+  },
+  "Mandolin": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Banjo": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Harp": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Cello": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Viola": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Double Bass": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Trumpet": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Trombone": {
+    "type": "unranked",
+    "classes": []
+  },
+  "French Horn": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Tuba": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Saxophone": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "alto",
+        "label": "Alto Sax"
+      },
+      {
+        "id": "tenor",
+        "label": "Tenor Sax"
+      },
+      {
+        "id": "soprano",
+        "label": "Soprano Sax"
+      },
+      {
+        "id": "baritone",
+        "label": "Baritone Sax"
+      }
+    ]
+  },
+  "Flute": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Clarinet": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Oboe": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Bassoon": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Sitar": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Tabla": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Djembe": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Cajon": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Harmonica": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Accordion": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Beatboxing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Rap": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "freestyle",
+        "label": "Freestyle"
+      },
+      {
+        "id": "written",
+        "label": "Written / Studio"
+      }
+    ]
+  },
+  "Music Theory": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Music Composition": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "classical",
+        "label": "Classical / Orchestral"
+      },
+      {
+        "id": "film",
+        "label": "Film Scoring"
+      },
+      {
+        "id": "pop",
+        "label": "Pop / Commercial"
+      }
+    ]
+  },
+  "Sound Engineering": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "live",
+        "label": "Live Sound"
+      },
+      {
+        "id": "studio",
+        "label": "Studio Recording"
+      },
+      {
+        "id": "mastering",
+        "label": "Mastering"
+      }
+    ]
+  },
+  "Digital Art": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "illustration",
+        "label": "Digital Illustration"
+      },
+      {
+        "id": "concept_art",
+        "label": "Concept Art"
+      },
+      {
+        "id": "pixel_art",
+        "label": "Pixel Art"
+      }
+    ]
+  },
+  "Sculpture": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "stone",
+        "label": "Stone"
+      },
+      {
+        "id": "clay",
+        "label": "Clay"
+      },
+      {
+        "id": "metal",
+        "label": "Metal"
+      },
+      {
+        "id": "wood",
+        "label": "Wood Carving"
+      }
+    ]
+  },
+  "Printmaking": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "linocut",
+        "label": "Linocut"
+      },
+      {
+        "id": "etching",
+        "label": "Etching"
+      },
+      {
+        "id": "screen_print",
+        "label": "Screen Printing"
+      }
+    ]
+  },
+  "Graffiti & Street Art": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Calligraphy": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "western",
+        "label": "Western Calligraphy"
+      },
+      {
+        "id": "arabic",
+        "label": "Arabic Calligraphy"
+      },
+      {
+        "id": "chinese",
+        "label": "Chinese / Japanese Calligraphy"
+      }
+    ]
+  },
+  "Animation": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "2d",
+        "label": "2D Animation"
+      },
+      {
+        "id": "3d",
+        "label": "3D Animation"
+      },
+      {
+        "id": "stop_motion",
+        "label": "Stop Motion"
+      }
+    ]
+  },
+  "3D Modeling": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "product",
+        "label": "Product / Industrial"
+      },
+      {
+        "id": "character",
+        "label": "Character Modeling"
+      },
+      {
+        "id": "architectural",
+        "label": "Architectural"
+      },
+      {
+        "id": "game_assets",
+        "label": "Game Assets"
+      }
+    ]
+  },
+  "Motion Graphics": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Film Making": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "directing",
+        "label": "Directing"
+      },
+      {
+        "id": "cinematography",
+        "label": "Cinematography"
+      },
+      {
+        "id": "editing",
+        "label": "Video Editing"
+      },
+      {
+        "id": "vfx",
+        "label": "VFX / Visual Effects"
+      }
+    ]
+  },
+  "Mosaic": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Stained Glass": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Knitting": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Crocheting": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Embroidery": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Cross-Stitch": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Weaving": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Macramé": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Glassblowing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Leather Working": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Metalworking": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "welding",
+        "label": "Welding"
+      },
+      {
+        "id": "fabrication",
+        "label": "Metal Fabrication"
+      },
+      {
+        "id": "blacksmithing",
+        "label": "Blacksmithing"
+      }
+    ]
+  },
+  "Origami": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Paper Craft": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "scrapbooking",
+        "label": "Scrapbooking"
+      },
+      {
+        "id": "bookbinding",
+        "label": "Bookbinding"
+      }
+    ]
+  },
+  "Floral Arrangement": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Model Building": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "scale_models",
+        "label": "Scale Models"
+      },
+      {
+        "id": "gunpla",
+        "label": "Gunpla / Model Kits"
+      },
+      {
+        "id": "wargaming",
+        "label": "Wargaming Miniatures"
+      }
+    ]
+  },
+  "3D Printing": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Resin Art": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Bartending": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "cocktail",
+        "label": "Cocktail Mixing"
+      },
+      {
+        "id": "flair",
+        "label": "Flair Bartending"
+      }
+    ]
+  },
+  "Coffee / Barista": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "espresso",
+        "label": "Espresso"
+      },
+      {
+        "id": "latte_art",
+        "label": "Latte Art"
+      },
+      {
+        "id": "pour_over",
+        "label": "Pour Over / Filter"
+      }
+    ]
+  },
+  "Tea Ceremony": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "japanese",
+        "label": "Japanese Chado"
+      },
+      {
+        "id": "chinese",
+        "label": "Chinese Gongfu Cha"
+      }
+    ]
+  },
+  "Wine & Sommelier": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Craft Brewing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "beer",
+        "label": "Beer Brewing"
+      },
+      {
+        "id": "mead",
+        "label": "Mead / Wine Making"
+      }
+    ]
+  },
+  "Cake Decorating": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Chocolatier": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Fermentation": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "kombucha",
+        "label": "Kombucha"
+      },
+      {
+        "id": "sourdough",
+        "label": "Sourdough"
+      },
+      {
+        "id": "kimchi",
+        "label": "Kimchi / Vegetables"
+      }
+    ]
+  },
+  "Data Science": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "analysis",
+        "label": "Data Analysis"
+      },
+      {
+        "id": "ml",
+        "label": "Machine Learning"
+      },
+      {
+        "id": "visualization",
+        "label": "Data Visualization"
+      }
+    ]
+  },
+  "Machine Learning & AI": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "ml",
+        "label": "Classical ML"
+      },
+      {
+        "id": "deep_learning",
+        "label": "Deep Learning"
+      },
+      {
+        "id": "nlp",
+        "label": "NLP"
+      },
+      {
+        "id": "computer_vision",
+        "label": "Computer Vision"
+      }
+    ]
+  },
+  "Cybersecurity": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "ctf",
+        "label": "CTF / Capture the Flag"
+      },
+      {
+        "id": "pentest",
+        "label": "Penetration Testing"
+      },
+      {
+        "id": "blue_team",
+        "label": "Blue Team / Defense"
+      }
+    ]
+  },
+  "Robotics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "arduino",
+        "label": "Arduino / Microcontrollers"
+      },
+      {
+        "id": "raspberry_pi",
+        "label": "Raspberry Pi"
+      },
+      {
+        "id": "ros",
+        "label": "ROS / Advanced Robotics"
+      }
+    ]
+  },
+  "DevOps & Cloud": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "devops",
+        "label": "DevOps / CI-CD"
+      },
+      {
+        "id": "aws",
+        "label": "AWS"
+      },
+      {
+        "id": "gcp",
+        "label": "GCP"
+      },
+      {
+        "id": "azure",
+        "label": "Azure"
+      }
+    ]
+  },
+  "Blockchain & Web3": {
+    "type": "unranked",
+    "classes": []
+  },
+  "VR & AR Development": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Physics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "olympiad",
+        "label": "Physics Olympiad"
+      },
+      {
+        "id": "experimental",
+        "label": "Experimental Physics"
+      }
+    ]
+  },
+  "Chemistry": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "olympiad",
+        "label": "Chemistry Olympiad"
+      },
+      {
+        "id": "organic",
+        "label": "Organic Chemistry"
+      }
+    ]
+  },
+  "Biology": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "olympiad",
+        "label": "Biology Olympiad"
+      }
+    ]
+  },
+  "Speed Reading": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Memory & Mnemonics": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "memory_palace",
+        "label": "Memory Palace"
+      },
+      {
+        "id": "cards",
+        "label": "Card Memorization"
+      },
+      {
+        "id": "numbers",
+        "label": "Number Memorization"
+      }
+    ]
+  },
+  "Sudoku": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Puzzle Solving": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Acting": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "theater",
+        "label": "Theater"
+      },
+      {
+        "id": "film",
+        "label": "Film & TV"
+      },
+      {
+        "id": "improv",
+        "label": "Improv Comedy"
+      },
+      {
+        "id": "voice",
+        "label": "Voice Acting"
+      }
+    ]
+  },
+  "Storytelling": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Modeling": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "runway",
+        "label": "Runway / Fashion"
+      },
+      {
+        "id": "commercial",
+        "label": "Commercial"
+      },
+      {
+        "id": "fitness",
+        "label": "Fitness"
+      }
+    ]
+  },
+  "Podcasting": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Streaming & Content Creation": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "gaming",
+        "label": "Gaming / Esports"
+      },
+      {
+        "id": "vlogging",
+        "label": "Vlogging"
+      },
+      {
+        "id": "educational",
+        "label": "Educational"
+      }
+    ]
+  },
+  "Dota 2": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Fortnite": {
+    "type": "unranked",
+    "classes": []
+  },
+  "PUBG / BGMI": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Rocket League": {
+    "type": "unranked",
+    "classes": []
+  },
+  "EA FC / FIFA": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Overwatch": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Apex Legends": {
+    "type": "unranked",
+    "classes": []
+  },
+  "StarCraft II": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Hearthstone": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Pokémon TCG": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Magic: The Gathering": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Teaching & Tutoring": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "academic",
+        "label": "Academic Subjects"
+      },
+      {
+        "id": "music",
+        "label": "Music Teaching"
+      },
+      {
+        "id": "sports",
+        "label": "Sports Coaching"
+      },
+      {
+        "id": "language",
+        "label": "Language Teaching"
+      }
+    ]
+  },
+  "Event Planning": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "weddings",
+        "label": "Weddings"
+      },
+      {
+        "id": "corporate",
+        "label": "Corporate Events"
+      },
+      {
+        "id": "concerts",
+        "label": "Concerts & Festivals"
+      }
+    ]
+  },
+  "Trading & Investing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "stocks",
+        "label": "Stocks"
+      },
+      {
+        "id": "options",
+        "label": "Options"
+      },
+      {
+        "id": "crypto",
+        "label": "Crypto"
+      },
+      {
+        "id": "forex",
+        "label": "Forex"
+      }
+    ]
+  },
+  "Entrepreneurship": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Marketing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "digital",
+        "label": "Digital Marketing"
+      },
+      {
+        "id": "content",
+        "label": "Content Marketing"
+      },
+      {
+        "id": "seo",
+        "label": "SEO"
+      }
+    ]
+  },
+  "Sales": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Fishing": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "freshwater",
+        "label": "Freshwater Fishing"
+      },
+      {
+        "id": "sea",
+        "label": "Sea / Saltwater Fishing"
+      },
+      {
+        "id": "fly",
+        "label": "Fly Fishing"
+      },
+      {
+        "id": "ice",
+        "label": "Ice Fishing"
+      }
+    ]
+  },
+  "Hunting": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Survival Skills": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "wilderness",
+        "label": "Wilderness Survival"
+      },
+      {
+        "id": "bushcraft",
+        "label": "Bushcraft"
+      }
+    ]
+  },
+  "Navigation": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "orienteering",
+        "label": "Orienteering"
+      },
+      {
+        "id": "celestial",
+        "label": "Celestial Navigation"
+      }
+    ]
+  },
+  "Gardening": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "vegetable",
+        "label": "Vegetable Gardening"
+      },
+      {
+        "id": "ornamental",
+        "label": "Ornamental / Flowers"
+      },
+      {
+        "id": "bonsai",
+        "label": "Bonsai"
+      },
+      {
+        "id": "hydroponics",
+        "label": "Hydroponics"
+      }
+    ]
+  },
+  "Bird Watching": {
+    "type": "unranked",
+    "classes": []
+  },
+  "Astronomy": {
+    "type": "unranked",
+    "classes": [
+      {
+        "id": "observational",
+        "label": "Observational"
+      },
+      {
+        "id": "astrophotography",
+        "label": "Astrophotography"
+      }
+    ]
+  },
+  "300m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 30.81s (Wayde van Niekerk, 2015). Sub-elite ~35s, average ~45s.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "Not trained",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "First steps — 55s+",
+        "threshold": "55s+"
+      },
+      {
+        "rank": "D",
+        "label": "Top 70–99% — 44–55s",
+        "threshold": "44–55s"
+      },
+      {
+        "rank": "C",
+        "label": "Top 40–70% — 38–44s",
+        "threshold": "38–44s"
+      },
+      {
+        "rank": "B",
+        "label": "Top 20–40% — 34–38s",
+        "threshold": "34–38s"
+      },
+      {
+        "rank": "A",
+        "label": "Top 1–10% — 32–34s (national-level)",
+        "threshold": "32–34s"
+      },
+      {
+        "rank": "S",
+        "label": "Top 0.001% — sub-32s (pro)",
+        "threshold": "under 32s"
+      },
+      {
+        "rank": "S+",
+        "label": "World record territory — sub-31s",
+        "threshold": "under 30.82s"
+      }
+    ]
+  },
+  "100m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 9.58s (Usain Bolt, 2009). Average untrained adult ~15-20s.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No training",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "20s+",
+        "threshold": 20.0
+      },
+      {
+        "rank": "D",
+        "label": "16–20s",
+        "threshold": 16.0
+      },
+      {
+        "rank": "C",
+        "label": "13–16s",
+        "threshold": 13.0
+      },
+      {
+        "rank": "B",
+        "label": "11.5–13s",
+        "threshold": 11.5
+      },
+      {
+        "rank": "A",
+        "label": "10.5–11.5s (national level)",
+        "threshold": 10.5
+      },
+      {
+        "rank": "S",
+        "label": "Sub-10.5s (elite)",
+        "threshold": 9.6
+      },
+      {
+        "rank": "S+",
+        "label": "Sub-9.59s (world record tier)",
+        "threshold": null
+      }
+    ]
+  },
+  "200m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 19.19s (Usain Bolt, 2009). Average untrained adult ~35-45s.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No training",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "40s+",
+        "threshold": 40.0
+      },
+      {
+        "rank": "D",
+        "label": "30–40s",
+        "threshold": 30.0
+      },
+      {
+        "rank": "C",
+        "label": "25–30s",
+        "threshold": 25.0
+      },
+      {
+        "rank": "B",
+        "label": "22–25s",
+        "threshold": 22.0
+      },
+      {
+        "rank": "A",
+        "label": "21–22s (national level)",
+        "threshold": 21.0
+      },
+      {
+        "rank": "S",
+        "label": "Sub-21s (elite)",
+        "threshold": 19.2
+      },
+      {
+        "rank": "S+",
+        "label": "Sub-19.20s (world record tier)",
+        "threshold": null
+      }
+    ]
+  },
+  "400m Sprint": {
+    "type": "metric",
+    "unit": "seconds",
+    "note": "World record 43.03s (Wayde van Niekerk, 2016). Average untrained adult ~80-100s.",
+    "ranks": [
+      {
+        "rank": "F",
+        "label": "No training",
+        "threshold": null
+      },
+      {
+        "rank": "E",
+        "label": "90s+",
+        "threshold": 90.0
+      },
+      {
+        "rank": "D",
+        "label": "70–90s",
+        "threshold": 70.0
+      },
+      {
+        "rank": "C",
+        "label": "58–70s",
+        "threshold": 58.0
+      },
+      {
+        "rank": "B",
+        "label": "52–58s",
+        "threshold": 52.0
+      },
+      {
+        "rank": "A",
+        "label": "46–52s (national level)",
+        "threshold": 46.0
+      },
+      {
+        "rank": "S",
+        "label": "Sub-46s (elite)",
+        "threshold": 43.1
+      },
+      {
+        "rank": "S+",
+        "label": "Sub-43.04s (world record tier)",
+        "threshold": null
+      }
+    ]
+  }
+}

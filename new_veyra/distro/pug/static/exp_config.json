@@ -1,0 +1,48 @@
+{
+  "_comment": "EXP rank thresholds (cumulative total XP). Tiers D-A each split into 3 sub-ranks; S tier splits into S-/S only (no S+).",
+  "_tier_spans": {
+    "E":  200,
+    "D":  1000,
+    "C":  5000,
+    "B":  20000,
+    "A":  80000,
+    "S":  300000,
+    "S+": 1000000
+  },
+  "rank_thresholds": {
+    "F":   0,
+    "E-":  1,
+    "E":   67,
+    "E+":  133,
+    "D-":  200,
+    "D":   533,
+    "D+":  867,
+    "C-":  1200,
+    "C":   2867,
+    "C+":  4533,
+    "B-":  6200,
+    "B":   12867,
+    "B+":  19533,
+    "A-":  26200,
+    "A":   52867,
+    "A+":  79533,
+    "S-":  106200,
+    "S":   256200,
+    "S+":  406200
+  },
+  "action_weights": {
+    "view":               0.1,
+    "like":               1,
+    "comment":            2.5,
+    "share":              1.5,
+    "save":               2.5,
+    "follow":             2,
+    "dm":                 10,
+    "feature_in_post":    10,
+    "collab_request":     50,
+    "performance_request":50,
+    "peer_testimonial":   50,
+    "purchase_hire":      75,
+    "review_after_hire":  50
+  }
+}

@@ -64,7 +64,8 @@
 
   function _startPoll() {
     _stopPoll();
-    _pollTimer = setInterval(_loadMessages, 60000);
+    // only runs while the card is flipped open, so a short interval is cheap
+    _pollTimer = setInterval(_loadMessages, 10000);
   }
 
   function _stopPoll() {

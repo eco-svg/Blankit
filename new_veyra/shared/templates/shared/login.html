@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" data-distro="Eco-Svg">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VEYRA — Sign in</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Veyra">
+  <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}" />
+</head>
+
+<body>
+
+  <!-- BACKGROUNDS -->
+  <div class="bg-layer active" id="bg-Eco-Svg"></div>
+  <div class="bg-layer" id="bg-CatalystCrew"></div>
+  <div class="bg-layer" id="bg-Ocellus">
+    <video id="loginBgVideo" autoplay muted loop playsinline preload="auto" style="opacity:0.55">
+      <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
+    </video>
+  </div>
+
+  <!-- TERMINAL BAR -->
+  <div class="terminal-bar">
+    <span class="t-dot r"></span>
+    <span class="t-dot y"></span>
+    <span class="t-dot g"></span>
+    <span class="t-title">veyra</span>
+    <span class="t-cmd" id="termCmd">select_distro --interactive</span>
+  </div>
+
+  <main class="main">
+
+    <!-- LEFT: DISTRO SWIPER -->
+    <section class="distro-section">
+
+      <div class="swiper-wrap">
+        <button class="swipe-arrow" id="arrowLeft">&#8592;</button>
+        <div class="swiper" id="swiper">
+
+          <div class="distro-card active" data-distro="Eco-Svg" data-index="0">
+            <span class="distro-index">01</span>
+            <span class="distro-glyph">◈</span>
+            <span class="distro-name">Eco-Svg</span>
+            <span class="distro-handle">@Eco-Svg</span>
+            <div class="distro-tags">
+              <span class="tag">habits</span>
+              <span class="tag">AI</span>
+              <span class="tag">tracking</span>
+            </div>
+          </div>
+
+          <div class="distro-card" data-distro="CatalystCrew" data-index="1">
+            <span class="distro-index">02</span>
+            <span class="distro-glyph">◇</span>
+            <span class="distro-name">Catalyst Crew</span>
+            <span class="distro-handle">@CatalystCrew</span>
+            <div class="distro-tags"><span class="tag">—</span></div>
+          </div>
+
+          <div class="distro-card" data-distro="Ocellus" data-index="2">
+            <span class="distro-index">03</span>
+            <span class="distro-glyph">◉</span>
+            <span class="distro-name">Ocellus</span>
+            <span class="distro-handle">@Ocellus</span>
+            <div class="distro-tags"><span class="tag">—</span></div>
+          </div>
+
+        </div>
+        <button class="swipe-arrow" id="arrowRight">&#8594;</button>
+      </div>
+
+      <div class="swiper-dots">
+        <span class="s-dot active" data-index="0"></span>
+        <span class="s-dot" data-index="1"></span>
+        <span class="s-dot" data-index="2"></span>
+      </div>
+
+      <button class="mobile-step-btn" id="mobileConBtn">
+        Continue with <span id="mobileConDistro">Eco-Svg</span> &rarr;
+      </button>
+
+      <div class="distro-info" id="distroInfoPanel">
+        <div class="info-line">
+          <span class="info-key">maintainer</span>
+          <span class="info-val" id="infoMaintainer">Eco-Svg</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">focus</span>
+          <span class="info-val" id="infoFocus">habit tracking + AI insights</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">status</span>
+          <span class="info-val info-active" id="infoStatus">● active</span>
+        </div>
+        <div class="info-line">
+          <span class="info-key">about</span>
+          <span class="info-val info-muted" id="infoAbout">
+            <p><b>The first rule of Eco-Svg is — you don’t talk about Eco-Svg.</b></p>
+
+            <p><b>The second rule of Eco-Svg is — you don’t talk about Eco-Svg.</b></p>
+
+            <p><b>Because the moment you start talking,<br>
+                you stop doing.</b></p>
+
+            <p><b>This isn’t for motivation.<br>
+                Motivation is noise.</b></p>
+
+            <p><b>This is for the days you don’t feel like it.<br>
+                The days you want to quit.<br>
+                The days nobody’s watching.</b></p>
+
+            <p><b>Eco-Svg doesn’t care how you feel.</b></p>
+
+            <p><b>It cares if you showed up.</b></p>
+
+            <p><b>No aesthetics.<br>
+                No fake productivity.<br>
+                No “I’ll start tomorrow.”</b></p>
+
+            <p><b>Just quiet, repeated execution.</b></p>
+
+            <p><b>Again.<br>
+                And again.<br>
+                And again.</b></p>
+
+            <p><b>Until it becomes you.</b></p>
+
+            <p><b>You don’t track habits here.</b></p>
+
+            <p><b>You eliminate the version of you<br>
+                that needed motivation in the first place.</b></p>
+
+            <p><b>Eco-Svg.</b></p>
+
+            <p><b>Stay silent.<br>
+                Stay consistent.</b></p>
+          </span>
+        </div>
+      </div>
+      <!-- AGE + STUDENT CARD — shown only on Create Account tab -->
+      <div class="age-verify-card" id="ageVerifyCard" style="display:none">
+
+        <div class="avc-alert">
+          <span class="avc-alert-icon">!</span>
+          <span>Enter your <strong>real age</strong> — fake ages break peer matching for everyone.</span>
+        </div>
+
+        <div class="avc-field">
+          <label class="avc-label">Date of birth <span class="avc-req">*</span></label>
+          <input class="field-input" type="text" id="regDob" placeholder="MM / DD / YYYY" maxlength="14" inputmode="numeric" autocomplete="bday">
+          <span class="field-err" id="regAgeErr"></span>
+        </div>
+
+        <div class="avc-perks">
+          <div class="avc-perks-title">Why it matters</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Peer matching with people your age</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Age-appropriate challenges &amp; streaks</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Your tier unlocks features as you grow</div>
+          <div class="avc-perk"><span class="avc-perk-dot"></span>Birthday surprises &amp; rewards</div>
+        </div>
+
+        <div class="avc-student-block">
+          <div class="avc-student-head">
+            <span class="avc-student-icon">✦</span>
+            <span class="avc-student-title">Student? Verify after joining.</span>
+            <button class="avc-verify-btn" id="avcVerifyBtn">Verify →</button>
+          </div>
+          <div class="avc-student-perks">
+            <div class="avc-sperk"><span class="avc-sperk-dot"></span>BlinkyBot AI — free (coming soon)</div>
+          </div>
+          <span class="avc-student-note">Upload your student ID from your profile after signing up. We review manually and email you — usually within 24h.</span>
+          <span id="avcVerifyNote" style="display:none;font-size:0.72rem;color:var(--accent);margin-top:6px;">Student verification — coming soon ✦</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- RIGHT: AUTH -->
+    <section class="auth-section">
+      <button class="mobile-back-btn" id="mobileBackBtn">&#8592; change distro</button>
+      <h1 class="auth-wordmark">Welcome back.</h1>
+      <p class="auth-sub">Sign in to continue your streak</p>
+
+      <div class="auth-card">
+        <div class="tabs">
+          <button class="tab active" data-tab="login">Sign in</button>
+          <button class="tab" data-tab="register">Create account</button>
+          <button class="tab" data-tab="forgot">Forgot</button>
+          <div class="tab-line" id="tabLine"></div>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="panel active" id="panel-login">
+          <div class="method-row">
+            <button class="method-btn active" data-method="email">email</button>
+            <button class="method-btn" data-method="username">username</button>
+          </div>
+          <div class="field">
+            <label class="field-label" id="loginIdentifierLabel" for="loginIdentifier">Email address</label>
+            <input class="field-input" type="email" id="loginIdentifier" placeholder="you@example.com"
+              autocomplete="email" />
+            <span class="field-err" id="loginIdentifierErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="loginPassword">Password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="loginPassword" placeholder="••••••••"
+                autocomplete="current-password" />
+              <button class="eye-btn" data-target="loginPassword">show</button>
+            </div>
+            <span class="field-err" id="loginPasswordErr"></span>
+          </div>
+          <div class="field-row">
+            <label class="check-label">
+              <input type="checkbox" id="rememberMe" /> Keep me signed in
+            </label>
+            <button class="link-btn" data-tab="forgot">Forgot password?</button>
+          </div>
+          <button class="submit-btn" id="loginBtn">
+            Sign in to <span id="loginDistroLabel">Eco-Svg</span>
+            <span class="btn-loader hidden" id="loginLoader"></span>
+          </button>
+          <div class="flash hidden" id="loginFlash"></div>
+        </div>
+
+        <!-- REGISTER -->
+        <div class="panel" id="panel-register">
+          <div class="field">
+            <label class="field-label" for="regUsername">Username</label>
+            <input class="field-input" type="text" id="regUsername" placeholder="your_handle" autocomplete="username" />
+            <span class="field-err" id="regUsernameErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="regEmail">Email address</label>
+            <input class="field-input" type="email" id="regEmail" placeholder="you@example.com" autocomplete="email" />
+            <span class="field-err" id="regEmailErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="regPassword">Password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="regPassword" placeholder="min 8 characters"
+                autocomplete="new-password" />
+              <button class="eye-btn" data-target="regPassword">show</button>
+            </div>
+            <div class="strength-row">
+              <div class="strength-bar">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+              <span class="strength-label" id="strengthLabel">—</span>
+            </div>
+            <span class="field-err" id="regPasswordErr"></span>
+          </div>
+          <div class="field">
+            <label class="field-label" for="regConfirm">Confirm password</label>
+            <div class="input-row">
+              <input class="field-input" type="password" id="regConfirm" placeholder="••••••••"
+                autocomplete="new-password" />
+              <button class="eye-btn" data-target="regConfirm">show</button>
+            </div>
+            <span class="field-err" id="regConfirmErr"></span>
+          </div>
+          <!-- Mobile-only: DOB + benefits inline in form -->
+          <div class="mobile-dob-inline">
+
+            <div class="dob-perks-block">
+              <div class="dob-perks-title">True Age ?</div>
+              <div class="dob-perk-row"><span class="dob-perk-icon">👥</span><span class="dob-perk-label">Peer Matching</span></div>
+              <div class="dob-perk-row"><span class="dob-perk-icon">🏆</span><span class="dob-perk-label">Age Wise Challenges &amp; Competition</span></div>
+              <div class="dob-perk-row"><span class="dob-perk-icon">🎂</span><span class="dob-perk-label">Birthday Rewards</span></div>
+              <div class="dob-perk-row"><span class="dob-perk-icon">🔓</span><span class="dob-perk-label">Tier Unlocks as You Grow</span></div>
+            </div>
+
+            <div class="dob-student-strip">
+              <span class="avc-student-icon">✦</span>
+              <span class="dob-student-text"><strong>Student?</strong> Get BlinkBot AI free — verify your ID from your profile after joining.</span>
+            </div>
+
+            <div class="field" style="margin-top:4px;">
+              <label class="field-label" for="regDobInline">Date of birth <span style="color:var(--accent);">*</span></label>
+              <input class="field-input" type="text" id="regDobInline" placeholder="MM / DD / YYYY" maxlength="14" inputmode="numeric" autocomplete="bday">
+              <span class="field-err" id="regAgeErrInline"></span>
+            </div>
+
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
+              <input type="checkbox" id="regTermsCheck" style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
+              I agree to the <a href="/terms" onclick="document.getElementById('termsModal').style.display='block';return false;" style="color:var(--accent);text-decoration:none;cursor:pointer;">Terms of Service</a> and <a href="/privacy" onclick="document.getElementById('privacyModal').style.display='block';return false;" style="color:var(--accent);text-decoration:none;cursor:pointer;">Privacy Policy</a>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:8px;font-size:0.72rem;color:var(--text-muted);cursor:pointer;line-height:1.5;">
+              <input type="checkbox" id="regAgeCheck" style="margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
+              I confirm I am 13 years or older (or have parental consent if under 18)
+            </label>
+          </div>
+          <span class="field-err" id="regConsentErr"></span>
+          <button class="submit-btn" id="registerBtn">
+            Create account on <span id="registerDistroLabel">Eco-Svg</span>
+            <span class="btn-loader hidden" id="registerLoader"></span>
+          </button>
+          <div class="flash hidden" id="registerFlash"></div>
+        </div>
+
+        <!-- FORGOT -->
+        <div class="panel" id="panel-forgot">
+          <div class="field">
+            <label class="field-label" for="forgotEmail">Email address</label>
+            <input class="field-input" type="email" id="forgotEmail" placeholder="you@example.com"
+              autocomplete="email" />
+            <span class="field-err" id="forgotEmailErr"></span>
+          </div>
+          <button class="submit-btn" id="forgotBtn">
+            Send reset link
+            <span class="btn-loader hidden" id="forgotLoader"></span>
+          </button>
+          <div class="flash hidden" id="forgotFlash"></div>
+          <button class="link-btn back" data-tab="login">← Back to sign in</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="locked-bar hidden" id="lockedBar">
+    Signed in as <strong id="lockedName">Eco-Svg</strong> — distro switching disabled.
+  </div>
+
+  <!-- GET THE APP — permanent install strip -->
+  <div class="install-strip" id="installStrip">
+    <div class="install-row">
+      <span class="install-platform-icon" id="installIcon">⬇</span>
+      <span class="install-main-text" id="installMainText">Install Veyra as an app</span>
+      <button class="install-how-btn" id="installHowBtn">How to install ↓</button>
+    </div>
+    <div class="install-detail hidden" id="installDetail">
+      <div class="install-platform-item">
+        <span class="ipi-name">Android</span>
+        <span class="ipi-step">Chrome → tap ⋮ → "Add to Home Screen"</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">iPhone / iPad</span>
+        <span class="ipi-step">Safari → tap Share ⎙ → "Add to Home Screen"</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">Windows / Linux</span>
+        <span class="ipi-step">Chrome / Edge → click ⊕ in address bar → Install</span>
+      </div>
+      <div class="install-platform-item">
+        <span class="ipi-name">Mac</span>
+        <span class="ipi-step">Chrome → click ⊕ in address bar, or Safari → File → Add to Dock</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terms of Service modal -->
+  <div id="termsModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);overflow-y:auto;padding:24px 16px;">
+    <div style="max-width:680px;margin:0 auto;background:#141108;border:1px solid rgba(212,165,116,0.2);border-radius:14px;padding:32px 28px 28px;position:relative;">
+      <button onclick="document.getElementById('termsModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#a89880;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      <h2 style="font-family:'DM Mono',monospace;font-size:1.1rem;color:#ede7d4;margin-bottom:6px;">Terms of Service</h2>
+      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;color:#6b6055;margin-bottom:28px;letter-spacing:0.06em;">Last updated: 31 May 2026</p>
+      {% set sections = [
+        ("1. Eligibility", "You must be at least <strong>13 years old</strong> to use Veyra. By registering, you confirm you meet this requirement. Users aged 13–17 should have parental awareness of their use of the platform. You must provide accurate information — including your real date of birth — when creating an account. Providing false information is a violation of these Terms."),
+        ("2. Accounts", "<ul><li>You are responsible for maintaining the security of your password.</li><li>You may not share your account or allow others to use it.</li><li>One account per person. Duplicate accounts are not permitted.</li><li>You may delete your account at any time from your profile settings.</li></ul>"),
+        ("3. Acceptable use", "You agree not to post illegal, abusive, harassing, or hateful content; violate others' privacy or IP rights; upload malware or spam; attempt unauthorised access; use automated tools without permission; impersonate others; or use Veyra for commercial purposes without written consent."),
+        ("4. Content", "You retain ownership of content you post. By posting, you grant Veyra a non-exclusive licence to store and display that content within the platform. We may remove content that violates these Terms without notice."),
+        ("5. Advertising", "Veyra displays contextual ads based on your stated interests — not behavioural tracking. We do not show behavioural ads to users aged 13–17."),
+        ("6. Termination", "We may suspend or terminate your account for violations of these Terms. You may close your account at any time."),
+        ("7. Disclaimer", "Veyra is provided 'as is' without warranty. We do not guarantee uninterrupted or error-free service."),
+        ("8. Limitation of liability", "To the fullest extent permitted by law, Veyra shall not be liable for indirect, incidental, or consequential damages arising from your use of the platform."),
+        ("9. Governing law", "These Terms are governed by the laws of India. If you are a consumer in the EU or UK, you retain any statutory rights you have under your local law."),
+        ("10. Contact", "Questions: <a href='mailto:veyrasupportus@gmail.com' style='color:#d4a574;'>veyrasupportus@gmail.com</a>")
+      ] %}
+      {% for title, body in sections %}
+      <p style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#d4a574;letter-spacing:0.1em;text-transform:uppercase;margin:24px 0 8px;">{{ title }}</p>
+      <div style="font-size:0.84rem;color:#a89880;line-height:1.8;">{{ body | safe }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Privacy Policy modal -->
+  <div id="privacyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);overflow-y:auto;padding:24px 16px;">
+    <div style="max-width:680px;margin:0 auto;background:#141108;border:1px solid rgba(212,165,116,0.2);border-radius:14px;padding:32px 28px 28px;position:relative;">
+      <button onclick="document.getElementById('privacyModal').style.display='none'" style="position:absolute;top:16px;right:18px;background:none;border:none;color:#a89880;font-size:1.2rem;cursor:pointer;line-height:1;">✕</button>
+      <h2 style="font-family:'DM Mono',monospace;font-size:1.1rem;color:#ede7d4;margin-bottom:6px;">Privacy Policy</h2>
+      <p style="font-family:'DM Mono',monospace;font-size:0.65rem;color:#6b6055;margin-bottom:28px;letter-spacing:0.06em;">Last updated: 31 May 2026</p>
+      {% set psections = [
+        ("1. What we collect", "<ul><li><strong>Account info:</strong> Username, email, hashed password, date of birth.</li><li><strong>Profile data:</strong> Age tier, habits, notes, goals, posts, DMs.</li><li><strong>Usage data:</strong> Feature interactions, habit logs, streaks.</li><li><strong>Location (optional):</strong> Approximate GPS coordinates, only if you use the community proximity feature and grant browser location permission. Never collected silently.</li><li><strong>AI conversation logs:</strong> Messages sent to BlinkBot or the Ask feature are logged server-side for safety, abuse prevention, and service improvement. Logs are deleted when your account is deleted.</li><li><strong>Student verification (optional):</strong> If you apply for student status, your uploaded ID image is used only for manual review and deleted within 7 days of a decision. Only your verification status is retained.</li></ul>"),
+        ("2. How we use your data", "To create and manage your account; provide age-appropriate features and peer matching; send account emails (OTP, password reset); display contextual non-behavioural advertising; improve the platform; and ensure platform safety."),
+        ("3. Teens and parental consent", "Veyra is designed for users aged <strong>13 and older</strong>, including teenagers. We do not knowingly collect data from children under 13. Users aged 13–17 must have parental or guardian awareness of their use of the platform — by registering, users in this age group confirm they have obtained such consent. Under India's DPDP Act 2023, we treat users under 18 as minors requiring parental consent; we do not serve behavioural advertising to any user under 18. Contact <a href='mailto:veyrasupportus@gmail.com' style='color:#d4a574;'>veyrasupportus@gmail.com</a> if you believe an under-13 has registered."),
+        ("4. Data sharing", "We do not sell your data. We share only with: email providers (Gmail/Brevo), database hosting (Supabase), platform hosting (Hugging Face), file storage (Backblaze B2), and AI processing (Groq — only anonymised habit/skill summaries, never your name, email, or account details). All providers are contractually bound to protect your data."),
+        ("5. Data retention", "Your data is retained for as long as your account is active. When you delete your account, all personal data — notes, habits, goals, posts, DMs, AI logs, and location — is permanently deleted immediately. Anonymised aggregate statistics (e.g. total platform habit counts) may be retained. Backups are purged within 30 days of deletion."),
+        ("6. Your rights", "You have the right to access, correct, delete, or export your data at any time. You can delete your account directly from the app (Profile → Delete Account). For any other request — data export, correction, or complaint — email <a href='mailto:veyrasupportus@gmail.com' style='color:#d4a574;'>veyrasupportus@gmail.com</a>. We respond within 72 hours."),
+        ("7. Grievance Officer", "For complaints or concerns under India's DPDP Act 2023 or any applicable law, contact our Grievance Officer: <strong>Veyra Support Team</strong> — <a href='mailto:veyrasupportus@gmail.com' style='color:#d4a574;'>veyrasupportus@gmail.com</a>. We will acknowledge your complaint within 48 hours and resolve it within 30 days."),
+        ("8. Cookies", "Session cookies only — to keep you logged in. No third-party tracking or advertising cookies."),
+        ("9. Security", "Passwords are hashed. Notes are encrypted at rest. All traffic is over HTTPS. We apply reasonable technical safeguards, but no system is 100% secure. In the event of a data breach affecting your personal data, we will notify you by email within a reasonable time."),
+        ("10. International users", "Veyra is operated from India and endeavours to comply with GDPR (EU), UK GDPR, COPPA (US), and India's DPDP Act 2023. The platform is globally accessible; users in all countries are welcome."),
+        ("11. Contact", "<a href='mailto:veyrasupportus@gmail.com' style='color:#d4a574;'>veyrasupportus@gmail.com</a>")
+      ] %}
+      {% for title, body in psections %}
+      <p style="font-family:'DM Mono',monospace;font-size:0.68rem;color:#d4a574;letter-spacing:0.1em;text-transform:uppercase;margin:24px 0 8px;">{{ title }}</p>
+      <div style="font-size:0.84rem;color:#a89880;line-height:1.8;">{{ body | safe }}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- DISTRO SWITCH TUTORIAL -->
+  <div class="distro-tutorial" id="distroTutorial" role="dialog" aria-modal="true" aria-label="How to switch distros">
+    <div class="dt-inner">
+      <div class="dt-top">
+        <span class="dt-tag">tutorial</span>
+        <button class="dt-close" id="dtClose" aria-label="Dismiss">✕</button>
+      </div>
+      <p class="dt-title">Switching distros</p>
+      <p class="dt-body">Use the <span class="dt-key">←</span> <span class="dt-key">→</span> arrows — or swipe — to browse distros. Each one has its own theme, community, and maintainer. Pick the one that fits you before signing in.</p>
+      <button class="dt-got-it" id="dtGotIt">Got it</button>
+    </div>
+    <div class="dt-arrow"></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='login.js') }}"></script>
+  <script>
+    // Distro switch tutorial — show once per session
+    (function(){
+      var tut = document.getElementById('distroTutorial');
+      if (!tut) return;
+      if (sessionStorage.getItem('dtDismissed')) { tut.remove(); return; }
+      // small delay so the page renders first
+      setTimeout(function(){ tut.classList.add('dt-visible'); }, 600);
+      function dismiss(){
+        tut.classList.remove('dt-visible');
+        tut.classList.add('dt-hiding');
+        setTimeout(function(){ tut.remove(); }, 300);
+        sessionStorage.setItem('dtDismissed', '1');
+      }
+      document.getElementById('dtClose').addEventListener('click', dismiss);
+      document.getElementById('dtGotIt').addEventListener('click', dismiss);
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') dismiss(); });
+    })();
+  </script>
+  <script>
+    // Policy modals — close on backdrop click or Escape
+    (function(){
+      ['termsModal','privacyModal'].forEach(function(id){
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('click', function(e){ if (e.target === el) el.style.display = 'none'; });
+      });
+      document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') ['termsModal','privacyModal'].forEach(function(id){
+          document.getElementById(id).style.display = 'none';
+        });
+      });
+    })();
+  </script>
+  <script>
+    // Ocellus video fade-in
+    (function(){
+      var v = document.getElementById('loginBgVideo');
+      if (!v) return;
+      function markReady(){ v.classList.add('ready'); }
+      v.addEventListener('canplay', markReady, { once: true });
+      if (v.readyState >= 3) markReady();
+    })();
+
+    // Install strip toggle
+    (function(){
+      var btn    = document.getElementById('installHowBtn');
+      var detail = document.getElementById('installDetail');
+      var icon   = document.getElementById('installIcon');
+      var text   = document.getElementById('installMainText');
+      if (!btn) return;
+
+      // Detect platform and personalise the one-liner
+      var ua = navigator.userAgent;
+      var isAndroid = /android/i.test(ua);
+      var isIOS     = /ipad|iphone|ipod/i.test(ua) && !window.MSStream;
+      var isWindows = /windows/i.test(ua);
+      var isMac     = /macintosh|mac os x/i.test(ua) && !/ipad|iphone/i.test(ua);
+
+      if (isAndroid) {
+        icon.textContent = '🤖'; text.innerHTML = '<strong>Android</strong> — tap ⋮ in Chrome → Add to Home Screen';
+      } else if (isIOS) {
+        icon.textContent = '🍎'; text.innerHTML = '<strong>iPhone / iPad</strong> — tap Share ⎙ in Safari → Add to Home Screen';
+      } else if (isWindows) {
+        icon.textContent = '🪟'; text.innerHTML = '<strong>Windows</strong> — click ⊕ in Chrome/Edge address bar → Install';
+      } else if (isMac) {
+        icon.textContent = '🍏'; text.innerHTML = '<strong>Mac</strong> — click ⊕ in Chrome address bar, or Safari → File → Add to Dock';
+      } else {
+        icon.textContent = '💻'; text.innerHTML = '<strong>Linux</strong> — click ⊕ in Chrome address bar → Install Veyra';
+      }
+
+      btn.addEventListener('click', function(){
+        var open = !detail.classList.contains('hidden');
+        detail.classList.toggle('hidden', open);
+        btn.textContent = open ? 'How to install ↓' : 'Close ↑';
+      });
+    })();
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    }
+  </script>
+</body>
+
+</html>

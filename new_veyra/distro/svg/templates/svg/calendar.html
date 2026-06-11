@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco-Svg — calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('svg.static', filename='calendar.css') }}" />
+  <style>
+    .nav-soon-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .nav-beta-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .sidebar-nav-item { white-space: nowrap; }
+  </style>
+</head>
+<body>
+
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">{{ username }}</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span class="nav-beta-tag">beta</span></a>
+      <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item active" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">{{ username }}</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- ── TOPBAR ── -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="/" style="text-decoration:none">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">{{ username }}</span>
+    </a>
+    <div class="topbar-right">
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
+      <div class="avatar">{{ username[:2].upper() }}</div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="cal-main">
+
+    <div class="cal-page-header">
+      <h1 class="cal-page-title">Calendar</h1>
+      <div class="cal-view-toggle">
+        <button class="cal-view-btn active" id="btnMonthly">Monthly</button>
+        <button class="cal-view-btn" id="btnWeekly">Weekly</button>
+      </div>
+    </div>
+
+    <div class="cal-layout">
+
+      <aside class="cal-sidebar">
+        <div class="mini-cal card">
+          <div class="mini-cal-nav">
+            <button class="mini-cal-arrow" id="miniPrev">‹</button>
+            <span class="mini-cal-month" id="miniMonthLabel"></span>
+            <button class="mini-cal-arrow" id="miniNext">›</button>
+          </div>
+          <div class="mini-cal-grid">
+            <span class="mini-cal-dow">Mo</span>
+            <span class="mini-cal-dow">Tu</span>
+            <span class="mini-cal-dow">We</span>
+            <span class="mini-cal-dow">Th</span>
+            <span class="mini-cal-dow">Fr</span>
+            <span class="mini-cal-dow">Sa</span>
+            <span class="mini-cal-dow">Su</span>
+          </div>
+          <div class="mini-cal-days" id="miniCalDays"></div>
+        </div>
+
+        <div class="day-detail card" id="dayDetail">
+          <div class="day-detail-header">
+            <span class="day-detail-date" id="dayDetailDate">Select a day</span>
+            <button class="day-detail-add" id="addTodoBtn" title="Add todo">+</button>
+          </div>
+          <div class="day-habits" id="dayHabits">
+            <span class="day-habits-label">Habits</span>
+            <div class="day-habits-dots" id="dayHabitDots"></div>
+          </div>
+          <ul class="todo-list" id="todoList"></ul>
+          <p class="todo-empty" id="todoEmpty">No todos for this day</p>
+        </div>
+      </aside>
+
+      <div class="cal-view-wrap">
+        <div class="cal-view" id="viewMonthly">
+          <div class="main-cal-nav">
+            <button class="main-cal-arrow" id="mainPrev">‹</button>
+            <span class="main-cal-month" id="mainMonthLabel"></span>
+            <button class="main-cal-arrow" id="mainNext">›</button>
+          </div>
+          <div class="main-cal-grid-header">
+            <span>Mon</span><span>Tue</span><span>Wed</span>
+            <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="main-cal-grid" id="mainCalGrid"></div>
+        </div>
+
+        <div class="cal-view hidden" id="viewWeekly">
+          <div class="main-cal-nav">
+            <button class="main-cal-arrow" id="weekPrev">‹</button>
+            <span class="main-cal-month" id="weekLabel"></span>
+            <button class="main-cal-arrow" id="weekNext">›</button>
+          </div>
+          <div class="week-grid" id="weekGrid"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── ADD TODO MODAL ── -->
+  <div class="todo-modal hidden" id="todoModal">
+    <div class="todo-modal-box">
+      <div class="todo-modal-header">
+        <span class="todo-modal-title">New Todo</span>
+        <button class="todo-modal-close" id="todoModalClose">✕</button>
+      </div>
+      <input class="todo-modal-input" type="text" id="todoInput" placeholder="What needs to be done?" />
+      <div class="todo-priority-row">
+        <span class="todo-priority-label">Priority</span>
+        <div class="todo-priority-btns">
+          <button class="priority-btn p-high" data-priority="high">High</button>
+          <button class="priority-btn p-med active" data-priority="medium">Medium</button>
+          <button class="priority-btn p-low" data-priority="low">Low</button>
+        </div>
+      </div>
+      <button class="todo-modal-save" id="todoModalSave">Add Todo</button>
+    </div>
+  </div>
+  <div class="todo-modal-backdrop hidden" id="todoModalBackdrop"></div>
+
+  <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
+  <script src="{{ url_for('svg.static', filename='calendar.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('Eco-Svg-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+      if (localStorage.getItem('Eco-Svg-no-anim') === 'true') document.body.classList.add('no-anim');
+    });
+  </script>
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1 = document.getElementById('globalStreak');
+        const s2 = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {}
+    })();
+  </script>
+
+</body>
+</html>

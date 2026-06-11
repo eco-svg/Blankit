@@ -117,7 +117,8 @@
       {% include 'pug/cards/_social.html' %}
       {% include 'pug/cards/_habits.html' %}
       {% include 'pug/cards/_buddybot.html' %}
-      {% include 'pug/cards/_ask.html' %}
+      {# Ask Anything card disabled — re-enable by uncommenting this, ask.js below, and 'sec-ask' in router.js #}
+      {# {% include 'pug/cards/_ask.html' %} #}
       {% include 'pug/cards/_stats.html' %}
       {% include 'pug/cards/_credits.html' %}
 
@@ -360,7 +361,7 @@
   <script src="{{ url_for('pug.static', filename='consistency.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='clock.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='ask.js') }}"></script>
+  {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>

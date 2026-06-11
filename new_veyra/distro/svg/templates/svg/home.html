@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ username }} — Grōv</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Veyra">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
+  <style>
+    /* ── COMING SOON CARDS ── */
+    .cs-mini-card {
+      border-left: 3px solid var(--accent);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cs-mini-badge {
+      font-size: 0.52rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid var(--accent2);
+      border-radius: 999px;
+      padding: 2px 8px;
+      width: fit-content;
+    }
+    .cs-mini-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--accent);
+      font-style: italic;
+    }
+    .cs-mini-desc {
+      font-size: 0.72rem;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+    .cs-mini-features {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 0.25rem;
+    }
+    .cs-mini-feature {
+      font-size: 0.68rem;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .cs-mini-feature::before {
+      content: '◈';
+      color: var(--accent2);
+      font-size: 0.55rem;
+    }
+    .cs-mini-link {
+      font-size: 0.68rem;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.04em;
+      margin-top: 0.25rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .cs-mini-link:hover { opacity: 1; }
+    .nav-soon-tag {
+      font-size: 0.5rem;
+      padding: 1px 6px;
+      border-radius: 99px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      margin-left: 4px;
+      vertical-align: middle;
+      display: inline-block; /* fix line-break issue */
+    }
+    /* ── fix Community nav item wrapping ── */
+    .sidebar-nav-item {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">{{ username }}</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item active" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation</a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">{{ username }}</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="/" style="text-decoration:none">
+      <span class="brand-icon">◈</span>
+      <span class="brand-name">{{ username }}</span>
+    </a>
+    <div class="topbar-right">
+      <button class="pwa-install-btn pwa-hidden" title="Install Veyra app">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Install
+      </button>
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
+      <div class="avatar" id="avatar">{{ username[:2].upper() }}</div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-date" id="heroDate"></p>
+    <h1 class="hero-title" id="heroGreeting">Good morning</h1>
+    <p class="hero-sub" id="heroSub">Loading habits…</p>
+    <div class="ring-wrap">
+      <svg class="ring-svg" viewBox="0 0 120 120">
+        <circle class="ring-bg"   cx="60" cy="60" r="50" />
+        <circle class="ring-fill" cx="60" cy="60" r="50" id="ringFill" />
+        <text class="ring-pct" x="60" y="60" text-anchor="middle"
+              dominant-baseline="central" id="ringPct">0%</text>
+      </svg>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <main class="main-grid">
+    <section class="card habits-card">
+      <div class="card-header">
+        <h2 class="card-title">Today's habits</h2>
+        <button class="add-btn" id="addHabitBtn" title="Add habit">+</button>
+      </div>
+      <ul class="habit-list" id="habitList">
+        <li class="habit-item" style="justify-content:center;padding:1.5rem 0">
+          <span style="color:var(--text3);font-size:0.78rem">Loading…</span>
+        </li>
+      </ul>
+    </section>
+
+    <aside class="right-col">
+
+      <!-- AI INSIGHT — coming soon -->
+      <div class="card cs-mini-card" id="aiCard">
+        <div class="cs-mini-badge">Coming Soon</div>
+        <p class="cs-mini-title">AI Insights</p>
+        <p class="cs-mini-desc">
+          Veyra will analyse your habit patterns and give you personalised nudges —
+          like rescheduling habits you skip or spotting your best performance windows.
+        </p>
+        <div class="cs-mini-features">
+          <span class="cs-mini-feature">Pattern detection across 30 days</span>
+          <span class="cs-mini-feature">Smart rescheduling suggestions</span>
+          <span class="cs-mini-feature">Weekly performance summaries</span>
+        </div>
+        <a href="/support" class="cs-mini-link">Help us build this faster ♡</a>
+      </div>
+
+      <!-- THIS WEEK HEATMAP -->
+      <div class="card heatmap-card">
+        <h3 class="card-title small">This week</h3>
+        <div class="heatmap" id="heatmap"></div>
+        <div class="heatmap-legend">
+          <span>Mon</span><span>Tue</span><span>Wed</span>
+          <span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        </div>
+      </div>
+
+      <!-- ACTIVE GOAL — coming soon -->
+      <div class="card cs-mini-card">
+        <div class="cs-mini-badge">Coming Soon</div>
+        <p class="cs-mini-title">Goals & Manifestation</p>
+        <p class="cs-mini-desc">
+          Write one sentence about what you want to achieve. Grōv breaks it into
+          a personalised habit plan with smart pacing and AI-driven adjustments.
+        </p>
+        <div class="cs-mini-features">
+          <span class="cs-mini-feature">AI habit plan from your goal</span>
+          <span class="cs-mini-feature">Timeline-based intensity scaling</span>
+          <span class="cs-mini-feature">Progress tracked automatically</span>
+        </div>
+        <a href="/manifestation" class="cs-mini-link">Read the feature preview →</a>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- CAMERA OVERLAY -->
+  <div class="cam-overlay hidden" id="camOverlay">
+    <div class="cam-modal">
+      <div class="cam-header">
+        <span class="cam-title">Camera AI — counting reps</span>
+        <button class="cam-close" id="camClose">✕</button>
+      </div>
+      <div class="cam-feed">
+        <div class="cam-placeholder">
+          <div class="cam-scan-line" id="scanLine"></div>
+          <span class="cam-label">Waiting for camera…</span>
+        </div>
+        <div class="cam-counter" id="camCounter">0</div>
+      </div>
+      <button class="cam-start-btn" id="camStartBtn">Start counting</button>
+    </div>
+  </div>
+
+  <!-- ADD HABIT MODAL -->
+  <div class="cam-overlay hidden" id="addModal">
+    <div class="cam-modal add-modal">
+      <div class="cam-header">
+        <span class="cam-title">New habit</span>
+        <button class="cam-close" id="addClose">✕</button>
+      </div>
+      <div class="add-form">
+        <input class="add-input" type="text" id="newHabitName" placeholder="Habit name…" />
+        <select class="add-select" id="newHabitTrack">
+          <option value="manual">Manual check-in</option>
+          <option value="gps">GPS (steps / walk)</option>
+          <option value="camera">Camera AI (reps)</option>
+          <option value="mic">Mic (meditation / reading)</option>
+        </select>
+        <button class="cam-start-btn" id="addConfirm">Add habit</button>
+      </div>
+    </div>
+  </div>
+
+  <meta name="app-user" content="{{ username }}">
+  <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
+
+  <!-- DYNAMIC STREAK -->
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1   = document.getElementById('globalStreak');
+        const s2   = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {
+        /* leave as default if API fails */
+      }
+    })();
+  </script>
+  <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
+  <script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
+  <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
+</body>
+</html>

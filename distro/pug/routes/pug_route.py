@@ -1734,21 +1734,74 @@ _RANK_COLORS = {
     'E':'#c06030','F':'#803010',
 }
 
+_RANK_ORDER = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F']
+
+def _net_rank_from_sheet(sheet):
+    """Best verified rank in a parsed stats-cache sheet → (rank_str, color)."""
+    skills = sheet.get('skills', [])
+    for r in _RANK_ORDER:
+        if any(s.get('rank','').upper() == r and s.get('verified', True) for s in skills):
+            return r, _RANK_COLORS.get(r, '#888')
+    return None, None
+
+
 def _net_rank_for_user(uid):
     """Return (rank_str, color) from that user's stats cache, or (None, None)."""
     n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
     if not n or not n.body:
         return None, None
     try:
-        sheet = json.loads(n.body)
-        skills = sheet.get('skills', [])
-        order = ['S+','S','S-','A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-','E','F']
-        for r in order:
-            if any(s.get('rank','').upper() == r and s.get('verified', True) for s in skills):
-                return r, _RANK_COLORS.get(r, '#888')
+        return _net_rank_from_sheet(json.loads(n.body))
     except Exception:
-        pass
-    return None, None
+        return None, None
+
+
+def _skills_match(skills, skill_name):
+    """True if any verified skill in the list contains skill_name (case-insensitive)."""
+    return any(
+        s.get('verified', False) and skill_name in (s.get('name') or '').lower()
+        for s in skills
+    )
+
+
+def _feed_user_meta(uids, with_location=False):
+    """Batch the per-author lookups the feed needs — User row, net rank, skill
+    list, location — as one query per table instead of one per post. Each
+    stats-cache sheet is decrypted and parsed exactly once."""
+    from shared.auth.user import User
+    meta = {}
+    uids = list(set(uids))
+    if not uids:
+        return meta
+    for u in User.query.filter(User.id.in_(uids)).all():
+        meta[u.id] = {'user': u, 'rank': (None, None), 'skills': [], 'loc': (None, None)}
+    caches = Note.query.filter(
+        Note.user_id.in_(uids), Note.entry_type == 'stats_cache', Note.is_deleted == False
+    ).all()
+    for n in caches:
+        m = meta.get(n.user_id)
+        if not m or not n.body:
+            continue
+        try:
+            sheet = json.loads(n.body)
+        except Exception:
+            continue
+        m['rank']   = _net_rank_from_sheet(sheet)
+        m['skills'] = sheet.get('skills', [])
+    if with_location:
+        locs = Note.query.filter(
+            Note.user_id.in_(uids), Note.entry_type == 'user_location', Note.is_deleted == False
+        ).all()
+        for n in locs:
+            m = meta.get(n.user_id)
+            if not m or not n.body:
+                continue
+            try:
+                d = json.loads(n.body)
+                m['loc'] = (float(d['lat']), float(d['lng']))
+            except Exception:
+                pass
+    return meta
 
 
 def _haversine_km(lat1, lng1, lat2, lng2):
@@ -1758,33 +1811,6 @@ def _haversine_km(lat1, lng1, lat2, lng2):
     dlambda = math.radians(lng2 - lng1)
     a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
     return 2 * R * math.asin(math.sqrt(min(1.0, a)))
-
-
-def _user_location(uid):
-    """Return (lat, lng) from user_location note, or (None, None)."""
-    n = Note.query.filter_by(user_id=uid, entry_type='user_location', is_deleted=False).first()
-    if not n or not n.body:
-        return None, None
-    try:
-        d = json.loads(n.body)
-        return float(d['lat']), float(d['lng'])
-    except Exception:
-        return None, None
-
-
-def _user_has_skill(uid, skill_name):
-    """Return True if the user has a verified skill whose name contains skill_name (case-insensitive)."""
-    n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
-    if not n or not n.body:
-        return False
-    try:
-        sheet = json.loads(n.body)
-        return any(
-            s.get('verified', False) and skill_name in (s.get('name') or '').lower()
-            for s in sheet.get('skills', [])
-        )
-    except Exception:
-        return False
 
 
 def _is_online(u):
@@ -1813,7 +1839,6 @@ def _connection_count(uid):
 def get_community_feed():
     err = login_required_api()
     if err: return err
-    from shared.auth.user import User
     me = session['user_id']
 
     # Optional location filter
@@ -1832,8 +1857,13 @@ def get_community_feed():
         q = q.filter_by(user_id=user_filter)
     posts = q.order_by(Note.created_at.desc()).limit(200).all()
 
-    def _build_row(p, u, dist_km=None):
-        rank, color = _net_rank_for_user(p.user_id)
+    # All per-author data in 3 batched queries (users, stats caches, locations)
+    meta = _feed_user_meta([p.user_id for p in posts],
+                           with_location=use_location and not user_filter)
+
+    def _build_row(p, m, dist_km=None):
+        u = m['user']
+        rank, color = m['rank']
         body = p.body or ''
         text, media_key, post_type, pinned_cid, text_order, skill_tag = body, None, None, None, 'tm', None
         if body.startswith('{'):
@@ -1905,27 +1935,27 @@ def get_community_feed():
         for radius_km in (50, 100, 250, None):
             result = []
             for p in posts:
-                u = User.query.get(p.user_id)
-                if not u: continue
-                plat, plng = _user_location(p.user_id)
+                m = meta.get(p.user_id)
+                if not m: continue
+                plat, plng = m['loc']
                 dist = _haversine_km(my_lat, my_lng, plat, plng) if plat is not None else None
                 if radius_km is not None:
                     if dist is None or dist > radius_km:
                         continue
-                if skill_filter and not _user_has_skill(p.user_id, skill_filter):
+                if skill_filter and not _skills_match(m['skills'], skill_filter):
                     continue
-                result.append(_build_row(p, u, dist_km=dist))
+                result.append(_build_row(p, m, dist_km=dist))
             if len(result) >= 5 or radius_km is None:
                 return jsonify({'posts': _enrich(result), 'radius_km': radius_km})
         return jsonify({'posts': [], 'radius_km': None})
 
     result = []
     for p in posts:
-        u = User.query.get(p.user_id)
-        if not u: continue
-        if skill_filter and not _user_has_skill(p.user_id, skill_filter):
+        m = meta.get(p.user_id)
+        if not m: continue
+        if skill_filter and not _skills_match(m['skills'], skill_filter):
             continue
-        result.append(_build_row(p, u))
+        result.append(_build_row(p, m))
     return jsonify({'posts': _enrich(result), 'radius_km': None})
 
 
@@ -2166,6 +2196,7 @@ def get_post_comments(pid):
     comments = Note.query.filter_by(
         entry_type='post_comment', mood=str(pid), is_deleted=False
     ).order_by(Note.created_at.asc()).limit(50).all()
+    umap = {u.id: u for u in User.query.filter(User.id.in_({c.user_id for c in comments})).all()} if comments else {}
     comment_ids = [c.id for c in comments]
     creact_rows = Note.query.filter(
         Note.entry_type == 'comment_react',
@@ -2183,7 +2214,7 @@ def get_post_comments(pid):
             c_mine[cid] = 'like' if r.is_finished else 'dislike'
     result = []
     for c in comments:
-        u = User.query.get(c.user_id)
+        u = umap.get(c.user_id)
         if not u: continue
         result.append({
             'id':          c.id,
@@ -2337,6 +2368,22 @@ def search_users():
         rank, color = _net_rank_for_user(u.id)
         result.append({'id': u.id, 'username': u.username, 'rank': rank, 'rank_color': color, 'is_online': _is_online(u)})
     return jsonify(result)
+
+
+@pug_bp.route('/pug/api/dms/version', methods=['GET'])
+def dms_version():
+    """Cheap change marker for this user's DMs. New messages are inserts and
+    read receipts are updates — both touch Note.updated_at — so clients poll
+    this and only re-fetch conversations/messages when the value differs."""
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    from sqlalchemy import func as sqlfunc, or_
+    v = db.session.query(sqlfunc.max(Note.updated_at)).filter(
+        Note.entry_type == 'dm',
+        or_(Note.user_id == me, Note.mood == str(me))
+    ).scalar()
+    return jsonify({'v': v.isoformat() if v else ''})
 
 
 @pug_bp.route('/pug/api/dms', methods=['GET'])
@@ -3200,9 +3247,9 @@ def _get_or_create_wallet(user_id):
 
 @pug_bp.route('/pug/api/wallet', methods=['GET'])
 def get_wallet():
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     w = _get_or_create_wallet(uid)
     txs = (WalletTx.query
            .filter_by(user_id=uid)
@@ -3224,6 +3271,8 @@ def get_wallet():
 
 @pug_bp.route('/pug/api/wallet/rates', methods=['GET'])
 def get_eye_rates():
+    err = login_required_api()
+    if err: return err
     refresh_eye_rates()  # no-op if fresh
     rows = EyeRate.query.all()
     return jsonify({r.currency: {
@@ -3244,9 +3293,9 @@ def _currency_min(currency):
 
 @pug_bp.route('/pug/api/wallet/topup', methods=['POST'])
 def wallet_topup():
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     body     = request.get_json(silent=True) or {}
     amount   = body.get('amount')
     currency = (body.get('currency') or 'USD').upper()
@@ -3280,9 +3329,9 @@ def wallet_topup():
 
 @pug_bp.route('/pug/api/wallet/sellback', methods=['POST'])
 def wallet_sellback():
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     body     = request.get_json(silent=True) or {}
     amount   = body.get('amount')
     currency = (body.get('currency') or 'USD').upper()
@@ -3308,9 +3357,9 @@ def wallet_sellback():
 
 @pug_bp.route('/pug/api/wallet/tx/<int:tx_id>/cancel', methods=['POST'])
 def cancel_wallet_tx(tx_id):
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     tx = WalletTx.query.filter_by(id=tx_id, user_id=uid).first()
     if not tx:
         return jsonify({'error': 'Not found'}), 404
@@ -3327,9 +3376,9 @@ def cancel_wallet_tx(tx_id):
 
 @pug_bp.route('/pug/api/ama', methods=['GET'])
 def ama_get():
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     msgs = AmaMessage.query.filter_by(user_id=uid).order_by(AmaMessage.created_at.asc()).all()
     today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = AmaMessage.query.filter(
@@ -3348,9 +3397,9 @@ def ama_get():
 
 @pug_bp.route('/pug/api/ama', methods=['POST'])
 def ama_ask():
-    uid = session.get('user_id')
-    if not uid:
-        return jsonify({'error': 'unauth'}), 401
+    err = login_required_api()
+    if err: return err
+    uid = session['user_id']
     body = request.get_json(silent=True) or {}
     text = (body.get('text') or '').strip()
     if not text:

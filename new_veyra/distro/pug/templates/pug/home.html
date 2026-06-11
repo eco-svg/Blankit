@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veyra</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Veyra">
+  <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <script>
+    // Apply saved theme before first paint to avoid a flash
+    (function () {
+      var t = localStorage.getItem('veyra2_theme');
+      if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='app.css') }}?v=1">
+</head>
+<body data-username="{{ username }}" data-admin="{{ '1' if is_admin else '0' }}">
+
+  <div class="shell">
+
+    <!-- ════════ Sidebar (desktop) ════════ -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">V</div>
+        <div>
+          <div class="brand-name">Veyra</div>
+          <div class="brand-sub">ocellus</div>
+        </div>
+      </div>
+
+      <nav class="nav" id="sideNav">
+        <button class="nav-item" data-view="dashboard">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          Dashboard
+        </button>
+        <button class="nav-item" data-view="notes">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+          Notes
+        </button>
+        <button class="nav-item" data-view="goals">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          Goals
+        </button>
+        <button class="nav-item" data-view="habits">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Habits
+        </button>
+        <button class="nav-item" data-view="skills">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Skills
+        </button>
+        <div class="nav-sep"></div>
+        <button class="nav-item" data-view="community">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Community
+        </button>
+        <button class="nav-item" data-view="messages">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Messages
+          <span class="nav-badge" id="dmBadge"></span>
+        </button>
+        <button class="nav-item" data-view="ask">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Ask
+        </button>
+        <button class="nav-item" data-view="wallet">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M16 12h.01"/><path d="M2 10h20"/></svg>
+          Eyes Wallet
+        </button>
+        <div class="nav-sep"></div>
+        <button class="nav-item" data-view="bots">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 4v4"/><circle cx="12" cy="3" r="1"/><path d="M9 13h.01M15 13h.01"/><path d="M9 17h6"/></svg>
+          AI Bots
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <button class="btn ghost sm w-100" id="themeToggle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span id="themeLabel">Dark mode</span>
+        </button>
+        <button class="user-chip" data-view="profile">
+          <div class="avatar">{{ username[0]|upper }}<span class="presence online"></span></div>
+          <div style="min-width:0">
+            <div class="user-chip-name">{{ username }}</div>
+            <div class="user-chip-rank" id="chipRank">unranked</div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ════════ Main column ════════ -->
+    <div class="main">
+
+      <div class="mobile-top">
+        <div class="brand-mark">V</div>
+        <div class="mobile-top-title" id="mobileTitle">Dashboard</div>
+        <button class="icon-btn" id="themeToggleM" aria-label="Toggle theme">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="icon-btn" data-view="profile" aria-label="Profile">
+          <div class="avatar" style="width:28px;height:28px;font-size:0.75rem">{{ username[0]|upper }}</div>
+        </button>
+      </div>
+
+      <header class="topbar">
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+        <div class="dream-chip hidden" id="dreamChip" title="Your locked dream">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="dreamChipText"></span>
+        </div>
+        <div class="topbar-spacer"></div>
+        <div class="topbar-clock">
+          <span id="tbWeather" class="muted"></span>
+          <span id="tbClock"></span>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <!-- ════ Dashboard ════ -->
+        <section class="view" data-view="dashboard">
+          <div class="hero">
+            <div class="hero-greet">
+              <h2 id="greeting">Hello, {{ username }}</h2>
+              <div class="sub" id="heroDate"></div>
+            </div>
+            <div class="topbar-spacer"></div>
+            <span class="rank-badge unranked" id="heroRank" title="Your top verified rank">–</span>
+          </div>
+
+          <div class="stat-tiles">
+            <div class="card stat-tile"><div class="num" id="stNotes">–</div><div class="lbl">Notes</div></div>
+            <div class="card stat-tile"><div class="num" id="stStreak">–</div><div class="lbl">Day streak</div></div>
+            <div class="card stat-tile"><div class="num" id="stGoals">–</div><div class="lbl">Active goals</div></div>
+            <div class="card stat-tile"><div class="num" id="stHabits">–</div><div class="lbl">Habits today</div></div>
+          </div>
+
+          <div class="card wisdom mb-16" id="wisdomLine">…</div>
+
+          <div class="grid grid-2">
+            <div class="card card-pad">
+              <h3>Today's goals</h3>
+              <div class="card-sub">Tick what you finished</div>
+              <div class="row-list" id="dashGoals"></div>
+            </div>
+            <div class="card card-pad">
+              <h3>7-day consistency</h3>
+              <div class="card-sub">
+                <span style="color:var(--accent)">■</span> added&ensp;
+                <span style="color:var(--ok)">■</span> finished&ensp;
+                <span style="color:var(--danger)">■</span> dropped
+              </div>
+              <div class="consistency-bars" id="consistencyBars"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Notes ════ -->
+        <section class="view" data-view="notes">
+          <div class="view-head">
+            <h2>Notes</h2>
+            <span class="sub" id="notesCount"></span>
+            <div class="spacer"></div>
+            <input class="input" id="noteSearch" placeholder="Search notes…" style="max-width:220px">
+            <button class="btn" id="newNoteBtn">＋ New note</button>
+          </div>
+          <div class="note-grid" id="noteGrid"></div>
+          <div class="empty hidden" id="notesEmpty">No notes yet — write your first one.</div>
+        </section>
+
+        <!-- ════ Goals ════ -->
+        <section class="view" data-view="goals">
+          <div class="view-head">
+            <h2>Goals</h2>
+            <div class="spacer"></div>
+          </div>
+          <div class="grid grid-main-side">
+            <div>
+              <div class="card card-pad mb-16">
+                <h3>Dream</h3>
+                <div class="card-sub">One locked north star — choose carefully, it can't be changed.</div>
+                <div id="dreamArea"></div>
+              </div>
+              <div class="card card-pad">
+                <h3>Active goals</h3>
+                <div class="field-row mt-8 mb-8">
+                  <input class="input" id="newGoalInput" placeholder="Add a goal…" maxlength="500">
+                  <button class="btn" id="addGoalBtn">Add</button>
+                </div>
+                <div class="row-list" id="activeGoals"></div>
+              </div>
+            </div>
+            <div>
+              <div class="card card-pad mb-16">
+                <h3>Finished</h3>
+                <div class="row-list" id="finishedGoals"></div>
+              </div>
+              <div class="card card-pad">
+                <h3>Cancelled</h3>
+                <div class="row-list" id="cancelledGoals"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Habits ════ -->
+        <section class="view" data-view="habits">
+          <div class="view-head">
+            <h2>Habits</h2>
+            <div class="spacer"></div>
+          </div>
+          <div class="grid grid-main-side">
+            <div class="card card-pad">
+              <h3>Daily habits</h3>
+              <div class="field-row mt-8 mb-8">
+                <input class="input" id="newHabitInput" placeholder="New habit…" maxlength="120">
+                <button class="btn" id="addHabitBtn">Add</button>
+              </div>
+              <div class="row-list" id="habitList"></div>
+            </div>
+            <div class="card card-pad">
+              <h3>30-day completion</h3>
+              <div class="card-sub">% of habits done each day</div>
+              <div class="habit-history" id="habitHistory"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Skills ════ -->
+        <section class="view" data-view="skills">
+          <div class="view-head">
+            <h2>Skills</h2>
+            <span class="sub">Ranked against real-world practitioners</span>
+            <div class="spacer"></div>
+            <button class="btn ghost" id="refreshSheetBtn">Re-scan</button>
+          </div>
+
+          <div class="card card-pad mb-16">
+            <div class="sheet-head">
+              <div class="avatar lg">{{ username[0]|upper }}</div>
+              <div class="sheet-id">
+                <div class="sheet-class" id="sheetClass">…</div>
+                <div class="sheet-personality" id="sheetPersonality"></div>
+                <div class="sheet-bio" id="sheetBio"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-main-side">
+            <div>
+              <div class="card card-pad mb-16">
+                <h3>Confirmed skills</h3>
+                <div class="card-sub">Verified skills carry a real rank; unverified show E until you add proof.</div>
+                <div id="skillList"></div>
+                <div class="divider"></div>
+                <div class="field-row">
+                  <input class="input" id="newSkillInput" placeholder="Add a skill manually…">
+                  <button class="btn ghost" id="addSkillBtn">Add</button>
+                </div>
+              </div>
+              <div class="card card-pad">
+                <h3>Suggestions</h3>
+                <div class="card-sub">Detected from your activity — confirm or dismiss.</div>
+                <div id="suggestionList"></div>
+              </div>
+            </div>
+
+            <div class="card card-pad">
+              <h3>Achievements</h3>
+              <div class="card-sub">Your proof-of-work. Verify entries to unlock real ranks.</div>
+              <div class="field">
+                <input class="input" id="achTitle" placeholder="What did you do? e.g. Ran 5k in 24:10">
+              </div>
+              <div class="field">
+                <input class="input" id="achDesc" placeholder="Details (optional)">
+              </div>
+              <button class="btn w-100" id="addAchBtn">Add achievement</button>
+              <div class="divider"></div>
+              <div class="row-list" id="achList"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Community ════ -->
+        <section class="view" data-view="community">
+          <div class="view-head">
+            <h2>Community</h2>
+            <span class="sub" id="feedRadius"></span>
+            <div class="spacer"></div>
+            <input class="input" id="userSearch" placeholder="Find people…" style="max-width:200px">
+          </div>
+          <div id="userSearchResults" class="card card-pad hidden mb-16"></div>
+
+          <div class="card card-pad composer mb-16">
+            <textarea class="textarea" id="postText" placeholder="Share something — work, a win, an offer…" maxlength="500"></textarea>
+            <div class="composer-foot">
+              <div class="post-type-pick" id="postTypePick">
+                <button class="pt-pill" data-pt="showoff">Show-off</button>
+                <button class="pt-pill" data-pt="blog">Blog</button>
+                <button class="pt-pill" data-pt="sell">Sell</button>
+                <button class="pt-pill" data-pt="teach">Teach</button>
+                <button class="pt-pill" data-pt="hire">Hire</button>
+                <button class="pt-pill" data-pt="collab">Collab</button>
+              </div>
+              <div class="spacer" style="flex:1"></div>
+              <select class="select" id="postSkillTag" style="max-width:160px">
+                <option value="">No skill tag</option>
+              </select>
+              <label class="btn ghost sm" style="cursor:pointer">
+                <input type="file" id="postMedia" accept="image/*,video/*,audio/*" class="hidden">
+                Media
+              </label>
+              <button class="btn" id="publishBtn">Post</button>
+            </div>
+            <div class="form-error" id="postError"></div>
+            <div class="muted mono" id="postMediaName" style="font-size:0.72rem"></div>
+          </div>
+
+          <div id="feed"></div>
+          <div class="empty hidden" id="feedEmpty">Nothing here yet — be the first to post.</div>
+        </section>
+
+        <!-- ════ Messages ════ -->
+        <section class="view" data-view="messages">
+          <div class="view-head"><h2>Messages</h2></div>
+          <div class="dm-layout">
+            <div class="card dm-threads" id="dmThreads"></div>
+            <div class="card dm-chat hidden" id="dmChat">
+              <div class="dm-chat-head">
+                <button class="icon-btn" id="dmBack" aria-label="Back">←</button>
+                <div class="avatar" id="dmPeerAvatar">?</div>
+                <div>
+                  <div style="font-weight:650" id="dmPeerName"></div>
+                  <div class="muted" style="font-size:0.72rem" id="dmPeerStatus"></div>
+                </div>
+              </div>
+              <div class="dm-scroll" id="dmScroll"></div>
+              <div class="dm-compose">
+                <label class="icon-btn" style="cursor:pointer" title="Attach media">
+                  <input type="file" id="dmMedia" accept="image/*,video/*,audio/*" class="hidden">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </label>
+                <input class="input" id="dmInput" placeholder="Message…" maxlength="2000">
+                <button class="btn" id="dmSend">Send</button>
+              </div>
+            </div>
+            <div class="card card-pad empty" id="dmPlaceholder">Pick a conversation.</div>
+          </div>
+        </section>
+
+        <!-- ════ Ask ════ -->
+        <section class="view" data-view="ask">
+          <div class="view-head"><h2>Ask</h2></div>
+          <div class="grid grid-2">
+            <div class="card card-pad">
+              <h3>Ask the team</h3>
+              <div class="card-sub">A human answers — 1 free question per day, extras cost 1 Eye.
+                <span class="tag accent" id="amaQuota"></span></div>
+              <div class="ama-scroll" id="amaThread"></div>
+              <div class="field-row">
+                <input class="input" id="amaInput" placeholder="Your question…" maxlength="2000">
+                <button class="btn" id="amaSend">Ask</button>
+              </div>
+              <div class="form-error" id="amaError"></div>
+            </div>
+            <div class="card card-pad">
+              <h3>Quick answers</h3>
+              <div class="card-sub">Instant AI for factual questions.</div>
+              <div class="ama-scroll" id="askThread"></div>
+              <div class="field-row">
+                <input class="input" id="askInput" placeholder="Ask anything…" maxlength="2000">
+                <button class="btn" id="askSend">Ask</button>
+              </div>
+            </div>
+          </div>
+
+          {% if is_admin %}
+          <div class="card card-pad mt-16" id="adminAmaCard">
+            <h3>Admin · AMA inbox</h3>
+            <div class="card-sub">Questions from all users.</div>
+            <div class="grid grid-2">
+              <div class="row-list" id="adminAmaUsers"></div>
+              <div id="adminAmaThread" class="ama-scroll"></div>
+            </div>
+            <div class="field-row hidden" id="adminReplyRow">
+              <input class="input" id="adminReplyInput" placeholder="Reply…" maxlength="2000">
+              <button class="btn" id="adminReplySend">Reply</button>
+            </div>
+          </div>
+          {% endif %}
+        </section>
+
+        <!-- ════ Wallet ════ -->
+        <section class="view" data-view="wallet">
+          <div class="view-head">
+            <h2>Eyes Wallet</h2>
+            <span class="sub">1 Eye ≈ $0.01</span>
+          </div>
+          <div class="grid grid-main-side">
+            <div>
+              <div class="card card-pad mb-16">
+                <div class="balance-hero">
+                  <span class="balance-num" id="walletBalance">–</span>
+                  <span class="muted">Eyes</span>
+                </div>
+                <div class="flex mt-12">
+                  <select class="select" id="walletCurrency" style="max-width:130px"></select>
+                  <input class="input" id="walletAmount" type="number" min="1" placeholder="Amount" style="max-width:130px">
+                  <button class="btn" id="topupBtn">Top up</button>
+                  <button class="btn ghost" id="sellbackBtn">Sell back</button>
+                </div>
+                <div class="muted mt-8" style="font-size:0.78rem" id="walletQuote"></div>
+                <div class="form-error" id="walletError"></div>
+              </div>
+              <div class="card card-pad">
+                <h3>History</h3>
+                <div id="txList"></div>
+              </div>
+            </div>
+            <div class="card card-pad qr-box">
+              <h3 style="justify-content:center">Pay via UPI</h3>
+              <div class="card-sub">Scan, pay the quoted amount, and your Eyes are added once payment is confirmed.</div>
+              <img src="{{ url_for('pug.static', filename='upi_qr.jpg') }}" alt="UPI QR code">
+              <div class="mono muted mt-8" style="font-size:0.78rem">veyra4ocellus@nyes</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Bots ════ -->
+        <section class="view" data-view="bots">
+          <div class="view-head"><h2>AI Bots</h2></div>
+          <div class="grid grid-2">
+            <div class="card soon-card">
+              <span class="tag accent mb-8">Coming soon</span>
+              <div class="big">BlinkBot</div>
+              <p>On-device automator that lives in your notes and goals. Reads your story, ticks your progress, logs your skills — free for verified students.</p>
+            </div>
+            <div class="card soon-card">
+              <span class="tag accent mb-8">Coming soon</span>
+              <div class="big">BuddyBot</div>
+              <p>Full-power private AI on dedicated inference. Credit-based sessions with your full context — no filters, no logs leaving the server.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ════ Profile ════ -->
+        <section class="view" data-view="profile">
+          <div class="view-head"><h2>Profile</h2></div>
+          <div class="grid grid-2">
+            <div>
+              <div class="card card-pad mb-16">
+                <h3>Account</h3>
+                <div class="field mt-12">
+                  <label>Username</label>
+                  <div class="field-row">
+                    <input class="input" id="pfUsername" value="{{ username }}" maxlength="50">
+                    <button class="btn ghost" id="pfSaveUsername">Save</button>
+                  </div>
+                </div>
+                <div class="form-error" id="pfUsernameMsg"></div>
+                <div class="divider"></div>
+                <h3>Change password</h3>
+                <div class="field mt-8"><input class="input" type="password" id="pfPwCurrent" placeholder="Current password" autocomplete="current-password"></div>
+                <div class="field"><input class="input" type="password" id="pfPwNew" placeholder="New password (min 8 chars)" autocomplete="new-password"></div>
+                <button class="btn ghost" id="pfSavePw">Update password</button>
+                <div class="form-error" id="pfPwMsg"></div>
+              </div>
+
+              <div class="card card-pad">
+                <h3>Appearance</h3>
+                <div class="card-sub">Theme</div>
+                <div class="theme-pick">
+                  <button class="theme-dot" data-theme="light" style="background:#f6f6f4" title="Light"></button>
+                  <button class="theme-dot" data-theme="dark" style="background:#0f1116" title="Dark"></button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="card card-pad mb-16">
+                <h3>Student status</h3>
+                <div class="card-sub" id="studentStatusText">Checking…</div>
+                <span class="tag" id="studentStatusTag">…</span>
+              </div>
+
+              <div class="card card-pad mb-16">
+                <h3>Feedback & reports</h3>
+                <div class="seg mb-8" id="fbKind">
+                  <button class="active" data-kind="feature">Feature idea</button>
+                  <button data-kind="report">Report a problem</button>
+                </div>
+                <textarea class="textarea" id="fbText" placeholder="Tell us…"></textarea>
+                <button class="btn ghost mt-8" id="fbSend">Send</button>
+                <div class="form-ok" id="fbMsg"></div>
+              </div>
+
+              <div class="card card-pad" style="border-color:var(--danger)">
+                <h3 style="color:var(--danger)">Danger zone</h3>
+                <div class="card-sub">Deleting your account erases everything — notes, goals, skills, wallet. No undo.</div>
+                <button class="btn danger-ghost" id="pfDeleteBtn">Delete account…</button>
+              </div>
+
+              <div class="muted mt-12" style="font-size:0.75rem">
+                <a href="/pug/terms">Terms</a> · <a href="/privacy">Privacy</a> ·
+                <button class="btn ghost sm" id="logoutBtn" style="margin-left:6px">Log out</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ════════ Mobile bottom nav ════════ -->
+  <nav class="bottom-nav">
+    <button data-view="dashboard">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Home
+    </button>
+    <button data-view="habits">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      Habits
+    </button>
+    <button data-view="community">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Social
+    </button>
+    <button data-view="messages">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      DMs
+      <span class="nav-badge" id="dmBadgeM"></span>
+    </button>
+    <button data-view="skills">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Skills
+    </button>
+    <button data-view="wallet">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      Eyes
+    </button>
+  </nav>
+
+  <!-- ════════ Shared modal + toast mounts ════════ -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modalBox"></div>
+  </div>
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="{{ url_for('pug.static', filename='js/core.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/dashboard.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/notes.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/goals.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/habits.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/skills.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/community.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/dms.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/wallet.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/ask.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='js/profile.js') }}?v=1"></script>
+</body>
+</html>

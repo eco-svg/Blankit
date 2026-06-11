@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="forest">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Eco-Svg — manifestation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/svg_style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='svg_style/manifestation.css') }}" />
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">
+        <span class="brand-icon">◈</span>
+        <span class="brand-name">{{ username }}</span>
+      </span>
+      <button class="sidebar-close" id="sidebarClose">✕</button>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/home"><span class="sidebar-nav-icon">⬡</span> Home</a>
+      <a class="sidebar-nav-item active" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation </a>
+      <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
+      <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
+      <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
+      <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span class="nav-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-profile-row">
+        <div class="avatar">{{ username[:2].upper() }}</div>
+        <div class="sidebar-profile-info">
+          <span class="sidebar-username">{{ username }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-backdrop hidden" id="sidebarBackdrop"></div>
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="topbar-title">✦ manifestation <span class="nav-beta-tag">beta</span></span>
+  </header>
+
+  <!-- MAIN -->
+  <main class="mf-main">
+
+    <!-- GOAL INPUT -->
+    <section class="mf-section">
+      <div class="mf-label">// what do you want to achieve?</div>
+      <div class="card mf-card">
+        <p class="mf-desc">
+          Enter any goal — big or small. VEYRA will suggest specific atomic habits
+          you can track daily, inspired by James Clear's <em>Atomic Habits</em>.
+        </p>
+        <div class="mf-goal-row">
+          <input
+            class="mf-input"
+            id="manifestGoal"
+            type="text"
+            placeholder="e.g. get good at chess, learn Spanish, run a 5K..."
+            maxlength="200"
+          />
+          <button class="mf-btn" id="generateBtn">✦ Suggest habits</button>
+        </div>
+        <div class="mf-loading hidden" id="planLoading">
+          <span class="mf-spinner"></span> VEYRA is thinking...
+        </div>
+      </div>
+    </section>
+
+    <!-- HABIT SUGGESTIONS -->
+    <section class="mf-section hidden" id="habitsSection">
+      <div class="mf-label" id="habitsLabel">// suggested atomic habits</div>
+      <div class="mf-habits-grid" id="habitsGrid"></div>
+    </section>
+
+    <!-- CHAT -->
+    <section class="mf-section">
+      <div class="mf-label">// ask veyra</div>
+      <div class="card mf-card mf-chat-card">
+        <div class="mf-messages" id="chatMessages">
+          <div class="mf-msg mf-msg--veyra">
+            <span class="mf-msg-sender">veyra ◈</span>
+            <span class="mf-msg-text">Hi {{ username }}! Enter a goal above and I'll suggest atomic habits to get you there. Or tell me where you're struggling — I'll help you scale it down.</span>
+          </div>
+        </div>
+        <div class="mf-chat-row">
+          <textarea
+            class="mf-chat-input"
+            id="chatInput"
+            placeholder="e.g. I can't run 3km, what should I do?"
+            rows="2"
+          ></textarea>
+          <button class="mf-send-btn" id="chatSendBtn">↑</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
+  <script src="{{ url_for('svg.static', filename='manifestation.js') }}"></script>
+</body>
+</html>

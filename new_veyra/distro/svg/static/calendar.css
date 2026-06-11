@@ -1,0 +1,656 @@
+/* ═══════════════════════════════════════════
+   calendar.css — Eco-Svg habit tracker
+   ═══════════════════════════════════════════ */
+
+/* ══════════════════════════════
+   PAGE LAYOUT
+   ══════════════════════════════ */
+.cal-main {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2rem 4rem;
+}
+
+.cal-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.cal-page-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* view toggle */
+.cal-view-toggle {
+  display: flex;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.cal-view-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--text3);
+  padding: 5px 16px;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+.cal-view-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+}
+.cal-view-btn:hover:not(.active) {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+/* two-col layout */
+.cal-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .cal-layout { grid-template-columns: 1fr; }
+}
+
+/* ══════════════════════════════
+   LEFT SIDEBAR
+   ══════════════════════════════ */
+.cal-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 5rem;
+}
+
+/* ── MINI CALENDAR ── */
+.mini-cal {
+  padding: 1rem;
+}
+
+.mini-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.mini-cal-month {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+.mini-cal-arrow {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.mini-cal-arrow:hover { color: var(--accent); background: var(--accent-soft); }
+
+.mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.mini-cal-dow {
+  font-size: 0.58rem;
+  color: var(--text3);
+  text-align: center;
+  letter-spacing: 0.05em;
+  padding-bottom: 4px;
+}
+
+.mini-cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.mini-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  color: var(--text2);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.15s, color 0.15s;
+}
+.mini-day:hover { background: var(--accent-soft); color: var(--accent); }
+.mini-day.today {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+.mini-day.selected {
+  background: var(--accent);
+  color: var(--bg);
+}
+.mini-day.other-month { opacity: 0.3; }
+.mini-day.has-todos::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent2);
+}
+
+/* ── DAY DETAIL ── */
+.day-detail {
+  padding: 1rem 1.25rem;
+}
+
+.day-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.day-detail-date {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+.day-detail-add {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent2);
+  color: var(--accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+}
+.day-detail-add:hover { background: var(--accent); color: var(--bg); transform: scale(1.1); }
+
+/* habit dots */
+.day-habits {
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.day-habits-label {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.day-habits-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.habit-dot {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.62rem;
+  color: var(--text3);
+}
+.habit-dot-circle {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  flex-shrink: 0;
+}
+.habit-dot.done .habit-dot-circle { background: var(--accent2); }
+.habit-dot.done { color: var(--accent2); }
+
+/* todo list */
+.todo-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.4rem;
+  border-radius: 7px;
+  transition: background 0.15s;
+  cursor: default;
+}
+.todo-item:hover { background: var(--bg2); }
+
+.todo-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 1.5px solid var(--accent2);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  font-size: 0.6rem;
+  color: var(--bg);
+}
+.todo-item.done .todo-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.todo-text {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--text);
+  line-height: 1.3;
+}
+.todo-item.done .todo-text {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* priority dot */
+.todo-priority {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.todo-priority.high   { background: #e05555; }
+.todo-priority.medium { background: #e0a055; }
+.todo-priority.low    { background: var(--accent2); }
+
+.todo-delete {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  padding: 2px 4px;
+}
+.todo-item:hover .todo-delete { opacity: 1; }
+.todo-delete:hover { color: #e05555; }
+
+.todo-empty {
+  font-size: 0.7rem;
+  color: var(--text3);
+  text-align: center;
+  padding: 0.75rem 0;
+  letter-spacing: 0.03em;
+}
+
+/* ══════════════════════════════
+   MAIN CALENDAR — MONTHLY
+   ══════════════════════════════ */
+.cal-view-wrap {
+  min-width: 0;
+}
+
+.cal-view.hidden { display: none; }
+
+.main-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.main-cal-month {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  color: var(--accent);
+  font-style: italic;
+}
+
+.main-cal-arrow {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.main-cal-arrow:hover {
+  border-color: var(--accent2);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.main-cal-grid-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.main-cal-grid-header span {
+  text-align: center;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  padding: 4px 0;
+}
+
+.main-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.main-day {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-height: 80px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.main-day:hover {
+  border-color: var(--accent2);
+  background: var(--bg2);
+}
+.main-day.today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.main-day.selected {
+  border-color: var(--accent);
+  border-width: 2px;
+}
+.main-day.other-month { opacity: 0.35; }
+
+.main-day-num {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text2);
+  line-height: 1;
+}
+.main-day.today .main-day-num { color: var(--accent); }
+
+/* todo chips on main calendar */
+.main-day-todos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+.main-day-chip {
+  font-size: 0.58rem;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.02em;
+}
+.main-day-chip.high   { background: rgba(224,85,85,0.18);  color: #e05555; }
+.main-day-chip.medium { background: rgba(224,160,85,0.18); color: #e0a055; }
+.main-day-chip.low    { background: var(--accent-soft);    color: var(--accent2); }
+.main-day-chip.done   { opacity: 0.4; text-decoration: line-through; }
+
+/* habit dots row at bottom of cell */
+.main-day-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+.main-day-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.main-day-dot.done { background: var(--accent2); }
+
+.main-day-more {
+  font-size: 0.55rem;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+
+/* ══════════════════════════════
+   WEEKLY VIEW
+   ══════════════════════════════ */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.week-day {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem 0.6rem;
+  min-height: 320px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.week-day:hover { border-color: var(--accent2); background: var(--bg2); }
+.week-day.today { border-color: var(--accent); background: var(--accent-soft); }
+.week-day.selected { border-color: var(--accent); border-width: 2px; }
+
+.week-day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.week-day-name {
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+.week-day-num {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text2);
+}
+.week-day.today .week-day-num { color: var(--accent); }
+
+.week-day-todos {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.week-chip {
+  font-size: 0.6rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.week-chip.high   { background: rgba(224,85,85,0.18);  color: #e05555; }
+.week-chip.medium { background: rgba(224,160,85,0.18); color: #e0a055; }
+.week-chip.low    { background: var(--accent-soft);    color: var(--accent2); }
+.week-chip.done   { opacity: 0.4; text-decoration: line-through; }
+
+.week-day-dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 0.4rem;
+  border-top: 1px solid var(--border);
+}
+.week-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+}
+.week-dot.done { background: var(--accent2); }
+
+/* ══════════════════════════════
+   ADD TODO MODAL
+   ══════════════════════════════ */
+.todo-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.todo-modal.hidden { display: none; }
+
+.todo-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  z-index: 399;
+}
+.todo-modal-backdrop.hidden { display: none; }
+
+.todo-modal-box {
+  position: relative;
+  z-index: 401;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  animation: slideUp 0.22s ease;
+}
+
+.todo-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.todo-modal-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.15rem;
+  color: var(--accent);
+  font-style: italic;
+}
+.todo-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.todo-modal-close:hover { color: var(--accent); }
+
+.todo-modal-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.todo-modal-input:focus { border-color: var(--accent); }
+
+.todo-priority-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.todo-priority-label {
+  font-size: 0.68rem;
+  color: var(--text3);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.todo-priority-btns {
+  display: flex;
+  gap: 4px;
+}
+.priority-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text3);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.priority-btn.p-high.active   { background: rgba(224,85,85,0.2);  color: #e05555; border-color: #e05555; }
+.priority-btn.p-med.active    { background: rgba(224,160,85,0.2); color: #e0a055; border-color: #e0a055; }
+.priority-btn.p-low.active    { background: var(--accent-soft);   color: var(--accent2); border-color: var(--accent2); }
+.priority-btn:hover:not(.active) { background: var(--bg2); color: var(--text); }
+
+.todo-modal-save {
+  padding: 0.6rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.todo-modal-save:hover { opacity: 0.85; }

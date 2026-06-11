@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Habit Architect</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Veyra">
+    <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <link rel="stylesheet" href="{{ url_for('catalystcrew.static', filename='dstyle.css') }}">
+    <script src="/static/chart.umd.min.js"></script>
+    <meta name="app-user"  content="{{ username | e }}">
+    <meta name="app-email" content="{{ email | e }}">
+</head>
+<body>
+
+<!-- PWA install button — fixed top-right -->
+<button class="pwa-install-btn pwa-hidden"
+        title="Install Veyra app"
+        style="position:fixed;top:20px;right:20px;z-index:9999;">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  Install
+</button>
+
+<!-- Profile Header — fixed top-left -->
+<div class="profile-header" id="profileHeader"
+     style="position:fixed;top:20px;left:20px;z-index:9999;">
+    <div class="profile-toggle" id="profileToggle">
+        <div class="profile-avatar">👤</div>
+        <div>
+            <div style="font-weight:600;font-size:0.95rem;">User Profile</div>
+            <div style="font-size:0.75rem;color:var(--text-dim);">Click to view</div>
+        </div>
+    </div>
+
+    <div class="profile-dropdown" id="profileDropdown">
+
+        <!-- MAIN MENU -->
+        <div id="profileMainMenu">
+            <div class="profile-info">
+                <div class="profile-name"  id="profileName">{{ username }}</div>
+                <div class="profile-email" id="profileEmail">{{ email }}</div>
+            </div>
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileStreak">0</div>
+                    <div class="profile-stat-label">Day Streak</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileGoals">0</div>
+                    <div class="profile-stat-label">Goals Done</div>
+                </div>
+            </div>
+            <div class="profile-menu-item" id="viewHistoryBtn">
+                <span>📜</span> View History
+            </div>
+            <div class="profile-menu-item" id="editProfileBtn">
+                <span>✏️</span> Edit Profile
+            </div>
+            <div class="profile-menu-item" id="viewSettingsBtn">
+                <span>⚙️</span> Settings
+            </div>
+            <div class="profile-menu-item delete-account-item" id="deleteAccountBtn">
+                <span>🗑️</span> Delete Account
+            </div>
+            <button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+        </div>
+
+        <!-- HISTORY PANEL -->
+        <div id="profileHistoryPanel" style="display:none;">
+            <div style="display:flex;align-items:center;gap:8px;
+                        margin-bottom:12px;padding-bottom:12px;
+                        border-bottom:1px solid var(--border);">
+                <button onclick="Profile.showMainMenu()"
+                        style="background:var(--bg);color:var(--text);
+                               border:1px solid var(--border);
+                               padding:5px 12px;font-size:0.85rem;
+                               border-radius:6px;cursor:pointer;">
+                    ← Back
+                </button>
+                <span style="font-weight:600;font-size:1rem;">Activity History</span>
+            </div>
+            <div id="profileHistoryEntries"
+                 style="max-height:320px;overflow-y:auto;">
+                <div style="color:var(--text-dim);font-size:0.85rem;
+                            text-align:center;padding:20px 0;">
+                    Loading...
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="main-dashboard">
+
+    <!-- LEFT SIDEBAR -->
+    <div class="settings-sidebar">
+
+        <div class="card">
+            <h3>🎨 Theme</h3>
+            <div class="theme-controls">
+                <button class="theme-btn active" data-theme="dark">🌙 Dark</button>
+                <button class="theme-btn" data-theme="light">☀️ Light</button>
+                <button class="theme-btn" data-theme="ocean">🌊 Ocean</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🔥 Streak Display</h3>
+            <div class="toggle-container">
+                <span>Show Streak</span>
+                <div class="toggle-switch active" id="streakToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>👟 Step Tracker</h3>
+            <div class="step-display" id="stepCount">0</div>
+            <div class="km-display"   id="kmDisplay">0.00 km</div>
+            <div class="step-progress">
+                <div class="step-progress-bar" id="stepProgressBar"></div>
+            </div>
+            <div style="text-align:center;color:var(--text-dim);
+                        font-size:0.9rem;margin-bottom:10px;">
+                <span id="stepGoalText">0 / 10,000 steps</span>
+            </div>
+            <div class="input-group step-input-group">
+                <input type="number" id="stepInput" placeholder="Add steps" min="0">
+                <button id="updateStepsBtn">Update</button>
+            </div>
+        </div>
+
+        <!-- Water Intake -->
+        <div class="card">
+            <h3>💧 Water Intake</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="waterCount">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> / 8 glasses</span>
+            </div>
+            <div id="waterGlasses"
+                 style="display:flex;flex-wrap:wrap;gap:4px;
+                        justify-content:center;margin-bottom:10px;"></div>
+            <div class="step-progress" style="margin-bottom:10px;">
+                <div id="waterBar" class="step-progress-bar"
+                     style="background:linear-gradient(90deg,#58a6ff,#3fb950);width:0%"></div>
+            </div>
+            <div style="display:flex;gap:8px;">
+                <button id="removeWaterBtn"
+                        style="flex:1;background:var(--border);
+                               color:var(--text);">− Glass</button>
+                <button id="addWaterBtn" style="flex:1;">+ Glass</button>
+            </div>
+        </div>
+
+        <!-- BMI Calculator -->
+        <div class="card">
+            <h3>⚖️ BMI Calculator</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="bmiValue" style="font-size:2.2rem;">--</span>
+                <div id="bmiCategory"
+                     style="font-size:0.9rem;font-weight:600;margin-top:2px;">--</div>
+            </div>
+            <div class="step-progress" style="margin-bottom:10px;">
+                <div id="bmiBar" class="step-progress-bar"
+                     style="background:linear-gradient(90deg,var(--accent),
+                            var(--warning),var(--fire));width:0%"></div>
+            </div>
+            <div class="input-group" style="margin-bottom:8px;">
+                <input type="number" id="heightInput"
+                       placeholder="Height (cm)" min="50" max="250">
+                <input type="number" id="weightInput"
+                       placeholder="Weight (kg)" min="10" max="300">
+            </div>
+            <button id="calcBmiBtn" style="width:100%;">Calculate BMI</button>
+        </div>
+
+        <div class="card">
+            <h3>😊 How are you feeling?</h3>
+            <select class="mood-selector" id="moodSelect">
+                <option value="Normal">😐 Normal</option>
+                <option value="Energized">⚡ Energized</option>
+                <option value="Stressed">😰 Stressed</option>
+                <option value="Lazy">😴 Lazy</option>
+            </select>
+        </div>
+
+        <div class="card" style="flex-grow:1;">
+            <h3>📝 Daily Notes</h3>
+            <textarea class="notes-area" id="notesArea"
+                      placeholder="Write your thoughts..."></textarea>
+            <button id="saveNotesBtn" style="margin-top:10px;">💾 Save Notes</button>
+        </div>
+
+    </div>
+
+    <!-- MIDDLE SECTION -->
+    <div class="middle-section">
+
+        <div class="welcome-banner card">
+            <h1 id="greetingText">Good Evening 👋</h1>
+            <div class="streak-pill" id="streakPill">
+                🔥 <span id="streakCount">0</span> Day Streak
+            </div>
+        </div>
+
+        <!-- FIX: Clean heading, no emoji, no recurring text -->
+        <div class="card">
+            <h3>Goal</h3>
+            <div class="goal-list" id="goalList"></div>
+            <div class="input-group">
+                <input type="text" id="goalInput" placeholder="Add new goal...">
+                <button id="addGoalBtn">➕ Add</button>
+            </div>
+        </div>
+
+        <!-- Daily Inspiration -->
+        <div class="card">
+            <h3>Daily Inspiration</h3>
+            <div class="quote-box" id="quoteBox">Loading inspiration...</div>
+            <button id="newQuoteBtn" style="margin-top:10px;">🔄 New Quote</button>
+        </div>
+
+        <!-- Analytics -->
+        <div class="card">
+            <div style="display:flex;align-items:center;
+                        justify-content:space-between;margin-bottom:12px;">
+                <h3 style="margin:0;">📊 Performance Analytics</h3>
+                <div style="display:flex;gap:8px;">
+                    <button id="weeklyBtn"  class="analytics-toggle active">Weekly</button>
+                    <button id="monthlyBtn" class="analytics-toggle">Monthly</button>
+                </div>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-dim);
+                        text-align:center;margin-bottom:10px;"
+                 id="analyticsPeriod">Last 7 days</div>
+            <div class="stats-grid" style="margin-bottom:10px;">
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsCompleted">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsRate">0%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsActiveDays">0</span>
+                    <span class="stat-label">Active Days</span>
+                </div>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="analyticsTotal">0</span>
+                    <span class="stat-label">Total Goals</span>
+                </div>
+                <div class="stat-card" style="grid-column:span 2;">
+                    <span class="stat-value" id="analyticsBestDay"
+                          style="font-size:1.3rem;">--</span>
+                    <span class="stat-label">Best Day</span>
+                </div>
+            </div>
+            <div class="chart-container" style="height:260px;margin-top:12px;">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="card">
+            <h3>📅 This Month</h3>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalGoalsMonth">0</span>
+                    <span class="stat-label">Goals This Month</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="completedGoalsMonth">0</span>
+                    <span class="stat-label">Completed</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="completionRate">0%</span>
+                    <span class="stat-label">Success Rate</span>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Activity History -->
+        <div class="card">
+            <h3>📜 Activity History</h3>
+            <div class="history-list" id="historyList">
+                <div class="history-item">
+                    <div class="history-date">No activity yet</div>
+                    <div class="history-content">
+                        Start adding goals to build your history!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="right-sidebar">
+
+        <div class="datetime-widget">
+            <div class="time-display" id="timeDisplay">00:00</div>
+            <div class="date-display" id="dateDisplay">Loading...</div>
+            <div class="weather-info">
+                <span class="weather-icon" id="weatherIcon">🌤️</span>
+                <span id="weatherTemp">--°C</span>
+                <span id="weatherDesc">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Alarm -->
+        <div class="card">
+            <h3>⏰ Set Reminder</h3>
+            <div class="input-group">
+                <input type="time" id="alarmTime">
+                <button id="setAlarmBtn">🔔 Set</button>
+            </div>
+            <div class="alarm-list" id="alarmList"></div>
+        </div>
+
+        <!-- Sleep Tracker -->
+        <div class="card">
+            <h3>😴 Sleep Tracker</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="sleepHours"
+                      style="font-size:2rem;">--</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> slept</span>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.8rem;color:var(--text-dim);
+                                margin-bottom:4px;">Bedtime</div>
+                    <input type="time" id="bedtimeInput" style="width:100%;">
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:0.8rem;color:var(--text-dim);
+                                margin-bottom:4px;">Wake time</div>
+                    <input type="time" id="waketimeInput" style="width:100%;">
+                </div>
+            </div>
+            <div style="margin-bottom:10px;">
+                <div style="font-size:0.8rem;color:var(--text-dim);
+                            margin-bottom:6px;">Sleep Quality</div>
+                <div style="display:flex;gap:6px;justify-content:center;">
+                    <span class="sleep-star" data-val="1"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="2"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="3"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="4"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                    <span class="sleep-star" data-val="5"
+                          style="font-size:1.4rem;cursor:pointer;">☆</span>
+                </div>
+            </div>
+            <button id="saveSleepBtn" style="width:100%;">💾 Save Sleep</button>
+        </div>
+
+        <!-- Calorie Logger -->
+        <div class="card">
+            <h3>🍽️ Calorie Logger</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="totalCalories">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> kcal today</span>
+            </div>
+            <div id="mealList"
+                 style="max-height:100px;overflow-y:auto;margin-bottom:8px;"></div>
+            <input type="text" id="mealNameInput" placeholder="Meal name..."
+                   style="width:100%;margin-bottom:6px;">
+            <div class="input-group">
+                <input type="number" id="mealCalInput"
+                       placeholder="Calories" min="0">
+                <button id="addMealBtn">Add</button>
+            </div>
+        </div>
+
+        <!-- Workout Log -->
+        <div class="card">
+            <h3>💪 Workout Log</h3>
+            <div style="text-align:center;margin-bottom:8px;">
+                <span class="stat-value" id="totalWorkouts">0</span>
+                <span style="color:var(--text-dim);font-size:0.9rem;"> exercises</span>
+            </div>
+            <div id="workoutList"
+                 style="max-height:100px;overflow-y:auto;margin-bottom:8px;"></div>
+            <input type="text" id="workoutExInput"
+                   placeholder="Exercise name..."
+                   style="width:100%;margin-bottom:6px;">
+            <div class="workout-inputs">
+                <input type="number" id="workoutSetsInput"
+                       placeholder="Sets" min="1">
+                <input type="number" id="workoutRepsInput"
+                       placeholder="Reps" min="1">
+            </div>
+            <button id="addWorkoutBtn" style="width:100%;margin-top:6px;">
+                ➕ Log Exercise
+            </button>
+        </div>
+
+        <!-- Motivation Zone -->
+        <div class="card">
+            <h3>📺 Motivation Zone</h3>
+            <iframe width="100%" height="180"
+                src="https://www.youtube.com/embed?listType=search&list=productivity+motivation+shorts"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+            </iframe>
+        </div>
+
+        <!-- AI Coach -->
+        <div class="card">
+            <h3>🤖 AI Habit Coach</h3>
+            <div id="chatHistory"></div>
+            <div class="input-group">
+                <input type="text" id="chatInput" placeholder="Ask anything...">
+                <button id="sendMessageBtn">Send</button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- JavaScript Modules -->
+<script src="{{ url_for('catalystcrew.static', filename='js/utils.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/data-manager.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/profile.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/theme.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/steps.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/goals.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/stats.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/history.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/alarms.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/weather.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/coach.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/health.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/analytics.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/recurring.js') }}"></script>
+<script src="{{ url_for('catalystcrew.static', filename='js/app.js') }}"></script>
+<style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
+<script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
+<script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
+</body>
+</html>

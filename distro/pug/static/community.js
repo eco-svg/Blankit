@@ -303,11 +303,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let i = newPosts.length - 1; i >= 0; i--) {
                     feed.insertBefore(makePost(newPosts[i]), feed.firstChild);
                 }
+                // Patch posts already on screen in place — counts, reactions, online dot
+                posts.forEach(p => {
+                    const el = renderedMap[String(p.id)];
+                    if (el) updatePostInPlace(el, p);
+                });
                 lastPostCount = posts.length;
             })
             .catch(() => {});
     }
 
+
+    // Update a rendered post without rebuilding it, so nothing flickers
+    function updatePostInPlace(el, p) {
+        const setTxt = (sel, val) => {
+            const n = el.querySelector(sel);
+            if (!n || n.textContent === String(val)) return false;
+            n.textContent = val;
+            return true;
+        };
+        setTxt('[data-action="like"] .react-count',    p.likes    || 0);
+        setTxt('[data-action="dislike"] .react-count', p.dislikes || 0);
+        const ccChanged = setTxt('[data-action="comment"] .react-count', p.comment_count || 0);
+        el.querySelector('[data-action="like"]')?.classList.toggle('active',    p.my_reaction === 'like');
+        el.querySelector('[data-action="dislike"]')?.classList.toggle('active', p.my_reaction === 'dislike');
+        el.querySelector('.online-dot')?.classList.toggle('is-online', !!p.is_online);
+
+        const commentsEl = el.querySelector('.comm-post-comments');
+        if (commentsEl && !commentsEl.classList.contains('hidden')) {
+            loadComments(p.id, commentsEl, p.is_mine);
+        } else if (ccChanged && (p.comment_count || 0) > 0) {
+            loadPreviewComments(p.id, el);
+        }
+    }
 
     function fmtDist(km) {
         if (km === null || km === undefined) return '';
@@ -503,21 +531,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const commentsEl = el.querySelector('.comm-post-comments');
                     preview?.classList.add('hidden');
                     const nowVisible = commentsEl.classList.toggle('hidden') === false;
-                    if (nowVisible) {
-                        if (commentsEl.dataset.loaded !== 'true') {
-                            loadComments(p.id, commentsEl, p.is_mine);
-                        }
-                        clearInterval(commentsEl._pollTimer);
-                        commentsEl._pollTimer = setInterval(() => {
-                            if (commentsEl.classList.contains('hidden')) {
-                                clearInterval(commentsEl._pollTimer);
-                            } else {
-                                commentsEl.dataset.loaded = 'false';
-                                loadComments(p.id, commentsEl, p.is_mine);
-                            }
-                        }, 5000);
-                    } else {
-                        clearInterval(commentsEl._pollTimer);
+                    // No per-post timer: open sections are refreshed by the
+                    // version poller whenever community activity changes
+                    if (nowVisible && commentsEl.dataset.loaded !== 'true') {
+                        loadComments(p.id, commentsEl, p.is_mine);
                     }
                     return;
                 }
@@ -589,7 +606,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function loadComments(pid, commentsEl, isMine) {
         const list = commentsEl.querySelector('.comm-comments-list');
         commentsEl.dataset.loaded = 'true';
-        list.innerHTML = '<div class="comm-comments-loading">loading…</div>';
+        // Placeholder only on first load — refreshes swap content in one frame,
+        // so existing comments never disappear while we fetch
+        if (!list.children.length) list.innerHTML = '<div class="comm-comments-loading">loading…</div>';
         fetch(`/pug/api/community/${pid}/comments`)
             .then(r => r.json())
             .then(comments => {
@@ -627,7 +646,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     list.appendChild(row);
                 });
             })
-            .catch(() => { list.innerHTML = ''; });
+            .catch(() => { list.querySelector('.comm-comments-loading')?.remove(); });
     }
 
     function loadPreviewComments(pid, postEl) {
@@ -1239,5 +1258,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadFeed();
-    setInterval(origLoadFeed, 15000);
+
+    // Near-realtime sync: every 2s hit the tiny version endpoint and only
+    // re-fetch the feed when something actually changed. Paused while the
+    // tab is hidden; re-checks the moment it becomes visible again.
+    let _commVersion = null;
+    function checkCommunityVersion() {
+        if (document.hidden) return;
+        fetch('/pug/api/community/version')
+            .then(r => r.json())
+            .then(d => {
+                if (typeof d.v === 'undefined') return;
+                if (_commVersion !== null && d.v !== _commVersion) origLoadFeed();
+                _commVersion = d.v;
+            }).catch(() => {});
+    }
+    checkCommunityVersion();
+    setInterval(checkCommunityVersion, 2000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) checkCommunityVersion();
+    });
 });
