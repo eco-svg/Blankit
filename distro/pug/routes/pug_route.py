@@ -888,6 +888,18 @@ def login_required_api():
     return None
 
 
+def admin_required_api():
+    """Gate for admin-only endpoints — checks the is_admin flag in the DB, never the session alone."""
+    err = login_required_api()
+    if err:
+        return err
+    from shared.auth.user import User
+    u = db.session.get(User, session['user_id'])
+    if not u or not u.is_admin:
+        return jsonify({'error': 'Forbidden'}), 403
+    return None
+
+
 @pug_bp.route('/pug/home')
 def home():
     guard = login_required_page()
@@ -1917,6 +1929,21 @@ def get_community_feed():
     return jsonify({'posts': _enrich(result), 'radius_km': None})
 
 
+@pug_bp.route('/pug/api/community/version', methods=['GET'])
+def community_version():
+    """Cheap change marker for the feed. Every community mutation (post, comment,
+    react toggle, pin, delete, type change) touches Note.updated_at via onupdate,
+    so MAX(updated_at) changes iff something changed. Clients poll this and only
+    re-fetch the feed when the value differs."""
+    err = login_required_api()
+    if err: return err
+    from sqlalchemy import func as sqlfunc
+    v = db.session.query(sqlfunc.max(Note.updated_at)).filter(
+        Note.entry_type.in_(['community_post', 'post_comment', 'post_react', 'comment_react'])
+    ).scalar()
+    return jsonify({'v': v.isoformat() if v else ''})
+
+
 @pug_bp.route('/pug/api/community', methods=['POST'])
 @limiter.limit("5 per hour; 1 per minute")
 def create_community_post():
@@ -2809,10 +2836,19 @@ def _stream_proxy(upstream_url):
     return Response(stream_with_context(gen()), status=r.status_code, headers=resp_headers)
 
 
+_MLC_SAFE_PATH = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._\-/]*$')
+
+
+def _mlc_path_ok(p):
+    return bool(_MLC_SAFE_PATH.match(p)) and '..' not in p and '//' not in p
+
+
 @pug_bp.route('/pug/mlc-weights/<path:filepath>')
 def proxy_mlc_weights(filepath):
     err = login_required_api()
     if err: return err
+    if not _mlc_path_ok(filepath):
+        return jsonify({'error': 'Forbidden'}), 403
     try:
         return _stream_proxy(f'{_MLC_HF_BASE}/{filepath}')
     except Exception as e:
@@ -2823,6 +2859,8 @@ def proxy_mlc_weights(filepath):
 def proxy_mlc_lib(filename):
     err = login_required_api()
     if err: return err
+    if not _mlc_path_ok(filename):
+        return jsonify({'error': 'Forbidden'}), 403
     try:
         return _stream_proxy(f'{_MLC_LIB_BASE}/{filename}')
     except Exception as e:
@@ -3355,7 +3393,7 @@ def ama_ask():
 
 @pug_bp.route('/pug/api/admin/ama', methods=['GET'])
 def admin_ama_list():
-    err = login_required_api()
+    err = admin_required_api()
     if err: return err
     from sqlalchemy import func
     rows = (db.session.query(AmaMessage.user_id, func.max(AmaMessage.created_at).label('last_at'))
@@ -3381,7 +3419,7 @@ def admin_ama_list():
 
 @pug_bp.route('/pug/api/admin/ama/<int:uid>', methods=['GET'])
 def admin_ama_thread(uid):
-    err = login_required_api()
+    err = admin_required_api()
     if err: return err
     from shared.auth.user import User
     u = User.query.get(uid)
@@ -3395,7 +3433,7 @@ def admin_ama_thread(uid):
 
 @pug_bp.route('/pug/api/admin/ama/<int:uid>/reply', methods=['POST'])
 def admin_ama_reply(uid):
-    err = login_required_api()
+    err = admin_required_api()
     if err: return err
     from shared.auth.user import User
     if not User.query.get(uid):

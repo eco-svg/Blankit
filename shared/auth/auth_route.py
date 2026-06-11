@@ -335,7 +335,13 @@ def verify_otp():
     if not token_obj or not token_obj.is_valid():
         return jsonify({'error': 'OTP expired — request a new one'}), 400
 
-    if token_obj.otp != otp:
+    if not secrets.compare_digest(token_obj.otp, otp):
+        token_obj.attempts = (token_obj.attempts or 0) + 1
+        if token_obj.attempts >= VerifyToken.MAX_ATTEMPTS:
+            token_obj.used = True
+        db.session.commit()
+        if token_obj.used:
+            return jsonify({'error': 'too many wrong attempts — request a new OTP'}), 400
         return jsonify({'error': 'incorrect OTP — try again'}), 400
 
     user             = User.query.get(user_id)

@@ -144,6 +144,7 @@ def _migrate_schema():
             ('student_id_url',       'VARCHAR(500)'),
             ('dob',                  'DATE'),
             ('last_seen',            'TIMESTAMP'),
+            ('is_admin',             'BOOLEAN DEFAULT FALSE'),
         ]
         existing = {c['name'] for c in inspector.get_columns('users')}
         for col, col_type in new_cols:
@@ -154,6 +155,29 @@ def _migrate_schema():
                 except Exception as e:
                     import warnings
                     warnings.warn(f'[migrate] Could not add column {col}: {e}')
+
+        # Grant admin to the designated admin account (idempotent)
+        admin_username = os.environ.get('ADMIN_USERNAME', 'Admin-Pug')
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text(
+                    'UPDATE users SET is_admin = TRUE WHERE username = :u '
+                    'AND NOT EXISTS (SELECT 1 FROM users WHERE is_admin IS TRUE)'
+                ), {'u': admin_username})
+        except Exception as e:
+            import warnings
+            warnings.warn(f'[migrate] Could not grant admin flag: {e}')
+
+    # ── verify_tokens: failed-attempt counter ──
+    if 'verify_tokens' in inspector.get_table_names():
+        vt_cols = {c['name'] for c in inspector.get_columns('verify_tokens')}
+        if 'attempts' not in vt_cols:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text('ALTER TABLE verify_tokens ADD COLUMN attempts INTEGER DEFAULT 0'))
+            except Exception as e:
+                import warnings
+                warnings.warn(f'[migrate] verify_tokens.attempts: {e}')
 
 
 def _migrate_fk_cascades():
@@ -233,8 +257,12 @@ def create_app():
     app.config.from_object(Config)
     secret = os.environ.get('SECRET_KEY')
     if not secret:
+        is_prod = (os.environ.get('RENDER')  # set automatically on Render
+                   or os.getenv('FLASK_ENV', 'development') != 'development')
+        if is_prod:
+            raise RuntimeError('SECRET_KEY must be set in production — refusing to start with a forgeable session key.')
         import warnings
-        warnings.warn("SECRET_KEY not set — using insecure fallback. Set it in production!", stacklevel=2)
+        warnings.warn("SECRET_KEY not set — using insecure fallback (dev only).", stacklevel=2)
         secret = 'dev-only-change-in-prod'
     app.config['SECRET_KEY'] = secret
     db_url = os.environ.get('DATABASE_URL', 'sqlite:///veyra.db')

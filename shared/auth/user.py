@@ -10,6 +10,7 @@ class User(db.Model):
     password_hash   = db.Column(db.String(255), nullable=False)
     distro          = db.Column(db.String(20),  nullable=False, default='Eco-Svg')
     is_verified      = db.Column(db.Boolean, default=False)
+    is_admin         = db.Column(db.Boolean, default=False, nullable=False)
     age              = db.Column(db.Integer, nullable=True)
     dob              = db.Column(db.Date, nullable=True)
     student_status       = db.Column(db.String(20), default='none')  # none | pending | approved | rejected
