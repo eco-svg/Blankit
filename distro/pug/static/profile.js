@@ -51,45 +51,6 @@ function initMobSelects() {
     });
 }
 
-/* ── Starfield canvas ── */
-let _starCanvas = null;
-function _startStarfield() {
-    const bg = document.querySelector('.pug-bg');
-    if (!bg) return;
-    _stopStarfield();
-    const canvas = document.createElement('canvas');
-    canvas.id = 'veyraStarCanvas';
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    bg.appendChild(canvas);
-    _starCanvas = canvas;
-    const ctx = canvas.getContext('2d');
-    const stars = Array.from({ length: 220 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() > 0.85 ? 1.5 : 0.8,
-        a: 0.3 + Math.random() * 0.7,
-        da: (Math.random() * 0.004 + 0.001) * (Math.random() > 0.5 ? 1 : -1),
-    }));
-    function draw() {
-        if (!_starCanvas) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        stars.forEach(s => {
-            s.a += s.da;
-            if (s.a > 1 || s.a < 0.2) s.da *= -1;
-            ctx.beginPath();
-            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255,255,255,${s.a.toFixed(2)})`;
-            ctx.fill();
-        });
-        requestAnimationFrame(draw);
-    }
-    draw();
-}
-function _stopStarfield() {
-    if (_starCanvas) { _starCanvas.remove(); _starCanvas = null; }
-}
-
 function applyPalette(name) {
     if (!name || name === 'dark') {
         document.documentElement.removeAttribute('data-theme');
@@ -99,14 +60,12 @@ function applyPalette(name) {
 }
 
 function applyWallpaper(name) {
-    _stopStarfield();
     document.documentElement.setAttribute('data-wallpaper', name || 'default');
-    if (name === 'starfield') _startStarfield();
 }
 
 function initThemeSwatches() {
     // Color palette (full theme swap)
-    const VALID_PALETTES = ['dark', 'astro', 'red', 'gold'];
+    const VALID_PALETTES = ['dark', 'light', 'astro-blue', 'love-red', 'golden'];
     const raw = localStorage.getItem('veyra-pug-palette') || 'dark';
     const savedPalette = VALID_PALETTES.includes(raw) ? raw : 'dark';
     if (!VALID_PALETTES.includes(raw)) localStorage.removeItem('veyra-pug-palette');
@@ -122,8 +81,12 @@ function initThemeSwatches() {
         });
     });
 
-    // Wallpaper (background)
-    const savedWp = localStorage.getItem('veyra-pug-wallpaper') || 'default';
+    // Wallpaper (background) — nebula/starfield retired, flat is the default
+    let savedWp = localStorage.getItem('veyra-pug-wallpaper') || 'default';
+    if (savedWp === 'nebula' || savedWp === 'starfield') {
+        savedWp = 'default';
+        localStorage.removeItem('veyra-pug-wallpaper');
+    }
     applyWallpaper(savedWp);
     document.querySelectorAll('.wallpaper-swatch').forEach(btn => {
         if (btn.dataset.wallpaper === savedWp) btn.classList.add('theme-swatch-active');

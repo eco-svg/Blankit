@@ -6,7 +6,7 @@
 
 :root {
   /* ── Dark (default / gold on near-black) ─────────────────── */
-  --bg:           #0e0d0b;
+  --bg:           #020408;
   --bg-card:      #161512;
   --surface:      #161512;
   --surface-2:    #1e1c18;
@@ -22,7 +22,7 @@
   --accent2:      #c87c4a;
   --green:        #78b878;
   --blue:         #6f97c4;
-  --bg-gradient:  #0e0d0b;
+  --bg-gradient:  #020408;
   --text-on-accent: #181410;
   --shadow:       0 1px 2px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.22);
   --shadow-lg:    0 8px 30px rgba(0,0,0,0.5);
@@ -6521,37 +6521,6 @@ button.nav-pill:not(.btn-ghost):hover {
 [data-wallpaper="pug_dream_lake"] {
   --accent: #a0a8e8; --accent-glow: rgba(160,168,232,0.18);
   --accent2: #7880c8; --border-hover: rgba(160,168,232,0.45);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   CSS ANIMATED STYLES — applied via [data-wallpaper] on <html>
-   aurora | nebula | synthwave | starfield
-   ══════════════════════════════════════════════════════════════ */
-
-/* ── NEBULA ── */
-[data-wallpaper="nebula"] .pug-bg { background: #040010; }
-[data-wallpaper="nebula"] .pug-bg::before {
-  content: '';
-  position: absolute; inset: -10%;
-  background:
-    radial-gradient(ellipse at 22% 35%, rgba(130,0,230,0.38) 0%, transparent 50%),
-    radial-gradient(ellipse at 75% 60%, rgba(0,90,210,0.30) 0%, transparent 48%),
-    radial-gradient(ellipse at 55% 18%, rgba(210,0,110,0.22) 0%, transparent 44%),
-    radial-gradient(ellipse at 38% 80%, rgba(0,160,190,0.18) 0%, transparent 42%);
-  animation: veyraNebulaShift 28s ease-in-out infinite alternate;
-}
-@keyframes veyraNebulaShift {
-  0%   { transform: scale(1)    rotate(0deg);   opacity: 0.88; }
-  50%  { transform: scale(1.09) rotate(2.5deg); opacity: 1;    }
-  100% { transform: scale(1)    rotate(-1.5deg); opacity: 0.82; }
-}
-
-/* ── STARFIELD ── */
-[data-wallpaper="starfield"] .pug-bg { background: #020408; }
-#veyraStarCanvas {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  pointer-events: none;
 }
 
 /* ══════════════════════════════════════════════════════════════
