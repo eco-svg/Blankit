@@ -2403,7 +2403,7 @@ div.infinite-canvas video {
 .quote-text {
     color: var(--text-muted); /* Slightly brighter than text-dim */
     font-family: var(--font-display);
-    font-size: 1.5rem; /* Noticeably larger */
+    font-size: 1.7rem;
     font-style: italic;
     line-height: 1.5;
     letter-spacing: 0.03em;
