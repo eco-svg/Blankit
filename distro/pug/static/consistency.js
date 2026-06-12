@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
             delete charts[ctx.canvas.id];
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = 'rgba(240,235,224,0.25)';
-            ctx.font = "13px 'DM Mono', monospace";
+            ctx.font = "13px ui-monospace, Menlo, monospace";
             ctx.textAlign = 'center';
             ctx.fillText('No habits tracked yet.', ctx.canvas.width / 2, ctx.canvas.height / 2);
             return null;
@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         align: 'end',
                         labels: {
                             color: '#857a68',
-                            font: { family: "'DM Mono', monospace", size: 11 },
+                            font: { family: "ui-monospace, Menlo, monospace", size: 11 },
                             usePointStyle: true,
                             boxWidth: 8,
                         },
@@ -65,14 +65,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 scales: {
                     x: {
                         grid: { display: false, drawBorder: false },
-                        ticks: { color: '#857a68', font: { family: "'DM Mono', monospace" }, maxTicksLimit: 10 },
+                        ticks: { color: '#857a68', font: { family: "ui-monospace, Menlo, monospace" }, maxTicksLimit: 10 },
                     },
                     y: {
                         min: 0, max: 100,
                         grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
                         ticks: {
                             color: '#857a68',
-                            font: { family: "'DM Mono', monospace" },
+                            font: { family: "ui-monospace, Menlo, monospace" },
                             stepSize: 25,
                             callback: v => v + '%',
                         },

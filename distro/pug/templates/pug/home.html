@@ -5,27 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veyra - The Pug's Route</title>
   <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#0a0a0a">
+  <meta name="theme-color" content="#0e0d0b">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=87">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=88">
   <script>(function(){var w=localStorage.getItem('veyra-pug-wallpaper');if(w)document.documentElement.setAttribute('data-wallpaper',w);var f=localStorage.getItem('veyra-pug-filter');if(f&&f!=='default')document.documentElement.setAttribute('data-filter',f);})();</script>
-  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=76">
+  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=77">
 </head>
 <body>
 
-  <!-- SPACE BACKGROUND -->
-  <div class="pug-bg">
-    <video id="bgVideo" autoplay muted loop playsinline preload="auto">
-      <source src="{{ url_for('static', filename='pug_background.mp4') }}" type="video/mp4">
-    </video>
-  </div>
+  <!-- FLAT BACKGROUND (wallpaper images still supported via data-wallpaper) -->
+  <div class="pug-bg"></div>
   <header class="main-header" id="mainHeader">
-    <div class="header-stars" id="headerStars"></div>
     <div class="header-left">
       <!-- Avatar navigates to profile tab -->
       <div class="avatar-wrap">
@@ -325,6 +320,23 @@
     </div>
   </div>
 
+  <!-- Add achievement modal -->
+  <div id="addAchievementModal" class="custom-modal hidden">
+    <div class="modal-content" style="max-width:420px;">
+      <h3 style="margin-bottom:6px;font-size:1.1rem;color:var(--text);font-weight:600;" data-i18n="modal_add_work_title">Add to Work</h3>
+      <p style="color:var(--text-muted);font-size:0.80rem;margin-bottom:4px;" data-i18n="modal_add_work_sub">Shipped projects. Competitive results. Measurable output.</p>
+      <p style="color:var(--text-dim);font-size:0.73rem;margin-bottom:16px;opacity:0.6;line-height:1.5;">Not habits or daily routines — "woke up early" or "ran 5km" without a time/proof don't belong here.</p>
+      <input id="achievementTitleInput" type="text" placeholder="e.g. Launched Veyra SaaS · Published article · 5K in 22:14" data-i18n-ph="modal_work_title_ph" autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:10px;">
+      <input id="achievementDescInput" type="text" placeholder="Context / metrics — GitHub link, Strava screenshot, live URL..." autocomplete="off"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:0.85rem;font-family:var(--font-body);outline:none;margin-bottom:18px;">
+      <div class="modal-actions">
+        <button id="cancelAchievementBtn" class="nav-pill btn-ghost" data-i18n="modal_cancel">Cancel</button>
+        <button id="confirmAchievementBtn" class="nav-pill" style="background:var(--accent);color:#111;border-color:var(--accent);" data-i18n="modal_add">Add</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Public profile mini-popup -->
   <div id="pubProfileModal" class="comm-mini-profile hidden">
     <div class="cmp-top">
@@ -365,6 +377,7 @@
   <script src="{{ url_for('pug.static', filename='calendar.js') }}"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
+  <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=4"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}?v=4"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='community.js') }}?v=14"></script>
@@ -372,7 +385,7 @@
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=3"></script></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=2"></script>
   <script src="{{ url_for('pug.static', filename='router.js') }}?v=3"></script>
-  <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.06);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:rgba(255,255,255,0.13)}.pwa-hidden{display:none!important}</style>
+  <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
   <script>
