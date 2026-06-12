@@ -1692,7 +1692,7 @@ body.header-hidden .l-bar {
 
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 60px;
+  grid-template-rows: auto;
   grid-auto-rows: auto;
   column-gap: clamp(16px, 2.5vw, 40px);
   row-gap: 0;
