@@ -4869,8 +4869,8 @@ button.nav-pill:not(.btn-ghost):hover {
 .wisdom-bar-top {
   grid-column: 1 / -1;
   grid-row: 1;
-  margin-top: 0;
-  margin-bottom: 8px;
+  margin-top: 15px;
+  margin-bottom: 15px;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);
   padding-bottom: 12px;
 }
