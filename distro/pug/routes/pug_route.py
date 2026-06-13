@@ -889,6 +889,7 @@ def _valid_magic(data: bytes, ext: str) -> bool:
 # REQUEST HELPERS — auth guards & object-storage bucket
 # ═════════════════════════════════════════════════════════════════════════════
 def ensure_bucket():
+    """Create the object-storage bucket if it doesn't exist yet (idempotent)."""
     try:
         if not minio_client.bucket_exists(MINIO_BUCKET):
             # R2 buckets must be created in the Cloudflare dashboard — skip auto-create
@@ -899,6 +900,7 @@ def ensure_bucket():
 
 
 def login_required_page():
+    """Page guard: redirect to login when not authenticated; None if OK."""
     if not session.get('user_id'):
         return redirect(url_for('svg.login'))
     if session.get('distro') != 'Ocellus':
@@ -907,6 +909,7 @@ def login_required_page():
 
 
 def login_required_api():
+    """API guard: return a 401 JSON error when not authenticated; None if OK."""
     if not session.get('user_id'):
         return jsonify({'error': 'Not authenticated'}), 401
     if session.get('distro') != 'Ocellus':
@@ -932,6 +935,7 @@ def admin_required_api():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/home')
 def home():
+    """Serve the pug single-page app shell (the home page)."""
     guard = login_required_page()
     if guard:
         return guard
@@ -946,6 +950,7 @@ def home():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/notes', methods=['GET'])
 def get_notes():
+    """List the user's notes."""
     err = login_required_api()
     if err: return err
     notes = Note.query.filter_by(
@@ -956,6 +961,7 @@ def get_notes():
 
 @pug_bp.route('/pug/api/notes', methods=['POST'])
 def save_note():
+    """Create or update a note."""
     err = login_required_api()
     if err: return err
     data = request.get_json(silent=True) or {}
@@ -989,6 +995,7 @@ def save_note():
 
 @pug_bp.route('/pug/api/notes/<int:note_id>', methods=['DELETE'])
 def delete_note(note_id):
+    """Delete a note."""
     err = login_required_api()
     if err: return err
     note = Note.query.filter_by(id=note_id, user_id=session['user_id']).first_or_404()
@@ -999,6 +1006,7 @@ def delete_note(note_id):
 
 @pug_bp.route('/pug/api/goals', methods=['GET'])
 def get_goals():
+    """List the user's active goals."""
     err = login_required_api()
     if err: return err
     goals = Note.query.filter_by(
@@ -1009,6 +1017,7 @@ def get_goals():
 
 @pug_bp.route('/pug/api/goals', methods=['POST'])
 def add_goal():
+    """Create a goal."""
     err = login_required_api()
     if err: return err
     data  = request.get_json(silent=True) or {}
@@ -1026,6 +1035,7 @@ def add_goal():
 
 @pug_bp.route('/pug/api/goals/<int:goal_id>', methods=['PATCH'])
 def update_goal(goal_id):
+    """Update a goal (e.g. mark it finished)."""
     err = login_required_api()
     if err: return err
     goal = Note.query.filter_by(
@@ -1040,6 +1050,7 @@ def update_goal(goal_id):
 
 @pug_bp.route('/pug/api/goals/<int:goal_id>', methods=['DELETE'])
 def delete_goal(goal_id):
+    """Delete a goal."""
     err = login_required_api()
     if err: return err
     goal = Note.query.filter_by(
@@ -1052,6 +1063,7 @@ def delete_goal(goal_id):
 
 @pug_bp.route('/pug/api/goals/cancelled', methods=['GET'])
 def get_cancelled_goals():
+    """List the user's cancelled goals."""
     err = login_required_api()
     if err: return err
     goals = Note.query.filter_by(
@@ -1063,6 +1075,7 @@ def get_cancelled_goals():
 
 @pug_bp.route('/pug/api/dream', methods=['GET'])
 def get_dream():
+    """Get the user's long-term 'dream' entry."""
     err = login_required_api()
     if err: return err
     dream = Note.query.filter_by(
@@ -1073,6 +1086,7 @@ def get_dream():
 
 @pug_bp.route('/pug/api/dream', methods=['POST'])
 def set_dream():
+    """Set/update the user's dream entry."""
     err = login_required_api()
     if err: return err
     existing = Note.query.filter_by(
@@ -1097,6 +1111,7 @@ def set_dream():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/consistency', methods=['GET'])
 def get_consistency():
+    """Return consistency/streak data for the dashboard."""
     err = login_required_api()
     if err: return err
     result = []
@@ -1125,6 +1140,7 @@ def get_consistency():
 
 @pug_bp.route('/pug/api/events', methods=['GET'])
 def get_events():
+    """List the user's calendar events."""
     err = login_required_api()
     if err: return err
     events = Note.query.filter(
@@ -1145,6 +1161,7 @@ def get_events():
 @pug_bp.route('/pug/api/upload', methods=['POST'])
 @limiter.limit("30 per minute")
 def upload_file():
+    """Upload a private media file to object storage; return its key/URL."""
     err = login_required_api()
     if err: return err
     if 'file' not in request.files:
@@ -1184,6 +1201,7 @@ def upload_file():
 
 @pug_bp.route('/pug/api/media/<path:object_name>')
 def serve_media(object_name):
+    """Stream a private media file the caller owns."""
     err = login_required_api()
     if err: return err
     if ('..' in object_name or '\x00' in object_name
@@ -1211,6 +1229,7 @@ def serve_media(object_name):
 @pug_bp.route('/pug/api/upload_shared', methods=['POST'])
 @limiter.limit("30 per minute")
 def upload_shared():
+    """Upload a shared media file (community/DM); return its key/URL."""
     err = login_required_api()
     if err: return err
     if 'file' not in request.files:
@@ -1258,6 +1277,7 @@ def upload_shared():
 
 @pug_bp.route('/pug/api/media/shared/<path:object_name>')
 def serve_media_shared(object_name):
+    """Stream a shared media file."""
     err = login_required_api()
     if err: return err
     # Block path traversal and enforce shared/ prefix
@@ -1289,6 +1309,7 @@ def serve_media_shared(object_name):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/location', methods=['POST'])
 def save_location():
+    """Save the user's location (powers the community "radar" distance feed)."""
     err = login_required_api()
     if err: return err
     data = request.get_json(force=True) or {}
@@ -1317,6 +1338,7 @@ def save_location():
 
 @pug_bp.route('/pug/api/users/<int:uid>/profile')
 def get_user_profile(uid):
+    """Return another user's public profile (skills, rank, online status)."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -1349,6 +1371,7 @@ def get_user_profile(uid):
 @pug_bp.route('/pug/api/ask', methods=['POST'])
 @limiter.limit("30 per minute")
 def ask():
+    """Quick-answer endpoint (BlinkBot 'ask')."""
     err = login_required_api()
     if err: return err
     data  = request.get_json(silent=True) or {}
@@ -1392,6 +1415,7 @@ def ask():
 @pug_bp.route('/pug/api/blinkbot', methods=['POST'])
 @limiter.limit("20 per minute")
 def blinkbot_chat():
+    """BlinkBot chat endpoint."""
     err = login_required_api()
     if err: return err
     return jsonify({'answer': 'BlinkBot is being rebuilt — coming soon.', 'source': 'offline'}), 200
@@ -1399,6 +1423,7 @@ def blinkbot_chat():
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
 def buddybot_endpoint():
+    """BuddyBot chat endpoint."""
     err = login_required_api()
     if err: return err
     return jsonify({'answer': 'BuddyBot is coming soon.', 'source': 'offline'}), 200
@@ -1484,6 +1509,7 @@ def desktop_buddybot_chat():
 @pug_bp.route('/pug/api/stats', methods=['GET'])
 @limiter.limit("10 per minute")
 def get_stats_sheet():
+    """Return the user's AI-generated stat sheet (class, personality, skills, ranks)."""
     err = login_required_api()
     if err: return err
 
@@ -1549,6 +1575,7 @@ def get_stats_sheet():
 
 @pug_bp.route('/pug/api/stats/skill-class', methods=['PATCH'])
 def update_skill_class():
+    """Change a skill's class/category."""
     err = login_required_api()
     if err: return err
     user_id = session.get('user_id')
@@ -1572,6 +1599,7 @@ def update_skill_class():
 
 @pug_bp.route('/pug/api/stats/skill', methods=['POST'])
 def add_skill_manual():
+    """Add a skill to the stat sheet manually."""
     err = login_required_api()
     if err: return err
     user_id = session.get('user_id')
@@ -1600,6 +1628,7 @@ def add_skill_manual():
 
 @pug_bp.route('/pug/api/stats/skill', methods=['DELETE'])
 def remove_skill():
+    """Remove a skill from the stat sheet."""
     err = login_required_api()
     if err: return err
     user_id  = session.get('user_id')
@@ -1619,6 +1648,7 @@ def remove_skill():
 
 @pug_bp.route('/pug/api/stats/skill-suggestion/dismiss', methods=['POST'])
 def dismiss_suggestion():
+    """Dismiss an AI-suggested skill so it stops being offered."""
     err = login_required_api()
     if err: return err
     user_id = session.get('user_id')
@@ -1717,6 +1747,7 @@ def add_skill_exp():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
+    """Change the user's username."""
     from shared.auth.user import User
     err = login_required_api()
     if err: return err
@@ -1735,6 +1766,7 @@ def update_username():
 
 @pug_bp.route('/pug/api/profile/password', methods=['PATCH'])
 def update_password():
+    """Change the user's password."""
     from shared.auth.user import User
     from werkzeug.security import check_password_hash, generate_password_hash
     err = login_required_api()
@@ -1754,6 +1786,7 @@ def update_password():
 
 @pug_bp.route('/pug/api/profile/delete', methods=['DELETE'])
 def delete_account():
+    """Delete the user's account and all their data."""
     from shared.auth.user import User
     from werkzeug.security import check_password_hash
     err = login_required_api()
@@ -1910,6 +1943,7 @@ def _blocked_ids(me):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
+    """Return the community feed (filtered by location/skill; hidden + blocked excluded)."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2054,6 +2088,7 @@ def community_version():
 @pug_bp.route('/pug/api/community', methods=['POST'])
 @limiter.limit("5 per hour; 1 per minute")
 def create_community_post():
+    """Create a community post."""
     err = login_required_api()
     if err: return err
     data      = request.get_json(force=True) or {}
@@ -2110,6 +2145,7 @@ def create_community_post():
 
 @pug_bp.route('/pug/api/community/<int:pid>', methods=['GET'])
 def get_community_post(pid):
+    """Return a single community post (404 if hidden/blocked)."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2183,6 +2219,7 @@ def get_community_post(pid):
 
 @pug_bp.route('/pug/api/community/<int:pid>', methods=['DELETE'])
 def delete_community_post(pid):
+    """Delete the caller's own community post."""
     err = login_required_api()
     if err: return err
     p = Note.query.filter_by(id=pid, user_id=session['user_id'], entry_type='community_post').first()
@@ -2197,6 +2234,7 @@ def delete_community_post(pid):
 @pug_bp.route('/pug/api/community/<int:pid>/report', methods=['POST'])
 @limiter.limit("20 per hour")
 def report_post(pid):
+    """Report a community post; auto-hides it once it passes the report threshold."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2225,6 +2263,7 @@ def report_post(pid):
 @pug_bp.route('/pug/api/users/<int:uid>/block', methods=['POST'])
 @limiter.limit("60 per hour")
 def block_user(uid):
+    """Block another user (hide their posts, prevent DMs both ways)."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2244,6 +2283,7 @@ def block_user(uid):
 
 @pug_bp.route('/pug/api/users/<int:uid>/block', methods=['DELETE'])
 def unblock_user(uid):
+    """Unblock a previously-blocked user."""
     err = login_required_api()
     if err: return err
     UserBlock.query.filter_by(blocker_id=session['user_id'], blocked_id=uid).delete()
@@ -2253,6 +2293,7 @@ def unblock_user(uid):
 
 @pug_bp.route('/pug/api/admin/reports', methods=['GET'])
 def admin_reports_list():
+    """Admin: list reported posts pending review."""
     err = admin_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2285,6 +2326,7 @@ def admin_reports_list():
 
 @pug_bp.route('/pug/api/admin/reports/<int:pid>/<action>', methods=['POST'])
 def admin_report_action(pid, action):
+    """Admin: act on a reported post (remove or keep)."""
     err = admin_required_api()
     if err: return err
     p = Note.query.filter_by(id=pid, entry_type='community_post').first()
@@ -2305,6 +2347,7 @@ def admin_report_action(pid, action):
 
 @pug_bp.route('/pug/api/community/<int:pid>/react', methods=['POST'])
 def react_post(pid):
+    """Add/toggle a like or dislike on a post."""
     err = login_required_api()
     if err: return err
     me   = session['user_id']
@@ -2342,6 +2385,7 @@ def react_post(pid):
 
 @pug_bp.route('/pug/api/community/<int:pid>/comment/<int:cid>/react', methods=['POST'])
 def react_comment(pid, cid):
+    """Add/toggle a reaction on a comment."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2372,6 +2416,7 @@ def react_comment(pid, cid):
 
 @pug_bp.route('/pug/api/community/<int:pid>/comments', methods=['GET'])
 def get_post_comments(pid):
+    """List a post's comments."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2428,6 +2473,7 @@ def get_post_comments(pid):
 @pug_bp.route('/pug/api/community/<int:pid>/comment', methods=['POST'])
 @limiter.limit("30 per hour; 5 per minute")
 def add_post_comment(pid):
+    """Add a comment to a post."""
     err = login_required_api()
     if err: return err
     me   = session['user_id']
@@ -2469,6 +2515,7 @@ _ACTION_EXP_MAP = {
 @pug_bp.route('/pug/api/community/<int:pid>/action', methods=['POST'])
 @limiter.limit("30 per hour; 5 per minute")
 def community_post_action(pid):
+    """Handle a ShowOff action (Buy/Collab/Learn/Hire) — opens a DM and awards EXP."""
     err = login_required_api()
     if err: return err
     me   = session['user_id']
@@ -2496,6 +2543,7 @@ def community_post_action(pid):
 
 @pug_bp.route('/pug/api/community/<int:pid>/comment/<int:cid>/pin', methods=['POST'])
 def pin_comment(pid, cid):
+    """Pin/unpin a comment on the caller's post."""
     err = login_required_api()
     if err: return err
     me   = session['user_id']
@@ -2516,6 +2564,7 @@ def pin_comment(pid, cid):
 
 @pug_bp.route('/pug/api/community/<int:pid>/type', methods=['PATCH'])
 def update_post_type(pid):
+    """Switch a post between Blog and ShowOff type."""
     err = login_required_api()
     if err: return err
     me        = session['user_id']
@@ -2545,6 +2594,7 @@ def update_post_type(pid):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/users/search')
 def search_users():
+    """Search users by username."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2588,6 +2638,7 @@ def dms_version():
 
 @pug_bp.route('/pug/api/dms', methods=['GET'])
 def list_dms():
+    """List the caller's DM conversations (latest message per partner)."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2632,6 +2683,7 @@ def list_dms():
 
 @pug_bp.route('/pug/api/dms/<int:other_id>', methods=['GET'])
 def get_dm_thread(other_id):
+    """Return the message history with one other user."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2663,6 +2715,7 @@ def get_dm_thread(other_id):
 
 @pug_bp.route('/pug/api/dms/<int:other_id>', methods=['POST'])
 def send_dm(other_id):
+    """Send a direct message (rejected if either side blocked the other)."""
     err = login_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2726,6 +2779,7 @@ def report_dm(other_id):
 
 @pug_bp.route('/pug/api/admin/user-reports', methods=['GET'])
 def admin_user_reports():
+    """Admin: list DM/user reports for review."""
     err = admin_required_api()
     if err: return err
     from shared.auth.user import User
@@ -2748,6 +2802,7 @@ def admin_user_reports():
 
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
 def mark_dms_read(other_id):
+    """Mark the conversation with another user as read."""
     err = login_required_api()
     if err: return err
     me = session['user_id']
@@ -2765,6 +2820,7 @@ def mark_dms_read(other_id):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/achievements', methods=['GET'])
 def get_achievements():
+    """List the user's achievements."""
     err = login_required_api()
     if err: return err
     items = Note.query.filter_by(
@@ -2781,6 +2837,7 @@ def get_achievements():
 
 @pug_bp.route('/pug/api/achievements', methods=['POST'])
 def add_achievement():
+    """Add an achievement."""
     err = login_required_api()
     if err: return err
     data  = request.get_json(force=True) or {}
@@ -2805,6 +2862,7 @@ def add_achievement():
 
 @pug_bp.route('/pug/api/achievements/<int:aid>', methods=['DELETE'])
 def delete_achievement(aid):
+    """Delete an achievement."""
     err = login_required_api()
     if err: return err
     n = Note.query.filter_by(id=aid, user_id=session['user_id'], entry_type='achievement').first()
@@ -2820,6 +2878,7 @@ ALLOWED_VERIFY_MEDIA = {'mp3', 'wav', 'ogg', 'flac', 'mp4', 'webm', 'mov', 'avi'
 
 @pug_bp.route('/pug/api/achievements/<int:aid>/verify', methods=['PATCH'])
 def verify_achievement(aid):
+    """Submit proof for an achievement to unlock a real rank."""
     err = login_required_api()
     if err: return err
     n = Note.query.filter_by(id=aid, user_id=session['user_id'], entry_type='achievement').first()
@@ -2907,6 +2966,7 @@ def verify_achievement(aid):
 @pug_bp.route('/pug/api/habits', methods=['GET'])
 @limiter.limit("60 per minute")
 def get_habits():
+    """List the user's habits with today's status."""
     err = login_required_api()
     if err: return err
     from distro.svg.models.habit import Habit
@@ -2926,6 +2986,7 @@ def get_habits():
 @pug_bp.route('/pug/api/habits', methods=['POST'])
 @limiter.limit("20 per minute")
 def create_habit():
+    """Create a habit."""
     err = login_required_api()
     if err: return err
     data = request.get_json(silent=True) or {}
@@ -2942,6 +3003,7 @@ def create_habit():
 @pug_bp.route('/pug/api/habits/<int:habit_id>', methods=['DELETE'])
 @limiter.limit("20 per minute")
 def delete_habit(habit_id):
+    """Delete a habit."""
     err = login_required_api()
     if err: return err
     from distro.svg.models.habit import Habit
@@ -2954,6 +3016,7 @@ def delete_habit(habit_id):
 @pug_bp.route('/pug/api/habits/<int:habit_id>/toggle', methods=['POST'])
 @limiter.limit("60 per minute")
 def toggle_habit(habit_id):
+    """Toggle today's completion for a habit."""
     err = login_required_api()
     if err: return err
     from distro.svg.models.habit import Habit
@@ -2981,6 +3044,7 @@ def toggle_habit(habit_id):
 @pug_bp.route('/pug/api/habits/history', methods=['GET'])
 @limiter.limit("20 per minute")
 def habits_history():
+    """Return habit completion history."""
     err = login_required_api()
     if err: return err
     from distro.svg.models.habit import Habit
@@ -3011,6 +3075,7 @@ def habits_history():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/weather', methods=['GET'])
 def proxy_weather():
+    """Proxy a weather API request (keeps the API key server-side)."""
     err = login_required_api()
     if err: return err
     try:
@@ -3035,6 +3100,7 @@ def proxy_weather():
 
 @pug_bp.route('/pug/api/wisdom', methods=['GET'])
 def proxy_wisdom():
+    """Return a daily wisdom quote (proxied/cached)."""
     err = login_required_api()
     if err: return err
     import requests as req
@@ -3062,6 +3128,7 @@ def proxy_wisdom():
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/feedback', methods=['POST'])
 def submit_feedback():
+    """Submit user feedback."""
     err = login_required_api()
     if err: return err
 
@@ -3155,6 +3222,7 @@ def _mlc_path_ok(p):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/mlc-weights/<path:filepath>')
 def proxy_mlc_weights(filepath):
+    """Serve WebLLM model weight shards to the browser (BlinkBot on-device)."""
     err = login_required_api()
     if err: return err
     if not _mlc_path_ok(filepath):
@@ -3167,6 +3235,7 @@ def proxy_mlc_weights(filepath):
 
 @pug_bp.route('/pug/mlc-lib/<path:filename>')
 def proxy_mlc_lib(filename):
+    """Serve WebLLM library files to the browser."""
     err = login_required_api()
     if err: return err
     if not _mlc_path_ok(filename):
@@ -3179,6 +3248,7 @@ def proxy_mlc_lib(filename):
 
 @pug_bp.route('/pug/api/blinkbot-debug', methods=['GET'])
 def blinkbot_debug():
+    """Debug endpoint reporting BlinkBot model/inference status."""
     err = login_required_api()
     if err: return err
     hf_url = os.environ.get('BLINKBOT_MODEL_URL', '')
@@ -3217,6 +3287,7 @@ def blinkbot_context():
 
 @pug_bp.route('/pug/download/blinkbot-model')
 def download_blinkbot_model():
+    """Download the BlinkBot GGUF (for desktop/Ollama use)."""
     err = login_required_page()
     if err: return err
     from flask import send_file
@@ -3229,6 +3300,7 @@ def download_blinkbot_model():
 
 @pug_bp.route('/pug/download/blinkbot-modelfile')
 def download_blinkbot_modelfile():
+    """Download the Ollama Modelfile for BlinkBot."""
     err = login_required_page()
     if err: return err
     modelfile = (
@@ -3252,6 +3324,7 @@ def download_blinkbot_modelfile():
 
 @pug_bp.route('/pug/download/blinkbot-setup')
 def download_blinkbot_setup():
+    """Download the BlinkBot desktop setup script."""
     err = login_required_page()
     if err: return err
     host = re.sub(r'[^a-zA-Z0-9.\-:_]', '', request.host)
@@ -3514,6 +3587,7 @@ def _get_or_create_wallet(user_id):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/wallet', methods=['GET'])
 def get_wallet():
+    """Return the user's Eyes wallet balance + recent transactions."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3538,6 +3612,7 @@ def get_wallet():
 
 @pug_bp.route('/pug/api/wallet/rates', methods=['GET'])
 def get_eye_rates():
+    """Return current Eyes buy/sell FX rates."""
     err = login_required_api()
     if err: return err
     refresh_eye_rates()  # no-op if fresh
@@ -3560,6 +3635,7 @@ def _currency_min(currency):
 
 @pug_bp.route('/pug/api/wallet/topup', methods=['POST'])
 def wallet_topup():
+    """Request an Eyes top-up (creates a pending transaction)."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3596,6 +3672,7 @@ def wallet_topup():
 
 @pug_bp.route('/pug/api/wallet/sellback', methods=['POST'])
 def wallet_sellback():
+    """Request selling Eyes back for a cash payout."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3624,6 +3701,7 @@ def wallet_sellback():
 
 @pug_bp.route('/pug/api/wallet/tx/<int:tx_id>/cancel', methods=['POST'])
 def cancel_wallet_tx(tx_id):
+    """Cancel a pending wallet transaction."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3647,6 +3725,7 @@ def cancel_wallet_tx(tx_id):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/ama', methods=['GET'])
 def ama_get():
+    """Return the caller's Ask-Anything conversation."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3668,6 +3747,7 @@ def ama_get():
 
 @pug_bp.route('/pug/api/ama', methods=['POST'])
 def ama_ask():
+    """Send an Ask-Anything question (1 free/day, then 1 Eye)."""
     err = login_required_api()
     if err: return err
     uid = session['user_id']
@@ -3713,6 +3793,7 @@ def ama_ask():
 
 @pug_bp.route('/pug/api/admin/ama', methods=['GET'])
 def admin_ama_list():
+    """Admin: list users who have asked AMA questions."""
     err = admin_required_api()
     if err: return err
     from sqlalchemy import func
@@ -3739,6 +3820,7 @@ def admin_ama_list():
 
 @pug_bp.route('/pug/api/admin/ama/<int:uid>', methods=['GET'])
 def admin_ama_thread(uid):
+    """Admin: return one user's AMA thread."""
     err = admin_required_api()
     if err: return err
     from shared.auth.user import User
@@ -3753,6 +3835,7 @@ def admin_ama_thread(uid):
 
 @pug_bp.route('/pug/api/admin/ama/<int:uid>/reply', methods=['POST'])
 def admin_ama_reply(uid):
+    """Admin: reply to a user's AMA question."""
     err = admin_required_api()
     if err: return err
     from shared.auth.user import User
@@ -3774,4 +3857,5 @@ def admin_ama_reply(uid):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/terms')
 def pug_terms():
+    """Render the pug terms-of-service page."""
     return render_template('pug/terms.html')
