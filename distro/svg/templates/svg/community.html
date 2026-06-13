@@ -125,6 +125,14 @@
         <input class="comm-modal-input" type="text" id="postTitle" placeholder="Title (max 200 chars)…" maxlength="200" />
         <textarea class="comm-modal-textarea" id="postBody" placeholder="Share your thoughts, questions, or wins… (max 2000 chars)" maxlength="2000"></textarea>
         <div class="comm-char-count"><span id="bodyCount">0</span>/2000</div>
+
+        <div class="comm-image-upload-row">
+          <input type="file" id="postImageInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+          <button class="comm-image-upload-btn" id="postImageBtn" type="button">📷 Add image</button>
+          <span class="comm-image-status" id="postImageStatus"></span>
+        </div>
+        <img id="postImagePreview" class="comm-image-preview hidden" />
+
         <button class="comm-modal-submit" id="postSubmit">Post</button>
       </div>
     </div>

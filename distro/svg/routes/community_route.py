@@ -1,9 +1,12 @@
+import os
+import uuid
 from flask import Blueprint, jsonify, request, session
 from shared.extensions import db, limiter
 from shared.auth.user import User
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.community import CommunityPost, PostVote, PostComment, Challenge, ChallengeMember
+from distro.pug.routes.notes import AmaMessage
 from datetime import date, timedelta
 
 community_api = Blueprint('community_api', __name__, url_prefix='/api/community')
@@ -74,7 +77,7 @@ def leaderboard():
 
 
 # ══════════════════════════════
-#  POSTS
+#  POSTS (Feed)
 # ══════════════════════════════
 @community_api.route('/posts', methods=['GET'])
 def get_posts():
@@ -97,6 +100,7 @@ def get_posts():
             'id':            p.id,
             'title':         p.title,
             'body':          p.body,
+            'image_url':     p.image_url,
             'tag':           p.tag,
             'vote_count':    p.vote_count,
             'voted':         voted,
@@ -105,7 +109,32 @@ def get_posts():
             'distro':        p.distro,
             'created_at':    p.created_at.isoformat(),
             'is_mine':       p.user_id == user_id,
+            'source':        'post',
         })
+
+    # ── Merge Pug AMA chat into GLOBAL feed (read-only) ──
+    if scope == 'global' and page == 1:
+        ama = AmaMessage.query.order_by(AmaMessage.created_at.desc()).limit(10).all()
+        for a in ama:
+            author = User.query.get(a.user_id)
+            result.append({
+                'id':            f'ama-{a.id}',
+                'title':         '🐾 Pug AMA',
+                'body':          a.body,
+                'image_url':     None,
+                'tag':           'ama',
+                'vote_count':    0,
+                'voted':         False,
+                'comment_count': 0,
+                'author':        (author.username if author else 'admin') if not a.is_admin else 'ThePug Admin',
+                'distro':        'ThePug',
+                'created_at':    a.created_at.isoformat(),
+                'is_mine':       False,
+                'source':        'ama',
+            })
+        # re-sort merged feed by time
+        result.sort(key=lambda x: x['created_at'], reverse=True)
+
     return jsonify(result)
 
 
@@ -116,9 +145,10 @@ def create_post():
     me      = User.query.get(user_id)
     data    = request.get_json()
 
-    title = (data.get('title') or '').strip()
-    body  = (data.get('body')  or '').strip()
-    tag   = data.get('tag', 'general')
+    title     = (data.get('title') or '').strip()
+    body      = (data.get('body')  or '').strip()
+    tag       = data.get('tag', 'general')
+    image_url = data.get('image_url')
 
     if not title or not body:
         return jsonify({'error': 'title and body required'}), 400
@@ -129,7 +159,14 @@ def create_post():
     if tag not in ['general', 'question', 'motivation', 'win', 'challenge']:
         tag = 'general'
 
-    post = CommunityPost(user_id=user_id, distro=me.distro, title=title, body=body, tag=tag)
+    post = CommunityPost(
+        user_id   = user_id,
+        distro    = me.distro,
+        title     = title,
+        body      = body,
+        tag       = tag,
+        image_url = image_url,
+    )
     db.session.add(post)
     db.session.commit()
     return jsonify({'id': post.id}), 201
@@ -189,6 +226,62 @@ def add_comment(post_id):
     db.session.add(comment)
     db.session.commit()
     return jsonify({'id': comment.id}), 201
+
+
+# ══════════════════════════════
+#  IMAGE UPLOAD (with NSFW check)
+# ══════════════════════════════
+@community_api.route('/upload-image', methods=['POST'])
+@limiter.limit("10 per minute")
+def upload_image():
+    user_id = require_user()
+
+    if 'image' not in request.files:
+        return jsonify({'error': 'no image provided'}), 400
+
+    file = request.files['image']
+    if not file or not file.filename:
+        return jsonify({'error': 'no image provided'}), 400
+
+    allowed_ext = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in allowed_ext:
+        return jsonify({'error': 'unsupported file type (jpg, png, webp, gif only)'}), 400
+
+    file_bytes = file.read()
+    if len(file_bytes) > 8 * 1024 * 1024:  # 8 MB
+        return jsonify({'error': 'image too large (max 8MB)'}), 400
+
+    # ── NSFW moderation ──
+    from distro.svg.services.moderation import check_image_safe
+    is_safe, reason = check_image_safe(file_bytes)
+    if not is_safe:
+        return jsonify({'error': f'image rejected by content filter: {reason}'}), 422
+
+    # ── Upload to MinIO ──
+    try:
+        from minio import Minio
+        client = Minio(
+            os.environ.get('MINIO_ENDPOINT'),
+            access_key=os.environ.get('MINIO_ACCESS_KEY'),
+            secret_key=os.environ.get('MINIO_SECRET_KEY'),
+            secure=True,
+        )
+        bucket = os.environ.get('MINIO_BUCKET')
+        key    = f'community/{user_id}/{uuid.uuid4().hex}{ext}'
+
+        import io as _io
+        client.put_object(
+            bucket, key, _io.BytesIO(file_bytes), length=len(file_bytes),
+            content_type=file.mimetype,
+        )
+
+        endpoint = os.environ.get('MINIO_ENDPOINT')
+        url = f'https://{endpoint}/{bucket}/{key}'
+        return jsonify({'url': url}), 201
+
+    except Exception as e:
+        return jsonify({'error': f'upload failed: {e}'}), 500
 
 
 # ══════════════════════════════
