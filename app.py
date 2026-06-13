@@ -165,6 +165,16 @@ def _migrate_schema():
                 except Exception as e:
                     import warnings; warnings.warn(f'[migrate] notes.{col}: {e}')
 
+    # ── cross-distro community: mark which svg posts are shared to all distros ──
+    if 'community_posts' in inspector.get_table_names():
+        cp_cols = {c['name'] for c in inspector.get_columns('community_posts')}
+        if 'is_global' not in cp_cols:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text('ALTER TABLE community_posts ADD COLUMN is_global BOOLEAN DEFAULT FALSE'))
+            except Exception as e:
+                import warnings; warnings.warn(f'[migrate] community_posts.is_global: {e}')
+
     # ── user_badges migration ──
     if 'user_badges' in inspector.get_table_names():
         columns = {c['name'] for c in inspector.get_columns('user_badges')}

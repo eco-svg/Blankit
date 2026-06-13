@@ -1937,6 +1937,60 @@ def _blocked_ids(me):
     return {(r.blocked_id if r.blocker_id == me else r.blocker_id) for r in rows}
 
 
+def _svg_global_rows(me, blocked):
+    """Cross-distro feed: svg's shared (is_global) posts, normalised into the pug feed shape.
+
+    svg keeps its own store (community_posts); we read it directly since it's the same DB.
+    svg uses a single up-vote instead of like/dislike, so we map vote_count → 'likes' and the
+    caller's vote → my_reaction='like'. Each row carries source='svg' so the frontend routes
+    interactions back to svg's endpoints.
+    """
+    from distro.svg.models.community import CommunityPost, PostVote, PostComment
+    from sqlalchemy import func as sqlfunc
+    q = CommunityPost.query.filter(CommunityPost.is_global.is_(True))
+    if blocked:
+        q = q.filter(~CommunityPost.user_id.in_(blocked))
+    sposts = q.order_by(CommunityPost.created_at.desc()).limit(100).all()
+    if not sposts:
+        return []
+    ids        = [p.id for p in sposts]
+    my_votes   = {v.post_id for v in PostVote.query.filter(
+                     PostVote.user_id == me, PostVote.post_id.in_(ids)).all()}
+    comment_ct = dict(db.session.query(PostComment.post_id, sqlfunc.count(PostComment.id))
+                        .filter(PostComment.post_id.in_(ids))
+                        .group_by(PostComment.post_id).all())
+    rows = []
+    for p in sposts:
+        author = p.author
+        body   = (f'{p.title}\n\n{p.body}' if p.title else p.body) or ''
+        rows.append({
+            'id':          p.id,
+            'source':      'svg',
+            'is_global':   True,
+            'text':        body,
+            'media_key':   None,
+            'media_url':   p.image_url,
+            'post_type':   None,
+            'pinned_cid':  None,
+            'text_order':  'tm',
+            'skill_tag':   (p.tag if p.tag and p.tag != 'general' else None),
+            'username':    author.username if author else '?',
+            'user_id':     p.user_id,
+            'distro':      p.distro or 'Eco-Svg',
+            'rank':        None,
+            'rank_color':  None,
+            'is_mine':     p.user_id == me,
+            'is_online':   False,
+            'created_at':  p.created_at.isoformat() if p.created_at else None,
+            'dist_km':     None,
+            'likes':       p.vote_count or 0,
+            'dislikes':    0,
+            'my_reaction': 'like' if p.id in my_votes else None,
+            'comment_count': comment_ct.get(p.id, 0),
+        })
+    return rows
+
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # COMMUNITY FEED — posts, comments, reactions, ShowOff actions
@@ -1959,6 +2013,8 @@ def get_community_feed():
 
     skill_filter = (request.args.get('skill') or '').strip().lower()
     user_filter  = request.args.get('user_id', type=int)
+    # 'mine' = only this distro's posts (default); 'all' = merge in other distros' shared posts.
+    distro_scope = (request.args.get('distro_scope') or 'mine').strip().lower()
 
     q = Note.query.filter(Note.entry_type == 'community_post', Note.is_deleted == False,
                           Note.is_hidden.isnot(True), Note.mood.in_(['Ocellus', 'ThePug']))
@@ -1977,6 +2033,7 @@ def get_community_feed():
         rank, color = m['rank']
         body = p.body or ''
         text, media_key, post_type, pinned_cid, text_order, skill_tag = body, None, None, None, 'tm', None
+        is_global_post = False
         if body.startswith('{'):
             try:
                 bd = json.loads(body)
@@ -1986,11 +2043,14 @@ def get_community_feed():
                 pinned_cid = bd.get('pin')
                 text_order = bd.get('to', 'tm')
                 skill_tag  = bd.get('sk')
+                is_global_post = bool(bd.get('g'))   # shared into the all-distros feed?
             except Exception:
                 pass
         media_url = url_for('pug.serve_media_shared', object_name=media_key) if media_key else None
         return {
             'id':          p.id,
+            'source':      'pug',          # which store this post lives in (for routing interactions)
+            'is_global':   is_global_post,
             'text':        text,
             'media_key':   media_key,
             'media_url':   media_url,
@@ -2067,7 +2127,12 @@ def get_community_feed():
         if skill_filter and not _skills_match(m['skills'], skill_filter):
             continue
         result.append(_build_row(p, m))
-    return jsonify({'posts': _enrich(result), 'radius_km': None})
+    result = _enrich(result)
+    # All-distros view: merge in other distros' shared posts (svg today; div has none yet).
+    if distro_scope == 'all' and not user_filter:
+        result = result + _svg_global_rows(me, blocked)
+        result.sort(key=lambda r: r.get('created_at') or '', reverse=True)
+    return jsonify({'posts': result, 'radius_km': None})
 
 
 @pug_bp.route('/pug/api/community/version', methods=['GET'])
@@ -2126,8 +2191,10 @@ def create_community_post():
     if text_order not in (None, 'tm', 'mt'):
         text_order = None
     skill_tag = (data.get('skill_tag') or '').strip() or None
-    if media_key or post_type or text_order or skill_tag:
-        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order, 'sk': skill_tag}.items() if v})
+    # Cross-distro visibility: 'g' (global) = also surface this post in the all-distros feed.
+    all_distros = bool(data.get('all_distros'))
+    if media_key or post_type or text_order or skill_tag or all_distros:
+        body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order, 'sk': skill_tag, 'g': all_distros or None}.items() if v})
     else:
         body_val = text
     p = Note(

@@ -17,6 +17,7 @@ class CommunityPost(db.Model):
     image_url  = db.Column(db.String(500), nullable=True)
     tag        = db.Column(db.String(20), default='general')
     vote_count = db.Column(db.Integer, default=0)
+    is_global  = db.Column(db.Boolean, default=False)  # True = shared into the all-distros feed
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     author   = db.relationship('User', backref='posts',    lazy=True)
