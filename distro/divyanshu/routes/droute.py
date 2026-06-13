@@ -1,9 +1,17 @@
+"""
+distro/divyanshu/routes/droute.py — the entire backend for the CatalystCrew distro.
+
+This distro is almost all client-side (localStorage); the backend only serves the page and
+proxies the AI coach. Three routes total: /d/home, /d/habit-tracker, /d/api/coach.
+Registered in app.py as `catalystcrew_bp`.
+"""
 from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from functools import wraps
 import os
 import requests as http
 from shared.extensions import limiter
 
+# This distro's blueprint. Its static files are served under /static/catalystcrew_style.
 catalystcrew_bp = Blueprint(
     'catalystcrew', __name__,
     static_folder='../static',
@@ -12,6 +20,7 @@ catalystcrew_bp = Blueprint(
 )
 
 def login_required(f):
+    """Decorator: redirect to login unless the visitor is signed in AND on the CatalystCrew distro."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('user_id'):
@@ -22,6 +31,7 @@ def login_required(f):
     return decorated
 
 def get_user():
+    """Return the logged-in user's basic info from the session (no DB hit)."""
     return {
         'username': session.get('username', ''),
         'distro':   session.get('distro', 'CatalystCrew'),
@@ -32,12 +42,14 @@ def get_user():
 @catalystcrew_bp.route('/d/home')
 @login_required
 def home():
+    """Serve the single-page app (all features run client-side from here)."""
     user = get_user()
     return render_template('divyanshu/home.html', username=user['username'])
 
 @catalystcrew_bp.route('/d/habit-tracker')
 @login_required
 def habit_tracker():
+    """Alias that serves the same single-page app at the habit-tracker URL."""
     user = get_user()
     return render_template('divyanshu/home.html', username=user['username'])
 
@@ -48,6 +60,8 @@ def habit_tracker():
 @limiter.limit("10 per minute")
 @login_required
 def ai_coach():
+    """Forward a short user message + mood to Groq and return a 2–3 sentence pep talk.
+    The Groq API key stays server-side; failures degrade to a friendly fallback line."""
     data    = request.get_json()
     message = data.get('message', '').strip()
     mood    = data.get('mood', 'Normal')
