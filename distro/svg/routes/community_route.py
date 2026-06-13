@@ -13,8 +13,9 @@ from shared.auth.user import User
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.community import CommunityPost, PostVote, PostComment, Challenge, ChallengeMember
-from distro.pug.routes.notes import AmaMessage
+from distro.pug.routes.notes import AmaMessage, Note   # Note = pug's post store (cross-distro feed)
 from datetime import date, timedelta
+import json as _json
 
 community_api = Blueprint('community_api', __name__, url_prefix='/api/community')
 
@@ -89,6 +90,42 @@ def leaderboard():
 # ══════════════════════════════
 #  POSTS (Feed)
 # ══════════════════════════════
+def _pug_global_rows(user_id):
+    """Pug's shared (g-flagged) posts, normalised into svg's post shape (source='pug').
+
+    Pug stores posts as Note rows and uses like/dislike; we map its like-count to svg's
+    single vote_count and a caller's like to 'voted'. Read directly (same DB). Pug media is
+    skipped for now (its media endpoint is pug-gated).
+    """
+    posts = Note.query.filter(
+        Note.entry_type == 'community_post', Note.is_deleted == False,
+        Note.is_hidden.isnot(True), Note.mood.in_(['Ocellus', 'ThePug'])
+    ).order_by(Note.created_at.desc()).limit(50).all()
+    rows = []
+    for p in posts:
+        body, is_g = (p.body or ''), False
+        if body.startswith('{'):
+            try:
+                bd = _json.loads(body); body = bd.get('t', ''); is_g = bool(bd.get('g'))
+            except Exception:
+                body = p.body or ''
+        if not is_g:
+            continue
+        reacts = Note.query.filter_by(entry_type='post_react', mood=str(p.id), is_deleted=False).all()
+        likes  = sum(1 for r in reacts if r.is_finished)
+        voted  = any(r.user_id == user_id and r.is_finished for r in reacts)
+        ccount = Note.query.filter_by(entry_type='post_comment', mood=str(p.id), is_deleted=False).count()
+        author = User.query.get(p.user_id)
+        rows.append({
+            'id': p.id, 'title': '', 'body': body, 'image_url': None, 'tag': 'general',
+            'vote_count': likes, 'voted': voted, 'comment_count': ccount,
+            'author': author.username if author else '?', 'distro': p.mood or 'Ocellus',
+            'created_at': p.created_at.isoformat() if p.created_at else '',
+            'is_mine': p.user_id == user_id, 'source': 'pug',
+        })
+    return rows
+
+
 @community_api.route('/posts', methods=['GET'])
 def get_posts():
     """List community posts with vote/comment counts and the caller's own vote."""
@@ -143,6 +180,8 @@ def get_posts():
                 'is_mine':       False,
                 'source':        'ama',
             })
+        # Merge pug's shared posts into the global feed (interactive — see /xpost/pug/*)
+        result += _pug_global_rows(user_id)
         # re-sort merged feed by time
         result.sort(key=lambda x: x['created_at'], reverse=True)
 
@@ -178,6 +217,7 @@ def create_post():
         body      = body,
         tag       = tag,
         image_url = image_url,
+        is_global = bool(data.get('is_global')),   # share into the all-distros feed?
     )
     db.session.add(post)
     db.session.commit()
@@ -242,6 +282,69 @@ def add_comment(post_id):
     db.session.add(comment)
     db.session.commit()
     return jsonify({'id': comment.id}), 201
+
+
+# ══════════════════════════════
+#  CROSS-DISTRO — act on a PUG post from svg's feed (writes to pug's Note store)
+#  svg has a single up-vote, so a vote toggles a pug 'like'.
+# ══════════════════════════════
+def _pug_post(pid):
+    """The pug community-post Note #pid if it exists (and isn't deleted/hidden), else None."""
+    return Note.query.filter(Note.id == pid, Note.entry_type == 'community_post',
+                             Note.is_deleted == False, Note.is_hidden.isnot(True)).first()
+
+
+@community_api.route('/xpost/pug/<int:pid>/vote', methods=['POST'])
+@limiter.limit("30 per minute")
+def xvote_pug(pid):
+    """svg user votes a pug post → toggles a 'like' in pug's reaction store."""
+    user_id = require_user()
+    if not _pug_post(pid):
+        return jsonify({'error': 'Not found'}), 404
+    existing = Note.query.filter_by(user_id=user_id, entry_type='post_react',
+                                    mood=str(pid), is_deleted=False).first()
+    if existing:
+        existing.is_deleted = True          # un-vote (remove the like)
+        voted = False
+    else:
+        db.session.add(Note(user_id=user_id, entry_type='post_react', is_deleted=False,
+                            mood=str(pid), is_finished=True))
+        voted = True
+    db.session.commit()
+    likes = Note.query.filter_by(entry_type='post_react', mood=str(pid),
+                                 is_deleted=False, is_finished=True).count()
+    return jsonify({'vote_count': likes, 'voted': voted})
+
+
+@community_api.route('/xpost/pug/<int:pid>/comments', methods=['GET'])
+def xcomments_pug(pid):
+    """List a pug post's comments in svg's comment shape."""
+    require_user()
+    rows = Note.query.filter_by(entry_type='post_comment', mood=str(pid),
+                                is_deleted=False).order_by(Note.created_at.asc()).limit(50).all()
+    umap = {u.id: u for u in User.query.filter(User.id.in_({c.user_id for c in rows})).all()} if rows else {}
+    return jsonify([{
+        'id': c.id, 'body': c.body,
+        'author': (umap.get(c.user_id).username if umap.get(c.user_id) else '?'),
+        'created_at': c.created_at.isoformat() if c.created_at else None,
+    } for c in rows])
+
+
+@community_api.route('/xpost/pug/<int:pid>/comments', methods=['POST'])
+@limiter.limit("20 per minute")
+def xcomment_pug(pid):
+    """svg user comments on a pug post → writes a comment into pug's Note store."""
+    user_id = require_user()
+    if not _pug_post(pid):
+        return jsonify({'error': 'Not found'}), 404
+    body = ((request.get_json(silent=True) or {}).get('body') or '').strip()
+    if not body or len(body) > 500:
+        return jsonify({'error': 'comment required (max 500 chars)'}), 400
+    c = Note(user_id=user_id, entry_type='post_comment', is_deleted=False, mood=str(pid))
+    c.body = body
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({'id': c.id}), 201
 
 
 # ══════════════════════════════
