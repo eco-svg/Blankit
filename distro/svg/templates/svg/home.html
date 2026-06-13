@@ -263,7 +263,7 @@
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
 
   <!-- DYNAMIC STREAK -->
-  <script>
+  <script nonce="{{ csp_nonce }}">
     (async function loadStreak() {
       try {
         const res  = await fetch('/api/streak');

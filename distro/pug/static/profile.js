@@ -55,6 +55,10 @@ function initMobSelects() {
 }
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Sign Out — moved off an inline onclick for the strict CSP (no 'unsafe-inline').
+    document.getElementById('ppLogoutBtn')?.addEventListener('click', () => {
+        fetch('/auth/logout', { method: 'POST' }).then(() => { window.location.href = '/'; });
+    });
 
     const ppChangeUsername  = document.getElementById('ppChangeUsername');
     const ppChangePassword  = document.getElementById('ppChangePassword');

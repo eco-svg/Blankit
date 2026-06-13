@@ -19,7 +19,7 @@
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=97">
-  <script>(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
+  <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=77">
 </head>
 <body>
@@ -390,7 +390,7 @@
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
-  <script>
+  <script nonce="{{ csp_nonce }}">
   (function() {
     var toggle = document.getElementById('rBarToggle');
     var rbar   = document.querySelector('.r-bar');
@@ -639,14 +639,14 @@
   })();
   </script>
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
   (function() {
     var pc = document.getElementById('physiqueCapsule');
     if (pc) pc.addEventListener('click', function(e) { e.stopPropagation(); });
   })();
   </script>
 
-  <script>
+  <script nonce="{{ csp_nonce }}">
   (function() {
     var toggle = document.getElementById('dmBarToggle');
     if (!toggle) return;
@@ -699,7 +699,7 @@
   </div>
 
   <!-- Bouncing drink ball — activates after 14-day streak + 5 min inactivity -->
-  <script>
+  <script nonce="{{ csp_nonce }}">
   (function () {
     function todayStr() { return new Date().toISOString().slice(0, 10); }
     function getLoginStreak() {

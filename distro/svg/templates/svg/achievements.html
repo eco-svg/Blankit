@@ -213,14 +213,14 @@
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='achievements.js') }}"></script>
-  <script>
+  <script nonce="{{ csp_nonce }}">
     document.addEventListener('DOMContentLoaded', () => {
       const saved = localStorage.getItem('Eco-Svg-theme');
       if (saved) document.documentElement.setAttribute('data-theme', saved);
       if (localStorage.getItem('Eco-Svg-no-anim') === 'true') document.body.classList.add('no-anim');
     });
   </script>
-  <script>
+  <script nonce="{{ csp_nonce }}">
     (async function loadStreak() {
       try {
         const res  = await fetch('/api/streak');

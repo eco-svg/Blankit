@@ -376,6 +376,20 @@ def create_app():
             mimetype='image/png',
         )
 
+    # ── CSP nonce: a fresh random token per request, used to allow ONLY our own inline
+    #    <script> blocks (each tagged nonce="{{ csp_nonce }}"). Lets us drop 'unsafe-inline'
+    #    from script-src so an injected <script> can't run. ──
+    @app.before_request
+    def _set_csp_nonce():
+        import secrets
+        from flask import g
+        g.csp_nonce = secrets.token_urlsafe(16)
+
+    @app.context_processor
+    def _inject_csp_nonce():
+        from flask import g
+        return {'csp_nonce': getattr(g, 'csp_nonce', '')}
+
     # ── CSRF: block cross-site state-changing requests ──
     # On any mutating request, if the browser sent an Origin/Referer from a DIFFERENT host,
     # reject it. Same-origin requests (all of ours) pass; requests with no Origin (non-browser)
@@ -408,6 +422,8 @@ def create_app():
     # ── Security response headers ──
     @app.after_request
     def security_headers(response):
+        from flask import g
+        nonce = getattr(g, 'csp_nonce', '')
         response.headers['X-Frame-Options']        = 'SAMEORIGIN'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
@@ -419,7 +435,7 @@ def create_app():
         )
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; "
+            f"script-src 'self' 'nonce-{nonce}' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
