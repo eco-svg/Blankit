@@ -1,3 +1,26 @@
+"""
+distro/pug/routes/pug_route.py — the pug (Ocellus) distro's entire backend.
+
+This is the biggest file in the project: every pug API endpoint lives here, registered on
+the `pug_bp` blueprint (all URLs start with /pug/...). Broadly it covers:
+
+  • Pages & auth helpers        — /pug/home, login_required_api(), admin_required_api()
+  • Notes / goals / dreams      — personal entries (stored encrypted)
+  • Habits & consistency        — habit tracking and streak data
+  • Skills, stats & ranks       — the skill-ranking identity system
+  • Community feed              — posts, comments, reactions, ShowOff actions
+  • Direct messages             — 1:1 chat
+  • Moderation                  — reports, blocking, admin review queues
+  • AI (BlinkBot / BuddyBot)    — on-device + Groq-cloud chat, context assembly
+  • Eyes wallet & marketplace   — currency top-up / sell-back / transactions
+  • Media uploads               — images/video to object storage (MinIO/B2)
+  • Misc                        — weather, events, wisdom, feedback, profile
+
+Conventions used throughout:
+  • Most endpoints start with `err = login_required_api(); if err: return err` to require login.
+  • A `Note` row with a given `entry_type` backs many features (posts, comments, DMs, …).
+  • @limiter.limit(...) rate-limits the spammable/abusable endpoints.
+"""
 import os
 import re
 import uuid
@@ -861,6 +884,10 @@ def _valid_magic(data: bytes, ext: str) -> bool:
     return any(data[:len(s)] == s for s in sigs)
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# REQUEST HELPERS — auth guards & object-storage bucket
+# ═════════════════════════════════════════════════════════════════════════════
 def ensure_bucket():
     try:
         if not minio_client.bucket_exists(MINIO_BUCKET):
@@ -899,6 +926,10 @@ def admin_required_api():
     return None
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PAGES
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/home')
 def home():
     guard = login_required_page()
@@ -909,6 +940,10 @@ def home():
                            distro=session.get('distro', 'Ocellus'))
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# NOTES / GOALS / DREAMS  (personal entries, stored encrypted)
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/notes', methods=['GET'])
 def get_notes():
     err = login_required_api()
@@ -1056,6 +1091,10 @@ def set_dream():
     return jsonify({'status': 'success', 'dream': dream.title})
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# CONSISTENCY & EVENTS
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/consistency', methods=['GET'])
 def get_consistency():
     err = login_required_api()
@@ -1099,6 +1138,10 @@ def get_events():
     } for e in events])
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# MEDIA UPLOADS & SERVING  (to object storage)
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/upload', methods=['POST'])
 @limiter.limit("30 per minute")
 def upload_file():
@@ -1240,6 +1283,10 @@ def serve_media_shared(object_name):
     return jsonify({'error': 'File not found'}), 404
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# LOCATION & PUBLIC PROFILE
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/location', methods=['POST'])
 def save_location():
     err = login_required_api()
@@ -1295,6 +1342,10 @@ def get_user_profile(uid):
     })
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# AI ENDPOINTS — Ask / BlinkBot / BuddyBot
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/ask', methods=['POST'])
 @limiter.limit("30 per minute")
 def ask():
@@ -1426,6 +1477,10 @@ def desktop_buddybot_chat():
         return jsonify({'reply': 'BuddyBot unavailable right now.'}), 503
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SKILLS, STATS & RANKS  (the skill-ranking identity system)
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/stats', methods=['GET'])
 @limiter.limit("10 per minute")
 def get_stats_sheet():
@@ -1656,6 +1711,10 @@ def add_skill_exp():
     return jsonify({'ok': True, 'sheet': sheet})
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PROFILE MANAGEMENT — username / password / delete account
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/profile/username', methods=['PATCH'])
 def update_username():
     from shared.auth.user import User
@@ -1845,6 +1904,10 @@ def _blocked_ids(me):
     return {(r.blocked_id if r.blocker_id == me else r.blocker_id) for r in rows}
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# COMMUNITY FEED — posts, comments, reactions, ShowOff actions
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     err = login_required_api()
@@ -2476,6 +2539,10 @@ def update_post_type(pid):
     return jsonify({'ok': True, 'post_type': post_type or None})
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# USER SEARCH
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/users/search')
 def search_users():
     err = login_required_api()
@@ -2499,6 +2566,10 @@ def search_users():
     return jsonify(result)
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# DIRECT MESSAGES
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/dms/version', methods=['GET'])
 def dms_version():
     """Cheap change marker for this user's DMs. New messages are inserts and
@@ -2688,6 +2759,10 @@ def mark_dms_read(other_id):
     return jsonify({'ok': True})
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ACHIEVEMENTS — log & verify
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/achievements', methods=['GET'])
 def get_achievements():
     err = login_required_api()
@@ -2825,6 +2900,10 @@ def verify_achievement(aid):
 
 # ── Habits API ───────────────────────────────────────────────────────────────
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# HABITS — create / toggle / history
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/habits', methods=['GET'])
 @limiter.limit("60 per minute")
 def get_habits():
@@ -2926,6 +3005,10 @@ def habits_history():
     return jsonify(result)
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PROXIES — weather & wisdom (keeps API keys server-side)
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/weather', methods=['GET'])
 def proxy_weather():
     err = login_required_api()
@@ -2973,6 +3056,10 @@ def proxy_wisdom():
         return jsonify({'error': 'unavailable'}), 502
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# FEEDBACK
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/feedback', methods=['POST'])
 def submit_feedback():
     err = login_required_api()
@@ -3062,6 +3149,10 @@ def _mlc_path_ok(p):
     return bool(_MLC_SAFE_PATH.match(p)) and '..' not in p and '//' not in p
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# BLINKBOT MODEL SERVING — WebLLM weights, install & download
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/mlc-weights/<path:filepath>')
 def proxy_mlc_weights(filepath):
     err = login_required_api()
@@ -3417,6 +3508,10 @@ def _get_or_create_wallet(user_id):
     return w
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# EYES WALLET & MARKETPLACE — balance, top-up, sell-back, transactions
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/wallet', methods=['GET'])
 def get_wallet():
     err = login_required_api()
@@ -3546,6 +3641,10 @@ def cancel_wallet_tx(tx_id):
 
 # ── Ask Me Anything (human-answered) ─────────────────────────────────────────
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# ASK ANYTHING (AMA) — human-answered Q&A + admin inbox
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/api/ama', methods=['GET'])
 def ama_get():
     err = login_required_api()
@@ -3669,6 +3768,10 @@ def admin_ama_reply(uid):
     return jsonify({'ok': True, 'id': msg.id, 'created_at': msg.created_at.isoformat()})
 
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# TERMS PAGE
+# ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/terms')
 def pug_terms():
     return render_template('pug/terms.html')

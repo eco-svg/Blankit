@@ -1,3 +1,16 @@
+"""
+distro/pug/routes/notes.py — the pug distro's database models (plus Eye-rate helpers).
+
+Tables defined here:
+  • Note        — a single, heavily-reused row type. The `entry_type` column decides what
+                  it is: a personal note, goal, dream, OR a community post / comment /
+                  reaction / DM. Title and body are stored ENCRYPTED (see .title/.body).
+  • Wallet / WalletTx / EyeRate — the "Eyes" in-app currency: balances, transactions, FX.
+  • AmaMessage  — "Ask Anything" messages between a user and the admin.
+  • PostReport / UserBlock / UserReport — moderation: post reports, user blocks, DM reports.
+
+`User` is imported and re-exported so other modules can do `from notes import User`.
+"""
 import json
 import urllib.request
 import warnings
@@ -8,6 +21,8 @@ from shared.auth.user import User  # noqa: F401  (re-exported for callers)
 
 
 class Note(db.Model):
+    # One flexible row type for many features — `entry_type` distinguishes them
+    # (note / goal / dream / community_post / post_comment / post_react / dm / ...).
     __tablename__ = 'notes'
 
     id             = db.Column(db.Integer, primary_key=True)

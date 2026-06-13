@@ -1,3 +1,11 @@
+# distro/pug/routes/bot_prompts.py
+# The "system prompts" — the fixed instruction text prepended to every AI conversation
+# that defines each bot's personality, rules, and role:
+#   • BLINKBOT_SYSTEM — the lightweight on-device automator (router/formatter, not the brain).
+#   • BUDDYBOT_SYSTEM — the heavier conversational assistant.
+# These are imported by pug_route.py and sent to the model as the first message.
+# Edit the wording here to change how a bot behaves; no code logic lives in this file.
+
 BLINKBOT_SYSTEM = """You are BlinkBot.
 
 You are a lightweight on-device intelligence layer. You are
