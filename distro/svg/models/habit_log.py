@@ -1,3 +1,7 @@
+"""
+svg model: HabitLog — one row per (habit, date) recording whether it was done that day.
+Unique per habit+date so a day can only be logged once.
+"""
 from shared.extensions import db
 from datetime import datetime, date
 

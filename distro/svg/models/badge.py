@@ -1,3 +1,9 @@
+"""
+svg models: Badge definitions + earned badges (gamification).
+BADGE_DEFINITIONS is the master list seeded into the `badges` table; UserBadge links a
+user to a badge they earned (with an optional 1/2/3 podium rank). The `condition` strings
+are checked by services/badge_service.py.
+"""
 from shared.extensions import db
 from datetime import datetime
 

@@ -1,3 +1,6 @@
+"""
+svg model: Habit — one tracked habit per row. Daily check-offs live in HabitLog.
+"""
 from shared.extensions import db
 from datetime import datetime
 

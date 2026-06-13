@@ -1,3 +1,6 @@
+"""
+svg model: Todo — a single dated to-do item (per user, per day).
+"""
 from shared.extensions import db
 from datetime import datetime, date
 

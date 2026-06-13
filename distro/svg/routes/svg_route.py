@@ -1,3 +1,11 @@
+"""
+distro/svg/routes/svg_route.py — svg's PAGE routes (the `svg` blueprint).
+
+These just render HTML templates for logged-in Eco-Svg users; the actual data is fetched
+by each page's JavaScript from the /api, /api/community, and /ai blueprints. Note: `/`
+(login) is also the shared entry point that redirects an already-logged-in user to their
+own distro's home.
+"""
 from flask import Blueprint, render_template, session, redirect, url_for
 from functools import wraps
 
@@ -8,6 +16,7 @@ svg = Blueprint(
     template_folder='../templates',
 )
 
+# Where to send a logged-in user based on which distro their account belongs to.
 DISTRO_REDIRECTS = {
     'Eco-Svg':   '/home',
     'CatalystCrew': '/d/home',
@@ -15,6 +24,7 @@ DISTRO_REDIRECTS = {
 }
 
 def get_user():
+    """Return the logged-in user's basic info from the session."""
     return {
         'username': session.get('username', ''),
         'distro':   session.get('distro', 'Eco-Svg'),
@@ -22,6 +32,7 @@ def get_user():
     }
 
 def login_required(f):
+    """Decorator: only allow logged-in Eco-Svg users; everyone else is bounced to login."""
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('user_id'):
@@ -35,6 +46,7 @@ def login_required(f):
 
 @svg.route('/')
 def login():
+    """Shared login page. If already logged in, redirect to the user's own distro home."""
     if session.get('user_id') and session.get('username'):
         distro = session.get('distro', 'Eco-Svg')
         if distro in DISTRO_REDIRECTS:
@@ -43,6 +55,8 @@ def login():
     return render_template('shared/login.html')
 
 
+# The routes below all follow the same pattern: require login, then render that feature's
+# page template. The page's JavaScript loads the actual data from the API blueprints.
 @svg.route('/home')
 @login_required
 def home():

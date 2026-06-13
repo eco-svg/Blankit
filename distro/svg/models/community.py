@@ -1,3 +1,8 @@
+"""
+svg community models: CommunityPost (with up/down votes), PostVote, PostComment, and
+Challenges (Challenge + ChallengeMember). Note: this is svg's OWN community — separate
+from pug's, which instead stores posts as Note rows.
+"""
 from shared.extensions import db
 from datetime import datetime
 
