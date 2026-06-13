@@ -397,6 +397,12 @@ def create_app():
         response.headers['X-Frame-Options']        = 'SAMEORIGIN'
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Referrer-Policy']        = 'strict-origin-when-cross-origin'
+        # Force HTTPS for a year (Render is HTTPS-only) so no request can downgrade to http.
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        # Only allow the device features the app actually uses, and only from our own origin.
+        response.headers['Permissions-Policy'] = (
+            'geolocation=(self), camera=(self), microphone=(self), payment=(), usb=()'
+        )
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; "
