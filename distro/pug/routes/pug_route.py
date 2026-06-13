@@ -2572,6 +2572,92 @@ def add_post_comment(pid):
     return jsonify({'id': c.id, 'ok': True}), 201
 
 
+# ── Cross-distro interaction: act on ANOTHER distro's post, written to ITS store ──
+# The merged feed (distro_scope=all) shows other distros' shared posts (svg today). These
+# endpoints let a pug user react/comment on those foreign posts: we write directly to the
+# owning store's tables (same database) and return pug-shaped JSON so the frontend only has
+# to swap the base URL. svg has a single up-vote, so 'like' toggles that vote and 'dislike'
+# is a no-op (svg has no downvote — the like→upvote mapping we agreed on).
+def _svg_global_post(pid):
+    """The svg CommunityPost #pid if it exists and is shared to all distros, else None."""
+    from distro.svg.models.community import CommunityPost
+    return CommunityPost.query.filter(CommunityPost.id == pid, CommunityPost.is_global.is_(True)).first()
+
+
+@pug_bp.route('/pug/api/xpost/svg/<int:pid>/react', methods=['POST'])
+@limiter.limit("60 per minute")
+def xreact_svg(pid):
+    """Like/un-like a shared svg post (maps to svg's up-vote; 'dislike' is a no-op)."""
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    from distro.svg.models.community import PostVote
+    post = _svg_global_post(pid)
+    if not post:
+        return jsonify({'error': 'Not found'}), 404
+    rtype    = ((request.get_json(silent=True) or {}).get('type') or '').strip()
+    existing = PostVote.query.filter_by(user_id=me, post_id=pid).first()
+    if rtype == 'like':
+        if existing:
+            db.session.delete(existing)
+            post.vote_count = max(0, (post.vote_count or 0) - 1)
+            existing = None
+        else:
+            db.session.add(PostVote(user_id=me, post_id=pid))
+            post.vote_count = (post.vote_count or 0) + 1
+            existing = True
+        db.session.commit()
+    # 'dislike': svg has no downvote — leave the vote untouched.
+    return jsonify({'likes': post.vote_count or 0, 'dislikes': 0,
+                    'my_reaction': 'like' if existing else None})
+
+
+@pug_bp.route('/pug/api/xpost/svg/<int:pid>/comments', methods=['GET'])
+def xcomments_svg(pid):
+    """List a shared svg post's comments, shaped like pug's comment list."""
+    err = login_required_api()
+    if err: return err
+    from distro.svg.models.community import PostComment
+    from shared.auth.user import User
+    me = session['user_id']
+    if not _svg_global_post(pid):
+        return jsonify([])
+    rows = PostComment.query.filter_by(post_id=pid).order_by(PostComment.created_at.asc()).limit(50).all()
+    umap = {u.id: u for u in User.query.filter(User.id.in_({c.user_id for c in rows})).all()} if rows else {}
+    out  = []
+    for c in rows:
+        u = umap.get(c.user_id)
+        if not u: continue
+        out.append({
+            'id': c.id, 'user_id': c.user_id, 'username': u.username,
+            'text': c.body, 'created_at': c.created_at.isoformat() if c.created_at else None,
+            'is_mine': c.user_id == me, 'is_pinned': False, 'can_pin': False,
+            'likes': 0, 'dislikes': 0, 'my_reaction': None,
+        })
+    return jsonify(out)
+
+
+@pug_bp.route('/pug/api/xpost/svg/<int:pid>/comment', methods=['POST'])
+@limiter.limit("30 per hour; 5 per minute")
+def xcomment_svg(pid):
+    """Add a comment to a shared svg post (written to svg's post_comments table)."""
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    from distro.svg.models.community import PostComment
+    if not _svg_global_post(pid):
+        return jsonify({'error': 'Post not found'}), 404
+    text = ((request.get_json(silent=True) or {}).get('text') or '').strip()
+    if not text:
+        return jsonify({'error': 'Empty'}), 400
+    if len(text) > 300:
+        return jsonify({'error': 'Too long (max 300 chars)'}), 400
+    c = PostComment(post_id=pid, user_id=me, body=text)
+    db.session.add(c)
+    db.session.commit()
+    return jsonify({'id': c.id, 'ok': True}), 201
+
+
 _ACTION_EXP_MAP = {
     'hire':   'purchase_hire',
     'buy':    'purchase_hire',
