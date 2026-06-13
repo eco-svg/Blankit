@@ -1,3 +1,7 @@
+/**
+ * router.js — Client-side tab router — maps each tab to the page sections it shows/hides, and updates nav state.
+ */
+
 (function () {
   const ROUTES = {
     'notes':    ['sec-notes', 'sec-blinkbot'],

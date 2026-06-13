@@ -1,3 +1,7 @@
+/**
+ * credits.js — Eyes wallet ('Credits') tab — balance, top-up, sell-back, transaction history, FX rates.
+ */
+
 (function () {
   'use strict';
 

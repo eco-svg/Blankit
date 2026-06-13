@@ -1,3 +1,7 @@
+/**
+ * notes.js — Notes — create / edit / delete personal notes.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM References ---

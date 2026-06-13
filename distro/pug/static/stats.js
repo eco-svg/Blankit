@@ -1,3 +1,7 @@
+/**
+ * stats.js — Stats tab — renders the skill stat-sheet (class, personality, ranks) and skill add/remove.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const btn                = document.getElementById('statsBtn');

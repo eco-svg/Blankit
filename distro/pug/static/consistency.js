@@ -1,3 +1,7 @@
+/**
+ * consistency.js — Consistency view — renders the habit consistency charts (Chart.js).
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const charts = {};
 

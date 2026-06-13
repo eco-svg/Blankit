@@ -1,3 +1,7 @@
+/**
+ * calendar.js — Calendar widget — month view and event create / list / delete.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const daysContainer = document.getElementById('calendarDays');
     const monthDisplay = document.getElementById('monthDisplay');

@@ -1,3 +1,8 @@
+/**
+ * community.js — Community tab — feed rendering, posts, comments, reactions, ShowOff action buttons,
+ * report/block, and the client-side NSFW pre-filter on image uploads.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     // ── Buy info modal ────────────────────────────────────────────────────

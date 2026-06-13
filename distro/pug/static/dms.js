@@ -1,3 +1,7 @@
+/**
+ * dms.js — Direct messages — conversation list, thread view, sending (with media), report/block.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const convList        = document.getElementById('dmConvList');

@@ -1,3 +1,7 @@
+/**
+ * goals.js — Goals widget — create / update / finish / delete goals.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const inputGoal   = document.getElementById('newGoalInput');

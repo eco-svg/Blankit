@@ -1,3 +1,7 @@
+/**
+ * gaps.js — Home-tab modals & UI glue (e.g. the Dream entry confirm modal).
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- NEW: Custom Modal Logic for the Dream ---

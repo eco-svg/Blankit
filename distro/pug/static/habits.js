@@ -1,3 +1,7 @@
+/**
+ * habits.js — Habits widget — habit list, daily toggle, and history.
+ */
+
 (function () {
   let habits = [];
 

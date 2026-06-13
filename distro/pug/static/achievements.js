@@ -1,3 +1,7 @@
+/**
+ * achievements.js — Achievements tab — add / delete / verify achievements (verifying proof unlocks a real rank).
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
 
     const addBtn    = document.getElementById('newAchievementBtn');
