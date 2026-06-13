@@ -376,6 +376,20 @@ def create_app():
             mimetype='image/png',
         )
 
+    # ── CSRF: block cross-site state-changing requests ──
+    # On any mutating request, if the browser sent an Origin/Referer from a DIFFERENT host,
+    # reject it. Same-origin requests (all of ours) pass; requests with no Origin (non-browser)
+    # aren't blocked. This stops a malicious site from POST-ing to our API with the user's cookie.
+    @app.before_request
+    def csrf_origin_check():
+        from flask import request as _req, jsonify
+        if _req.method not in ('POST', 'PUT', 'PATCH', 'DELETE'):
+            return
+        from urllib.parse import urlparse
+        source = _req.headers.get('Origin') or _req.headers.get('Referer')
+        if source and urlparse(source).netloc != _req.host:
+            return jsonify({'error': 'cross-origin request blocked'}), 403
+
     # ── Invalidate sessions for deleted users ──
     @app.before_request
     def validate_session_user():
