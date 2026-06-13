@@ -1,3 +1,10 @@
+"""
+distro/svg/routes/api_route.py — svg's main data API (the `api` blueprint, prefix /api).
+
+The JSON endpoints svg's pages call to read/write habits, to-dos, stats, badges, and
+streaks. Most business logic lives in services/ (habit_service, badge_service); these
+routes are thin wrappers that check login and hand off to those services.
+"""
 from flask import Blueprint, jsonify, request, session
 from datetime import date
 from shared.extensions import db
@@ -5,7 +12,7 @@ from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.todo import Todo
 from distro.svg.services import habit_service, badge_service
-from datetime import date, timedelta  
+from datetime import date, timedelta
 from shared.extensions import limiter
 
 
@@ -14,6 +21,7 @@ api = Blueprint('api', __name__, url_prefix='/api')
 
 
 def current_user_id():
+    """The logged-in user's id, or None if nobody is logged in."""
     uid = session.get('user_id')
     if not uid:
         return None
@@ -21,6 +29,7 @@ def current_user_id():
 
 
 def require_user():
+    """Return the logged-in user's id, or abort with 401 if not logged in."""
     uid = current_user_id()
     if not uid:
         from flask import abort
@@ -34,6 +43,7 @@ def require_user():
 
 @api.route('/habits', methods=['GET'])
 def get_habits():
+    """Return the user's habits with today's done/streak status."""
     user_id = require_user()
     return jsonify(habit_service.get_today_habits(user_id))
 
@@ -41,6 +51,7 @@ def get_habits():
 @api.route('/habits', methods=['POST'])
 @limiter.limit("30 per minute")
 def add_habit():
+    """Create a new habit for the user."""
     user_id = require_user()
     data    = request.get_json()
     name    = (data.get('name') or '').strip()
@@ -62,6 +73,7 @@ def add_habit():
 
 @api.route('/habits/<int:habit_id>', methods=['DELETE'])
 def delete_habit(habit_id):
+    """Soft-delete a habit (mark it inactive)."""
     user_id = require_user()
     habit   = Habit.query.filter_by(id=habit_id, user_id=user_id).first_or_404()
     habit.is_active = False
@@ -71,6 +83,7 @@ def delete_habit(habit_id):
 
 @api.route('/habits/<int:habit_id>/toggle', methods=['POST'])
 def toggle_habit(habit_id):
+    """Toggle today's completion for a habit; return updated %, discipline score, and any newly unlocked badges."""
     user_id = require_user()
     # verify habit belongs to user
     Habit.query.filter_by(id=habit_id, user_id=user_id).first_or_404()
@@ -92,6 +105,7 @@ def toggle_habit(habit_id):
 
 @api.route('/stats/today', methods=['GET'])
 def stats_today():
+    """Today's completion count, percentage, and discipline score."""
     user_id      = require_user()
     done, total, pct = habit_service.get_completion_today(user_id)
     score        = habit_service.get_discipline_score(user_id)
@@ -100,16 +114,19 @@ def stats_today():
 
 @api.route('/stats/weekly', methods=['GET'])
 def stats_weekly():
+    """Weekly completion stats."""
     return jsonify(habit_service.get_weekly_stats(require_user()))
 
 
 @api.route('/stats/monthly', methods=['GET'])
 def stats_monthly():
+    """Monthly completion stats."""
     return jsonify(habit_service.get_monthly_stats(require_user()))
 
 
 @api.route('/stats/yearly', methods=['GET'])
 def stats_yearly():
+    """Year-long completion heatmap."""
     return jsonify(habit_service.get_yearly_heatmap(require_user()))
 
 
@@ -119,6 +136,7 @@ def stats_yearly():
 
 @api.route('/todos/<string:date_str>', methods=['GET'])
 def get_todos(date_str):
+    """List the user's to-dos for a given date (YYYY-MM-DD)."""
     user_id = require_user()
     try:
         d = date.fromisoformat(date_str)
@@ -130,6 +148,7 @@ def get_todos(date_str):
 
 @api.route('/todos/<string:date_str>', methods=['POST'])
 def add_todo(date_str):
+    """Add a to-do on a given date."""
     user_id = require_user()
     try:
         d = date.fromisoformat(date_str)
@@ -149,6 +168,7 @@ def add_todo(date_str):
 
 @api.route('/todos/item/<int:todo_id>/toggle', methods=['POST'])
 def toggle_todo(todo_id):
+    """Flip a to-do's done state."""
     user_id   = require_user()
     todo      = Todo.query.filter_by(id=todo_id, user_id=user_id).first_or_404()
     todo.done = not todo.done
@@ -158,6 +178,7 @@ def toggle_todo(todo_id):
 
 @api.route('/todos/item/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
+    """Delete a to-do."""
     user_id = require_user()
     todo    = Todo.query.filter_by(id=todo_id, user_id=user_id).first_or_404()
     db.session.delete(todo)
@@ -171,12 +192,14 @@ def delete_todo(todo_id):
 
 @api.route('/badges', methods=['GET'])
 def get_badges():
+    """Every badge with this user's earned/locked status."""
     user_id = require_user()
     return jsonify(badge_service.get_all_badges_with_status(user_id))
 
 
 @api.route('/badges/<int:badge_id>/podium', methods=['POST'])
 def set_podium(badge_id):
+    """Pin an earned badge to a podium slot (rank 1/2/3)."""
     user_id = require_user()
     data = request.get_json()
     rank = data.get('rank')
@@ -190,6 +213,7 @@ def set_podium(badge_id):
 
 @api.route('/streak', methods=['GET'])
 def get_streak():
+    """Compute the current consecutive-day completion streak (any habit done that day)."""
     user_id = session.get('user_id')
     user_id = require_user()
 

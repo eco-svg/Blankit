@@ -1,3 +1,8 @@
+"""
+svg service: badge gamification.
+Seeds the master badge list, evaluates each badge's unlock condition after a habit
+toggle, and manages the user's earned badges + podium picks.
+"""
 from datetime import date, timedelta
 from shared.extensions import db
 from distro.svg.models.badge import Badge, UserBadge, BADGE_DEFINITIONS

@@ -1,3 +1,10 @@
+"""
+distro/svg/routes/community_route.py — svg's community (the `community_api` blueprint, prefix /api/community).
+
+Endpoints for: the posts feed (with up/down votes + comments), a streak leaderboard, group
+challenges, and image uploads (screened by an NSFW check in services/moderation.py).
+This is svg's OWN community, separate from pug's.
+"""
 import os
 import uuid
 from flask import Blueprint, jsonify, request, session
@@ -13,6 +20,7 @@ community_api = Blueprint('community_api', __name__, url_prefix='/api/community'
 
 
 def require_user():
+    """Return the logged-in user id, or abort 401."""
     uid = session.get('user_id')
     if not uid:
         from flask import abort
@@ -21,6 +29,7 @@ def require_user():
 
 
 def calc_streak(user_id):
+    """Current consecutive-day streak for a user (any active habit done that day)."""
     habits = Habit.query.filter_by(user_id=user_id, is_active=True).all()
     if not habits:
         return 0
@@ -46,6 +55,7 @@ def calc_streak(user_id):
 # ══════════════════════════════
 @community_api.route('/leaderboard', methods=['GET'])
 def leaderboard():
+    """Users ranked by streak (scope=local for same distro, else global)."""
     user_id = require_user()
     scope   = request.args.get('scope', 'local')
     me      = User.query.get(user_id)
@@ -81,6 +91,7 @@ def leaderboard():
 # ══════════════════════════════
 @community_api.route('/posts', methods=['GET'])
 def get_posts():
+    """List community posts with vote/comment counts and the caller's own vote."""
     user_id = require_user()
     scope   = request.args.get('scope', 'local')
     page    = max(1, int(request.args.get('page', 1)))
@@ -141,6 +152,7 @@ def get_posts():
 @community_api.route('/posts', methods=['POST'])
 @limiter.limit("10 per minute")
 def create_post():
+    """Create a new community post."""
     user_id = require_user()
     me      = User.query.get(user_id)
     data    = request.get_json()
@@ -174,6 +186,7 @@ def create_post():
 
 @community_api.route('/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
+    """Delete the caller's own post."""
     user_id = require_user()
     post    = CommunityPost.query.filter_by(id=post_id, user_id=user_id).first_or_404()
     db.session.delete(post)
@@ -184,6 +197,7 @@ def delete_post(post_id):
 @community_api.route('/posts/<int:post_id>/vote', methods=['POST'])
 @limiter.limit("30 per minute")
 def vote_post(post_id):
+    """Up/down vote a post (toggles the caller's vote)."""
     user_id  = require_user()
     post     = CommunityPost.query.get_or_404(post_id)
     existing = PostVote.query.filter_by(user_id=user_id, post_id=post_id).first()
@@ -203,6 +217,7 @@ def vote_post(post_id):
 
 @community_api.route('/posts/<int:post_id>/comments', methods=['GET'])
 def get_comments(post_id):
+    """List a post's comments."""
     require_user()
     comments = PostComment.query.filter_by(post_id=post_id).order_by(PostComment.created_at).all()
     return jsonify([{
@@ -216,6 +231,7 @@ def get_comments(post_id):
 @community_api.route('/posts/<int:post_id>/comments', methods=['POST'])
 @limiter.limit("20 per minute")
 def add_comment(post_id):
+    """Add a comment to a post."""
     user_id = require_user()
     CommunityPost.query.get_or_404(post_id)
     data = request.get_json()
@@ -234,6 +250,7 @@ def add_comment(post_id):
 @community_api.route('/upload-image', methods=['POST'])
 @limiter.limit("10 per minute")
 def upload_image():
+    """Upload a post image after an NSFW check; returns its stored URL."""
     user_id = require_user()
 
     if 'image' not in request.files:
@@ -289,6 +306,7 @@ def upload_image():
 # ══════════════════════════════
 @community_api.route('/challenges', methods=['GET'])
 def get_challenges():
+    """List challenges the user can see / join."""
     user_id = require_user()
     scope   = request.args.get('scope', 'local')
     me      = User.query.get(user_id)
@@ -320,6 +338,7 @@ def get_challenges():
 @community_api.route('/challenges', methods=['POST'])
 @limiter.limit("5 per minute")
 def create_challenge():
+    """Create a group habit challenge."""
     user_id = require_user()
     me      = User.query.get(user_id)
     data    = request.get_json()
@@ -352,6 +371,7 @@ def create_challenge():
 @community_api.route('/challenges/<int:challenge_id>/join', methods=['POST'])
 @limiter.limit("20 per minute")
 def join_challenge(challenge_id):
+    """Join a challenge."""
     user_id  = require_user()
     Challenge.query.get_or_404(challenge_id)
     existing = ChallengeMember.query.filter_by(challenge_id=challenge_id, user_id=user_id).first()

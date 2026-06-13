@@ -1,3 +1,11 @@
+"""
+distro/svg/routes/ai_route.py — svg's AI features (the `ai` blueprint, prefix /ai).
+
+Three Groq-powered endpoints: suggest daily habits from a goal, a home-card "insight", and
+a coaching chat. All of them build a small summary of the user's recent habit data
+(get_habit_context) and send it to Groq with a tailored system prompt. The Groq API key
+stays server-side; the model's JSON replies are parsed defensively (parse_json_array).
+"""
 import re
 import json
 import os
@@ -18,6 +26,7 @@ GROQ_MODEL = 'llama-3.1-8b-instant'
 
 
 def call_groq(prompt: str, system: str = '') -> str:
+    """Send a prompt (with optional system message) to Groq and return the reply text. Raises RuntimeError on any failure."""
     api_key = os.environ.get('SVG_GROQ_API_KEY')
     if not api_key:
         raise RuntimeError('Something went wrong... Must be vibe coaded')
@@ -82,6 +91,7 @@ def parse_json_array(raw: str):
 
 
 def login_required_api():
+    """Guard for /ai endpoints: return a 401/403 JSON error unless a logged-in Eco-Svg user; None if OK."""
     if not session.get('user_id'):
         return jsonify({'error': 'not logged in'}), 401
     if session.get('distro') != 'Eco-Svg':
@@ -90,6 +100,7 @@ def login_required_api():
 
 
 def get_habit_context(user_id: int) -> str:
+    """Build a short text summary of the user's last-30-day completion rate per habit, fed to the AI as context."""
     habits = Habit.query.filter_by(user_id=user_id).all()
     if not habits:
         return 'No habits yet.'
@@ -114,6 +125,7 @@ def get_habit_context(user_id: int) -> str:
 @ai.route('/suggest-habits', methods=['POST'])
 @limiter.limit("10 per minute")
 def suggest_habits():
+    """POST /ai/suggest-habits — ask the AI for 5 small daily habits for a given goal (returns a JSON array)."""
     err = login_required_api()
     if err: return err
 
@@ -158,6 +170,7 @@ def suggest_habits():
 @ai.route('/insight', methods=['GET'])
 @limiter.limit("10 per minute")
 def insight():
+    """GET /ai/insight — one short, personalised coaching insight for the home card."""
     err = login_required_api()
     if err: return err
 
@@ -186,6 +199,7 @@ def insight():
 @ai.route('/chat', methods=['POST'])
 @limiter.limit("15 per minute")
 def chat():
+    """POST /ai/chat — a coaching reply to the user message, grounded in their habit data."""
     err = login_required_api()
     if err: return err
 

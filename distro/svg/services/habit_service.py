@@ -1,3 +1,8 @@
+"""
+svg service: habit statistics & toggling.
+Pure functions over Habit/HabitLog that compute streaks, today's completion, the
+30-day discipline score, and the weekly/monthly/yearly views the API serves.
+"""
 from datetime import date, timedelta
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
@@ -5,6 +10,7 @@ from shared.extensions import db
 
 
 def get_today_habits(user_id):
+    """List a user's active habits, each with today's done flag and current streak."""
     today  = date.today()
     habits = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     logs   = {
@@ -22,6 +28,7 @@ def get_today_habits(user_id):
 
 
 def toggle_habit(habit_id):
+    """Flip today's done state for a habit (creating the log row if needed); return the new value."""
     today = date.today()
     log   = HabitLog.query.filter_by(habit_id=habit_id, date=today).first()
     if log:
@@ -34,6 +41,7 @@ def toggle_habit(habit_id):
 
 
 def get_streak(habit_id):
+    """Count consecutive days up to today that this habit was marked done."""
     today  = date.today()
     streak = 0
     cursor = today
@@ -48,6 +56,7 @@ def get_streak(habit_id):
 
 
 def get_completion_today(user_id):
+    """Return (done, total, pct) for the user's habits today."""
     today  = date.today()
     habits = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     total  = len(habits)
@@ -60,6 +69,7 @@ def get_completion_today(user_id):
 
 
 def get_discipline_score(user_id, days=30):
+    """Percent of habit-days completed over the last `days` days (0–100)."""
     today  = date.today()
     habits = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     if not habits:
@@ -77,6 +87,7 @@ def get_discipline_score(user_id, days=30):
 
 
 def get_weekly_stats(user_id):
+    """Per-day completion % for the current week (Mon–Sun)."""
     today     = date.today()
     habits    = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     habit_ids = [h.id for h in habits]
@@ -99,6 +110,7 @@ def get_weekly_stats(user_id):
 
 
 def get_monthly_stats(user_id):
+    """Per-day completion % for the last 30 days."""
     today     = date.today()
     habits    = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     habit_ids = [h.id for h in habits]
@@ -116,6 +128,7 @@ def get_monthly_stats(user_id):
 
 
 def get_yearly_heatmap(user_id):
+    """Per-day completion level (0–4) for the last 365 days (for the heatmap)."""
     today     = date.today()
     habits    = Habit.query.filter_by(is_active=True, user_id=user_id).all()
     habit_ids = [h.id for h in habits]
