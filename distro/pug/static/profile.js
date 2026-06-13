@@ -1,9 +1,12 @@
-// Apply saved palette immediately on script load (prevents flash of wrong theme)
+// Theme customization (alternate palettes, wallpapers, filters) was retired —
+// the app is locked to the default dark theme. Clear any legacy saved choices so
+// existing users aren't stuck with a wallpaper/filter/theme they can no longer change.
 (function() {
-    const VALID = ['dark', 'astro', 'red', 'gold'];
-    const p = localStorage.getItem('veyra-pug-palette');
-    if (p && !VALID.includes(p)) { localStorage.removeItem('veyra-pug-palette'); return; }
-    if (p && p !== 'dark') document.documentElement.setAttribute('data-theme', p);
+    ['veyra-pug-palette', 'veyra-pug-wallpaper', 'veyra-pug-filter', 'veyra_theme'].forEach(k => localStorage.removeItem(k));
+    const el = document.documentElement;
+    el.removeAttribute('data-theme');
+    el.removeAttribute('data-wallpaper');
+    el.removeAttribute('data-filter');
 })();
 
 // ── Mobile custom select picker ───────────────────────────────────────────────
@@ -50,77 +53,8 @@ function initMobSelects() {
         });
     });
 }
-
-function applyPalette(name) {
-    if (!name || name === 'dark') {
-        document.documentElement.removeAttribute('data-theme');
-    } else {
-        document.documentElement.setAttribute('data-theme', name);
-    }
-}
-
-function applyWallpaper(name) {
-    document.documentElement.setAttribute('data-wallpaper', name || 'default');
-}
-
-function initThemeSwatches() {
-    // Color palette (full theme swap)
-    const VALID_PALETTES = ['dark', 'light', 'astro-blue', 'love-red', 'golden'];
-    const raw = localStorage.getItem('veyra-pug-palette') || 'dark';
-    const savedPalette = VALID_PALETTES.includes(raw) ? raw : 'dark';
-    if (!VALID_PALETTES.includes(raw)) localStorage.removeItem('veyra-pug-palette');
-    applyPalette(savedPalette);
-    document.querySelectorAll('.palette-swatch').forEach(btn => {
-        if (btn.dataset.palette === savedPalette) btn.classList.add('theme-swatch-active');
-        btn.addEventListener('click', () => {
-            const p = btn.dataset.palette;
-            localStorage.setItem('veyra-pug-palette', p);
-            applyPalette(p);
-            document.querySelectorAll('.palette-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
-            btn.classList.add('theme-swatch-active');
-        });
-    });
-
-    // Wallpaper (background) — nebula/starfield retired, flat is the default
-    let savedWp = localStorage.getItem('veyra-pug-wallpaper') || 'default';
-    if (savedWp === 'nebula' || savedWp === 'starfield') {
-        savedWp = 'default';
-        localStorage.removeItem('veyra-pug-wallpaper');
-    }
-    applyWallpaper(savedWp);
-    document.querySelectorAll('.wallpaper-swatch').forEach(btn => {
-        if (btn.dataset.wallpaper === savedWp) btn.classList.add('theme-swatch-active');
-        btn.addEventListener('click', () => {
-            const wp = btn.dataset.wallpaper;
-            localStorage.setItem('veyra-pug-wallpaper', wp);
-            applyWallpaper(wp);
-            document.querySelectorAll('.wallpaper-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
-            btn.classList.add('theme-swatch-active');
-        });
-    });
-
-    // Filter (CSS filter on background — independent of wallpaper)
-    const savedFilter = localStorage.getItem('veyra-pug-filter') || 'default';
-    if (savedFilter !== 'default') document.documentElement.setAttribute('data-filter', savedFilter);
-    document.querySelectorAll('.filter-swatch').forEach(btn => {
-        if (btn.dataset.filter === savedFilter) btn.classList.add('theme-swatch-active');
-        btn.addEventListener('click', () => {
-            const f = btn.dataset.filter;
-            localStorage.setItem('veyra-pug-filter', f);
-            if (f === 'default') {
-                document.documentElement.removeAttribute('data-filter');
-            } else {
-                document.documentElement.setAttribute('data-filter', f);
-            }
-            document.querySelectorAll('.filter-swatch').forEach(s => s.classList.remove('theme-swatch-active'));
-            btn.classList.add('theme-swatch-active');
-        });
-    });
-}
-
 document.addEventListener('DOMContentLoaded', () => {
 
-    initThemeSwatches();
 
     const ppChangeUsername  = document.getElementById('ppChangeUsername');
     const ppChangePassword  = document.getElementById('ppChangePassword');

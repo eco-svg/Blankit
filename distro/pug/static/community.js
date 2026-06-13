@@ -347,12 +347,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const el       = document.createElement('div');
         el.className   = 'comm-post';
         el.dataset.id  = p.id;
+        el.dataset.uid = p.user_id;
         const initials = (p.username || '?')[0].toUpperCase();
         const ago      = timeAgo(p.created_at);
         const rankHtml = p.rank
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
         const deleteBtn = p.is_mine
-            ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>` : '';
+            ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>`
+            : `<button class="comm-more-btn" title="Report or block">⋯</button>`;
         const distHtml = (!p.is_mine && feedMode === 'radar' && p.dist_km !== null && p.dist_km !== undefined)
             ? `<span class="comm-dist-badge">${fmtDist(p.dist_km)}</span>` : '';
 
@@ -431,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
 
         el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
+        el.querySelector('.comm-more-btn')?.addEventListener('click', e => openPostMenu(e, p));
         el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e));
 
         // ShowOff action buttons — open DM + award EXP to post author
@@ -713,6 +716,76 @@ document.addEventListener('DOMContentLoaded', () => {
     function deletePost(id) {
         fetch(`/pug/api/community/${id}`, { method: 'DELETE' })
             .then(() => { lastPostCount = 0; loadFeed(); }).catch(() => {});
+    }
+
+    // ── Moderation: report post / block user ───────────────────────────────────
+    function modToast(msg) {
+        let t = document.querySelector('.comm-toast');
+        if (!t) { t = document.createElement('div'); t.className = 'comm-toast'; document.body.appendChild(t); }
+        t.textContent = msg;
+        requestAnimationFrame(() => t.classList.add('show'));
+        clearTimeout(t._h);
+        t._h = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function modOverlay(innerHtml) {
+        document.querySelector('.comm-mod-overlay')?.remove();
+        const ov = document.createElement('div');
+        ov.className = 'comm-mod-overlay';
+        ov.innerHTML = `<div class="comm-mod-sheet">${innerHtml}</div>`;
+        document.body.appendChild(ov);
+        ov.addEventListener('click', ev => { if (ev.target === ov) ov.remove(); });
+        return ov;
+    }
+
+    function openPostMenu(e, p) {
+        e.stopPropagation();
+        const ov = modOverlay(`
+            <button class="comm-mod-item" data-act="report">⚑ Report post</button>
+            <button class="comm-mod-item" data-act="block">⊘ Block @${esc(p.username)}</button>
+            <button class="comm-mod-item comm-mod-cancel" data-act="cancel">Cancel</button>`);
+        ov.querySelector('[data-act="report"]').onclick = () => { ov.remove(); reportFlow(p); };
+        ov.querySelector('[data-act="block"]').onclick  = () => { ov.remove(); blockFlow(p); };
+        ov.querySelector('[data-act="cancel"]').onclick = () => ov.remove();
+    }
+
+    const REPORT_REASONS = ['Nudity or sexual content', 'Harassment or hate', 'Spam or scam', 'Violence or threats', 'Other'];
+
+    function reportFlow(p) {
+        const ov = modOverlay(`
+            <div class="comm-mod-title">Why are you reporting this?</div>
+            ${REPORT_REASONS.map(r => `<button class="comm-mod-item" data-r="${esc(r)}">${esc(r)}</button>`).join('')}
+            <button class="comm-mod-item comm-mod-cancel" data-r="">Cancel</button>`);
+        ov.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+            const reason = b.dataset.r;
+            ov.remove();
+            if (!reason) return;
+            fetch(`/pug/api/community/${p.id}/report`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason })
+            }).then(r => r.json()).then(d => {
+                if (d.already)      modToast('You already reported this post.');
+                else if (d.hidden)  { modToast('Reported — post hidden pending review.'); document.querySelector(`.comm-post[data-id="${p.id}"]`)?.remove(); }
+                else                modToast('Reported. Thanks — we’ll review it.');
+            }).catch(() => modToast('Could not send report.'));
+        });
+    }
+
+    function blockFlow(p) {
+        const ov = modOverlay(`
+            <div class="comm-mod-title">Block @${esc(p.username)}?</div>
+            <div class="comm-mod-sub">You won’t see their posts, and neither of you can message the other.</div>
+            <button class="comm-mod-item comm-mod-danger" data-act="ok">Block</button>
+            <button class="comm-mod-item comm-mod-cancel" data-act="no">Cancel</button>`);
+        ov.querySelector('[data-act="no"]').onclick = () => ov.remove();
+        ov.querySelector('[data-act="ok"]').onclick = () => {
+            ov.remove();
+            fetch(`/pug/api/users/${p.user_id}/block`, { method: 'POST' })
+                .then(r => r.json()).then(() => {
+                    modToast(`Blocked @${p.username}.`);
+                    document.querySelectorAll(`.comm-post[data-uid="${p.user_id}"]`).forEach(el => el.remove());
+                }).catch(() => modToast('Could not block user.'));
+        };
     }
 
     // ── XHR upload with progress ───────────────────────────────────────────────

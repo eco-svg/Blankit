@@ -5,13 +5,13 @@
    ============================================================ */
 
 :root {
-  /* ── Dark (default / gold on near-black) ─────────────────── */
-  --bg:           #020408;
-  --bg-card:      #161512;
-  --surface:      #161512;
-  --surface-2:    #1e1c18;
-  --border:       #272420;
-  --border2:      #36322a;
+  /* ── Dark (default / gold on neutral near-black) ─────────────────── */
+  --bg:           #0a0a0a;
+  --bg-card:      #161616;
+  --surface:      #161616;
+  --surface-2:    #1f1f1f;
+  --border:       #2b2b2b;
+  --border2:      #3a3a3a;
   --border-hover: rgba(212,165,116,0.45);
   --text:         #e9e6de;
   --text-muted:   #a9a496;
@@ -22,7 +22,7 @@
   --accent2:      #c87c4a;
   --green:        #78b878;
   --blue:         #6f97c4;
-  --bg-gradient:  #020408;
+  --bg-gradient:  #0a0a0a;
   --text-on-accent: #181410;
   --shadow:       0 1px 2px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.22);
   --shadow-lg:    0 8px 30px rgba(0,0,0,0.5);
@@ -38,127 +38,6 @@
   --font-mono:    ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", Menlo, monospace;
 }
 
-/* ── Light (paper + bronze) ──────────────────────────────────── */
-[data-theme="light"] {
-  --bg:           #f6f5f2;
-  --bg-card:      #ffffff;
-  --surface:      #ffffff;
-  --surface-2:    #efede8;
-  --border:       #e4e1da;
-  --border2:      #d3cfc5;
-  --border-hover: rgba(138,93,36,0.45);
-  --text:         #1c1b18;
-  --text-muted:   #5d5a52;
-  --text-dim:     #98948a;
-  --accent:       #8a5d24;
-  --accent-glow:  rgba(138,93,36,0.08);
-  --accent-soft:  #f3e9d7;
-  --accent2:      #b54a1e;
-  --green:        #1f7a33;
-  --blue:         #2055a0;
-  --bg-gradient:  #f6f5f2;
-  --text-on-accent: #fff;
-  --shadow:       0 1px 2px rgba(20,22,30,0.06), 0 2px 8px rgba(20,22,30,0.04);
-  --shadow-lg:    0 4px 12px rgba(20,22,30,0.10), 0 12px 40px rgba(20,22,30,0.12);
-}
-
-/* Light-mode overrides for dark-tuned elements */
-[data-theme="light"] .card {
-  background: var(--surface);
-  border-color: var(--border);
-}
-[data-theme="light"] .comm-post {
-  background: var(--surface);
-  border-color: var(--border);
-}
-[data-theme="light"] .comm-post:hover { background: var(--surface); }
-/* (comm-post-bar removed — reactions now inline in header) */
-[data-theme="light"] .comm-post-comments { border-top-color: var(--border); }
-[data-theme="light"] .modal-content {
-  background: var(--surface);
-  border-color: var(--border);
-}
-[data-theme="light"] .comm-type-sw-inline,
-[data-theme="light"] .comm-type-switcher { border-color: var(--border2); }
-[data-theme="light"] .comm-type-sw-btn { color: var(--text-muted); }
-[data-theme="light"] .comm-type-sw-btn + .comm-type-sw-btn { border-left-color: var(--border); }
-[data-theme="light"] .comm-type-sw-btn:hover { background: var(--surface-2); color: var(--text); }
-[data-theme="light"] .comm-type-sw-btn.active { background: var(--accent-soft); color: var(--accent); }
-[data-theme="light"] .nav-pill { border-color: transparent; }
-[data-theme="light"] .lbar-item:hover,
-[data-theme="light"] .nav-tab:hover { background: var(--surface-2); }
-
-/* ── Astro Blue (deep space, flat) ───────────────────────────── */
-[data-theme="astro-blue"] {
-  --bg:           #0d1017;
-  --bg-card:      #141925;
-  --surface:      #141925;
-  --surface-2:    #1b2230;
-  --border:       #232c3e;
-  --border2:      #31405a;
-  --border-hover: rgba(77,158,255,0.45);
-  --text:         #dde8f7;
-  --text-muted:   #98a7bd;
-  --text-dim:     #5f6c80;
-  --accent:       #4d9eff;
-  --accent-glow:  rgba(77,158,255,0.10);
-  --accent-soft:  #1a2740;
-  --accent2:      #7b68ee;
-  --green:        #50c878;
-  --blue:         #4d9eff;
-  --bg-gradient:  #0d1017;
-  --text-on-accent: #0b1322;
-  --shadow:       0 1px 2px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.22);
-  --shadow-lg:    0 8px 30px rgba(0,0,0,0.5);
-}
-
-/* ── Love Red (flat) ─────────────────────────────────────────── */
-[data-theme="love-red"] {
-  --bg:           #100c0d;
-  --bg-card:      #191214;
-  --surface:      #191214;
-  --surface-2:    #221920;
-  --border:       #2e2125;
-  --border2:      #402d32;
-  --border-hover: rgba(224,72,72,0.45);
-  --text:         #f0e2e2;
-  --text-muted:   #b39a9a;
-  --text-dim:     #786062;
-  --accent:       #e05858;
-  --accent-glow:  rgba(224,72,72,0.10);
-  --accent-soft:  #341a1c;
-  --accent2:      #c0335f;
-  --green:        #78b878;
-  --blue:         #7888cc;
-  --bg-gradient:  #100c0d;
-  --text-on-accent: #fff;
-  --shadow:       0 1px 2px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.22);
-  --shadow-lg:    0 8px 30px rgba(0,0,0,0.5);
-}
-
-/* ── Golden Brown (flat) ─────────────────────────────────────── */
-[data-theme="golden"] {
-  --bg:           #0d0b06;
-  --bg-card:      #16130b;
-  --surface:      #16130b;
-  --surface-2:    #1e1a0f;
-  --border:       #2b2515;
-  --border2:      #3b3220;
-  --border-hover: rgba(212,165,32,0.45);
-  --text:         #f3e9ca;
-  --text-muted:   #b3a883;
-  --text-dim:     #776f52;
-  --accent:       #d4a520;
-  --accent-glow:  rgba(212,165,32,0.10);
-  --accent-soft:  #2b2410;
-  --accent2:      #e07010;
-  --green:        #90c060;
-  --blue:         #6090c8;
-  --bg-gradient:  #0d0b06;
-  --text-on-accent: #171204;
-  --shadow:       0 1px 2px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.22);
-  --shadow-lg:    0 8px 30px rgba(0,0,0,0.5);
-}
 
 /* ── BACKGROUND (flat — video wallpaper retired) ── */
 .pug-bg {
@@ -3410,6 +3289,92 @@ div.infinite-canvas video {
 .comm-del-btn:hover { opacity: 0.9; }
 .comm-range-label { flex-shrink: 0; }
 
+/* ── Moderation: more-button, report/block sheet, toast ── */
+.comm-more-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-dim);
+    opacity: 0.5;
+    font-size: 1.1rem;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+    transition: opacity 0.15s, color 0.15s;
+}
+.comm-more-btn:hover { opacity: 1; color: var(--text-muted); }
+
+.comm-mod-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(2px);
+}
+.comm-mod-sheet {
+    width: 100%;
+    max-width: 320px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.comm-mod-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 10px 12px 4px;
+}
+.comm-mod-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 0 12px 8px;
+    line-height: 1.4;
+}
+.comm-mod-item {
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 0.86rem;
+    padding: 11px 12px;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+.comm-mod-item:hover { background: var(--surface-2); }
+.comm-mod-danger { color: #e06666; font-weight: 600; }
+.comm-mod-cancel { color: var(--text-dim); text-align: center; }
+
+.comm-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(16px);
+    z-index: 1100;
+    background: var(--surface-2);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-size: 0.84rem;
+    padding: 10px 16px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+    max-width: 90vw;
+}
+.comm-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
 /* ── Post reactions footer ────────────────────────────── */
 /* ── Post type switcher (own posts only) ─────────────────── */
 .comm-type-switcher {
@@ -6357,185 +6322,6 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 
-/* ══════════════════════════════════════════════════════════════
-   WALLPAPERS — applied via [data-wallpaper] on <html>
-   No data-wallpaper = default (Blackhole video, warm gold accent)
-   Each wallpaper sets: background image + accent colour palette
-   Cards get a dark overlay so content stays readable.
-   ══════════════════════════════════════════════════════════════ */
-
-/* Shared image wallpaper rules */
-
-[data-wallpaper="pug_space_rings"] .pug-bg,
-[data-wallpaper="pug_blackhole_swirl"] .pug-bg,
-[data-wallpaper="pug_atom_cosmos"] .pug-bg,
-[data-wallpaper="pug_helix_nebula"] .pug-bg,
-[data-wallpaper="pug_crimson_nebula"] .pug-bg,
-[data-wallpaper="pug_orion_nebula"] .pug-bg,
-[data-wallpaper="pug_red_moon"] .pug-bg,
-[data-wallpaper="pug_synthwave_moon"] .pug-bg,
-[data-wallpaper="pug_eclipse_peak"] .pug-bg,
-[data-wallpaper="pug_cherry_moon"] .pug-bg,
-[data-wallpaper="pug_spirit_forest"] .pug-bg,
-[data-wallpaper="pug_aurora_village"] .pug-bg,
-[data-wallpaper="pug_snow_peaks"] .pug-bg,
-[data-wallpaper="pug_teal_reflection"] .pug-bg,
-[data-wallpaper="pug_pikachu_onsen"] .pug-bg,
-[data-wallpaper="pug_dream_lake"] .pug-bg {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
-
-/* Portrait images: auto-rotate on landscape screens so they fill without extreme zoom */
-@media (orientation: landscape) {
-  [data-wallpaper="pug_atom_cosmos"] .pug-bg,
-  [data-wallpaper="pug_helix_nebula"] .pug-bg,
-  [data-wallpaper="pug_crimson_nebula"] .pug-bg,
-  [data-wallpaper="pug_orion_nebula"] .pug-bg {
-    inset: 0;
-    margin: auto;
-    width: 100vh;
-    height: 100vw;
-    transform: rotate(90deg);
-    background-size: cover;
-    background-position: center;
-  }
-  [data-wallpaper="pug_space_rings"] .pug-bg,
-  [data-wallpaper="pug_blackhole_swirl"] .pug-bg {
-    inset: 0;
-    margin: auto;
-    width: 100vh;
-    height: 100vw;
-    transform: rotate(270deg);
-    background-size: cover;
-    background-position: center;
-  }
-}
-
-/* Shared: darken cards so text stays readable over busy images */
-[data-wallpaper^="pug_"] {
-  --bg-card:  rgba(0,0,0,0.52);
-  --surface:  rgba(0,0,0,0.52);
-  --border:   rgba(255,255,255,0.12);
-  --border2:  rgba(255,255,255,0.20);
-  --text:     #f4f0e8;
-  --text-muted: rgba(244,240,232,0.80);
-  --text-dim:   rgba(244,240,232,0.55);
-}
-
-/* ── SPACE GROUP ── */
-[data-wallpaper="pug_space_rings"] .pug-bg { background-image: url('/static/pug_space_rings.jpeg'); }
-[data-wallpaper="pug_space_rings"] {
-  --accent: #4d9ef7; --accent-glow: rgba(77,158,247,0.18);
-  --accent2: #2d78d8; --border-hover: rgba(77,158,247,0.45);
-}
-
-[data-wallpaper="pug_blackhole_swirl"] .pug-bg { background-image: url('/static/pug_blackhole_swirl.jpeg'); }
-[data-wallpaper="pug_blackhole_swirl"] {
-  --accent: #a855f7; --accent-glow: rgba(168,85,247,0.18);
-  --accent2: #7c3aed; --border-hover: rgba(168,85,247,0.45);
-}
-
-[data-wallpaper="pug_atom_cosmos"] .pug-bg { background-image: url('/static/pug_atom_cosmos.jpeg'); }
-[data-wallpaper="pug_atom_cosmos"] {
-  --accent: #00ccd4; --accent-glow: rgba(0,204,212,0.18);
-  --accent2: #0099a0; --border-hover: rgba(0,204,212,0.45);
-}
-
-[data-wallpaper="pug_helix_nebula"] .pug-bg { background-image: url('/static/pug_helix_nebula.jpeg'); }
-[data-wallpaper="pug_helix_nebula"] {
-  --accent: #d4a574; --accent-glow: color-mix(in srgb, var(--accent) 18%, transparent);
-  --accent2: #c85a2a; --border-hover: color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-[data-wallpaper="pug_crimson_nebula"] .pug-bg { background-image: url('/static/pug_crimson_nebula.jpeg'); }
-[data-wallpaper="pug_crimson_nebula"] {
-  --accent: #d44878; --accent-glow: rgba(212,72,120,0.18);
-  --accent2: #a83060; --border-hover: rgba(212,72,120,0.45);
-}
-
-[data-wallpaper="pug_orion_nebula"] .pug-bg { background-image: url('/static/pug_orion_nebula.jpeg'); }
-[data-wallpaper="pug_orion_nebula"] {
-  --accent: #e866a0; --accent-glow: rgba(232,102,160,0.18);
-  --accent2: #c04080; --border-hover: rgba(232,102,160,0.45);
-}
-
-/* ── MOON / NIGHT GROUP ── */
-[data-wallpaper="pug_red_moon"] .pug-bg { background-image: url('/static/pug_red_moon.jpeg'); }
-[data-wallpaper="pug_red_moon"] {
-  --accent: #e05040; --accent-glow: rgba(224,80,64,0.18);
-  --accent2: #b83020; --border-hover: rgba(224,80,64,0.45);
-}
-
-[data-wallpaper="pug_synthwave_moon"] .pug-bg { background-image: url('/static/pug_synthwave_moon.jpeg'); }
-[data-wallpaper="pug_synthwave_moon"] {
-  --accent: #00b8e0; --accent-glow: rgba(0,184,224,0.18);
-  --accent2: #0090b8; --border-hover: rgba(0,184,224,0.45);
-}
-
-[data-wallpaper="pug_eclipse_peak"] .pug-bg { background-image: url('/static/pug_eclipse_peak.jpeg'); }
-[data-wallpaper="pug_eclipse_peak"] {
-  --accent: #a0b4e0; --accent-glow: rgba(160,180,224,0.18);
-  --accent2: #7090c0; --border-hover: rgba(160,180,224,0.45);
-}
-
-[data-wallpaper="pug_cherry_moon"] .pug-bg { background-image: url('/static/pug_cherry_moon.jpeg'); }
-[data-wallpaper="pug_cherry_moon"] {
-  --accent: #e878c0; --accent-glow: rgba(232,120,192,0.18);
-  --accent2: #c050a0; --border-hover: rgba(232,120,192,0.45);
-}
-
-/* ── NATURE GROUP ── */
-[data-wallpaper="pug_spirit_forest"] .pug-bg { background-image: url('/static/pug_spirit_forest.jpeg'); }
-[data-wallpaper="pug_spirit_forest"] {
-  --accent: #00d4b4; --accent-glow: rgba(0,212,180,0.18);
-  --accent2: #00a890; --border-hover: rgba(0,212,180,0.45);
-}
-
-[data-wallpaper="pug_aurora_village"] .pug-bg { background-image: url('/static/pug_aurora_village.jpeg'); }
-[data-wallpaper="pug_aurora_village"] {
-  --accent: #50c87a; --accent-glow: rgba(80,200,122,0.18);
-  --accent2: #30a058; --border-hover: rgba(80,200,122,0.45);
-}
-
-[data-wallpaper="pug_snow_peaks"] .pug-bg { background-image: url('/static/pug_snow_peaks.jpeg'); }
-[data-wallpaper="pug_snow_peaks"] {
-  --accent: #80bce8; --accent-glow: rgba(128,188,232,0.18);
-  --accent2: #5090c8; --border-hover: rgba(128,188,232,0.45);
-}
-
-[data-wallpaper="pug_teal_reflection"] .pug-bg { background-image: url('/static/pug_teal_reflection.jpeg'); }
-[data-wallpaper="pug_teal_reflection"] {
-  --accent: #00c4e0; --accent-glow: rgba(0,196,224,0.18);
-  --accent2: #0098b8; --border-hover: rgba(0,196,224,0.45);
-}
-
-/* ── CHILL / ANIME GROUP ── */
-[data-wallpaper="pug_pikachu_onsen"] .pug-bg { background-image: url('/static/pug_pikachu_onsen.jpeg'); }
-[data-wallpaper="pug_pikachu_onsen"] {
-  --bg-card:  rgba(20,12,0,0.58);
-  --surface:  rgba(20,12,0,0.58);
-  --accent: #f0a830; --accent-glow: rgba(240,168,48,0.18);
-  --accent2: #d08010; --border-hover: rgba(240,168,48,0.45);
-}
-
-[data-wallpaper="pug_dream_lake"] .pug-bg { background-image: url('/static/pug_dream_lake.jpeg'); }
-[data-wallpaper="pug_dream_lake"] {
-  --accent: #a0a8e8; --accent-glow: rgba(160,168,232,0.18);
-  --accent2: #7880c8; --border-hover: rgba(160,168,232,0.45);
-}
-
-/* ══════════════════════════════════════════════════════════════
-   FILTERS — applied via [data-filter] on <html>
-   CSS filter on .pug-bg only — content above is unaffected.
-   Works on top of any wallpaper or CSS animated background.
-   ══════════════════════════════════════════════════════════════ */
-[data-filter="warm"]   .pug-bg { filter: sepia(0.40) saturate(1.15) brightness(0.88); }
-[data-filter="dim"]    .pug-bg { filter: brightness(0.50); }
-[data-filter="vivid"]  .pug-bg { filter: contrast(1.20) saturate(1.45); }
-[data-filter="mono"]   .pug-bg { filter: grayscale(1) brightness(0.82); }
-[data-filter="dreamy"] .pug-bg { filter: blur(3px) brightness(0.78) saturate(0.70); }
 
 /* ── Community tab: full central area (desktop only) ─── */
 @media (min-width: 769px) {

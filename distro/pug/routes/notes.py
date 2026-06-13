@@ -21,6 +21,8 @@ class Note(db.Model):
     is_deleted     = db.Column(db.Boolean, default=False)
     entry_type     = db.Column(db.String(50), default='note')
     is_finished    = db.Column(db.Boolean, default=False)
+    report_count   = db.Column(db.Integer, default=0)      # community moderation: # of distinct reports
+    is_hidden      = db.Column(db.Boolean, default=False)  # auto-quarantined or admin-removed from the feed
 
     @property
     def title(self):
@@ -89,6 +91,27 @@ class AmaMessage(db.Model):
     body       = db.Column(db.Text, nullable=False)
     is_admin   = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class PostReport(db.Model):
+    """A user's report against a community post. One row per (post, reporter)."""
+    __tablename__ = 'post_reports'
+    id          = db.Column(db.Integer, primary_key=True)
+    post_id     = db.Column(db.Integer, db.ForeignKey('notes.id', ondelete='CASCADE'), nullable=False)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    reason      = db.Column(db.String(300), default='')
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (db.UniqueConstraint('post_id', 'reporter_id', name='uq_post_reporter'),)
+
+
+class UserBlock(db.Model):
+    """blocker_id has blocked blocked_id — hides their posts and prevents DMs both ways."""
+    __tablename__ = 'user_blocks'
+    id         = db.Column(db.Integer, primary_key=True)
+    blocker_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    blocked_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__ = (db.UniqueConstraint('blocker_id', 'blocked_id', name='uq_blocker_blocked'),)
 
 
 # ── Rate constants ────────────────────────────────────────────────────────────

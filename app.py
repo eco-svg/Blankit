@@ -29,13 +29,13 @@ def _hf_download(repo_id, filename, dest_path, token):
 
 def _ensure_blinkbot_model():
     """Download BlinkBot GGUF to /data so the proxy can serve it directly to the browser."""
-    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
+    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
     model_path   = os.environ.get('BLINKBOT_PATH', default_path)
     if os.path.exists(model_path):
         print(f'[startup] BlinkBot found: {model_path}')
         return
     repo_id  = os.environ.get('BLINKBOT_REPO',    'SomeWhatPug/Buddybot_veyra')
-    filename = os.environ.get('BLINKBOT_FILENAME', 'BlinkBot_1.5Binal.Q4_K_M.gguf')
+    filename = os.environ.get('BLINKBOT_FILENAME', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
     token    = os.environ.get('HF_TOKEN')
     print(f'[startup] BlinkBot not found — downloading from {repo_id}/{filename} ...')
     _hf_download(repo_id, filename, model_path, token)
@@ -114,6 +114,18 @@ def _migrate_schema():
                 '''))
         except Exception as e:
             import warnings; warnings.warn(f'[migrate] eye_rates: {e}')
+
+    # ── moderation columns on notes (post_reports / user_blocks tables come from create_all) ──
+    if 'notes' in inspector.get_table_names():
+        note_cols = {c['name'] for c in inspector.get_columns('notes')}
+        for col, col_type in [('report_count', 'INTEGER DEFAULT 0'),
+                              ('is_hidden',    'BOOLEAN DEFAULT FALSE')]:
+            if col not in note_cols:
+                try:
+                    with db.engine.begin() as conn:
+                        conn.execute(text(f'ALTER TABLE notes ADD COLUMN {col} {col_type}'))
+                except Exception as e:
+                    import warnings; warnings.warn(f'[migrate] notes.{col}: {e}')
 
     # ── user_badges migration ──
     if 'user_badges' in inspector.get_table_names():

@@ -229,6 +229,21 @@ document.addEventListener('DOMContentLoaded', () => {
         loadConvs();
     }
 
+    // ── Block the current conversation partner ─────────────────────────────────
+    const dmBlockBtn = document.getElementById('dmBlockBtn');
+    if (dmBlockBtn) {
+        dmBlockBtn.addEventListener('click', () => {
+            if (!currentOtherId) return;
+            const who = currentOtherName || 'this user';
+            if (!confirm(`Block ${who}? Neither of you will be able to message the other, and you won't see their posts.`)) return;
+            const uid = currentOtherId;
+            fetch(`/pug/api/users/${uid}/block`, { method: 'POST' })
+                .then(r => r.json())
+                .then(() => { closeChat(); })
+                .catch(() => {});
+        });
+    }
+
     dmBackBtn?.addEventListener('click', closeChat);
 
     // ── Messages ──────────────────────────────────────────────────────────────

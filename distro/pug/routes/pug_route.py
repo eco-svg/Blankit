@@ -2,7 +2,6 @@ import os
 import re
 import uuid
 import io
-import time
 import json
 import math
 from datetime import datetime, timedelta
@@ -14,7 +13,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage
+from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -24,9 +23,9 @@ try:
 except ImportError:
     _LLAMA_OK = False
 
-_DATA_DIR   = '/data' if os.path.isdir('/data') else os.path.join(os.path.dirname(__file__), '..', '..', '..', '..')
+_DATA_DIR   = '/data' if os.path.isdir('/data') else os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 _MODELS_DIR = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm')
-_BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5Binal.Q4_K_M.gguf'))
+_BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf'))
 _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf'))
 
 _blinkbot_model  = None
@@ -1835,11 +1834,23 @@ def _connection_count(uid):
     return len(ids)
 
 
+# Distinct reports that auto-quarantine a post from the feed pending admin review.
+_REPORT_HIDE_THRESHOLD = 3
+
+
+def _blocked_ids(me):
+    """User ids hidden from `me` in either direction (I blocked them, or they blocked me)."""
+    from sqlalchemy import or_
+    rows = UserBlock.query.filter(or_(UserBlock.blocker_id == me, UserBlock.blocked_id == me)).all()
+    return {(r.blocked_id if r.blocker_id == me else r.blocker_id) for r in rows}
+
+
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     err = login_required_api()
     if err: return err
     me = session['user_id']
+    blocked = _blocked_ids(me)
 
     # Optional location filter
     try:
@@ -1852,9 +1863,12 @@ def get_community_feed():
     skill_filter = (request.args.get('skill') or '').strip().lower()
     user_filter  = request.args.get('user_id', type=int)
 
-    q = Note.query.filter(Note.entry_type == 'community_post', Note.is_deleted == False, Note.mood.in_(['Ocellus', 'ThePug']))
+    q = Note.query.filter(Note.entry_type == 'community_post', Note.is_deleted == False,
+                          Note.is_hidden.isnot(True), Note.mood.in_(['Ocellus', 'ThePug']))
     if user_filter:
         q = q.filter_by(user_id=user_filter)
+    if blocked:
+        q = q.filter(~Note.user_id.in_(blocked))
     posts = q.order_by(Note.created_at.desc()).limit(200).all()
 
     # All per-author data in 3 batched queries (users, stats caches, locations)
@@ -2040,6 +2054,11 @@ def get_community_post(pid):
     p = Note.query.filter(Note.id == pid, Note.entry_type == 'community_post', Note.is_deleted == False, Note.mood.in_(['Ocellus', 'ThePug'])).first()
     if not p:
         return jsonify({'error': 'Not found'}), 404
+    # Hidden (auto-quarantined / admin-removed) posts are invisible to everyone but their author.
+    if p.is_hidden and p.user_id != me:
+        return jsonify({'error': 'Not found'}), 404
+    if p.user_id in _blocked_ids(me):
+        return jsonify({'error': 'Not found'}), 404
     u = User.query.get(p.user_id)
     if not u:
         return jsonify({'error': 'Not found'}), 404
@@ -2107,6 +2126,116 @@ def delete_community_post(pid):
     if not p:
         return jsonify({'error': 'Not found'}), 404
     p.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+# ── Moderation: report posts, block users, admin review queue ──────────────────
+@pug_bp.route('/pug/api/community/<int:pid>/report', methods=['POST'])
+@limiter.limit("20 per hour")
+def report_post(pid):
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    p = Note.query.filter(Note.id == pid, Note.entry_type == 'community_post',
+                          Note.is_deleted == False).first()
+    if not p:
+        return jsonify({'error': 'Post not found'}), 404
+    if p.user_id == me:
+        return jsonify({'error': "You can't report your own post."}), 400
+    reason = ((request.get_json(silent=True) or {}).get('reason') or '').strip()[:300]
+    if PostReport.query.filter_by(post_id=pid, reporter_id=me).first():
+        return jsonify({'ok': True, 'already': True})
+    db.session.add(PostReport(post_id=pid, reporter_id=me, reason=reason))
+    try:
+        db.session.flush()
+    except Exception:
+        db.session.rollback()  # raced on the unique constraint — already reported
+        return jsonify({'ok': True, 'already': True})
+    p.report_count = PostReport.query.filter_by(post_id=pid).count()
+    if (p.report_count or 0) >= _REPORT_HIDE_THRESHOLD:
+        p.is_hidden = True
+    db.session.commit()
+    return jsonify({'ok': True, 'hidden': bool(p.is_hidden)})
+
+
+@pug_bp.route('/pug/api/users/<int:uid>/block', methods=['POST'])
+@limiter.limit("60 per hour")
+def block_user(uid):
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    if uid == me:
+        return jsonify({'error': "You can't block yourself."}), 400
+    from shared.auth.user import User
+    if not db.session.get(User, uid):
+        return jsonify({'error': 'User not found'}), 404
+    if not UserBlock.query.filter_by(blocker_id=me, blocked_id=uid).first():
+        db.session.add(UserBlock(blocker_id=me, blocked_id=uid))
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+    return jsonify({'ok': True, 'blocked': True})
+
+
+@pug_bp.route('/pug/api/users/<int:uid>/block', methods=['DELETE'])
+def unblock_user(uid):
+    err = login_required_api()
+    if err: return err
+    UserBlock.query.filter_by(blocker_id=session['user_id'], blocked_id=uid).delete()
+    db.session.commit()
+    return jsonify({'ok': True, 'blocked': False})
+
+
+@pug_bp.route('/pug/api/admin/reports', methods=['GET'])
+def admin_reports_list():
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    posts = (Note.query
+             .filter(Note.entry_type == 'community_post', Note.is_deleted == False,
+                     Note.report_count > 0)
+             .order_by(Note.is_hidden.desc(), Note.report_count.desc(), Note.created_at.desc())
+             .limit(100).all())
+    out = []
+    for p in posts:
+        author = db.session.get(User, p.user_id)
+        body = p.body or ''
+        text = body
+        if body.startswith('{'):
+            try: text = (json.loads(body).get('t') or '')
+            except Exception: pass
+        reports = PostReport.query.filter_by(post_id=p.id).order_by(PostReport.created_at.desc()).all()
+        out.append({
+            'id':           p.id,
+            'text':         text[:280],
+            'author':       author.username if author else str(p.user_id),
+            'author_id':    p.user_id,
+            'report_count': p.report_count or 0,
+            'is_hidden':    bool(p.is_hidden),
+            'created_at':   p.created_at.isoformat() if p.created_at else None,
+            'reasons':      [r.reason for r in reports if r.reason],
+        })
+    return jsonify(out)
+
+
+@pug_bp.route('/pug/api/admin/reports/<int:pid>/<action>', methods=['POST'])
+def admin_report_action(pid, action):
+    err = admin_required_api()
+    if err: return err
+    p = Note.query.filter_by(id=pid, entry_type='community_post').first()
+    if not p:
+        return jsonify({'error': 'Post not found'}), 404
+    if action == 'remove':          # confirmed violation — delete from the feed
+        p.is_deleted = True
+        p.is_hidden  = True
+    elif action == 'keep':          # cleared — restore and reset the report tally
+        p.is_hidden = False
+        p.report_count = 0
+        PostReport.query.filter_by(post_id=pid).delete()
+    else:
+        return jsonify({'error': 'Unknown action'}), 400
     db.session.commit()
     return jsonify({'ok': True})
 
@@ -2472,6 +2601,8 @@ def send_dm(other_id):
     recipient = User.query.filter(User.id == other_id, User.distro.in_(['Ocellus', 'ThePug'])).first()
     if not recipient:
         return jsonify({'error': 'User not found'}), 404
+    if other_id in _blocked_ids(me):
+        return jsonify({'error': 'You cannot message this user.'}), 403
     data      = request.get_json(force=True) or {}
     body      = (data.get('body') or '').strip()
     media_key = (data.get('media_key') or '').strip()

@@ -5,20 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Veyra - The Pug's Route</title>
   <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#020408">
+  <meta name="theme-color" content="#0a0a0a">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=94">
-  <script>(function(){var w=localStorage.getItem('veyra-pug-wallpaper');if(w&&w!=='nebula'&&w!=='starfield')document.documentElement.setAttribute('data-wallpaper',w);var f=localStorage.getItem('veyra-pug-filter');if(f&&f!=='default')document.documentElement.setAttribute('data-filter',f);})();</script>
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=95">
+  <script>(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=77">
 </head>
 <body>
 
-  <!-- FLAT BACKGROUND (wallpaper images still supported via data-wallpaper) -->
+  <!-- FLAT BACKGROUND (default dark theme) -->
   <div class="pug-bg"></div>
   <header class="main-header" id="mainHeader">
     <div class="header-left">
@@ -262,10 +262,6 @@
           <div class="wn-item-desc">Inline AI living in your notes and goals sidebar</div>
         </div>
         <div class="wn-item">
-          <div class="wn-item-name">Custom Themes ✓</div>
-          <div class="wn-item-desc">6 accent themes — pick yours in Profile → Theme</div>
-        </div>
-        <div class="wn-item">
           <div class="wn-item-name">Analytics Pro</div>
           <div class="wn-item-desc">Deep-dive stats, weekly trends, skill heatmaps</div>
         </div>
@@ -480,57 +476,6 @@
     });
     sendBtn.addEventListener('click', ask);
     input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
-  })();
-
-  // Theme switcher
-  (function() {
-    var THEMES = {
-      default:  { bg:'#0d0b08', accent:'#d4a574', glow:'#d4a57418', card:'rgba(255,255,255,0.10)' },
-      cyan:     { bg:'#040d0d', accent:'#00ccd4', glow:'#00ccd418', card:'rgba(0,204,212,0.08)' },
-      pink:     { bg:'#0d0408', accent:'#e866a0', glow:'#e866a018', card:'rgba(232,102,160,0.08)' },
-      purple:   { bg:'#09060e', accent:'#a855f7', glow:'#a855f718', card:'rgba(168,85,247,0.08)' },
-      blue:     { bg:'#04080e', accent:'#4d9ef7', glow:'#4d9ef718', card:'rgba(77,158,247,0.08)' },
-      darkblue: { bg:'#020407', accent:'#3a5cc5', glow:'#3a5cc518', card:'rgba(58,92,197,0.08)' },
-      grey:     { bg:'#111111', accent:'#909090', glow:'#90909018', card:'rgba(160,160,160,0.08)' },
-      black:    { bg:'#000000', accent:'#dddddd', glow:'#dddddd15', card:'rgba(255,255,255,0.06)' },
-      white:    { bg:'#f5f5f5', accent:'#333333', glow:'#33333318', card:'rgba(0,0,0,0.06)', text:'#1a1a1a', textMuted:'rgba(26,26,26,0.72)', textDim:'rgba(26,26,26,0.45)', border:'rgba(0,0,0,0.10)', border2:'rgba(0,0,0,0.18)' },
-      beige:    { bg:'#f0ebe0', accent:'#8b6914', glow:'#8b691418', card:'rgba(0,0,0,0.06)', text:'#2a1e0e', textMuted:'rgba(42,30,14,0.72)', textDim:'rgba(42,30,14,0.45)', border:'rgba(0,0,0,0.10)', border2:'rgba(0,0,0,0.18)' },
-    };
-    function applyTheme(name) {
-      var t = THEMES[name] || THEMES.default;
-      var r = document.documentElement;
-      r.style.setProperty('--bg', t.bg);
-      r.style.setProperty('--accent', t.accent);
-      r.style.setProperty('--accent-glow', t.glow);
-      r.style.setProperty('--bg-card', t.card);
-      r.style.setProperty('--surface', t.card);
-      if (t.text) {
-        r.style.setProperty('--text', t.text);
-        r.style.setProperty('--text-muted', t.textMuted);
-        r.style.setProperty('--text-dim', t.textDim);
-        r.style.setProperty('--border', t.border);
-        r.style.setProperty('--border2', t.border2);
-      } else {
-        r.style.removeProperty('--text');
-        r.style.removeProperty('--text-muted');
-        r.style.removeProperty('--text-dim');
-        r.style.removeProperty('--border');
-        r.style.removeProperty('--border2');
-      }
-      localStorage.setItem('veyra_theme', name);
-      document.querySelectorAll('.theme-swatch[data-theme]').forEach(function(s) {
-        s.classList.toggle('theme-swatch-active', s.dataset.theme === name);
-      });
-    }
-    // Apply saved theme immediately
-    applyTheme(localStorage.getItem('veyra_theme') || 'default');
-    // Wire swatches
-    document.addEventListener('DOMContentLoaded', function() {
-      applyTheme(localStorage.getItem('veyra_theme') || 'default');
-      document.querySelectorAll('.theme-swatch[data-theme]').forEach(function(s) {
-        s.addEventListener('click', function() { applyTheme(s.dataset.theme); });
-      });
-    });
   })();
 
   // Stats / Rank Guide flip (mobile only — CSS controls 3D)
