@@ -67,6 +67,10 @@
               Global
             </button>
           </div>
+          <div class="comm-distro-bar">
+            <button class="comm-distro-btn active" data-scope="mine">My distro</button>
+            <button class="comm-distro-btn" data-scope="all">All distros</button>
+          </div>
           <span class="comm-range-badge locating" id="commRangeLabel">locating…</span>
         </div>
       </div>
@@ -143,8 +147,11 @@
         <span class="comm-char-count" id="commQuickCaptionCount">0 / 150</span>
       </div>
       <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
-      <div class="modal-actions" style="margin-top:12px;">
-        <button id="confirmCommPostBtn" class="nav-pill" style="background:var(--accent);color:var(--text-on-accent);border-color:var(--accent);">Post</button>
+      <div class="modal-actions" style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+        <label class="comm-reach-toggle" title="Also show this post to people on the other distros">
+          <input type="checkbox" id="commPostAllDistros"> Share to all distros
+        </label>
+        <button id="confirmCommPostBtn" class="nav-pill" style="margin-left:auto;background:var(--accent);color:var(--text-on-accent);border-color:var(--accent);">Post</button>
       </div>
     </div>
 

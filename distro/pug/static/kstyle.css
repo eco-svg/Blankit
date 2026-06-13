@@ -5643,6 +5643,52 @@ button.nav-pill:not(.btn-ghost):hover {
   border: 1px solid var(--border2);
   flex-shrink: 0;
 }
+
+/* ── Distro filter (My distro / All distros) — mirrors the feed-mode bar ── */
+.comm-distro-bar {
+  display: flex;
+  gap: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+.comm-distro-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  padding: 4px 11px;
+  font-weight: 600;
+  transition: background 0.14s, color 0.14s;
+  white-space: nowrap;
+}
+.comm-distro-btn + .comm-distro-btn { border-left: 1px solid var(--border2); }
+.comm-distro-btn:hover { background: var(--surface-2); color: var(--text); }
+.comm-distro-btn.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+/* "Share to all distros" checkbox in the composer */
+.comm-reach-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.comm-reach-toggle input { accent-color: var(--accent); cursor: pointer; }
+
+/* Foreign-distro posts: shown read-only until cross-distro interaction ships (Phase 3) */
+.comm-post.comm-foreign .comm-post-reactions,
+.comm-post.comm-foreign .comm-post-comments,
+.comm-post.comm-foreign .comm-action-btns { pointer-events: none; opacity: 0.6; }
 .comm-mode-btn {
   background: transparent;
   border: none;

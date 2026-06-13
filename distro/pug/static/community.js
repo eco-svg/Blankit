@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeSkillTag = null;
     let activeUserId   = null;
     let feedMode       = localStorage.getItem('veyra-comm-mode') || 'radar';
+    // Distro filter (independent of radar/global): 'mine' = this distro only, 'all' = all distros.
+    let distroScope    = localStorage.getItem('veyra-comm-distro') || 'mine';
 
     // ── Skill picker ───────────────────────────────────────────────────────────
     const skillPickerEl = document.getElementById('commSkillPicker');
@@ -133,6 +135,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (feedMode === 'radar' && myLat === null) locPrompt?.classList.remove('hidden');
             else locPrompt?.classList.add('hidden');
             lastPostCount = 0;
+            loadFeed();
+        });
+    });
+
+    // ── Distro filter toggle (My distro / All distros) ─────────────────────────
+    document.querySelectorAll('.comm-distro-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.scope === distroScope);
+        btn.addEventListener('click', () => {
+            distroScope = btn.dataset.scope;
+            localStorage.setItem('veyra-comm-distro', distroScope);
+            document.querySelectorAll('.comm-distro-btn').forEach(b => b.classList.toggle('active', b.dataset.scope === distroScope));
+            // clear the feed so the merged/unmerged set rebuilds cleanly (avoids stale foreign posts)
+            lastPostCount = 0;
+            feed.querySelectorAll('.comm-post').forEach(el => el.remove());
             loadFeed();
         });
     });
@@ -265,6 +281,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         if (activeSkill)  params.push(`skill=${encodeURIComponent(activeSkill)}`);
         if (activeUserId) params.push(`user_id=${activeUserId}`);
+        params.push(`distro_scope=${distroScope}`);
         if (params.length) url += '?' + params.join('&');
         fetch(url)
             .then(r => r.json())
@@ -284,13 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         rangeLabel.textContent = 'no location';
                     }
                 }
-                // Diff update — never wipe the feed; preserves open comment sections
+                // Diff update — never wipe the feed; preserves open comment sections.
+                // Key by source+id so a pug post #5 and an svg post #5 never collide.
+                const keyOf = p => `${p.source || 'pug'}-${p.id}`;
                 const renderedMap = {};
-                feed.querySelectorAll('.comm-post').forEach(el => { renderedMap[el.dataset.id] = el; });
-                const newIdSet = new Set(posts.map(p => String(p.id)));
+                feed.querySelectorAll('.comm-post').forEach(el => { renderedMap[el.dataset.key] = el; });
+                const newIdSet = new Set(posts.map(keyOf));
 
                 // Remove posts no longer returned
-                Object.keys(renderedMap).forEach(id => { if (!newIdSet.has(id)) renderedMap[id].remove(); });
+                Object.keys(renderedMap).forEach(k => { if (!newIdSet.has(k)) renderedMap[k].remove(); });
 
                 if (!posts.length) {
                     if (!feed.querySelector('.comm-post')) {
@@ -304,13 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 feed.querySelector('.comm-empty')?.remove();
 
                 // Prepend only genuinely new posts, maintaining newest-first order
-                const newPosts = posts.filter(p => !renderedMap[String(p.id)]);
+                const newPosts = posts.filter(p => !renderedMap[keyOf(p)]);
                 for (let i = newPosts.length - 1; i >= 0; i--) {
                     feed.insertBefore(makePost(newPosts[i]), feed.firstChild);
                 }
                 // Patch posts already on screen in place — counts, reactions, online dot
                 posts.forEach(p => {
-                    const el = renderedMap[String(p.id)];
+                    const el = renderedMap[keyOf(p)];
                     if (el) updatePostInPlace(el, p);
                 });
                 lastPostCount = posts.length;
@@ -353,6 +372,10 @@ document.addEventListener('DOMContentLoaded', () => {
         el.className   = 'comm-post';
         el.dataset.id  = p.id;
         el.dataset.uid = p.user_id;
+        el.dataset.source = p.source || 'pug';
+        el.dataset.key    = `${el.dataset.source}-${p.id}`;
+        // Posts from another distro are view-only for now (Phase 3 adds cross-distro interaction).
+        if (el.dataset.source !== 'pug') el.classList.add('comm-foreign');
         const initials = (p.username || '?')[0].toUpperCase();
         const ago      = timeAgo(p.created_at);
         const rankHtml = p.rank
@@ -1137,6 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = { text, media_key };
         if (activePostType) payload.post_type = activePostType;
         if (activeSkillTag) payload.skill_tag = activeSkillTag;
+        if (document.getElementById('commPostAllDistros')?.checked) payload.all_distros = true;
         fetch('/pug/api/community', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
