@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSection = 'feed';
   let feedPage       = 1;
   let activePostId   = null;
+  let activeCommentBase = '/api/community/posts';   // base URL for the currently-open comment thread
+  // Interaction base for a post — routes to its home store (svg native, or the pug proxy).
+  const postBase = p => p.source === 'pug' ? `/api/community/xpost/pug/${p.id}` : `/api/community/posts/${p.id}`;
   let selectedTag    = 'general';
   let uploadedImageUrl = null;
 
@@ -132,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const voteBtn = el('button', `comm-vote-btn${p.voted ? ' voted' : ''}`, `▲ ${p.vote_count}`);
     voteBtn.addEventListener('click', async () => {
-      const r = await fetch(`/api/community/posts/${p.id}/vote`, {method:'POST'});
+      const r = await fetch(`${postBase(p)}/vote`, {method:'POST'});
       const d = await r.json();
       p.vote_count = d.vote_count;
       p.voted      = d.voted;
@@ -145,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
     commentBtn.addEventListener('click', () => openComments(p));
     actions.appendChild(commentBtn);
 
-    if (p.is_mine) {
+    if (p.is_mine && p.source !== 'pug') {   // can't delete a foreign-distro post from here
       const delBtn = el('button', 'comm-delete-btn', '✕ delete');
       delBtn.addEventListener('click', async () => {
         if (!confirm('Delete this post?')) return;
@@ -256,12 +259,14 @@ document.addEventListener('DOMContentLoaded', () => {
      COMMENTS
   ══════════════════════════════ */
   async function openComments(post) {
-    activePostId = post.id;
-    $('commentsModalTitle').textContent = post.title.slice(0, 40) + (post.title.length > 40 ? '…' : '');
+    activePostId      = post.id;
+    activeCommentBase = postBase(post);   // pug posts route to the cross-distro proxy
+    const ttl = (post.title || post.body || '').slice(0, 40);
+    $('commentsModalTitle').textContent = ttl + ((post.title || post.body || '').length > 40 ? '…' : '');
     $('commentsList').innerHTML = '<div class="comm-loading">Loading…</div>';
     showModal('commentsModal');
 
-    const res      = await fetch(`/api/community/posts/${post.id}/comments`);
+    const res      = await fetch(`${activeCommentBase}/comments`);
     const comments = await res.json();
     $('commentsList').innerHTML = '';
 
@@ -281,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('commentSubmit').addEventListener('click', async () => {
     const body = $('commentInput').value.trim();
     if (!body || !activePostId) return;
-    const r = await fetch(`/api/community/posts/${activePostId}/comments`, {
+    const r = await fetch(`${activeCommentBase}/comments`, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({body}),
@@ -356,7 +361,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const r = await fetch('/api/community/posts', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({title, body, tag: selectedTag, image_url: uploadedImageUrl}),
+      body: JSON.stringify({title, body, tag: selectedTag, image_url: uploadedImageUrl,
+                            is_global: !!$('postAllDistros')?.checked}),
     });
 
     if (r.ok) {
