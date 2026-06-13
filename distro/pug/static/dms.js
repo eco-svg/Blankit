@@ -229,18 +229,67 @@ document.addEventListener('DOMContentLoaded', () => {
         loadConvs();
     }
 
-    // ── Block the current conversation partner ─────────────────────────────────
+    // ── Report / block the current conversation partner ────────────────────────
+    function dmToast(msg) {
+        let t = document.querySelector('.comm-toast');
+        if (!t) { t = document.createElement('div'); t.className = 'comm-toast'; document.body.appendChild(t); }
+        t.textContent = msg;
+        requestAnimationFrame(() => t.classList.add('show'));
+        clearTimeout(t._h);
+        t._h = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+    function dmModSheet(innerHtml) {
+        document.querySelector('.comm-mod-overlay')?.remove();
+        const ov = document.createElement('div');
+        ov.className = 'comm-mod-overlay';
+        ov.innerHTML = `<div class="comm-mod-sheet">${innerHtml}</div>`;
+        document.body.appendChild(ov);
+        ov.addEventListener('click', ev => { if (ev.target === ov) ov.remove(); });
+        return ov;
+    }
+    const DM_REPORT_REASONS = ['Nudity or sexual content', 'Harassment or hate', 'Spam or scam', 'Threats or violence', 'Other'];
+
+    const dmReportBtn = document.getElementById('dmReportBtn');
+    if (dmReportBtn) {
+        dmReportBtn.addEventListener('click', () => {
+            if (!currentOtherId) return;
+            const uid = currentOtherId;
+            const ov = dmModSheet(`
+                <div class="comm-mod-title">Report ${currentOtherName || 'this user'}</div>
+                <div class="comm-mod-sub">Private messages aren't monitored, but we review reports.</div>
+                ${DM_REPORT_REASONS.map(r => `<button class="comm-mod-item" data-r="${r}">${r}</button>`).join('')}
+                <button class="comm-mod-item comm-mod-cancel" data-r="">Cancel</button>`);
+            ov.querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+                const reason = b.dataset.r; ov.remove();
+                if (!reason) return;
+                fetch(`/pug/api/dms/${uid}/report`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason })
+                }).then(r => r.json())
+                  .then(() => dmToast('Reported. Thanks — we’ll review it.'))
+                  .catch(() => dmToast('Could not send report.'));
+            });
+        });
+    }
+
     const dmBlockBtn = document.getElementById('dmBlockBtn');
     if (dmBlockBtn) {
         dmBlockBtn.addEventListener('click', () => {
             if (!currentOtherId) return;
-            const who = currentOtherName || 'this user';
-            if (!confirm(`Block ${who}? Neither of you will be able to message the other, and you won't see their posts.`)) return;
             const uid = currentOtherId;
-            fetch(`/pug/api/users/${uid}/block`, { method: 'POST' })
-                .then(r => r.json())
-                .then(() => { closeChat(); })
-                .catch(() => {});
+            const ov = dmModSheet(`
+                <div class="comm-mod-title">Block ${currentOtherName || 'this user'}?</div>
+                <div class="comm-mod-sub">Neither of you will be able to message the other, and you won't see their posts.</div>
+                <button class="comm-mod-item comm-mod-danger" data-act="ok">Block</button>
+                <button class="comm-mod-item comm-mod-cancel" data-act="no">Cancel</button>`);
+            ov.querySelector('[data-act="no"]').onclick = () => ov.remove();
+            ov.querySelector('[data-act="ok"]').onclick = () => {
+                ov.remove();
+                fetch(`/pug/api/users/${uid}/block`, { method: 'POST' })
+                    .then(r => r.json())
+                    .then(() => { dmToast('User blocked.'); closeChat(); })
+                    .catch(() => dmToast('Could not block user.'));
+            };
         });
     }
 

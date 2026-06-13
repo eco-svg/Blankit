@@ -868,23 +868,74 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Write tab media attach ─────────────────────────────────────────────────
-    fileInput?.addEventListener('change', () => {
+    // ── Client-side nudity pre-filter (NSFWJS — runs on the user's own device) ──
+    // Loaded lazily on first image upload. ALWAYS fail-open: if the model can't
+    // load or classify, the upload proceeds (the report/admin system is the backstop).
+    const NSFW_BLOCK_MSG = 'That image looks like it contains nudity or sexual content, which isn’t allowed here.';
+    let _nsfwModelPromise = null;
+    function _loadScriptOnce(src) {
+        return new Promise((resolve, reject) => {
+            if (document.querySelector(`script[data-src="${src}"]`)) return resolve();
+            const s = document.createElement('script');
+            s.src = src; s.dataset.src = src; s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+    function _getNsfwModel() {
+        if (!_nsfwModelPromise) {
+            _nsfwModelPromise = (async () => {
+                await _loadScriptOnce('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js');
+                await _loadScriptOnce('https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js');
+                return await nsfwjs.load('/pug/static/nsfw_model/', { size: 224 });
+            })().catch(e => { _nsfwModelPromise = null; throw e; });
+        }
+        return _nsfwModelPromise;
+    }
+    // Resolves true only when we are confident the image is nudity/porn.
+    async function isImageNSFW(file) {
+        if (!file || !(file.type || '').startsWith('image/')) return false; // images only
+        let url;
+        try {
+            const model = await _getNsfwModel();
+            url = URL.createObjectURL(file);
+            const img = await new Promise((res, rej) => {
+                const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url;
+            });
+            const preds = await model.classify(img);
+            const p = {}; preds.forEach(x => { p[x.className] = x.probability; });
+            return ((p.Porn || 0) + (p.Hentai || 0)) >= 0.55 || (p.Sexy || 0) >= 0.9;
+        } catch (e) {
+            return false; // fail-open — never block an upload because the filter broke
+        } finally {
+            if (url) URL.revokeObjectURL(url);
+        }
+    }
+
+    fileInput?.addEventListener('change', async () => {
         const file = fileInput.files[0]; if (!file) return;
-        const fd = new FormData(); fd.append('file', file);
+        fileInput.value = '';
+        if (modalError) modalError.textContent = (file.type || '').startsWith('image/') ? 'Checking image…' : '';
+        if (await isImageNSFW(file)) { if (modalError) modalError.textContent = NSFW_BLOCK_MSG; return; }
         if (modalError) modalError.textContent = '';
+        const fd = new FormData(); fd.append('file', file);
         uploadWithProgress('/pug/api/upload_shared', fd, uploadProgress, progressBar)
             .then(data => {
                 if (!data || data.error) { if (modalError) modalError.textContent = data?.error || 'Upload failed.'; return; }
                 pendingMedia = data;
                 renderMediaPreview(mediaPreview, data, () => { pendingMedia = null; });
             });
-        fileInput.value = '';
     });
 
     // ── Quick tab media ────────────────────────────────────────────────────────
-    function uploadQuickFile(file) {
-        const fd = new FormData(); fd.append('file', file);
+    async function uploadQuickFile(file) {
+        if (modalError) modalError.textContent = (file.type || '').startsWith('image/') ? 'Checking image…' : '';
+        if (await isImageNSFW(file)) {
+            if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
+            if (modalError) modalError.textContent = NSFW_BLOCK_MSG;
+            return;
+        }
         if (modalError) modalError.textContent = '';
+        const fd = new FormData(); fd.append('file', file);
         if (quickPlaceholder) quickPlaceholder.classList.add('hidden');
         uploadWithProgress('/pug/api/upload_shared', fd, quickProgress, quickProgressBar)
             .then(data => {

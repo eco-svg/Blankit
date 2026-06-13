@@ -114,6 +114,18 @@ class UserBlock(db.Model):
     __table_args__ = (db.UniqueConstraint('blocker_id', 'blocked_id', name='uq_blocker_blocked'),)
 
 
+class UserReport(db.Model):
+    """A report against a user — used for DM/conversation reports (DMs are unmoderated;
+    this is the notice-and-action record an admin reviews)."""
+    __tablename__ = 'user_reports'
+    id          = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    reported_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    context     = db.Column(db.String(20), default='dm')   # where the report came from
+    reason      = db.Column(db.String(300), default='')
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # ── Rate constants ────────────────────────────────────────────────────────────
 
 _EYE_USD  = 0.01   # 1 Eye = $0.01 (base)

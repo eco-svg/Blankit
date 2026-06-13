@@ -13,7 +13,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock
+from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock, UserReport
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -2632,6 +2632,47 @@ def send_dm(other_id):
         'is_mine':    True,
         'created_at': m.created_at.isoformat() if m.created_at else None,
     }), 201
+
+
+@pug_bp.route('/pug/api/dms/<int:other_id>/report', methods=['POST'])
+@limiter.limit("20 per hour")
+def report_dm(other_id):
+    """Report a DM conversation partner. DMs are unmoderated; this records the
+    report for admin review (notice-and-action)."""
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    if other_id == me:
+        return jsonify({'error': "You can't report yourself."}), 400
+    from shared.auth.user import User
+    if not db.session.get(User, other_id):
+        return jsonify({'error': 'User not found'}), 404
+    reason = ((request.get_json(silent=True) or {}).get('reason') or '').strip()[:300]
+    db.session.add(UserReport(reporter_id=me, reported_id=other_id, context='dm', reason=reason))
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/admin/user-reports', methods=['GET'])
+def admin_user_reports():
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    rows = UserReport.query.order_by(UserReport.created_at.desc()).limit(200).all()
+    out = []
+    for r in rows:
+        reporter = db.session.get(User, r.reporter_id)
+        reported = db.session.get(User, r.reported_id)
+        out.append({
+            'id':         r.id,
+            'reporter':   reporter.username if reporter else str(r.reporter_id),
+            'reported':   reported.username if reported else str(r.reported_id),
+            'reported_id': r.reported_id,
+            'context':    r.context,
+            'reason':     r.reason,
+            'created_at': r.created_at.isoformat() if r.created_at else None,
+        })
+    return jsonify(out)
 
 
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
