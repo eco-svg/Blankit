@@ -355,9 +355,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const commentsEl = el.querySelector('.comm-post-comments');
         if (commentsEl && !commentsEl.classList.contains('hidden')) {
-            loadComments(p.id, commentsEl, p.is_mine);
+            loadComments(p, commentsEl, p.is_mine);
         } else if (ccChanged && (p.comment_count || 0) > 0) {
-            loadPreviewComments(p.id, el);
+            loadPreviewComments(p, el);
         }
     }
 
@@ -365,6 +365,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (km === null || km === undefined) return '';
         if (km < 1) return `${Math.round(km * 1000)} m`;
         return `${km.toFixed(1)} km`;
+    }
+
+    // Interaction base URL for a post — routes to its home store (pug native, or the
+    // cross-distro proxy for foreign posts like svg).
+    function postApi(p) {
+        return (p && p.source && p.source !== 'pug')
+            ? `/pug/api/xpost/${p.source}/${p.id}`
+            : `/pug/api/community/${p.id}`;
     }
 
     function makePost(p) {
@@ -439,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="comm-post-reactions">
                     <button class="comm-react-btn${likeActive}" data-action="like"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg> <span class="react-count">${p.likes||0}</span></button>
-                    <button class="comm-react-btn${dislikeActive}" data-action="dislike"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg> <span class="react-count">${p.dislikes||0}</span></button>
+                    ${(p.source && p.source !== 'pug') ? '' : `<button class="comm-react-btn${dislikeActive}" data-action="dislike"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg> <span class="react-count">${p.dislikes||0}</span></button>`}
                     <button class="comm-react-btn" data-action="comment"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> <span class="react-count">${p.comment_count||0}</span></button>
                     <button class="comm-react-btn comm-share-btn" data-action="share"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg></button>
                 </div>
@@ -565,19 +573,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     // No per-post timer: open sections are refreshed by the
                     // version poller whenever community activity changes
                     if (nowVisible && commentsEl.dataset.loaded !== 'true') {
-                        loadComments(p.id, commentsEl, p.is_mine);
+                        loadComments(p, commentsEl, p.is_mine);
                     }
                     return;
                 }
-                fetch(`/pug/api/community/${p.id}/react`, {
+                fetch(`${postApi(p)}/react`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ type: action })
                 }).then(r => r.json()).then(data => {
-                    el.querySelector('[data-action="like"] .react-count').textContent    = data.likes    || 0;
-                    el.querySelector('[data-action="dislike"] .react-count').textContent = data.dislikes || 0;
-                    el.querySelector('[data-action="like"]').classList.toggle('active',    data.my_reaction === 'like');
-                    el.querySelector('[data-action="dislike"]').classList.toggle('active', data.my_reaction === 'dislike');
+                    const lc = el.querySelector('[data-action="like"] .react-count');    if (lc) lc.textContent = data.likes    || 0;
+                    const dc = el.querySelector('[data-action="dislike"] .react-count'); if (dc) dc.textContent = data.dislikes || 0;
+                    el.querySelector('[data-action="like"]')?.classList.toggle('active',    data.my_reaction === 'like');
+                    el.querySelector('[data-action="dislike"]')?.classList.toggle('active', data.my_reaction === 'dislike');
                 }).catch(() => {});
             });
         });
@@ -586,12 +594,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const commentsEl   = el.querySelector('.comm-post-comments');
         const commentInput = el.querySelector('.comm-comment-input');
         const commentSend  = el.querySelector('.comm-comment-send');
-        commentSend?.addEventListener('click', () => sendComment(p.id, commentInput, commentsEl, el));
-        commentInput?.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(p.id, commentInput, commentsEl, el); });
+        commentSend?.addEventListener('click', () => sendComment(p, commentInput, commentsEl, el));
+        commentInput?.addEventListener('keydown', e => { if (e.key === 'Enter') sendComment(p, commentInput, commentsEl, el); });
 
         // Auto-load top 3 preview comments
         if ((p.comment_count || 0) > 0) {
-            loadPreviewComments(p.id, el);
+            loadPreviewComments(p, el);
         }
 
         // Double-click anywhere on the post (not a button/link) to auto-like
@@ -610,7 +618,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return el;
     }
 
-    function buildCommentRow(c, isMine) {
+    function buildCommentRow(c, isMine, source) {
+        const isPug  = !source || source === 'pug';   // svg comments have no per-comment reactions/pins
         const pinBtn = c.can_pin
             ? `<button class="comm-pin-btn${c.is_pinned ? ' pinned' : ''}" data-cid="${c.id}" title="${c.is_pinned ? 'Unpin' : 'Pin'}">📌</button>` : '';
         const pinBadge = c.is_pinned ? `<span class="comm-pin-badge">pinned</span>` : '';
@@ -623,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const _thumbUp   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"/></svg>`;
         const _thumbDown = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22h0a3.13 3.13 0 0 1-3-3.88Z"/></svg>`;
         const _replyIco  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>`;
-        row.innerHTML = `${pinBadge}<div class="comm-comment-av comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${initials}</div><div class="comm-comment-content"><span class="comm-comment-user comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span><button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">${_thumbUp} <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">${_thumbDown} <span class="cmt-cnt">${c.dislikes||0}</span></button><button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">${_replyIco}</button>${pinBtn}</div>`;
+        row.innerHTML = `${pinBadge}<div class="comm-comment-av comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${initials}</div><div class="comm-comment-content"><span class="comm-comment-user comm-username-link" data-uid="${c.user_id||''}" data-username="${esc(c.username)}">${esc(c.username)}</span><span class="comm-comment-text">${esc(c.text)}</span></div><div class="comm-comment-actions"><span class="comm-comment-ago">${timeAgo(c.created_at)}</span>${isPug ? `<button class="comm-comment-react${likeAct}" data-action="like" data-cid="${c.id}">${_thumbUp} <span class="cmt-cnt">${c.likes||0}</span></button><button class="comm-comment-react${disAct}" data-action="dislike" data-cid="${c.id}">${_thumbDown} <span class="cmt-cnt">${c.dislikes||0}</span></button>` : ''}<button class="comm-comment-react" data-action="reply" data-username="${esc(c.username)}">${_replyIco}</button>${pinBtn}</div>`;
         row.querySelectorAll('.comm-username-link').forEach(el => {
             el.addEventListener('click', e => {
                 e.stopPropagation();
@@ -634,13 +643,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return row;
     }
 
-    function loadComments(pid, commentsEl, isMine) {
+    function loadComments(p, commentsEl, isMine) {
+        const pid = p.id;
         const list = commentsEl.querySelector('.comm-comments-list');
         commentsEl.dataset.loaded = 'true';
         // Placeholder only on first load — refreshes swap content in one frame,
         // so existing comments never disappear while we fetch
         if (!list.children.length) list.innerHTML = '<div class="comm-comments-loading">loading…</div>';
-        fetch(`/pug/api/community/${pid}/comments`)
+        fetch(`${postApi(p)}/comments`)
             .then(r => r.json())
             .then(comments => {
                 list.innerHTML = '';
@@ -649,10 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
                 comments.forEach(c => {
-                    const row = buildCommentRow(c, isMine);
+                    const row = buildCommentRow(c, isMine, p.source);
                     row.querySelector('.comm-pin-btn')?.addEventListener('click', function() {
                         fetch(`/pug/api/community/${pid}/comment/${c.id}/pin`, { method: 'POST' })
-                            .then(r => r.json()).then(() => loadComments(pid, commentsEl, isMine)).catch(() => {});
+                            .then(r => r.json()).then(() => loadComments(p, commentsEl, isMine)).catch(() => {});
                     });
                     row.querySelectorAll('.comm-comment-react').forEach(btn => {
                         btn.addEventListener('click', function() {
@@ -680,19 +690,20 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(() => { list.querySelector('.comm-comments-loading')?.remove(); });
     }
 
-    function loadPreviewComments(pid, postEl) {
+    function loadPreviewComments(p, postEl) {
+        const pid = p.id;
         const preview    = postEl.querySelector('.comm-comments-preview');
         const commentsEl = postEl.querySelector('.comm-post-comments');
         if (!preview) return;
-        fetch(`/pug/api/community/${pid}/comments`)
+        fetch(`${postApi(p)}/comments`)
             .then(r => r.json())
             .then(comments => {
                 preview.innerHTML = '';
                 comments.slice(0, 3).forEach(c => {
-                    const row = buildCommentRow(c, false);
+                    const row = buildCommentRow(c, false, p.source);
                     row.querySelector('.comm-pin-btn')?.addEventListener('click', () => {
                         fetch(`/pug/api/community/${pid}/comment/${c.id}/pin`, { method: 'POST' })
-                            .then(r => r.json()).then(() => loadPreviewComments(pid, postEl)).catch(() => {});
+                            .then(r => r.json()).then(() => loadPreviewComments(p, postEl)).catch(() => {});
                     });
                     row.querySelectorAll('.comm-comment-react').forEach(btn => {
                         btn.addEventListener('click', function() {
@@ -720,12 +731,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(() => {});
     }
 
-    function sendComment(pid, input, commentsEl, postEl) {
+    function sendComment(p, input, commentsEl, postEl) {
         const text = (input?.value || '').trim();
         if (!text || input.dataset.sending) return;
         input.dataset.sending = '1';
         input.value = '';
-        fetch(`/pug/api/community/${pid}/comment`, {
+        fetch(`${postApi(p)}/comment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
@@ -733,10 +744,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.error) { input.value = text; return; }
             commentsEl.dataset.loaded = 'false';
             const isMine = postEl?.querySelector('.comm-del-btn') !== null;
-            loadComments(pid, commentsEl, isMine);
+            loadComments(p, commentsEl, isMine);
             const countEl = postEl?.querySelector('[data-action="comment"] .react-count');
             if (countEl) countEl.textContent = parseInt(countEl.textContent || 0) + 1;
-            loadPreviewComments(pid, postEl);
+            loadPreviewComments(p, postEl);
         }).catch(() => { input.value = text; })
           .finally(() => { delete input.dataset.sending; });
     }

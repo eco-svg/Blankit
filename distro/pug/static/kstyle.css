@@ -5685,10 +5685,9 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .comm-reach-toggle input { accent-color: var(--accent); cursor: pointer; }
 
-/* Foreign-distro posts: shown read-only until cross-distro interaction ships (Phase 3) */
-.comm-post.comm-foreign .comm-post-reactions,
-.comm-post.comm-foreign .comm-post-comments,
-.comm-post.comm-foreign .comm-action-btns { pointer-events: none; opacity: 0.6; }
+/* Foreign-distro posts: a subtle left accent to signal the post is from another distro
+   (interactions are fully live and routed to that distro's store). */
+.comm-post.comm-foreign { border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent); }
 .comm-mode-btn {
   background: transparent;
   border: none;
