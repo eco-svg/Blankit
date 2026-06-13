@@ -87,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function uploadAndSendVoice(blob, ext) {
         const fd = new FormData();
         fd.append('file', blob, `voice_${Date.now()}.${ext}`);
+        fd.append('context', 'dm');                 // keep DM media private to participants
+        if (currentOtherId) fd.append('peer', currentOtherId);
         if (dmInput) dmInput.placeholder = 'Sending voice…';
         uploadWithProgress('/pug/api/upload_shared', fd, dmUploadProgress, dmProgressBar)
             .then(data => {
@@ -397,6 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) return;
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('context', 'dm');                 // keep DM media private to participants
+        if (currentOtherId) fd.append('peer', currentOtherId);
         uploadWithProgress('/pug/api/upload_shared', fd, dmUploadProgress, dmProgressBar)
             .then(data => {
                 if (!data || data.error) return;

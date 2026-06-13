@@ -36,7 +36,7 @@ from minio import Minio
 from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
-from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock, UserReport
+from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock, UserReport, SharedMedia
 from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
@@ -1268,6 +1268,15 @@ def upload_shared():
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         with open(local_path, 'wb') as fh:
             fh.write(file_data)
+    # Record context so DM attachments can be kept private (see serve_media_shared).
+    context = 'dm' if (request.form.get('context') == 'dm') else 'post'
+    peer_id = request.form.get('peer', type=int) if context == 'dm' else None
+    try:
+        db.session.add(SharedMedia(object_name=object_name, uploader_id=session['user_id'],
+                                   context=context, peer_id=peer_id))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()   # tracking is best-effort; never fail the upload over it
     return jsonify({
         'key':  object_name,
         'url':  url_for('pug.serve_media_shared', object_name=object_name),
@@ -1286,6 +1295,13 @@ def serve_media_shared(object_name):
             or '\x00' in object_name
             or object_name != object_name.replace('\\', '')):
         return jsonify({'error': 'Forbidden'}), 403
+    # DM attachments are private: only the two participants may fetch them. Post media (and
+    # legacy uploads with no record) stay public to any logged-in user.
+    rec = SharedMedia.query.filter_by(object_name=object_name).first()
+    if rec and rec.context == 'dm':
+        me = session['user_id']
+        if me != rec.uploader_id and me != rec.peer_id:
+            return jsonify({'error': 'Forbidden'}), 403
     try:
         response = minio_client.get_object(MINIO_BUCKET, object_name)
         return Response(

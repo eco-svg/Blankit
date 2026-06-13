@@ -141,6 +141,21 @@ class UserReport(db.Model):
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class SharedMedia(db.Model):
+    """Tracks each shared upload's context so DM attachments stay private.
+
+    context='post' → public (any logged-in user, like before). context='dm' → only the
+    uploader and `peer_id` may fetch it. Legacy uploads have no row → treated as public.
+    """
+    __tablename__ = 'shared_media'
+    id          = db.Column(db.Integer, primary_key=True)
+    object_name = db.Column(db.String(300), unique=True, nullable=False)   # the 'shared/<uuid>.<ext>' key
+    uploader_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    context     = db.Column(db.String(10), default='post')                 # 'post' | 'dm'
+    peer_id     = db.Column(db.Integer, nullable=True)                      # the other DM participant
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # ── Rate constants ────────────────────────────────────────────────────────────
 
 _EYE_USD  = 0.01   # 1 Eye = $0.01 (base)
