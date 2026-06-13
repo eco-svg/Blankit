@@ -405,7 +405,7 @@ def verify_otp():
 def resend_otp():
     """Issue and email a fresh verification code."""
     data    = request.get_json()
-    email   = data.get('email', '').strip()
+    email   = data.get('email', '').strip().lower()   # match how register stores it (lowercased)
     user_id = session.get('pending_user_id')
 
     user = User.query.filter_by(email=email).first() if email else \
@@ -453,7 +453,7 @@ def login():
     remember   = data.get('remember', False)
 
     if method == 'email':
-        user = User.query.filter_by(email=identifier).first()
+        user = User.query.filter_by(email=identifier.lower()).first()   # emails stored lowercased
     else:
         user = User.query.filter_by(username=identifier).first()
 
@@ -503,7 +503,7 @@ def login():
 def forgot_password():
     """Email a password-reset link if the address matches an account."""
     data  = request.get_json()
-    email = data.get('email', '').strip()
+    email = data.get('email', '').strip().lower()   # match how register stores it (lowercased)
     user  = User.query.filter_by(email=email).first()
     if user and user.is_verified:
         ResetToken.query.filter_by(user_id=user.id, used=False).update({'used': True})
