@@ -1,3 +1,19 @@
+"""
+shared/auth/auth_route.py — all account/authentication endpoints (URL prefix /auth).
+
+Used by every distro. Covers the full account lifecycle:
+  • Register → email a 6-digit code → verify the code → account becomes active.
+  • Login / logout, forgot-password → emailed reset link → reset-password.
+  • Student verification: upload an ID image, an admin approves/rejects it.
+  • Account deletion.
+
+Cross-cutting concerns handled here:
+  • Rate limiting (@limiter.limit) on every sensitive endpoint to slow brute-force/spam.
+  • Passwords stored only as hashes (werkzeug generate/check_password_hash).
+  • Uploaded ID images validated hard (size, magic bytes, decompression-bomb guard) and
+    stored in object storage (MinIO/B2), never on the web server's disk.
+  • Email is sent via the Brevo HTTP API when configured, else Flask-Mail SMTP.
+"""
 import html
 import io
 import os
@@ -18,6 +34,11 @@ from minio import Minio
 from minio.error import S3Error
 from PIL import Image, UnidentifiedImageError
 
+# ─────────────────────────────────────────────────────────────────────────────
+# OBJECT STORAGE + ID-UPLOAD VALIDATION
+# MinIO/B2 is where uploaded student-ID images go. The validators below defend the
+# upload endpoint against oversized files, spoofed extensions, and decompression bombs.
+# ─────────────────────────────────────────────────────────────────────────────
 _MINIO_ENDPOINT   = os.environ.get('MINIO_ENDPOINT',   'localhost:9000')
 _MINIO_ACCESS_KEY = os.environ.get('MINIO_ACCESS_KEY', 'minioadmin')
 _MINIO_SECRET_KEY = os.environ.get('MINIO_SECRET_KEY', 'minioadmin')
@@ -85,11 +106,15 @@ def _validate_id_file(f):
 
     return file_data, None, None
 
-auth = Blueprint('auth', __name__, url_prefix='/auth')
+auth = Blueprint('auth', __name__, url_prefix='/auth')  # all routes below live under /auth/...
 
-mail = None
+# ─────────────────────────────────────────────────────────────────────────────
+# EMAIL SENDING (verification codes, password resets, student decisions)
+# ─────────────────────────────────────────────────────────────────────────────
+mail = None  # the Flask-Mail instance, injected by app.py via init_mail()
 
 def init_mail(mail_instance):
+    """Called once from create_app() to hand this module the configured Flask-Mail object."""
     global mail
     mail = mail_instance
 
@@ -125,6 +150,7 @@ DISTRO_REDIRECTS = {
 
 
 def send_reset_email(user, reset_url):
+    """Email the user a password-reset link."""
     _send_email(
         to_email = user.email,
         subject  = 'Reset your VEYRA password',
@@ -160,6 +186,7 @@ def send_reset_email(user, reset_url):
 
 
 def send_otp_email(user, otp):
+    """Email the user their 6-digit verification code."""
     _send_email(
         to_email = user.email,
         subject  = f'{otp} is your VEYRA verification code',
@@ -193,6 +220,7 @@ def send_otp_email(user, otp):
 
 
 def send_student_decision_email(user, approved: bool):
+    """Email the user whether their student verification was approved or rejected."""
     if approved:
         subject = 'Student verification approved ✦ — VEYRA'
         body    = f'<h2 style="color:#e8b84b">You\'re verified! ✦</h2><p>Hi {user.username}, your student status has been approved. Your verified badge is now active on your profile.</p><p>BlinkyBot AI access will unlock when available — we\'ll let you know.</p>'
@@ -209,9 +237,15 @@ def send_student_decision_email(user, approved: bool):
 # ══════════════════════════════
 #  REGISTER
 # ══════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# REGISTRATION & EMAIL VERIFICATION
+# register → create the (unverified) account + email a code → verify-otp confirms it.
+# resend-otp issues a fresh code if the first expired or never arrived.
+# ─────────────────────────────────────────────────────────────────────────────
 @auth.route('/register', methods=['POST'])
 @limiter.limit("5 per minute")
 def register():
+    """Create a new (unverified) account and email a verification code."""
     data     = request.get_json(silent=True) or {}
     username = data.get('username', '').strip()
     email    = data.get('email', '').strip().lower()
@@ -321,6 +355,7 @@ def register():
 @auth.route('/verify-otp', methods=['POST'])
 @limiter.limit("5 per minute")
 def verify_otp():
+    """Check the emailed code; on success mark the account verified and log the user in."""
     data = request.get_json()
     otp  = data.get('otp', '').strip()
 
@@ -368,6 +403,7 @@ def verify_otp():
 @auth.route('/resend-otp', methods=['POST'])
 @limiter.limit("3 per minute")
 def resend_otp():
+    """Issue and email a fresh verification code."""
     data    = request.get_json()
     email   = data.get('email', '').strip()
     user_id = session.get('pending_user_id')
@@ -400,9 +436,15 @@ def resend_otp():
 # ══════════════════════════════
 #  LOGIN
 # ══════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# LOGIN & PASSWORD RESET
+# login starts a session; forgot-password emails a reset link; reset-password
+# consumes that link's token and sets a new password.
+# ─────────────────────────────────────────────────────────────────────────────
 @auth.route('/login', methods=['POST'])
 @limiter.limit("5 per 15 minute")
 def login():
+    """Authenticate username/email + password and start a session."""
     data       = request.get_json()
     identifier = data.get('identifier', '').strip()
     method     = data.get('method', 'email')
@@ -459,6 +501,7 @@ def login():
 @auth.route('/forgot-password', methods=['POST'])
 @limiter.limit("3 per minute")
 def forgot_password():
+    """Email a password-reset link if the address matches an account."""
     data  = request.get_json()
     email = data.get('email', '').strip()
     user  = User.query.filter_by(email=email).first()
@@ -480,6 +523,7 @@ def forgot_password():
 @auth.route('/reset-password', methods=['POST'])
 @limiter.limit("5 per minute")
 def reset_password():
+    """Set a new password using a valid reset-link token."""
     data         = request.get_json()
     token        = data.get('token', '').strip()
     new_password = data.get('new_password', '')
@@ -504,9 +548,15 @@ def reset_password():
 # ══════════════════════════════
 #  STUDENT VERIFICATION (post-login)
 # ══════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# STUDENT VERIFICATION
+# A user uploads an ID image (stored in object storage); an admin later approves or
+# rejects it. student-status lets the UI poll the current state.
+# ─────────────────────────────────────────────────────────────────────────────
 @auth.route('/student-verify', methods=['POST'])
 @limiter.limit("5 per hour")
 def student_verify():
+    """Accept a student-ID image upload and mark the account pending review."""
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'not logged in'}), 401
@@ -543,6 +593,7 @@ def student_verify():
 @auth.route('/pre-verify-student', methods=['POST'])
 @limiter.limit("10 per hour")
 def pre_verify_student():
+    """Validate the typed student details before the ID-upload step."""
     data     = request.get_json(silent=True) or {}
     school   = (data.get('school',   '') or '').strip()[:200]
     grade    = (data.get('grade',    '') or '').strip()[:50]
@@ -558,6 +609,7 @@ def pre_verify_student():
 # ══════════════════════════════
 @auth.route('/student-status', methods=['GET'])
 def student_status():
+    """Return the caller's current student-verification status."""
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({'error': 'not logged in'}), 401
@@ -575,9 +627,13 @@ def student_status():
 # ══════════════════════════════
 #  ADMIN — STUDENT REVIEW
 # ══════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# ADMIN — student-ID review console (password-gated, with CSRF protection)
+# ─────────────────────────────────────────────────────────────────────────────
 @auth.route('/admin/verify', methods=['GET', 'POST'])
 @limiter.limit("20 per minute")
 def admin_verify():
+    """Password-gated admin console to review and approve/reject student IDs."""
     admin_pw = os.getenv('ADMIN_PASSWORD', '')
 
     if request.method == 'POST':
@@ -642,12 +698,14 @@ def _admin_csrf():
 
 @auth.route('/admin/verify/logout', methods=['GET'])
 def admin_verify_logout():
+    """Clear the admin-console session."""
     session.pop('admin_auth', None)
     return redirect(url_for('auth.admin_verify'))
 
 
 @auth.route('/admin/student-id/<path:object_name>', methods=['GET'])
 def admin_student_id(object_name):
+    """Stream a stored student-ID image to the admin console."""
     if not session.get('admin_auth'):
         return 'Unauthorized', 403
     if not object_name.startswith('student_ids/') or '..' in object_name or '\x00' in object_name:
@@ -665,9 +723,13 @@ def admin_student_id(object_name):
 # ══════════════════════════════
 #  LOGOUT
 # ══════════════════════════════
+# ─────────────────────────────────────────────────────────────────────────────
+# SESSION — logout & account deletion
+# ─────────────────────────────────────────────────────────────────────────────
 @auth.route('/logout', methods=['POST'])
 @limiter.limit("5 per 15 minutes")
 def logout():
+    """End the current session (log out)."""
     uid = session.get('user_id')
     if uid:
         try:
@@ -688,6 +750,7 @@ def logout():
 @auth.route('/delete-account', methods=['DELETE'])
 @limiter.limit("5 per 15 minutes")
 def delete_account():
+    """Permanently delete the caller's account and all their data (cascades)."""
     from werkzeug.security import check_password_hash
     user_id = session.get('user_id')
     if not user_id:

@@ -1,3 +1,24 @@
+"""
+app.py — the entry point for the whole Veyra platform.
+
+Veyra hosts three independent "distros" (skins/products) on one Flask backend:
+  • pug       (Ocellus)      — distro/pug/        — the main product we actively build
+  • svg       (Eco-Svg)      — distro/svg/        — another team's distro
+  • divyanshu (CatalystCrew) — distro/divyanshu/  — another team's distro
+Shared code (auth, DB, config, common templates) lives in shared/.
+
+What this file does, in order:
+  1. Helper functions to download the on-device AI models (BlinkBot / BuddyBot) at startup.
+  2. create_app() — the "application factory": builds the Flask app, loads config,
+     connects the database/mail/rate-limiter, and registers every distro's routes.
+  3. A set of idempotent startup migrations (_migrate_* / _sync_*) that patch the live
+     database schema on boot — safe to run every time, they only apply changes once.
+  4. The __main__ block that actually starts the web server.
+
+The database is a remote Postgres (Supabase) even in local dev, so the migrations here
+run against live data — that's why every one is wrapped in try/except and guarded by an
+"is this change already applied?" check.
+"""
 import os
 from flask import Flask, session, render_template
 from flask_mail import Mail
@@ -7,10 +28,19 @@ from shared.extensions import db
 from distro.svg.services.badge_service import seed_badges
 from shared.extensions import limiter
 
+# Where large runtime files (the AI model weights) live. On the hosting box a
+# persistent disk is mounted at /data; locally we just use the repo folder.
 _DATA_DIR = '/data' if os.path.isdir('/data') else os.path.dirname(os.path.abspath(__file__))
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# AI MODEL DOWNLOADS
+# BlinkBot/BuddyBot are GGUF model files too big to commit. At startup we make sure
+# they exist on disk (downloading from Hugging Face if missing) so the app can serve
+# BlinkBot to the browser and, where enabled, run inference.
+# ─────────────────────────────────────────────────────────────────────────────
 def _hf_download(repo_id, filename, dest_path, token):
+    """Download one file from a Hugging Face repo to dest_path. Returns True on success."""
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
     try:
         from huggingface_hub import hf_hub_download
@@ -54,15 +84,23 @@ def _ensure_buddybot_model():
     _hf_download(repo_id, filename, model_path, token)
 
 
-# Blueprints
+# Each distro registers its URLs through a Flask "blueprint" (a bundle of routes).
+# We import them here and attach them to the app inside create_app().
 from distro.divyanshu.routes.droute import catalystcrew_bp
 from distro.pug.routes.pug_route import pug_bp
 
-mail = Mail()
+mail = Mail()  # email sender (verification codes, password resets); configured in create_app()
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# DATABASE MIGRATIONS (run once per boot, safe to repeat)
+# db.create_all() makes brand-new tables, but it never alters EXISTING tables.
+# These functions handle everything create_all() can't: adding new columns,
+# fixing foreign keys, renaming old values, re-aligning ID counters. Each step
+# checks "is this already done?" first, so running them every startup is harmless.
+# ─────────────────────────────────────────────────────────────────────────────
 def _migrate_schema():
-    """Idempotent startup migrations for schema changes not handled by db.create_all()."""
+    """Add new tables/columns to the live DB that db.create_all() won't add on its own."""
     from sqlalchemy import inspect, text
     inspector = inspect(db.engine)
 
@@ -257,6 +295,12 @@ def _sync_sequences():
         warnings.warn(f'[startup] Sequence sync failed: {e}')
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# APPLICATION FACTORY
+# Builds and returns the configured Flask app: loads settings, connects the
+# database / mail / rate-limiter, registers every distro's routes, installs
+# security headers, and runs the startup migrations. Called once at boot.
+# ─────────────────────────────────────────────────────────────────────────────
 def create_app():
     app = Flask(
         __name__,
