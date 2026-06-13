@@ -630,3 +630,44 @@
   .comm-challenge-card { gap: 0.5rem; }
   .comm-lb-row { gap: 0.5rem; }
 }
+
+/* ── IMAGE UPLOAD & DISPLAY ── */
+.comm-post-image {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.comm-image-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comm-image-upload-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.comm-image-upload-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.comm-image-status {
+  font-size: 0.65rem;
+  color: var(--text3);
+}
+
+.comm-image-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}

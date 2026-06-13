@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let feedPage       = 1;
   let activePostId   = null;
   let selectedTag    = 'general';
+  let uploadedImageUrl = null;
 
   /* ── HELPERS ── */
   const $  = id => document.getElementById(id);
@@ -114,8 +115,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const body = el('p', 'comm-post-body', p.body.length > 300 ? p.body.slice(0,300)+'…' : p.body);
       card.appendChild(body);
     }
+    if (p.image_url) {
+      const img = el('img', 'comm-post-image');
+      img.src = p.image_url;
+      img.loading = 'lazy';
+      card.appendChild(img);
+    }
 
     const actions = el('div', 'comm-post-actions');
+
+    if (p.source === 'ama') {
+      actions.appendChild(el('span', 'comm-post-tag', 'read-only · from Pug'));
+      card.appendChild(actions);
+      return card;
+    }
 
     const voteBtn = el('button', `comm-vote-btn${p.voted ? ' voted' : ''}`, `▲ ${p.vote_count}`);
     voteBtn.addEventListener('click', async () => {
@@ -128,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     actions.appendChild(voteBtn);
 
-    const commentBtn = el('button', 'comm-comment-btn', `${p.comment_count}`);
+    const commentBtn = el('button', 'comm-comment-btn', `💬 ${p.comment_count}`);
     commentBtn.addEventListener('click', () => openComments(p));
     actions.appendChild(commentBtn);
 
@@ -304,6 +317,37 @@ document.addEventListener('DOMContentLoaded', () => {
     $('bodyCount').textContent = $('postBody').value.length;
   });
 
+  /* ── IMAGE UPLOAD ── */
+  $('postImageBtn').addEventListener('click', () => $('postImageInput').click());
+
+  $('postImageInput').addEventListener('change', async () => {
+    const file = $('postImageInput').files[0];
+    if (!file) return;
+
+    $('postImageStatus').textContent = 'Checking image…';
+    uploadedImageUrl = null;
+    $('postImagePreview').classList.add('hidden');
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const r = await fetch('/api/community/upload-image', { method: 'POST', body: formData });
+      const d = await r.json();
+      if (r.ok) {
+        uploadedImageUrl = d.url;
+        $('postImagePreview').src = d.url;
+        $('postImagePreview').classList.remove('hidden');
+        $('postImageStatus').textContent = '✓ Image attached';
+      } else {
+        $('postImageStatus').textContent = `✗ ${d.error || 'upload failed'}`;
+        $('postImageInput').value = '';
+      }
+    } catch {
+      $('postImageStatus').textContent = '✗ Upload failed';
+    }
+  });
+
   $('postSubmit').addEventListener('click', async () => {
     const title = $('postTitle').value.trim();
     const body  = $('postBody').value.trim();
@@ -312,7 +356,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const r = await fetch('/api/community/posts', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({title, body, tag: selectedTag}),
+      body: JSON.stringify({title, body, tag: selectedTag, image_url: uploadedImageUrl}),
     });
 
     if (r.ok) {
@@ -320,6 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
       $('postTitle').value = '';
       $('postBody').value  = '';
       $('bodyCount').textContent = '0';
+      $('postImageInput').value = '';
+      $('postImagePreview').classList.add('hidden');
+      $('postImageStatus').textContent = '';
+      uploadedImageUrl = null;
       feedPage = 1;
       // Switch to feed section
       document.querySelectorAll('.comm-section-tab').forEach(b => b.classList.remove('active'));

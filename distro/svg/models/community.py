@@ -9,6 +9,7 @@ class CommunityPost(db.Model):
     distro     = db.Column(db.String(20), nullable=False)
     title      = db.Column(db.String(200), nullable=False)
     body       = db.Column(db.Text, nullable=False)
+    image_url  = db.Column(db.String(500), nullable=True)
     tag        = db.Column(db.String(20), default='general')
     vote_count = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
