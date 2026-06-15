@@ -1916,21 +1916,59 @@ def blinkbot_pay():
 
 @pug_bp.route('/pug/api/blinkbot/model', methods=['GET'])
 def blinkbot_model_file():
-    """Serve the GGUF for on-device download. Production should set BLINKBOT_MODEL_URL
-    to a B2 link (don't stream a 380 MB file through the app); local/self-host streams
-    the file directly with range support so wllama can chunk + resume."""
+    """Serve the GGUF for on-device download. Three modes, in order:
+      1. BLINKBOT_MODEL_URL set → redirect (only if it's a PUBLIC url).
+      2. BLINKBOT_MODEL_KEY set → stream the object from the (private) storage
+         bucket using the app's own credentials. Browser hits us same-origin;
+         the private bucket and other users' media stay private.
+      3. local file on disk (dev / self-host).
+    """
     err = login_required_api()
     if err: return err
+
     url = os.environ.get('BLINKBOT_MODEL_URL')
     if url:
         from flask import redirect
         return redirect(url)
-    if not os.path.exists(_BLINK_PATH):
-        return jsonify({'error': 'model not hosted here; set BLINKBOT_MODEL_URL'}), 404
-    from flask import send_file
-    return send_file(_BLINK_PATH, mimetype='application/octet-stream',
-                     conditional=True, as_attachment=False,
-                     download_name='blinkbot_v4.gguf')
+
+    key = os.environ.get('BLINKBOT_MODEL_KEY')
+    if key:
+        try:
+            from minio import Minio
+            from flask import Response, stream_with_context
+            client = Minio(
+                os.environ.get('n_ENDPOINT', 'localhost:9000'),
+                access_key=os.environ.get('n_ACCESS_KEY', 'minioadmin'),
+                secret_key=os.environ.get('n_SECRET_KEY', 'minioadmin'),
+                secure=os.environ.get('n_SECURE', 'false').lower() == 'true',
+            )
+            bucket = os.environ.get('BLINKBOT_MODEL_BUCKET',
+                                    os.environ.get('n_BUCKET', 'veyra-media'))
+            size = client.stat_object(bucket, key).size
+            obj  = client.get_object(bucket, key)
+
+            def _stream():
+                try:
+                    for chunk in obj.stream(256 * 1024):
+                        yield chunk
+                finally:
+                    obj.close(); obj.release_conn()
+
+            resp = Response(stream_with_context(_stream()),
+                            mimetype='application/octet-stream')
+            resp.headers['Content-Length'] = str(size)   # lets the browser show progress
+            resp.headers['Cache-Control']  = 'public, max-age=2592000'
+            return resp
+        except Exception as e:
+            current_app.logger.error(f"BlinkBot model stream error: {e}")
+            return jsonify({'error': 'model unavailable'}), 502
+
+    if os.path.exists(_BLINK_PATH):
+        from flask import send_file
+        return send_file(_BLINK_PATH, mimetype='application/octet-stream',
+                         conditional=True, as_attachment=False,
+                         download_name='blinkbot_v4.gguf')
+    return jsonify({'error': 'model not hosted; set BLINKBOT_MODEL_KEY'}), 404
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
