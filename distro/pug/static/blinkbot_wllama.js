@@ -31,10 +31,11 @@
     "counts.";
 
   const WLLAMA_VER  = '2.3.5';
-  const WLLAMA_BASE = `https://esm.sh/@wllama/wllama@${WLLAMA_VER}`;
+  // jsdelivr is already CSP-whitelisted (script-src + connect-src); esm.sh is not.
+  const WLLAMA_CDN  = `https://cdn.jsdelivr.net/npm/@wllama/wllama@${WLLAMA_VER}`;
   const WASM_PATHS  = {
-    'single-thread/wllama.wasm': `${WLLAMA_BASE}/src/single-thread/wllama.wasm`,
-    'multi-thread/wllama.wasm':  `${WLLAMA_BASE}/src/multi-thread/wllama.wasm`,
+    'single-thread/wllama.wasm': `${WLLAMA_CDN}/src/single-thread/wllama.wasm`,
+    'multi-thread/wllama.wasm':  `${WLLAMA_CDN}/src/multi-thread/wllama.wasm`,
   };
   const MODEL_URL   = '/pug/api/blinkbot/model';
   const MODEL_MB    = 380;
@@ -137,7 +138,7 @@
 
     // 2) load wllama + the GGUF (cached after first time)
     try {
-      const { Wllama } = await import(`${WLLAMA_BASE}/esm/index.js`);
+      const { Wllama } = await import(`${WLLAMA_CDN}/+esm`);
       wllama = new Wllama(WASM_PATHS);
       await wllama.loadModelFromUrl(MODEL_URL, {
         n_ctx: 2048,

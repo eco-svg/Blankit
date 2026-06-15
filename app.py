@@ -440,7 +440,10 @@ def create_app():
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
             "media-src 'self' blob:; "
-            "connect-src 'self'; "
+            # BlinkBot on-device (wllama): fetch the WASM runtime from jsdelivr and the
+            # GGUF from self or B2; blob: worker for llama.cpp's threads.
+            "connect-src 'self' https://cdn.jsdelivr.net https://*.backblazeb2.com; "
+            "worker-src 'self' blob:; "
             "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
             "frame-ancestors 'self' https://huggingface.co; "
             "object-src 'none'; "
