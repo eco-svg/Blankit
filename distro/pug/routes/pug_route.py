@@ -1745,9 +1745,11 @@ def blinkbot_chat():
     user_id = session['user_id']
     data    = request.get_json(silent=True) or {}
 
-    # Freemium gate: once the free window is over and there's no paid month, stop.
-    _sub = _blink_sub_state(user_id)
-    if _sub['activated'] and _sub['expired']:
+    # Freemium gate: first use auto-starts the free window (the feature can't be used
+    # without a running timer — closes the "never call /activate" bypass), then block
+    # once the free window and any paid month are over.
+    _sub = _blink_ensure_activated(user_id)
+    if _sub['expired']:
         return jsonify({'paywall': True, 'monthly_credits': _BLINK_MONTHLY_CREDITS,
                         'reply': f"BlinkBot's free period ended — {_BLINK_MONTHLY_CREDITS} credits/month to keep using it.",
                         'source': 'paywall'}), 402
@@ -1856,6 +1858,23 @@ def _blink_sub_state(user_id):
             'monthly_credits': _BLINK_MONTHLY_CREDITS, 'free_days': _BLINK_FREE_DAYS}
 
 
+def _blink_ensure_activated(user_id):
+    """Start the free window if it isn't already running. Idempotent — never resets
+    an existing timer. Returns the current state."""
+    n = _blink_sub_note(user_id)
+    if not (n and n.body):
+        now = datetime.utcnow()
+        if not n:
+            n = Note(user_id=user_id, entry_type='blinkbot_sub')
+            db.session.add(n)
+        n.body = json.dumps({
+            'activated_at': now.isoformat(),
+            'free_until':   (now + timedelta(days=_BLINK_FREE_DAYS)).isoformat(),
+        })
+        db.session.commit()
+    return _blink_sub_state(user_id)
+
+
 @pug_bp.route('/pug/api/blinkbot/status', methods=['GET'])
 def blinkbot_status():
     """Subscription state — drives the sidebar card (Download / Ready / Renew)."""
@@ -1868,23 +1887,10 @@ def blinkbot_status():
 @limiter.limit("10 per minute")
 def blinkbot_activate():
     """Start the free window. Idempotent — once activated, the timer never resets.
-    Called the moment the user confirms the download in the popup."""
+    Called when the user confirms the download in the popup."""
     err = login_required_api()
     if err: return err
-    user_id = session['user_id']
-    n   = _blink_sub_note(user_id)
-    now = datetime.utcnow()
-    if n and n.body:                       # already running — don't restart the clock
-        return jsonify(_blink_sub_state(user_id))
-    if not n:
-        n = Note(user_id=user_id, entry_type='blinkbot_sub')
-        db.session.add(n)
-    n.body = json.dumps({
-        'activated_at': now.isoformat(),
-        'free_until':   (now + timedelta(days=_BLINK_FREE_DAYS)).isoformat(),
-    })
-    db.session.commit()
-    return jsonify(_blink_sub_state(user_id))
+    return jsonify(_blink_ensure_activated(session['user_id']))
 
 
 @pug_bp.route('/pug/api/blinkbot/pay', methods=['POST'])

@@ -254,7 +254,10 @@
     const log = $('blinkChatLog');
     const row = document.createElement('div');
     row.className = 'blink-msg bot blink-confirm';
-    row.innerHTML = `<span>${pending.summary}</span> `;
+    const label = document.createElement('span');   // textContent: never inject user text as HTML
+    label.textContent = pending.summary;
+    row.appendChild(label);
+    row.appendChild(document.createTextNode(' '));
     const yes = document.createElement('button'); yes.textContent = 'Yes';
     const no  = document.createElement('button'); no.textContent  = 'No';
     yes.onclick = async () => {
