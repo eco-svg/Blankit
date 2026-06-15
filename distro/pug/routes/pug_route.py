@@ -37,7 +37,7 @@ from minio.error import S3Error
 from werkzeug.utils import secure_filename
 from shared.extensions import db
 from .notes import Note, Wallet, WalletTx, EyeRate, refresh_eye_rates, AmaMessage, PostReport, UserBlock, UserReport, SharedMedia
-from .bot_prompts import BLINKBOT_SYSTEM, BUDDYBOT_SYSTEM
+from .bot_prompts import BLINKBOT_SYSTEM, BLINKBOT_TRANSLATE_SYSTEM, BUDDYBOT_SYSTEM
 from shared.extensions import limiter
 
 try:
@@ -48,7 +48,7 @@ except ImportError:
 
 _DATA_DIR   = '/data' if os.path.isdir('/data') else os.path.normpath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 _MODELS_DIR = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm')
-_BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf'))
+_BLINK_PATH = os.environ.get('BLINKBOT_PATH', os.path.join(_MODELS_DIR, 'blinkbot', 'BlinkBot_0.5B_v4.Q4_K_M.gguf'))
 _BUDDY_PATH = os.environ.get('BUDDYBOT_PATH', os.path.join(_MODELS_DIR, 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf'))
 
 _blinkbot_model  = None
@@ -459,6 +459,311 @@ def _call_blinkbot_server(message, session_history, user_context, user_id=None):
     clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
     clean = re.sub(r'<tool_call>.*?</tool_call>', '', clean, flags=re.DOTALL).strip()
     return clean
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BLINKBOT v4 TRANSLATOR  —  user text → JSON actions → DB mutations
+#
+# The on-device 0.5B model emits "<think>…</think>\n{\"actions\":[…],
+# \"needs_groq\":bool, \"reply\":\"…\"}". We parse it (hard-guarded — the model
+# output is NEVER trusted), execute the safe actions, gate the destructive ones
+# (remove_habit/delete_log/edit_log) behind an explicit confirm round-trip, and
+# append every mutation to a per-user action log so `undo` can reverse the last.
+# ─────────────────────────────────────────────────────────────────────────────
+_BLINK_DESTRUCTIVE = {'remove_habit', 'delete_log', 'edit_log'}
+_BLINK_STOPWORDS   = {'the', 'a', 'an', 'my', 'me', 'i', 'log', 'logs', 'entry',
+                      'that', 'this', 'one', 'of', 'for', 'from', 'about', 'it',
+                      'remove', 'delete', 'take', 'off', 'get', 'rid', 'scratch'}
+
+
+def _blink_parse(raw):
+    """Pull the JSON object out of '<think>…</think>\\n{json}'. Returns a dict
+    with guaranteed keys, or None if nothing valid could be extracted."""
+    if not raw:
+        return None
+    clean = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+    start, end = clean.find('{'), clean.rfind('}')
+    if start == -1 or end == -1 or end < start:
+        return None
+    try:
+        obj = json.loads(clean[start:end + 1])
+    except Exception:
+        return None
+    if not isinstance(obj, dict):
+        return None
+    if not isinstance(obj.get('actions'), list):
+        obj['actions'] = []
+    obj.setdefault('needs_groq', False)
+    obj.setdefault('reply', '')
+    return obj
+
+
+def _call_blinkbot_translate(message):
+    """Run the v4 translator on one message. Returns the parsed dict or None."""
+    model = _get_blinkbot()
+    out = model.create_chat_completion(
+        messages=[
+            {'role': 'system', 'content': BLINKBOT_TRANSLATE_SYSTEM},
+            {'role': 'user',   'content': message},
+        ],
+        max_tokens=256,
+        temperature=0.1,
+        stop=['<|im_end|>', '</s>'],
+    )
+    return _blink_parse(out['choices'][0]['message']['content'])
+
+
+def _blink_find_habit(user_id, name):
+    from distro.svg.models.habit import Habit
+    n = (name or '').strip().lower()
+    if not n:
+        return None
+    return Habit.query.filter(
+        Habit.user_id == user_id,
+        db.func.lower(Habit.name) == n,
+        Habit.is_active == True,
+    ).first()
+
+
+def _blink_log_action(user_id, summary, undo_spec):
+    """Append one entry to the BlinkBot action log (for undo)."""
+    n = Note(user_id=user_id, entry_type='blink_action_log')
+    n.title = summary[:120]
+    n.body  = json.dumps(undo_spec)
+    db.session.add(n)
+
+
+def _blink_describe(action):
+    """Human-readable summary of a destructive action, for the confirm prompt."""
+    t = action.get('type')
+    if t == 'remove_habit':
+        return f"Remove the “{action.get('name', '')}” habit?"
+    if t == 'delete_log':
+        return f"Delete the entry “{action.get('target', '')}”?"
+    if t == 'edit_log':
+        return f"Change “{action.get('target', '')}” to “{action.get('value', '')}”?"
+    return "Confirm this action?"
+
+
+def _blink_resolve_entry(user_id, target):
+    """Best-effort: map a free-text descriptor ('yesterday's run', 'typing metric')
+    to one of the user's recent Note entries by keyword overlap. Returns a Note or None."""
+    target_tokens = {w for w in re.findall(r'[a-z0-9]+', (target or '').lower())
+                     if w not in _BLINK_STOPWORDS}
+    if not target_tokens:
+        return None
+    recent = Note.query.filter(
+        Note.user_id == user_id,
+        Note.entry_type.in_(['note', 'metric', 'achievement']),
+        Note.is_deleted == False,
+    ).order_by(Note.created_at.desc()).limit(60).all()
+
+    best, best_score = None, 0
+    for n in recent:
+        hay = f"{n.title or ''} {n.body or ''} {n.entry_type}".lower()
+        hay_tokens = set(re.findall(r'[a-z0-9]+', hay))
+        score = len(target_tokens & hay_tokens)
+        if score > best_score:
+            best, best_score = n, score
+    return best if best_score > 0 else None
+
+
+def _blink_undo_last(user_id):
+    """Reverse the most recent logged BlinkBot mutation. Returns a summary string."""
+    from distro.svg.models.habit import Habit
+    from distro.svg.models.habit_log import HabitLog
+
+    log = Note.query.filter_by(
+        user_id=user_id, entry_type='blink_action_log', is_deleted=False
+    ).order_by(Note.created_at.desc()).first()
+    if not log:
+        return "nothing to undo"
+    try:
+        spec = json.loads(log.body or '{}')
+    except Exception:
+        spec = {}
+    kind = spec.get('undo')
+
+    if kind == 'untick_habit':
+        hl = HabitLog.query.filter_by(habit_id=spec.get('habit_id')).filter(
+            HabitLog.date == spec.get('date')).first()
+        if hl:
+            hl.done = False
+    elif kind == 'remove_habit':            # undo an add_habit
+        h = Habit.query.get(spec.get('habit_id'))
+        if h:
+            h.is_active = False
+    elif kind == 'readd_habit':             # undo a remove_habit
+        h = Habit.query.get(spec.get('habit_id'))
+        if h:
+            h.is_active = True
+    elif kind == 'delete_note':             # undo a create
+        n = Note.query.get(spec.get('note_id'))
+        if n:
+            n.is_deleted = True
+    elif kind == 'restore_note':            # undo a delete_log
+        n = Note.query.get(spec.get('note_id'))
+        if n:
+            n.is_deleted = False
+    elif kind == 'edit_note':               # undo an edit_log
+        n = Note.query.get(spec.get('note_id'))
+        if n:
+            n.body = spec.get('old', '')
+
+    log.is_deleted = True   # consume the log entry
+    return "undone"
+
+
+def _blink_execute(user_id, actions, confirmed=False):
+    """Execute a list of action dicts. Destructive actions are skipped (returned as
+    pending_confirm) unless `confirmed` is True. Returns a result dict."""
+    from distro.svg.models.habit import Habit
+    from distro.svg.models.habit_log import HabitLog
+    from datetime import date as _date
+
+    performed, pending, nav = [], [], None
+    today = _date.today()
+
+    for a in (actions or []):
+        if not isinstance(a, dict):
+            continue
+        t = a.get('type')
+
+        if t in _BLINK_DESTRUCTIVE and not confirmed:
+            pending.append({'action': a, 'summary': _blink_describe(a)})
+            continue
+
+        if t == 'tick_habit':
+            name = (a.get('name') or '').strip()
+            if not name:
+                continue
+            h = _blink_find_habit(user_id, name)
+            if not h:                       # ticking implies the habit exists — create it
+                h = Habit(user_id=user_id, name=name, track_type='manual', is_active=True)
+                db.session.add(h)
+                db.session.flush()
+            hl = HabitLog.query.filter_by(habit_id=h.id, date=today).first()
+            if not hl:
+                hl = HabitLog(habit_id=h.id, date=today, done=True)
+                db.session.add(hl)
+            else:
+                hl.done = True
+            performed.append(f"ticked {h.name}")
+            _blink_log_action(user_id, f"tick {h.name}",
+                              {'undo': 'untick_habit', 'habit_id': h.id, 'date': today.isoformat()})
+
+        elif t == 'add_habit':
+            name = (a.get('name') or '').strip()
+            if not name:
+                continue
+            if _blink_find_habit(user_id, name):
+                performed.append(f"{name} is already a habit")
+            else:
+                h = Habit(user_id=user_id, name=name, track_type='manual', is_active=True)
+                db.session.add(h)
+                db.session.flush()
+                performed.append(f"added habit “{name}”")
+                _blink_log_action(user_id, f"add habit {name}",
+                                  {'undo': 'remove_habit', 'habit_id': h.id})
+
+        elif t == 'remove_habit':
+            name = (a.get('name') or '').strip()
+            h = _blink_find_habit(user_id, name)
+            if h:
+                h.is_active = False
+                performed.append(f"removed habit “{h.name}”")
+                _blink_log_action(user_id, f"remove habit {h.name}",
+                                  {'undo': 'readd_habit', 'habit_id': h.id})
+            else:
+                performed.append(f"no active habit named “{name}”")
+
+        elif t == 'log_note':
+            txt = (a.get('text') or '').strip()
+            if not txt:
+                continue
+            n = Note(user_id=user_id, entry_type='note')
+            n.body = txt
+            db.session.add(n)
+            db.session.flush()
+            performed.append("noted")
+            _blink_log_action(user_id, f"note: {txt[:40]}",
+                              {'undo': 'delete_note', 'note_id': n.id})
+
+        elif t == 'log_achievement':
+            title = (a.get('title') or '').strip()
+            if not title:
+                continue
+            n = Note(user_id=user_id, entry_type='achievement')
+            n.title = title
+            db.session.add(n)
+            db.session.flush()
+            performed.append("logged achievement")
+            _blink_log_action(user_id, f"achievement: {title[:40]}",
+                              {'undo': 'delete_note', 'note_id': n.id})
+
+        elif t == 'log_metric':
+            skill = (a.get('skill') or '').strip()
+            value = (a.get('value') or '').strip()
+            if not skill:
+                continue
+            n = Note(user_id=user_id, entry_type='metric')
+            n.title = skill
+            n.body  = value
+            db.session.add(n)
+            db.session.flush()
+            performed.append(f"logged {skill}")
+            _blink_log_action(user_id, f"metric: {skill} {value}",
+                              {'undo': 'delete_note', 'note_id': n.id})
+
+        elif t == 'suggest_skill':
+            name = (a.get('name') or '').strip()
+            if not name:
+                continue
+            sheet = _get_cached_sheet(user_id) or {}
+            sugg  = sheet.get('suggestions', [])
+            known = {s.get('name') for s in sugg} | {s.get('name') for s in sheet.get('skills', [])}
+            if name not in known:
+                sugg.append({'name': name, 'class_id': '', 'class_label': ''})
+                sheet['suggestions'] = sugg
+                _save_cached_sheet(user_id, sheet)
+            performed.append(f"suggested {name}")
+
+        elif t == 'delete_log':
+            n = _blink_resolve_entry(user_id, a.get('target', ''))
+            if n:
+                n.is_deleted = True
+                label = (n.title or n.body or '')[:40]
+                performed.append(f"removed “{label}”")
+                _blink_log_action(user_id, f"delete entry {n.id}",
+                                  {'undo': 'restore_note', 'note_id': n.id})
+            else:
+                performed.append(f"couldn't find “{a.get('target', '')}” to remove")
+
+        elif t == 'edit_log':
+            n = _blink_resolve_entry(user_id, a.get('target', ''))
+            value = (a.get('value') or '').strip()
+            if n:
+                old = n.body
+                n.body = value
+                performed.append(f"updated “{(n.title or '')[:40]}” → {value}")
+                _blink_log_action(user_id, f"edit entry {n.id}",
+                                  {'undo': 'edit_note', 'note_id': n.id, 'old': old})
+            else:
+                performed.append(f"couldn't find “{a.get('target', '')}” to edit")
+
+        elif t == 'undo':
+            performed.append(_blink_undo_last(user_id))
+
+        elif t == 'open_profile':
+            nav = {'action': 'open_profile', 'target': (a.get('target') or '').strip()}
+            performed.append("opening profile")
+
+        elif t == 'logout':
+            nav = {'action': 'logout'}
+            performed.append("logging out")
+
+    db.session.commit()
+    return {'performed': performed, 'pending_confirm': pending, 'nav': nav}
 
 
 _stats_cache = {}  # in-memory fallback only
@@ -1431,10 +1736,82 @@ def ask():
 @pug_bp.route('/pug/api/blinkbot', methods=['POST'])
 @limiter.limit("20 per minute")
 def blinkbot_chat():
-    """BlinkBot chat endpoint."""
+    """BlinkBot v4 — on-device translator. Turns a message into actions, runs the
+    safe ones, returns destructive ones for confirmation, and routes personality/
+    class requests (needs_groq) to the heavier cloud model."""
     err = login_required_api()
     if err: return err
-    return jsonify({'answer': 'BlinkBot is being rebuilt — coming soon.', 'source': 'offline'}), 200
+
+    user_id = session['user_id']
+    data    = request.get_json(silent=True) or {}
+
+    # (1) Confirm round-trip: client re-sends a previously-pending destructive action.
+    confirm_action = data.get('confirm_action')
+    if isinstance(confirm_action, dict) and confirm_action.get('type') in _BLINK_DESTRUCTIVE:
+        res = _blink_execute(user_id, [confirm_action], confirmed=True)
+        return jsonify({
+            'reply':     '; '.join(res['performed']) or 'done',
+            'performed': res['performed'],
+            'nav':       res['nav'],
+            'source':    'blinkbot-v4',
+        })
+
+    # (2) ON-DEVICE FLOW (primary): the model ran on the client; it posts the parsed
+    #     result. Raw text stays on the device — the server only sees actions.
+    #     Personality/class requests come in as needs_groq → routed to the cloud model.
+    if data.get('needs_groq'):
+        try:
+            user_context = _assemble_user_context(user_id, session.get('username', ''))
+            answer = _call_groq_chat((data.get('message') or '').strip(), [], user_context, user_id)
+            return jsonify({'reply': answer, 'source': 'groq', 'needs_groq': True})
+        except Exception as e:
+            current_app.logger.error(f"BlinkBot groq route error: {e}")
+            return jsonify({'reply': data.get('reply') or "Working on it…", 'source': 'blinkbot-v4'}), 200
+
+    if isinstance(data.get('actions'), list):
+        res   = _blink_execute(user_id, data['actions'])
+        reply = (data.get('reply') or '').strip() or ('; '.join(res['performed']) if res['performed'] else 'ok')
+        return jsonify({
+            'reply':           reply,
+            'performed':       res['performed'],
+            'pending_confirm': res['pending_confirm'],
+            'nav':             res['nav'],
+            'source':          'blinkbot-v4',
+        })
+
+    # (3) SERVER-SIDE FALLBACK: only when a local model is present (dev / self-host).
+    #     Production runs the model on-device, so this branch is normally inactive.
+    message = (data.get('message') or '').strip()
+    if not message:
+        return jsonify({'reply': '', 'source': 'blinkbot-v4'}), 200
+    if not (_LOCAL_INFERENCE and _LLAMA_OK and os.path.exists(_BLINK_PATH)):
+        return jsonify({'reply': "Run BlinkBot on-device and post its actions.",
+                        'source': 'offline'}), 200
+    try:
+        parsed = _call_blinkbot_translate(message)
+    except Exception as e:
+        current_app.logger.error(f"BlinkBot translate error: {e}")
+        return jsonify({'reply': "BlinkBot hit an error.", 'source': 'error'}), 200
+    if not parsed:
+        return jsonify({'reply': "Sorry — couldn't read that as a command.",
+                        'source': 'blinkbot-v4', 'parse_error': True}), 200
+    if parsed.get('needs_groq'):
+        try:
+            user_context = _assemble_user_context(user_id, session.get('username', ''))
+            answer = _call_groq_chat(message, [], user_context, user_id)
+            return jsonify({'reply': answer, 'source': 'groq', 'needs_groq': True})
+        except Exception as e:
+            current_app.logger.error(f"BlinkBot groq route error: {e}")
+            return jsonify({'reply': parsed.get('reply') or "Working on it…", 'source': 'blinkbot-v4'}), 200
+    res   = _blink_execute(user_id, parsed.get('actions'))
+    reply = parsed.get('reply') or ('; '.join(res['performed']) if res['performed'] else 'ok')
+    return jsonify({
+        'reply':           reply,
+        'performed':       res['performed'],
+        'pending_confirm': res['pending_confirm'],
+        'nav':             res['nav'],
+        'source':          'blinkbot-v4',
+    })
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])

@@ -284,32 +284,36 @@ def make_personality(lang):
 # ----------------------------------------------------------------------------
 # Assemble ~1000 lines, >=500 compound
 # ----------------------------------------------------------------------------
-rows = []
+def build_v2_rows():
+    rows = []
 
-# 570 compound
-for _ in range(570):
-    rows.append(make_compound())
+    # 570 compound
+    for _ in range(570):
+        rows.append(make_compound())
 
-# singles by type
-singles_plan = {
-    "tick": 65, "metric": 55, "note": 50, "achievement": 35,
-    "suggest": 38, "undo": 28, "open_profile": 40, "logout": 24, "hedged": 30,
-}
-for kind, count in singles_plan.items():
-    for _ in range(count):
-        rows.append(make_single_typed(kind))
+    # singles by type
+    singles_plan = {
+        "tick": 65, "metric": 55, "note": 50, "achievement": 35,
+        "suggest": 38, "undo": 28, "open_profile": 40, "logout": 24, "hedged": 30,
+    }
+    for kind, count in singles_plan.items():
+        for _ in range(count):
+            rows.append(make_single_typed(kind))
 
-# needs_groq english (45) + one+ per other language (wait-word seed)
-for _ in range(45):
-    rows.append(make_personality("english"))
-for lang in PERSONALITY_OTHER:
-    for _ in range(2):
-        rows.append(make_personality(lang))
+    # needs_groq english (45) + one+ per other language (wait-word seed)
+    for _ in range(45):
+        rows.append(make_personality("english"))
+    for lang in PERSONALITY_OTHER:
+        for _ in range(2):
+            rows.append(make_personality(lang))
 
-random.shuffle(rows)
+    random.shuffle(rows)
+    return rows
 
-with open("blinkbot_v2.jsonl", "w", encoding="utf-8") as f:
-    for r in rows:
-        f.write(json.dumps(r, ensure_ascii=False) + "\n")
 
-print(f"wrote {len(rows)} rows")
+if __name__ == "__main__":
+    rows = build_v2_rows()
+    with open("blinkbot_v2.jsonl", "w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    print(f"wrote {len(rows)} rows")
