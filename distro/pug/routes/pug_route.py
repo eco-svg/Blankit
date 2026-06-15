@@ -514,6 +514,7 @@ def _call_blinkbot_translate(message):
 
 
 def _blink_find_habit(user_id, name):
+    """Find this user's active habit by name (case-insensitive); None if absent."""
     from distro.svg.models.habit import Habit
     n = (name or '').strip().lower()
     if not n:
@@ -1833,6 +1834,7 @@ _BLINK_MONTHLY_CREDITS = int(os.environ.get('BLINKBOT_MONTHLY_CREDITS', '20'))
 
 
 def _blink_sub_note(user_id):
+    """The single Note row holding this user's BlinkBot subscription state, or None."""
     return Note.query.filter_by(user_id=user_id, entry_type='blinkbot_sub',
                                 is_deleted=False).first()
 
