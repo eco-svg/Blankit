@@ -1745,6 +1745,13 @@ def blinkbot_chat():
     user_id = session['user_id']
     data    = request.get_json(silent=True) or {}
 
+    # Freemium gate: once the free window is over and there's no paid month, stop.
+    _sub = _blink_sub_state(user_id)
+    if _sub['activated'] and _sub['expired']:
+        return jsonify({'paywall': True, 'monthly_credits': _BLINK_MONTHLY_CREDITS,
+                        'reply': f"BlinkBot's free period ended — {_BLINK_MONTHLY_CREDITS} credits/month to keep using it.",
+                        'source': 'paywall'}), 402
+
     # (1) Confirm round-trip: client re-sends a previously-pending destructive action.
     confirm_action = data.get('confirm_action')
     if isinstance(confirm_action, dict) and confirm_action.get('type') in _BLINK_DESTRUCTIVE:
@@ -1812,6 +1819,118 @@ def blinkbot_chat():
         'nav':             res['nav'],
         'source':          'blinkbot-v4',
     })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BLINKBOT FREEMIUM — download the on-device model, start a free window, then
+# charge credits monthly. Subscription state lives in one Note per user
+# (entry_type='blinkbot_sub', body = JSON {activated_at, free_until, paid_until}).
+# ─────────────────────────────────────────────────────────────────────────────
+_BLINK_FREE_DAYS       = int(os.environ.get('BLINKBOT_FREE_DAYS', '150'))   # ~5 months
+_BLINK_MONTHLY_CREDITS = int(os.environ.get('BLINKBOT_MONTHLY_CREDITS', '20'))
+
+
+def _blink_sub_note(user_id):
+    return Note.query.filter_by(user_id=user_id, entry_type='blinkbot_sub',
+                                is_deleted=False).first()
+
+
+def _blink_sub_state(user_id):
+    """Current subscription state for the BlinkBot card / gate."""
+    n   = _blink_sub_note(user_id)
+    now = datetime.utcnow()
+    base = {'activated': False, 'expired': False, 'free_until': None,
+            'paid_until': None, 'monthly_credits': _BLINK_MONTHLY_CREDITS,
+            'free_days': _BLINK_FREE_DAYS}
+    if not n or not n.body:
+        return base
+    try:
+        d = json.loads(n.body)
+    except Exception:
+        return base
+    fu = datetime.fromisoformat(d['free_until']) if d.get('free_until') else None
+    pu = datetime.fromisoformat(d['paid_until']) if d.get('paid_until') else None
+    active = bool((fu and now <= fu) or (pu and now <= pu))
+    return {'activated': True, 'expired': not active,
+            'free_until': d.get('free_until'), 'paid_until': d.get('paid_until'),
+            'monthly_credits': _BLINK_MONTHLY_CREDITS, 'free_days': _BLINK_FREE_DAYS}
+
+
+@pug_bp.route('/pug/api/blinkbot/status', methods=['GET'])
+def blinkbot_status():
+    """Subscription state — drives the sidebar card (Download / Ready / Renew)."""
+    err = login_required_api()
+    if err: return err
+    return jsonify(_blink_sub_state(session['user_id']))
+
+
+@pug_bp.route('/pug/api/blinkbot/activate', methods=['POST'])
+@limiter.limit("10 per minute")
+def blinkbot_activate():
+    """Start the free window. Idempotent — once activated, the timer never resets.
+    Called the moment the user confirms the download in the popup."""
+    err = login_required_api()
+    if err: return err
+    user_id = session['user_id']
+    n   = _blink_sub_note(user_id)
+    now = datetime.utcnow()
+    if n and n.body:                       # already running — don't restart the clock
+        return jsonify(_blink_sub_state(user_id))
+    if not n:
+        n = Note(user_id=user_id, entry_type='blinkbot_sub')
+        db.session.add(n)
+    n.body = json.dumps({
+        'activated_at': now.isoformat(),
+        'free_until':   (now + timedelta(days=_BLINK_FREE_DAYS)).isoformat(),
+    })
+    db.session.commit()
+    return jsonify(_blink_sub_state(user_id))
+
+
+@pug_bp.route('/pug/api/blinkbot/pay', methods=['POST'])
+@limiter.limit("10 per minute")
+def blinkbot_pay():
+    """Charge one month of credits and extend access by 30 days."""
+    err = login_required_api()
+    if err: return err
+    user_id = session['user_id']
+    if not _blink_sub_state(user_id)['expired']:
+        return jsonify({'ok': True, **_blink_sub_state(user_id)})   # still in an active window
+    w = Wallet.query.filter_by(user_id=user_id).first()
+    if not w or w.balance < _BLINK_MONTHLY_CREDITS:
+        return jsonify({'error': 'insufficient_credits', 'need': _BLINK_MONTHLY_CREDITS,
+                        'have': (w.balance if w else 0)}), 402
+    w.balance -= _BLINK_MONTHLY_CREDITS
+    n = _blink_sub_note(user_id)
+    d = json.loads(n.body) if (n and n.body) else {}
+    now  = datetime.utcnow()
+    prev = datetime.fromisoformat(d['paid_until']) if d.get('paid_until') else now
+    d['paid_until'] = (max(now, prev) + timedelta(days=30)).isoformat()
+    n.body = json.dumps(d)
+    db.session.add(WalletTx(user_id=user_id, tx_type='spend',
+                            amount=-_BLINK_MONTHLY_CREDITS, note='BlinkBot monthly',
+                            status='completed'))
+    db.session.commit()
+    return jsonify({'ok': True, **_blink_sub_state(user_id)})
+
+
+@pug_bp.route('/pug/api/blinkbot/model', methods=['GET'])
+def blinkbot_model_file():
+    """Serve the GGUF for on-device download. Production should set BLINKBOT_MODEL_URL
+    to a B2 link (don't stream a 380 MB file through the app); local/self-host streams
+    the file directly with range support so wllama can chunk + resume."""
+    err = login_required_api()
+    if err: return err
+    url = os.environ.get('BLINKBOT_MODEL_URL')
+    if url:
+        from flask import redirect
+        return redirect(url)
+    if not os.path.exists(_BLINK_PATH):
+        return jsonify({'error': 'model not hosted here; set BLINKBOT_MODEL_URL'}), 404
+    from flask import send_file
+    return send_file(_BLINK_PATH, mimetype='application/octet-stream',
+                     conditional=True, as_attachment=False,
+                     download_name='blinkbot_v4.gguf')
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
