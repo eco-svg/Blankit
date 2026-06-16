@@ -37,7 +37,9 @@
     'single-thread/wllama.wasm': `${WLLAMA_CDN}/src/single-thread/wllama.wasm`,
     'multi-thread/wllama.wasm':  `${WLLAMA_CDN}/src/multi-thread/wllama.wasm`,
   };
-  const MODEL_URL   = '/pug/api/blinkbot/model.gguf';   // must end .gguf (wllama validates)
+  // Absolute URL (not root-relative): wllama fetches inside a blob: Worker, whose
+  // base URL can't resolve "/pug/…". Must also end in .gguf (wllama validates).
+  const MODEL_URL   = `${location.origin}/pug/api/blinkbot/model.gguf`;
   const MODEL_MB    = 380;
   const LS_INSTALLED = 'blink_v4_installed';
   const LS_SPEAK     = 'blink_speak';            // '1' = read bot replies aloud
