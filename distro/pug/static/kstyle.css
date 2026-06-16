@@ -664,7 +664,9 @@ body.header-hidden .l-bar {
   border-color: rgba(74,122,170,0.25) !important;
 }
 .r-blinkbot-soon:hover { transform: none; box-shadow: none; border-color: rgba(74,122,170,0.4) !important; }
-.r-blinkbot-soon-inner { text-align: center; }
+/* width:100% so the inline input row fills the card instead of overflowing its
+   edges (the card centers a shrink-to-fit inner). */
+.r-blinkbot-soon-inner { text-align: center; width: 100%; box-sizing: border-box; padding: 0 4px; }
 .r-blinkbot-soon-name {
   font-family: var(--font-mono);
   font-size: 0.9rem;
