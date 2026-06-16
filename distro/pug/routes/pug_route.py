@@ -526,6 +526,73 @@ def _blink_find_habit(user_id, name):
     ).first()
 
 
+# Stopwords + a few irregular stems so e.g. "ran" maps to a "Run" habit.
+_BLINK_STOP = {
+    'the', 'a', 'an', 'my', 'me', 'i', 'to', 'of', 'and', 'for', 'in', 'on', 'at',
+    'did', 'do', 'done', 'got', 'get', 'just', 'today', 'now', 'some', 'this',
+    'that', 'was', 'is', 'am', 'are', 'have', 'had', 'has', 'with', 'it', 'its',
+    'out', 'up', 'off', 'then', 'so', 'about', 'finished', 'ended', 'end',
+}
+_BLINK_IRREGULAR = {
+    'ran': 'run', 'running': 'run', 'swam': 'swim', 'swimming': 'swim',
+    'ate': 'eat', 'eating': 'eat', 'slept': 'sleep', 'sleeping': 'sleep',
+    'sang': 'sing', 'singing': 'sing', 'wrote': 'write', 'writing': 'write',
+}
+
+
+def _blink_stem(w):
+    """Crude stemmer: irregular map first, then strip a common suffix."""
+    w = _BLINK_IRREGULAR.get(w, w)
+    for suf in ('ing', 'ed', 'es', 's'):
+        if w.endswith(suf) and len(w) - len(suf) >= 3:
+            return w[:-len(suf)]
+    return w
+
+
+def _blink_match_habit_from_text(user_id, text):
+    """Backend safety-net for the 'parse → backend acts' design: the tiny on-device
+    model often files a habit as a note/achievement. If the free text clearly refers
+    to one of the user's ACTIVE habits, return it so we can tick it too. Conservative
+    on purpose — short/common words are ignored and we require a distinctive (5+ char)
+    habit word or a full token-set match, to limit false ticks."""
+    from distro.svg.models.habit import Habit
+    import re
+    import difflib
+    tw = {_blink_stem(w) for w in re.findall(r'[a-z0-9]+', (text or '').lower())
+          if w not in _BLINK_STOP}
+    if not tw:
+        return None
+    best, best_hits = None, 0
+    for h in Habit.query.filter_by(user_id=user_id, is_active=True).all():
+        htoks = [_blink_stem(w) for w in re.findall(r'[a-z0-9]+', (h.name or '').lower())
+                 if w not in _BLINK_STOP and len(w) >= 3]
+        if not htoks:
+            continue
+        hits = 0
+        for ht in htoks:
+            if ht in tw \
+               or any(len(ht) >= 4 and (ht in x or x in ht) for x in tw) \
+               or any(difflib.SequenceMatcher(None, ht, x).ratio() >= 0.85 for x in tw):
+                hits += 1
+        strong = hits == len(htoks) or any(len(ht) >= 5 and ht in tw for ht in htoks)
+        if hits and strong and hits > best_hits:
+            best, best_hits = h, hits
+    return best
+
+
+def _blink_tick_habit_obj(user_id, h, today, performed):
+    """Mark a habit done for `today` (idempotent) and log it for undo."""
+    from distro.svg.models.habit_log import HabitLog
+    hl = HabitLog.query.filter_by(habit_id=h.id, date=today).first()
+    if hl:
+        hl.done = True
+    else:
+        db.session.add(HabitLog(habit_id=h.id, date=today, done=True))
+    performed.append(f"ticked {h.name}")
+    _blink_log_action(user_id, f"tick {h.name}",
+                      {'undo': 'untick_habit', 'habit_id': h.id, 'date': today.isoformat()})
+
+
 def _blink_log_action(user_id, summary, undo_spec):
     """Append one entry to the BlinkBot action log (for undo)."""
     n = Note(user_id=user_id, entry_type='blink_action_log')
@@ -689,6 +756,10 @@ def _blink_execute(user_id, actions, confirmed=False):
             performed.append("noted")
             _blink_log_action(user_id, f"note: {txt[:40]}",
                               {'undo': 'delete_note', 'note_id': n.id})
+            # Safety-net: the words clearly name a tracked habit → tick it too.
+            _hab = _blink_match_habit_from_text(user_id, txt)
+            if _hab:
+                _blink_tick_habit_obj(user_id, _hab, today, performed)
 
         elif t == 'log_achievement':
             title = (a.get('title') or '').strip()
@@ -701,6 +772,9 @@ def _blink_execute(user_id, actions, confirmed=False):
             performed.append("logged achievement")
             _blink_log_action(user_id, f"achievement: {title[:40]}",
                               {'undo': 'delete_note', 'note_id': n.id})
+            _hab = _blink_match_habit_from_text(user_id, title)
+            if _hab:
+                _blink_tick_habit_obj(user_id, _hab, today, performed)
 
         elif t == 'log_metric':
             skill = (a.get('skill') or '').strip()
