@@ -319,10 +319,20 @@
     const reply = r.json.reply || 'Done.';
     setStatus(reply, false);
     speak(reply);
+    fireApplied(r.json.performed);
     if (Array.isArray(r.json.pending_confirm) && r.json.pending_confirm.length) {
       r.json.pending_confirm.forEach(p => offerConfirm(p));
     }
     handleNav(r.json.nav);
+  }
+
+  // BlinkBot mutates the DB server-side; the home widgets only load on page load,
+  // so tell them to re-fetch — otherwise a ticked habit / logged note stays
+  // invisible until a manual reload. habits.js / notes.js / achievements.js listen.
+  function fireApplied(performed) {
+    if (!Array.isArray(performed) || !performed.length) return;
+    document.dispatchEvent(new CustomEvent('blinkbot:applied'));
+    window.dispatchEvent(new Event('habitUpdated'));   // refresh the consistency chart too
   }
 
   // Inline Yes/No in the card subtitle (textContent only — never inject user text).
@@ -337,6 +347,7 @@
     yes.onclick = async () => {
       const r = await api('/pug/api/blinkbot', { confirm_action: pending.action });
       setStatus((r.json && r.json.reply) || 'Done.', false);
+      fireApplied(r.json && r.json.performed);
     };
     no.onclick = () => setStatus('Cancelled.', false);
     sub.appendChild(yes); sub.appendChild(document.createTextNode(' ')); sub.appendChild(no);

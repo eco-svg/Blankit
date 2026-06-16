@@ -202,4 +202,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     load();
+    document.addEventListener('blinkbot:applied', load);   // BlinkBot logged an achievement
 });

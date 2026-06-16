@@ -214,4 +214,5 @@
   }
 
   loadHabits();
+  document.addEventListener('blinkbot:applied', loadHabits);   // BlinkBot ticked/added a habit
 })();

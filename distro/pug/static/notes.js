@@ -94,6 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load notes immediately when the page is ready
     loadNotesList();
+    // BlinkBot logged a note server-side → re-fetch so it shows without a reload.
+    document.addEventListener('blinkbot:applied', loadNotesList);
 
 
     // =========================================================
