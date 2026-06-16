@@ -655,7 +655,7 @@ body.header-hidden .l-bar {
 
 /* ── BlinkBot Coming Soon (rbar) ────────────────────── */
 .r-blinkbot-soon {
-  flex: 1;
+  flex: 0 0 auto;          /* size to content — no dead space below the input row */
   display: flex;
   align-items: center;
   justify-content: center;
