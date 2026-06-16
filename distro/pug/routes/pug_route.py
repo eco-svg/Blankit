@@ -549,34 +549,51 @@ def _blink_stem(w):
     return w
 
 
+def _blink_norm(s):
+    """Lowercase and glue a number to a following unit ("5 km" → "5km", "7 hrs" →
+    "7hrs") so a quantity matches a habit like "5 km Run" even without the verb."""
+    import re
+    return re.sub(r'(\d)\s+([a-z])', r'\1\2', (s or '').lower())
+
+
 def _blink_match_habit_from_text(user_id, text):
     """Backend safety-net for the 'parse → backend acts' design: the tiny on-device
     model often files a habit as a note/achievement. If the free text clearly refers
     to one of the user's ACTIVE habits, return it so we can tick it too. Conservative
-    on purpose — short/common words are ignored and we require a distinctive (5+ char)
-    habit word or a full token-set match, to limit false ticks."""
+    on purpose — short/common words are ignored, and a match must include a
+    DISTINCTIVE token (a 5+ char word, or a quantity like 5km/400m/7hrs) or cover the
+    whole habit name, to limit false ticks."""
     from distro.svg.models.habit import Habit
-    import re
     import difflib
-    tw = {_blink_stem(w) for w in re.findall(r'[a-z0-9]+', (text or '').lower())
+    import re
+    tw = {_blink_stem(w) for w in re.findall(r'[a-z0-9]+', _blink_norm(text))
           if w not in _BLINK_STOP}
     if not tw:
         return None
+    has_digit = lambda s: any(c.isdigit() for c in s)
     best, best_hits = None, 0
     for h in Habit.query.filter_by(user_id=user_id, is_active=True).all():
-        htoks = [_blink_stem(w) for w in re.findall(r'[a-z0-9]+', (h.name or '').lower())
+        htoks = [_blink_stem(w) for w in re.findall(r'[a-z0-9]+', _blink_norm(h.name))
                  if w not in _BLINK_STOP and len(w) >= 3]
         if not htoks:
             continue
-        hits = 0
+        matched = []   # (token, was_exact)
         for ht in htoks:
-            if ht in tw \
-               or any(len(ht) >= 4 and (ht in x or x in ht) for x in tw) \
-               or any(difflib.SequenceMatcher(None, ht, x).ratio() >= 0.85 for x in tw):
-                hits += 1
-        strong = hits == len(htoks) or any(len(ht) >= 5 and ht in tw for ht in htoks)
-        if hits and strong and hits > best_hits:
-            best, best_hits = h, hits
+            if ht in tw:
+                matched.append((ht, True))
+            elif any(len(ht) >= 5 and (ht in x or x in ht) for x in tw) \
+                    or any(difflib.SequenceMatcher(None, ht, x).ratio() >= 0.85 for x in tw):
+                matched.append((ht, False))   # fuzzy/substring — only trusted for long words
+        if not matched:
+            continue
+        # Strong enough to tick = a DISTINCTIVE token matched (a quantity like 5km,
+        # a 5+ char word, or an exact whole-word hit ≥3 chars like "run"/"sing"), or
+        # the whole habit name was covered. Fuzzy hits on short words don't qualify —
+        # keeps "single" from ticking "sing".
+        distinctive = any(has_digit(m) or len(m) >= 5 or (exact and len(m) >= 3)
+                          for (m, exact) in matched)
+        if (distinctive or len(matched) == len(htoks)) and len(matched) > best_hits:
+            best, best_hits = h, len(matched)
     return best
 
 
