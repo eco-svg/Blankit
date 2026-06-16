@@ -449,6 +449,18 @@ def create_app():
             "object-src 'none'; "
             "base-uri 'self';"
         )
+
+        # ── Cross-origin isolation → unlocks SharedArrayBuffer so BlinkBot's wllama
+        #    runs MULTI-THREADED (much faster than single-thread WASM). Scoped to ONLY
+        #    the pug home page (where the BlinkBot card lives) so cross-origin embeds
+        #    on other pages (e.g. YouTube on community/posts) keep working. COEP
+        #    `credentialless` keeps same-origin media + no-cors subresources loading
+        #    without needing CORP headers on every third party. Browsers without
+        #    credentialless (e.g. Safari) simply stay single-thread — graceful.
+        from flask import request as _rq
+        if _rq.endpoint == 'pug.home':
+            response.headers['Cross-Origin-Opener-Policy']   = 'same-origin'
+            response.headers['Cross-Origin-Embedder-Policy'] = 'credentialless'
         return response
 
     @app.route('/privacy')

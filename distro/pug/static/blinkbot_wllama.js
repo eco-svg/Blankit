@@ -41,6 +41,11 @@
   // base URL can't resolve "/pug/…". Must also end in .gguf (wllama validates).
   const MODEL_URL   = `${location.origin}/pug/api/blinkbot/model.gguf`;
   const MODEL_MB    = 380;
+  // Multi-thread WASM needs SharedArrayBuffer, which needs the page to be
+  // cross-origin isolated (COOP+COEP, set on /pug/home). When it is, use the
+  // cores; otherwise wllama only has single-thread WASM and n_threads is moot.
+  const N_THREADS   = self.crossOriginIsolated
+    ? Math.max(2, Math.min(8, navigator.hardwareConcurrency || 4)) : 1;
   const LS_INSTALLED = 'blink_v4_installed';
   const LS_SPEAK     = 'blink_speak';            // '1' = read bot replies aloud
 
@@ -183,8 +188,10 @@
       // jsdelivr's auto-ESM (/+esm) 404s for this package — use its real ESM entry.
       const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
       wllama = new Wllama(WASM_PATHS);
+      console.log('[blinkbot] crossOriginIsolated:', self.crossOriginIsolated, '| n_threads:', N_THREADS);
       await wllama.loadModelFromUrl(MODEL_URL, {
         n_ctx: 2048,
+        n_threads: N_THREADS,
         progressCallback: ({ loaded, total }) => {
           const pct = total ? Math.round((loaded / total) * 100) : 0;
           if (fill) fill.style.width = pct + '%';
@@ -231,8 +238,10 @@
     const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
     const w = new Wllama(WASM_PATHS);
     const t0 = performance.now();
+    console.log('[blinkbot] crossOriginIsolated:', self.crossOriginIsolated, '| n_threads:', N_THREADS);
     await w.loadModelFromUrl(MODEL_URL, {
       n_ctx: 2048,
+      n_threads: N_THREADS,
       // Show progress: a cache hit flies past; a re-download (cleared storage)
       // visibly climbs instead of sitting on a dead "Waking up…".
       progressCallback: ({ loaded, total }) => {
