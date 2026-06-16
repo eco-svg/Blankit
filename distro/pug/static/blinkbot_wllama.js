@@ -281,7 +281,9 @@
         });
       raw = typeof raw === 'string' ? raw : (raw?.content || '');
       console.log('[blinkbot] gen done in', Math.round(performance.now() - t0), 'ms; chars:', raw.length);
+      console.log('[blinkbot] RAW OUTPUT:\n' + raw);          // what the model actually emitted
       parsed = parseOut(raw);
+      console.log('[blinkbot] PARSED:', parsed, '| actions:', parsed && parsed.actions);
     } catch (e) {
       setStatus(ctrl.signal.aborted ? 'Timed out — too slow on this device.' : 'BlinkBot error.', false);
       console.error('[blinkbot] gen failed', e);
@@ -298,6 +300,7 @@
       message: parsed.needs_groq ? msg : undefined,
       actions: parsed.actions, needs_groq: parsed.needs_groq, reply: parsed.reply,
     });
+    console.log('[blinkbot] SERVER:', r.code, r.json);        // performed[] shows what the DB did
     if (r.code === 402 && r.json.paywall) {
       setStatus(r.json.reply || 'Free period ended.', false);
       offerRenew();
