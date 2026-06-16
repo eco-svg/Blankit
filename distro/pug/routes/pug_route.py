@@ -1938,8 +1938,15 @@ def blinkbot_model_file():
 
     url = os.environ.get('BLINKBOT_MODEL_URL')
     if url:
-        from flask import redirect
-        return redirect(url)
+        # Must be an ABSOLUTE http(s) URL. A bare/relative value would make the
+        # browser resolve the redirect against this request path and 404 (e.g.
+        # /pug/api/blinkbot/<value>). Ignore it and fall through if it's not.
+        if url.startswith(('http://', 'https://')):
+            from flask import redirect
+            return redirect(url)
+        current_app.logger.warning(
+            "BLINKBOT_MODEL_URL is not an absolute http(s) URL (%r); "
+            "ignoring it and trying BLINKBOT_MODEL_KEY / local file.", url)
 
     key = os.environ.get('BLINKBOT_MODEL_KEY')
     if key:
