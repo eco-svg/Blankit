@@ -284,6 +284,7 @@
         {
           nPredict: 200,
           sampling: { temp: 0.1 },
+          useCache: true,            // reuse the cached system-prompt KV → skip re-eval on msg 2+
           abortSignal: ctrl.signal,
           onNewToken: (_t, _p, currentText) =>
             setStatus(currentText.replace(/<think>/g, '').trim() || '…', true),
