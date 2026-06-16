@@ -1979,6 +1979,103 @@ def blinkbot_model_file():
     return jsonify({'error': 'model not hosted; set BLINKBOT_MODEL_KEY'}), 404
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# WHISPER (speech-to-text) — model files for BlinkBot's on-device voice input.
+# transformers.js pulls the library + ONNX runtime from jsdelivr (CSP-allowed);
+# the model weights stream same-origin through here so the CSP needs no extra
+# third-party host. The mic AUDIO is transcribed on-device and never uploaded —
+# only the public model weights come down, exactly like the GGUF.
+# ─────────────────────────────────────────────────────────────────────────────
+_WHISPER_PREFIX = os.environ.get('WHISPER_MODEL_PREFIX', 'whisper')   # bucket key prefix
+_WHISPER_DIR    = os.environ.get('WHISPER_MODEL_DIR', os.path.join(_MODELS_DIR, 'whisper'))
+_WHISPER_MIME   = {'.json': 'application/json', '.txt': 'text/plain; charset=utf-8',
+                   '.onnx': 'application/octet-stream', '.bin': 'application/octet-stream'}
+
+
+@pug_bp.route('/pug/api/whisper/<path:fname>', methods=['GET'])
+def whisper_model_file(fname):
+    """Serve one Whisper model file for on-device STT. transformers.js requests
+    repo-style subpaths (e.g. 'onnx-community/whisper-tiny.en/onnx/encoder_model_fp16.onnx').
+    Streams from the storage bucket in prod (key = WHISPER_MODEL_PREFIX/<fname>),
+    falls back to a local dir in dev. Same-origin → stays within the existing CSP."""
+    err = login_required_api()
+    if err: return err
+
+    # transformers.js only asks for relative repo paths; reject anything else.
+    if '..' in fname or fname.startswith('/'):
+        return jsonify({'error': 'bad path'}), 400
+
+    import mimetypes
+    ext  = os.path.splitext(fname)[1].lower()
+    mime = _WHISPER_MIME.get(ext) or mimetypes.guess_type(fname)[0] or 'application/octet-stream'
+
+    # 1) object storage (prod / MinIO dev) — stream with the app's own creds.
+    if os.environ.get('n_ENDPOINT'):
+        try:
+            from minio import Minio
+            from flask import Response, stream_with_context
+            client = Minio(
+                os.environ.get('n_ENDPOINT', 'localhost:9000'),
+                access_key=os.environ.get('n_ACCESS_KEY', 'minioadmin'),
+                secret_key=os.environ.get('n_SECRET_KEY', 'minioadmin'),
+                secure=os.environ.get('n_SECURE', 'false').lower() == 'true',
+            )
+            bucket = os.environ.get('BLINKBOT_MODEL_BUCKET',
+                                    os.environ.get('n_BUCKET', 'veyra-media'))
+            key  = f"{_WHISPER_PREFIX}/{fname}"
+            size = client.stat_object(bucket, key).size
+            obj  = client.get_object(bucket, key)
+
+            def _stream():
+                try:
+                    for chunk in obj.stream(256 * 1024):
+                        yield chunk
+                finally:
+                    obj.close(); obj.release_conn()
+
+            resp = Response(stream_with_context(_stream()), mimetype=mime)
+            resp.headers['Content-Length'] = str(size)
+            resp.headers['Cache-Control']  = 'public, max-age=2592000'
+            return resp
+        except Exception as e:
+            current_app.logger.warning(f"Whisper bucket miss ({fname}): {e}; trying local")
+            # fall through to the local dir
+
+    # 2) local dir (dev / self-host).
+    base  = os.path.abspath(_WHISPER_DIR)
+    local = os.path.abspath(os.path.join(base, fname))
+    if not local.startswith(base + os.sep):
+        return jsonify({'error': 'bad path'}), 400
+    if os.path.exists(local):
+        from flask import send_file
+        return send_file(local, mimetype=mime, conditional=True, max_age=2592000)
+    return jsonify({'error': 'whisper model not hosted'}), 404
+
+
+@pug_bp.route('/pug/api/clientlog', methods=['POST'])
+@limiter.limit("30 per minute")
+def client_log():
+    """Receive a client-side JS error for debugging from real user devices.
+    Deliberately minimal: logs to the app logger (→ Render logs), persists
+    NOTHING, and keeps no user content — only the error text, where it happened,
+    the stack, the browser, and the page path. No query strings, no PII stored."""
+    data = request.get_json(silent=True) or {}
+
+    def _clip(v, n):
+        return str(v)[:n] if v is not None else ''
+
+    msg = _clip(data.get('message'), 500)
+    if not msg:
+        return ('', 204)
+    src   = _clip(data.get('source'), 300)            # 'file:line:col' or 'tag:blinkbot:load'
+    page  = _clip(data.get('page'),   200)            # path only (client strips the query)
+    stack = _clip(data.get('stack'),  2000)
+    ua    = _clip(request.headers.get('User-Agent'), 300)
+    current_app.logger.warning("[clientlog] %s | at=%s | page=%s | ua=%s\n%s",
+                               msg, src, page, ua, stack)
+    return ('', 204)
+
+
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
 def buddybot_endpoint():
     """BuddyBot chat endpoint."""
