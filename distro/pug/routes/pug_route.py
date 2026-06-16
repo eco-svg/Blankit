@@ -1951,18 +1951,13 @@ def blinkbot_model_file():
     key = os.environ.get('BLINKBOT_MODEL_KEY')
     if key:
         try:
-            from minio import Minio
             from flask import Response, stream_with_context
-            client = Minio(
-                os.environ.get('n_ENDPOINT', 'localhost:9000'),
-                access_key=os.environ.get('n_ACCESS_KEY', 'minioadmin'),
-                secret_key=os.environ.get('n_SECRET_KEY', 'minioadmin'),
-                secure=os.environ.get('n_SECURE', 'false').lower() == 'true',
-            )
-            bucket = os.environ.get('BLINKBOT_MODEL_BUCKET',
-                                    os.environ.get('n_BUCKET', 'veyra-media'))
-            size = client.stat_object(bucket, key).size
-            obj  = client.get_object(bucket, key)
+            # Reuse the app's proven storage client/creds (MINIO_* — the very same
+            # ones that serve user media from B2 in prod). A parallel n_* config
+            # here would default to localhost and 502 wherever only MINIO_* is set.
+            bucket = os.environ.get('BLINKBOT_MODEL_BUCKET', MINIO_BUCKET)
+            size = minio_client.stat_object(bucket, key).size
+            obj  = minio_client.get_object(bucket, key)
 
             def _stream():
                 try:
