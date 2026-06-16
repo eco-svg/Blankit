@@ -25,7 +25,9 @@ self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/pug/api/')) return;
 
-  // Static assets: cache-first
+  // Static assets: cache-first. The fetch can reject (offline, or a privacy
+  // extension blocking an asset by name e.g. cookie-consent.js) — catch it so a
+  // rejected promise never reaches respondWith and spams uncaught SW errors.
   if (url.pathname.startsWith('/static/') ||
       url.pathname.match(/\.(css|js|png|jpg|woff2?)$/)) {
     e.respondWith(
@@ -35,7 +37,7 @@ self.addEventListener('fetch', e => {
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }))
+      })).catch(() => caches.match(e.request).then(c => c || Response.error()))
     );
     return;
   }

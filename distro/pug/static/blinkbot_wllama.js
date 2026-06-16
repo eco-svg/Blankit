@@ -53,6 +53,7 @@
 
   let wllama = null;     // engine, lazy
   let loading = false;   // model load in flight
+  let generating = false; // one inference at a time (single-thread WASM serializes anyway)
   let status = { activated: false, expired: false };
   let transcriber = null;          // Whisper pipeline, lazy
   let sttCfg = null;               // chosen {id, device, dtype, multilingual, tier}
@@ -254,19 +255,49 @@
     const inp = $('blinkChatInput');
     const msg = (inp.value || '').trim();
     if (!msg || !wllama) return;
+    if (generating) return;           // ignore until the current reply finishes
+    generating = true;
     inp.value = '';
     addMsg(msg, 'user');
     const thinking = addMsg('…', 'bot');
+    thinking.classList.add('blink-streaming');
 
-    let parsed;
+    // Single-thread WASM must chew through the ~280-token system prompt before the
+    // first output token, so stream tokens into the bubble — the user sees it's
+    // alive (and how fast), and a hang surfaces instead of an eternal "…".
+    const ctrl = new AbortController();
+    const t0 = performance.now();
+    const timer = setTimeout(() => ctrl.abort(), 120000);   // 120s hard cap
+
+    let parsed, raw;
     try {
-      const raw = await wllama.createChatCompletion(
+      raw = await wllama.createChatCompletion(
         [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: msg }],
-        { nPredict: 256, sampling: { temp: 0.1 } });
-      parsed = parseOut(typeof raw === 'string' ? raw : (raw?.content || ''));
+        {
+          nPredict: 200,
+          sampling: { temp: 0.1 },
+          abortSignal: ctrl.signal,
+          onNewToken: (_t, _p, currentText) => {
+            // Show the model's running output (preview) so generation is visible.
+            thinking.textContent = currentText.replace(/<think>/g, '').trim() || '…';
+            $('blinkChatLog').scrollTop = $('blinkChatLog').scrollHeight;
+          },
+        });
+      raw = typeof raw === 'string' ? raw : (raw?.content || '');
+      console.log('[blinkbot] gen done in', Math.round(performance.now() - t0), 'ms; chars:', raw.length);
+      parsed = parseOut(raw);
     } catch (e) {
-      thinking.textContent = 'BlinkBot error.'; console.error(e); return;
+      thinking.classList.remove('blink-streaming');
+      thinking.textContent = ctrl.signal.aborted
+        ? 'Timed out — too slow on this device.' : 'BlinkBot error.';
+      console.error('[blinkbot] gen failed', e);
+      if (window.blinkLog) window.blinkLog('blinkbot:gen', e);
+      return;
+    } finally {
+      clearTimeout(timer);
+      generating = false;
     }
+    thinking.classList.remove('blink-streaming');
     if (!parsed) { thinking.textContent = "Couldn't read that as a command."; return; }
 
     // Send the parsed result to the server to execute (raw text stays local).
@@ -503,6 +534,8 @@
       .blink-msg{max-width:85%;padding:8px 11px;border-radius:11px;font-size:13px;line-height:1.4;white-space:pre-wrap}
       .blink-msg.bot{align-self:flex-start;background:var(--surface-2,#23252c);color:var(--text,#dfe2e8)}
       .blink-msg.user{align-self:flex-end;background:var(--accent,#6c8cff);color:#fff}
+      .blink-msg.blink-streaming{opacity:.65;animation:blinkPulse 1.2s ease-in-out infinite}
+      @keyframes blinkPulse{0%,100%{opacity:.5}50%{opacity:.8}}
       .blink-confirm button{margin-left:6px;padding:3px 10px;border-radius:7px;border:none;cursor:pointer;font-size:12px}
       .blink-confirm button:first-of-type{background:var(--accent,#6c8cff);color:#fff}
       .blink-chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border2,#2a2c33)}
