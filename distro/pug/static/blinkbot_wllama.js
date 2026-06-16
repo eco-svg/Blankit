@@ -37,7 +37,7 @@
     'single-thread/wllama.wasm': `${WLLAMA_CDN}/src/single-thread/wllama.wasm`,
     'multi-thread/wllama.wasm':  `${WLLAMA_CDN}/src/multi-thread/wllama.wasm`,
   };
-  const MODEL_URL   = '/pug/api/blinkbot/model';
+  const MODEL_URL   = '/pug/api/blinkbot/model.gguf';   // must end .gguf (wllama validates)
   const MODEL_MB    = 380;
   const LS_INSTALLED = 'blink_v4_installed';
   const LS_SPEAK     = 'blink_speak';            // '1' = read bot replies aloud

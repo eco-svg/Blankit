@@ -1922,7 +1922,9 @@ def blinkbot_pay():
     return jsonify({'ok': True, **_blink_sub_state(user_id)})
 
 
-@pug_bp.route('/pug/api/blinkbot/model', methods=['GET'])
+# The path MUST end in ".gguf" — wllama validates the URL extension before
+# downloading and rejects anything else.
+@pug_bp.route('/pug/api/blinkbot/model.gguf', methods=['GET'])
 def blinkbot_model_file():
     """Serve the GGUF for on-device download. Three modes, in order:
       1. BLINKBOT_MODEL_URL set → redirect (only if it's a PUBLIC url).
