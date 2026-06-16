@@ -230,8 +230,19 @@
     setStatus('Waking up…', true);
     const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
     const w = new Wllama(WASM_PATHS);
-    await w.loadModelFromUrl(MODEL_URL, { n_ctx: 2048 });
+    const t0 = performance.now();
+    await w.loadModelFromUrl(MODEL_URL, {
+      n_ctx: 2048,
+      // Show progress: a cache hit flies past; a re-download (cleared storage)
+      // visibly climbs instead of sitting on a dead "Waking up…".
+      progressCallback: ({ loaded, total }) => {
+        const pct = total ? Math.round((loaded / total) * 100) : 0;
+        setStatus(total ? `Loading model… ${pct}%` : 'Loading model…', true);
+      },
+    });
+    console.log('[blinkbot] engine loaded in', Math.round(performance.now() - t0), 'ms');
     wllama = w;
+    setStatus('Thinking…', true);
     return wllama;
   }
 
