@@ -2052,13 +2052,21 @@ def whisper_model_file(fname):
     return jsonify({'error': 'whisper model not hosted'}), 404
 
 
+from collections import deque
+# Last N client errors, in memory only (cleared on restart). Lets an admin read
+# them at /pug/api/clientlog/recent without digging through Render's log stream.
+_CLIENT_LOG = deque(maxlen=80)
+
+
 @pug_bp.route('/pug/api/clientlog', methods=['POST'])
 @limiter.limit("30 per minute")
 def client_log():
     """Receive a client-side JS error for debugging from real user devices.
-    Deliberately minimal: logs to the app logger (→ Render logs), persists
-    NOTHING, and keeps no user content — only the error text, where it happened,
-    the stack, the browser, and the page path. No query strings, no PII stored."""
+    Deliberately minimal: logs to the app logger (→ Render logs) + a small
+    in-memory ring buffer, persists NOTHING to the DB, and keeps no user content
+    — only the error text, where it happened, the stack, the browser, and the
+    page path. No query strings, no PII stored."""
+    from datetime import datetime, timezone
     data = request.get_json(silent=True) or {}
 
     def _clip(v, n):
@@ -2067,13 +2075,28 @@ def client_log():
     msg = _clip(data.get('message'), 500)
     if not msg:
         return ('', 204)
-    src   = _clip(data.get('source'), 300)            # 'file:line:col' or 'tag:blinkbot:load'
-    page  = _clip(data.get('page'),   200)            # path only (client strips the query)
-    stack = _clip(data.get('stack'),  2000)
-    ua    = _clip(request.headers.get('User-Agent'), 300)
+    entry = {
+        'ts':    datetime.now(timezone.utc).isoformat(timespec='seconds'),
+        'msg':   msg,
+        'src':   _clip(data.get('source'), 300),   # 'file:line:col' or 'tag:blinkbot:load'
+        'page':  _clip(data.get('page'),   200),   # path only (client strips the query)
+        'stack': _clip(data.get('stack'),  2000),
+        'ua':    _clip(request.headers.get('User-Agent'), 300),
+    }
+    _CLIENT_LOG.appendleft(entry)
     current_app.logger.warning("[clientlog] %s | at=%s | page=%s | ua=%s\n%s",
-                               msg, src, page, ua, stack)
+                               entry['msg'], entry['src'], entry['page'], entry['ua'], entry['stack'])
     return ('', 204)
+
+
+@pug_bp.route('/pug/api/clientlog/recent', methods=['GET'])
+def client_log_recent():
+    """Admin-only: the most recent client errors from the in-memory buffer.
+    Visit while logged in as an admin to read what users' devices reported."""
+    err = admin_required_api()
+    if err:
+        return err
+    return jsonify({'count': len(_CLIENT_LOG), 'errors': list(_CLIENT_LOG)})
 
 
 @pug_bp.route('/pug/api/buddybot', methods=['POST'])
