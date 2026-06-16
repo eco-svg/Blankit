@@ -78,15 +78,17 @@
 
   // ── card state ────────────────────────────────────────────────────────────
   function renderCard() {
-    const badge = $('blinkCardBadge'), btn = $('blinkCardBtn');
+    const badge = $('blinkCardBadge'), btn = $('blinkCardBtn'), io = $('blinkCardIO');
     if (!badge || !btn) return;
     const installed = localStorage.getItem(LS_INSTALLED) === '1';
+    // "Ready" = downloaded + still inside the free/credit window → show the inline
+    // input instead of a button. (Engine loads on first use after a refresh.)
+    const ready = installed && status.activated && !status.expired;
     if (status.expired) {
       badge.textContent = 'Renew';
       btn.textContent = `Renew · ${status.monthly_credits || 20} cr/mo`;
-    } else if (installed && status.activated) {
+    } else if (ready) {
       badge.textContent = 'Ready';
-      btn.textContent = 'Open';
     } else if (status.activated) {
       badge.textContent = 'Free';
       btn.textContent = 'Download';
@@ -94,6 +96,23 @@
       badge.textContent = `Free · ${Math.round((status.free_days || 150) / 30)} mo`;
       btn.textContent = 'Download';
     }
+    if (io)  io.classList.toggle('hidden', !ready);
+    btn.classList.toggle('hidden', !!ready);
+  }
+
+  // Transient status shown in the card's subtitle line (no chat panel, no card
+  // growth). `busy` = generating (keeps the pulsing cue, no auto-revert).
+  let statusTimer = null;
+  function setStatus(text, busy) {
+    const sub = $('blinkCardSub');
+    if (!sub) return;
+    clearTimeout(statusTimer);
+    sub.textContent = text;
+    sub.classList.toggle('blink-streaming', !!busy);
+    if (!busy) statusTimer = setTimeout(() => {
+      sub.textContent = 'On-device AI Automator';
+      sub.classList.remove('blink-streaming');
+    }, 8000);
   }
 
   async function refreshStatus() {
@@ -147,8 +166,8 @@
   // ── download + activate (starts the free timer) ────────────────────────────
   async function startDownload() {
     if (loading) return;
-    // Already have it cached? skip straight to chat.
-    if (localStorage.getItem(LS_INSTALLED) === '1' && wllama) { closePopup(); openChat(); return; }
+    // Already loaded? just close the popup — the inline card input is ready.
+    if (localStorage.getItem(LS_INSTALLED) === '1' && wllama) { closePopup(); renderCard(); focusInput(); return; }
 
     loading = true;
     const go = $('blinkPopGo'), prog = $('blinkPopProg'), fill = $('blinkPopBarFill'), txt = $('blinkPopProgTxt');
@@ -175,9 +194,9 @@
       localStorage.setItem(LS_INSTALLED, '1');
       if (txt) txt.textContent = 'Ready.';
       loading = false;
-      renderCard();
+      renderCard();        // swaps the Download button for the inline input row
       closePopup();
-      openChat();
+      focusInput();
     } catch (e) {
       loading = false;
       if (txt) txt.textContent = 'Download failed — tap to retry.';
@@ -189,55 +208,7 @@
 
   function closePopup() { const p = $('blinkPopup'); if (p) p.classList.add('hidden'); }
 
-  // ── chat panel ─────────────────────────────────────────────────────────────
-  function openChat() {
-    let panel = $('blinkChatPanel');
-    if (!panel) {
-      panel = document.createElement('div');
-      panel.id = 'blinkChatPanel';
-      panel.className = 'blink-chat-panel';
-      panel.innerHTML = `
-        <div class="blink-chat-head">
-          <span>BlinkBot <small>· on-device</small></span>
-          <div class="blink-head-btns">
-            <button id="blinkSpeakToggle" type="button" title="Read replies aloud">${ICON.speakOff}</button>
-            <button id="blinkChatClose" type="button" title="Close">${ICON.close}</button>
-          </div>
-        </div>
-        <div class="blink-chat-log" id="blinkChatLog">
-          <div class="blink-msg bot">Online. Tell me what you did — e.g. “ran 5k and ticked meditation”. Tap the mic to say it.</div>
-        </div>
-        <div class="blink-chat-input">
-          <button id="blinkMicBtn" type="button" title="Hold-free: tap to talk, tap to stop">${ICON.mic}</button>
-          <input id="blinkChatInput" type="text" placeholder="Talk to BlinkBot…" autocomplete="off">
-          <button id="blinkChatSend" type="button">Send</button>
-        </div>`;
-      document.body.appendChild(panel);
-      $('blinkChatClose').onclick = () => { stopRec(); panel.classList.add('hidden'); };
-      $('blinkChatSend').onclick = sendMsg;
-      $('blinkChatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') sendMsg(); });
-      $('blinkSpeakToggle').onclick = toggleSpeak;
-      $('blinkMicBtn').onclick = toggleMic;
-      renderSpeakBtn();
-      // Mic needs getUserMedia + a secure context (https / localhost). Hide it otherwise.
-      const micOk = window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
-      if (!micOk && !(window.BlinkNativeSTT && window.BlinkNativeSTT.listen)) {
-        $('blinkMicBtn').style.display = 'none';
-      }
-    }
-    panel.classList.remove('hidden');
-    $('blinkChatInput').focus();
-  }
-
-  function addMsg(text, who) {
-    const log = $('blinkChatLog');
-    const d = document.createElement('div');
-    d.className = 'blink-msg ' + who;
-    d.textContent = text;
-    log.appendChild(d);
-    log.scrollTop = log.scrollHeight;
-    return d;
-  }
+  function focusInput() { const i = $('blinkCardInput'); if (i) i.focus(); }
 
   // Pull the JSON out of "<think>…</think>\n{json}" — mirrors backend _blink_parse.
   function parseOut(raw) {
@@ -251,20 +222,37 @@
     } catch (_) { return null; }
   }
 
-  async function sendMsg() {
-    const inp = $('blinkChatInput');
-    const msg = (inp.value || '').trim();
-    if (!msg || !wllama) return;
-    if (generating) return;           // ignore until the current reply finishes
+  // Load the cached engine into memory (after a refresh wllama is null again).
+  // First-time install goes through startDownload (popup + progress); this is the
+  // lightweight "wake it back up from cache" path the inline input uses.
+  async function ensureEngine() {
+    if (wllama) return wllama;
+    setStatus('Waking up…', true);
+    const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
+    const w = new Wllama(WASM_PATHS);
+    await w.loadModelFromUrl(MODEL_URL, { n_ctx: 2048 });
+    wllama = w;
+    return wllama;
+  }
+
+  // The whole point: text/voice → parsed actions → server executes them. No chat.
+  // Streams the model's output into the card subtitle so generation is visible.
+  async function processInput(msg) {
+    msg = (msg || '').trim();
+    if (!msg || generating) return;
     generating = true;
-    inp.value = '';
-    addMsg(msg, 'user');
-    const thinking = addMsg('…', 'bot');
-    thinking.classList.add('blink-streaming');
+    try { await ensureEngine(); }
+    catch (e) {
+      generating = false;
+      setStatus('Couldn’t load BlinkBot — reopen the card.', false);
+      console.error('[blinkbot] engine load failed', e);
+      if (window.blinkLog) window.blinkLog('blinkbot:engine', e);
+      return;
+    }
 
     // Single-thread WASM must chew through the ~280-token system prompt before the
-    // first output token, so stream tokens into the bubble — the user sees it's
-    // alive (and how fast), and a hang surfaces instead of an eternal "…".
+    // first output token, so stream it — the user sees it's alive (and how fast),
+    // and a true hang surfaces as a timeout instead of an eternal "…".
     const ctrl = new AbortController();
     const t0 = performance.now();
     const timer = setTimeout(() => ctrl.abort(), 120000);   // 120s hard cap
@@ -277,19 +265,14 @@
           nPredict: 200,
           sampling: { temp: 0.1 },
           abortSignal: ctrl.signal,
-          onNewToken: (_t, _p, currentText) => {
-            // Show the model's running output (preview) so generation is visible.
-            thinking.textContent = currentText.replace(/<think>/g, '').trim() || '…';
-            $('blinkChatLog').scrollTop = $('blinkChatLog').scrollHeight;
-          },
+          onNewToken: (_t, _p, currentText) =>
+            setStatus(currentText.replace(/<think>/g, '').trim() || '…', true),
         });
       raw = typeof raw === 'string' ? raw : (raw?.content || '');
       console.log('[blinkbot] gen done in', Math.round(performance.now() - t0), 'ms; chars:', raw.length);
       parsed = parseOut(raw);
     } catch (e) {
-      thinking.classList.remove('blink-streaming');
-      thinking.textContent = ctrl.signal.aborted
-        ? 'Timed out — too slow on this device.' : 'BlinkBot error.';
+      setStatus(ctrl.signal.aborted ? 'Timed out — too slow on this device.' : 'BlinkBot error.', false);
       console.error('[blinkbot] gen failed', e);
       if (window.blinkLog) window.blinkLog('blinkbot:gen', e);
       return;
@@ -297,8 +280,7 @@
       clearTimeout(timer);
       generating = false;
     }
-    thinking.classList.remove('blink-streaming');
-    if (!parsed) { thinking.textContent = "Couldn't read that as a command."; return; }
+    if (!parsed) { setStatus("Couldn’t read that as a command.", false); return; }
 
     // Send the parsed result to the server to execute (raw text stays local).
     const r = await api('/pug/api/blinkbot', {
@@ -306,42 +288,41 @@
       actions: parsed.actions, needs_groq: parsed.needs_groq, reply: parsed.reply,
     });
     if (r.code === 402 && r.json.paywall) {
-      thinking.textContent = r.json.reply || 'Free period ended.';
+      setStatus(r.json.reply || 'Free period ended.', false);
       offerRenew();
       return;
     }
-    thinking.textContent = r.json.reply || 'ok';
-    speak(thinking.textContent);
+    const reply = r.json.reply || 'Done.';
+    setStatus(reply, false);
+    speak(reply);
     if (Array.isArray(r.json.pending_confirm) && r.json.pending_confirm.length) {
       r.json.pending_confirm.forEach(p => offerConfirm(p));
     }
     handleNav(r.json.nav);
   }
 
+  // Inline Yes/No in the card subtitle (textContent only — never inject user text).
   function offerConfirm(pending) {
-    const log = $('blinkChatLog');
-    const row = document.createElement('div');
-    row.className = 'blink-msg bot blink-confirm';
-    const label = document.createElement('span');   // textContent: never inject user text as HTML
-    label.textContent = pending.summary;
-    row.appendChild(label);
-    row.appendChild(document.createTextNode(' '));
-    const yes = document.createElement('button'); yes.textContent = 'Yes';
-    const no  = document.createElement('button'); no.textContent  = 'No';
+    const sub = $('blinkCardSub');
+    if (!sub) return;
+    clearTimeout(statusTimer);
+    sub.classList.remove('blink-streaming');
+    sub.textContent = pending.summary + ' ';
+    const yes = document.createElement('button'); yes.textContent = 'Yes'; yes.className = 'r-blink-confirm-btn';
+    const no  = document.createElement('button'); no.textContent  = 'No';  no.className  = 'r-blink-confirm-btn';
     yes.onclick = async () => {
       const r = await api('/pug/api/blinkbot', { confirm_action: pending.action });
-      row.textContent = (r.json && r.json.reply) || 'done';
+      setStatus((r.json && r.json.reply) || 'Done.', false);
     };
-    no.onclick = () => { row.textContent = 'Cancelled.'; };
-    row.appendChild(yes); row.appendChild(no);
-    log.appendChild(row); log.scrollTop = log.scrollHeight;
+    no.onclick = () => setStatus('Cancelled.', false);
+    sub.appendChild(yes); sub.appendChild(document.createTextNode(' ')); sub.appendChild(no);
   }
 
   async function offerRenew() {
     const r = await api('/pug/api/blinkbot/pay', {});
-    if (r.ok) { status = r.json; renderCard(); addMsg('Renewed — 30 more days.', 'bot'); }
+    if (r.ok) { status = r.json; renderCard(); setStatus('Renewed — 30 more days.', false); }
     else if (r.json.error === 'insufficient_credits')
-      addMsg(`Need ${r.json.need} credits (you have ${r.json.have}). Top up in your wallet.`, 'bot');
+      setStatus(`Need ${r.json.need} credits (you have ${r.json.have}). Top up in your wallet.`, false);
   }
 
   function handleNav(nav) {
@@ -354,23 +335,9 @@
   // ── text-to-speech (read replies aloud) ────────────────────────────────────
   // speechSynthesis runs on-device in every browser; the native wrapper can
   // inject window.BlinkNativeTTS for nicer OS voices.
+  // TTS is opt-in (LS_SPEAK); off by default — an automator shouldn't talk back
+  // unless asked. (Toggle UI lived in the old chat panel; re-add later if wanted.)
   function speakEnabled() { return localStorage.getItem(LS_SPEAK) === '1'; }
-
-  function renderSpeakBtn() {
-    const b = $('blinkSpeakToggle');
-    if (!b) return;
-    const on = speakEnabled();
-    b.innerHTML = on ? ICON.speakOn : ICON.speakOff;
-    b.classList.toggle('on', on);
-    b.title = on ? 'Replies read aloud — tap to mute' : 'Read replies aloud';
-  }
-
-  function toggleSpeak() {
-    const on = !speakEnabled();
-    localStorage.setItem(LS_SPEAK, on ? '1' : '0');
-    if (!on) { try { speechSynthesis.cancel(); } catch (_) {} }
-    renderSpeakBtn();
-  }
 
   function speak(text) {
     if (!speakEnabled() || !text) return;
@@ -418,8 +385,8 @@
     return transcriber;
   }
 
-  function micBusy(on)  { const b = $('blinkMicBtn'); if (b) b.classList.toggle('busy', on); }
-  function micActive(on){ const b = $('blinkMicBtn'); if (b) b.classList.toggle('rec', on); }
+  function micBusy(on)  { const b = $('blinkCardMic'); if (b) b.classList.toggle('busy', on); }
+  function micActive(on){ const b = $('blinkCardMic'); if (b) b.classList.toggle('rec', on); }
 
   async function toggleMic() {
     // Native recognizer (wrapped app) takes priority — fastest, OS-private.
@@ -437,7 +404,7 @@
   async function startRec() {
     let stream;
     try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-    catch (e) { addMsg('Mic blocked — allow microphone access, or just type.', 'bot'); return; }
+    catch (e) { setStatus('Mic blocked — allow access, or just type.', false); return; }
     recChunks = []; recording = true; micActive(true);
     mediaRec = new MediaRecorder(stream);
     mediaRec.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
@@ -463,7 +430,7 @@
     } catch (e) {
       console.error('[blinkbot stt]', e);
       if (window.blinkLog) window.blinkLog('blinkbot:stt', e);
-      addMsg('Couldn’t transcribe that — try again or type it.', 'bot');
+      setStatus('Couldn’t transcribe that — try again or type it.', false);
     } finally {
       micBusy(false); recChunks = [];
     }
@@ -482,12 +449,12 @@
     return rendered.getChannelData(0);
   }
 
+  // Voice is the "primary" path: transcribe → show it in the box → run it.
   function appendTranscript(text) {
     if (!text) return;
-    const inp = $('blinkChatInput');
-    if (!inp) return;
-    inp.value = inp.value ? `${inp.value} ${text}` : text;
-    inp.focus();
+    const inp = $('blinkCardInput');
+    if (inp) { inp.value = text; inp.focus(); }
+    processInput(text);
   }
 
   // ── styles (self-contained; uses theme vars with fallbacks) ─────────────────
@@ -522,38 +489,28 @@
       .blink-pop-progress.hidden{display:none}
       .blink-pop-bar{height:6px;border-radius:6px;background:var(--surface-2,#23252c);overflow:hidden;margin-bottom:6px}
       .blink-pop-bar>div{height:100%;width:0;background:var(--accent,#6c8cff);transition:width .2s}
-      .blink-chat-panel{position:fixed;right:18px;bottom:18px;z-index:9998;width:340px;max-width:92vw;
-        height:460px;max-height:74vh;display:flex;flex-direction:column;background:var(--surface-1,#15161a);
-        border:1px solid var(--border2,#2a2c33);border-radius:14px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.5)}
-      .blink-chat-panel.hidden{display:none}
-      .blink-chat-head{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;
-        border-bottom:1px solid var(--border2,#2a2c33);font-weight:600;font-size:14px;color:var(--text,#e6e6e6)}
-      .blink-chat-head small{color:var(--text-dim,#8b909a);font-weight:400}
-      .blink-chat-head button{background:none;border:none;color:var(--text-dim,#8b909a);font-size:15px;cursor:pointer}
-      .blink-chat-log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
-      .blink-msg{max-width:85%;padding:8px 11px;border-radius:11px;font-size:13px;line-height:1.4;white-space:pre-wrap}
-      .blink-msg.bot{align-self:flex-start;background:var(--surface-2,#23252c);color:var(--text,#dfe2e8)}
-      .blink-msg.user{align-self:flex-end;background:var(--accent,#6c8cff);color:#fff}
-      .blink-msg.blink-streaming{opacity:.65;animation:blinkPulse 1.2s ease-in-out infinite}
-      @keyframes blinkPulse{0%,100%{opacity:.5}50%{opacity:.8}}
-      .blink-confirm button{margin-left:6px;padding:3px 10px;border-radius:7px;border:none;cursor:pointer;font-size:12px}
-      .blink-confirm button:first-of-type{background:var(--accent,#6c8cff);color:#fff}
-      .blink-chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border2,#2a2c33)}
-      .blink-chat-input input{flex:1;padding:8px 11px;border-radius:9px;border:1px solid var(--border2,#2a2c33);
-        background:var(--surface-2,#1d1f25);color:var(--text,#e6e6e6);font-size:13px}
-      .blink-chat-input button#blinkChatSend{padding:8px 15px;border-radius:9px;border:none;background:var(--accent,#6c8cff);color:#fff;font-weight:600;cursor:pointer}
-      .blink-head-btns{display:flex;align-items:center;gap:4px}
-      .blink-head-btns button{display:flex;align-items:center;justify-content:center;background:none;border:none;
-        color:var(--text-dim,#8b909a);cursor:pointer;padding:4px;border-radius:7px;line-height:0}
-      .blink-head-btns button:hover{color:var(--text,#e6e6e6);background:var(--surface-2,#23252c)}
-      #blinkSpeakToggle.on{color:var(--accent,#6c8cff)}
-      #blinkMicBtn{display:flex;align-items:center;justify-content:center;flex:0 0 auto;width:36px;padding:0;line-height:0;
-        border-radius:9px;border:1px solid var(--border2,#2a2c33);background:var(--surface-2,#1d1f25);
-        color:var(--text-dim,#9aa0aa);cursor:pointer;transition:color .15s,background .15s,box-shadow .15s}
-      #blinkMicBtn:hover{color:var(--text,#e6e6e6)}
-      #blinkMicBtn.rec{color:#fff;background:#d8483f;border-color:#d8483f;animation:blinkMicPulse 1.1s ease-in-out infinite}
-      #blinkMicBtn.busy{color:var(--accent,#6c8cff);pointer-events:none}
-      #blinkMicBtn.busy svg{animation:blinkSpin .8s linear infinite}
+      /* Inline automator input on the card (mic + text + send) — no chat panel. */
+      .r-blinkbot-io{display:flex;gap:6px;align-items:center;margin-top:8px}
+      .r-blinkbot-io.hidden{display:none}
+      .r-blinkbot-io input{flex:1;min-width:0;padding:7px 10px;border-radius:8px;
+        border:1px solid var(--border2,#2a2c33);background:var(--surface-2,#1d1f25);
+        color:var(--text,#e6e6e6);font-size:12px}
+      .r-blinkbot-io input::placeholder{color:var(--text-dim,#7d828c)}
+      .r-blinkbot-mic,.r-blinkbot-send{display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+        height:32px;border-radius:8px;border:1px solid var(--border2,#2a2c33);cursor:pointer;line-height:0;
+        transition:color .15s,background .15s,box-shadow .15s,opacity .15s}
+      .r-blinkbot-mic{width:32px;padding:0;background:var(--surface-2,#1d1f25);color:var(--text-dim,#9aa0aa)}
+      .r-blinkbot-mic:hover{color:var(--text,#e6e6e6)}
+      .r-blinkbot-mic.rec{color:#fff;background:#d8483f;border-color:#d8483f;animation:blinkMicPulse 1.1s ease-in-out infinite}
+      .r-blinkbot-mic.busy{color:var(--accent,#6c8cff);pointer-events:none}
+      .r-blinkbot-mic.busy svg{animation:blinkSpin .8s linear infinite}
+      .r-blinkbot-send{width:34px;font-size:15px;font-weight:700;background:var(--accent,#6c8cff);color:#fff;border-color:transparent}
+      .r-blinkbot-send:hover{opacity:.88}
+      .r-blink-confirm-btn{margin-left:6px;padding:2px 9px;border-radius:6px;border:none;cursor:pointer;font-size:11px}
+      .r-blink-confirm-btn:first-of-type{background:var(--accent,#6c8cff);color:#fff}
+      .r-blink-confirm-btn:last-of-type{background:var(--surface-2,#23252c);color:var(--text-dim,#9aa0aa)}
+      .blink-streaming{opacity:.7;animation:blinkPulse 1.1s ease-in-out infinite}
+      @keyframes blinkPulse{0%,100%{opacity:.5}50%{opacity:.85}}
       @keyframes blinkMicPulse{0%,100%{box-shadow:0 0 0 0 rgba(216,72,63,.5)}50%{box-shadow:0 0 0 6px rgba(216,72,63,0)}}
       @keyframes blinkSpin{to{transform:rotate(360deg)}}`;
     document.head.appendChild(s);
@@ -565,15 +522,30 @@
     if (!card) return;
     injectStyles();
     refreshStatus();
-    const onActivate = (e) => {
-      e.stopPropagation();
-      if (localStorage.getItem(LS_INSTALLED) === '1' && status.activated && !status.expired) {
-        if (!wllama) { openPopup(); startDownload(); } else openChat();   // reload engine if page refreshed
-      } else {
-        openPopup();
-      }
-    };
-    card.addEventListener('click', onActivate);
-    if (btn) btn.addEventListener('click', onActivate);
+
+    const input = $('blinkCardInput'), send = $('blinkCardSend'), mic = $('blinkCardMic');
+    if (mic) mic.innerHTML = ICON.mic;
+
+    const run = () => { const v = input ? input.value : ''; if (input) input.value = ''; processInput(v); };
+    if (send)  send.addEventListener('click', (e) => { e.stopPropagation(); run(); });
+    if (input) {
+      input.addEventListener('click', (e) => e.stopPropagation());
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); run(); } });
+    }
+    if (mic) {
+      mic.addEventListener('click', (e) => { e.stopPropagation(); toggleMic(); });
+      // Mic needs getUserMedia + a secure context (https/localhost). Hide it otherwise.
+      const micOk = window.isSecureContext && navigator.mediaDevices && navigator.mediaDevices.getUserMedia;
+      if (!micOk && !(window.BlinkNativeSTT && window.BlinkNativeSTT.listen)) mic.style.display = 'none';
+    }
+
+    // Download button (pre-install) opens the terms popup. Clicking the card body
+    // before install does the same; after install it just focuses the input.
+    const onDownload = (e) => { e.stopPropagation(); openPopup(); };
+    if (btn) btn.addEventListener('click', onDownload);
+    card.addEventListener('click', () => {
+      const io = $('blinkCardIO');
+      if (io && !io.classList.contains('hidden')) focusInput(); else openPopup();
+    });
   });
 })();

@@ -20,8 +20,14 @@
     <div class="r-blinkbot-soon-inner">
       <div class="r-blinkbot-soon-name">BlinkBot</div>
       <div class="r-blinkbot-soon-badge" id="blinkCardBadge">Free · 5 mo</div>
-      <div class="r-blinkbot-soon-sub">On-device AI Automator</div>
+      <div class="r-blinkbot-soon-sub" id="blinkCardSub">On-device AI Automator</div>
+      <!-- Before install: download. After: inline automator input (mic + text), no chat panel. -->
       <button class="r-blinkbot-dl-btn" id="blinkCardBtn" type="button">Download</button>
+      <div class="r-blinkbot-io hidden" id="blinkCardIO">
+        <button class="r-blinkbot-mic" id="blinkCardMic" type="button" title="Speak" aria-label="Speak"></button>
+        <input type="text" id="blinkCardInput" placeholder="Tell BlinkBot what you did…" autocomplete="off">
+        <button class="r-blinkbot-send" id="blinkCardSend" type="button" aria-label="Send" title="Send">&#8594;</button>
+      </div>
     </div>
   </div>
 
