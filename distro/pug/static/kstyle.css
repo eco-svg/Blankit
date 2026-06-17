@@ -2725,6 +2725,8 @@ div.infinite-canvas video {
     border-radius: var(--radius);
     height: 54px; /* Fixed height for a sleek header look */
 }
+/* In the rbar it should fill the column width like the cards below it. */
+.r-bar .clock-widget.stats-integrated { width: 100%; }
 
 .cw-info {
     padding: 8px 14px;
