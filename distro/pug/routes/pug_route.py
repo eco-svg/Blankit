@@ -1549,18 +1549,101 @@ def get_consistency():
 
 @pug_bp.route('/pug/api/events', methods=['GET'])
 def get_events():
-    """List the user's calendar events."""
+    """List the user's calendar events (entry_type='event')."""
     err = login_required_api()
     if err: return err
     events = Note.query.filter(
         Note.user_id == session['user_id'],
         Note.is_deleted == False,
+        Note.entry_type == 'event',
         Note.start_datetime != None
-    ).all()
+    ).order_by(Note.start_datetime.asc()).all()
     return jsonify([{
         'id': e.id, 'title': e.title,
-        'start_datetime': e.start_datetime.isoformat() if e.start_datetime else None
+        'start_datetime': e.start_datetime.isoformat() if e.start_datetime else None,
+        'end_datetime':   e.end_datetime.isoformat()   if e.end_datetime   else None,
     } for e in events])
+
+
+@pug_bp.route('/pug/api/events', methods=['POST'])
+def create_event():
+    """Add a calendar event. Body: title, start (YYYY-MM-DD), end (optional),
+    time (optional HH:MM). Stored as a Note with entry_type='event'."""
+    err = login_required_api()
+    if err: return err
+    data  = request.get_json(silent=True) or {}
+    title = (data.get('title') or '').strip()
+    start = (data.get('start') or '').strip()      # 'YYYY-MM-DD'
+    end   = (data.get('end') or '').strip()        # 'YYYY-MM-DD' or empty
+    tm    = (data.get('time') or '').strip()       # 'HH:MM' or empty
+    if not title or not start:
+        return jsonify({'error': 'title and start required'}), 400
+    if len(title) > 200:
+        return jsonify({'error': 'title too long'}), 400
+    try:
+        start_dt = datetime.strptime(f"{start} {tm}" if tm else start,
+                                     '%Y-%m-%d %H:%M' if tm else '%Y-%m-%d')
+        end_dt = datetime.strptime(end, '%Y-%m-%d') if end else None
+    except ValueError:
+        return jsonify({'error': 'bad date/time'}), 400
+    if end_dt and end_dt.date() < start_dt.date():
+        return jsonify({'error': 'end before start'}), 400
+
+    e = Note(user_id=session['user_id'], entry_type='event',
+             start_datetime=start_dt, end_datetime=end_dt)
+    e.title = title
+    db.session.add(e)
+    db.session.commit()
+    return jsonify({'id': e.id, 'title': e.title,
+                    'start_datetime': e.start_datetime.isoformat(),
+                    'end_datetime': e.end_datetime.isoformat() if e.end_datetime else None})
+
+
+@pug_bp.route('/pug/api/events/<int:event_id>', methods=['DELETE'])
+def delete_event(event_id):
+    """Delete one of the user's calendar events."""
+    err = login_required_api()
+    if err: return err
+    e = Note.query.filter_by(id=event_id, user_id=session['user_id'],
+                             entry_type='event').first()
+    if not e:
+        return jsonify({'error': 'not found'}), 404
+    e.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+_holidays_cache = {}  # (country, year) -> [{date, name}] — in-memory per process
+
+
+@pug_bp.route('/pug/api/holidays', methods=['GET'])
+def get_holidays():
+    """Official public holidays for a country/year, proxied + cached from Nager.Date
+    (free, no key). Country comes from the client's browser locale. Same-origin so
+    the CSP needs no third-party host."""
+    err = login_required_api()
+    if err: return err
+    country = (request.args.get('country') or '').strip().upper()
+    try:
+        year = int(request.args.get('year') or 0)
+    except ValueError:
+        year = 0
+    if not (len(country) == 2 and country.isalpha() and 2000 <= year <= 2100):
+        return jsonify([])
+    key = (country, year)
+    if key in _holidays_cache:
+        return jsonify(_holidays_cache[key])
+    import requests as req
+    try:
+        r = req.get(f'https://date.nager.at/api/v3/PublicHolidays/{year}/{country}', timeout=8)
+        if r.status_code != 200:
+            return jsonify([])
+        data = [{'date': h.get('date'), 'name': h.get('localName') or h.get('name')}
+                for h in r.json() if h.get('date')]
+        _holidays_cache[key] = data
+        return jsonify(data)
+    except Exception:
+        return jsonify([])
 
 
 

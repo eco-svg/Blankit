@@ -31,6 +31,7 @@ class Note(db.Model):
     _body          = db.Column('body', db.Text, default='')
     mood           = db.Column(db.String(50), default='')
     start_datetime = db.Column(db.DateTime, nullable=True)
+    end_datetime   = db.Column(db.DateTime, nullable=True)   # calendar event spans (end day/time)
     created_at     = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at     = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted     = db.Column(db.Boolean, default=False)
@@ -63,6 +64,7 @@ class Note(db.Model):
             'entry_type':     self.entry_type,
             'is_finished':    self.is_finished,
             'start_datetime': self.start_datetime.isoformat() if self.start_datetime else None,
+            'end_datetime':   self.end_datetime.isoformat()   if self.end_datetime   else None,
             'created_at':     self.created_at.isoformat()     if self.created_at     else None,
             'updated_at':     self.updated_at.isoformat()     if self.updated_at     else None,
         }

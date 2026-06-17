@@ -157,7 +157,8 @@ def _migrate_schema():
     if 'notes' in inspector.get_table_names():
         note_cols = {c['name'] for c in inspector.get_columns('notes')}
         for col, col_type in [('report_count', 'INTEGER DEFAULT 0'),
-                              ('is_hidden',    'BOOLEAN DEFAULT FALSE')]:
+                              ('is_hidden',    'BOOLEAN DEFAULT FALSE'),
+                              ('end_datetime', 'TIMESTAMP')]:
             if col not in note_cols:
                 try:
                     with db.engine.begin() as conn:
