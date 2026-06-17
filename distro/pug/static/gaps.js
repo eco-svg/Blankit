@@ -1,98 +1,11 @@
 /**
- * gaps.js — Home-tab modals & UI glue (e.g. the Dream entry confirm modal).
+ * gaps.js — Home-tab UI glue. The Dream now lives in the header (headerbar.js
+ * owns its display + entry), so this file just drives the wisdom/fact bar.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- NEW: Custom Modal Logic for the Dream ---
-    const dreamModal = document.getElementById('dreamModal');
-    const btnCancelDream = document.getElementById('cancelDreamBtn');
-    const btnConfirmDream = document.getElementById('confirmDreamBtn');
-    let pendingDreamText = "";
 
-    if (btnCancelDream && btnConfirmDream && dreamModal) {
-        btnCancelDream.addEventListener('click', () => {
-            dreamModal.classList.add('hidden');
-            pendingDreamText = "";
-        });
-
-        btnConfirmDream.addEventListener('click', () => {
-            if (pendingDreamText) {
-                lockInDream(pendingDreamText);
-                dreamModal.classList.add('hidden');
-            }
-        });
-    }
-
-    // --- 1. THE ONE-SHOT DREAM LOGIC ---
-    // Lives in its own standalone bar atop the content now — the header slot
-    // (#dreamContainer) was handed to headerbar.js (Deadline / Wisdom).
-    const dreamContainer = document.getElementById('dreamStandalone');
-
-    function renderDreamInput() {
-        if (!dreamContainer) return;
-        dreamContainer.innerHTML = `
-            <input type="text" id="dreamInput" class="dream-input" 
-                   placeholder="Define your ultimate long-term dream. Choose carefully..." 
-                   autocomplete="off" spellcheck="false">
-        `;
-        
-        const input = document.getElementById('dreamInput');
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && input.value.trim() !== '') {
-                pendingDreamText = input.value.trim();
-                if (dreamModal) {
-                    dreamModal.classList.remove('hidden');
-                } else {
-                    lockInDream(pendingDreamText); 
-                }
-            }
-        });
-    }
-
-    function renderLockedDream(text) {
-        if (!dreamContainer) return;
-        dreamContainer.innerHTML = `<span class="dream-text">" ${text} "</span>`;
-    }
-
-    function checkDream() {
-        fetch('/pug/api/dream')
-            .then(res => {
-                if (!res.ok) throw new Error("API not ready");
-                return res.json();
-            })
-            .then(data => {
-                if (data && data.dream) {
-                    renderLockedDream(data.dream);
-                } else {
-                    renderDreamInput();
-                }
-            })
-            .catch(err => {
-                console.error("Dream API error:", err);
-                renderDreamInput();
-            });
-    }
-
-    function lockInDream(dreamText) {
-        fetch('/pug/api/dream', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: dreamText })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'success') {
-                renderLockedDream(data.dream);
-            }
-        })
-        .catch(err => alert("Failed to save Dream to database. Check terminal."));
-    }
-
-    checkDream();
-
-
-    // --- 2. THE WISDOM & FACT ENGINE ---
+    // --- THE WISDOM & FACT ENGINE ---
     const quoteElements = document.querySelectorAll('.random-quote');
     
     // An upgraded offline mix of Quotes, Science, and Tech facts

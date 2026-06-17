@@ -1,35 +1,33 @@
 /*
- * headerbar.js — fills the header slot (formerly the "Dream" bar) with either the
- * next upcoming calendar event ("Deadline"), a wisdom quote, or both swapping on a
- * ~5-minute timer. Controlled by the "Header Bar" profile setting (localStorage:
- * veyra_header_bar = 'wisdom' | 'deadline' | 'both', default 'both').
+ * headerbar.js — fills the header slot (#dreamContainer) with the next upcoming
+ * calendar event ("Deadline"), the user's locked long-term Dream, or both
+ * swapping on a ~5-minute timer. Controlled by the "Header Bar" profile setting
+ * (localStorage: veyra_header_bar = 'dream' | 'deadline' | 'both', default 'both').
+ *
+ * The Dream is the permanent one-shot trajectory (/pug/api/dream). This module
+ * also owns setting it (the input shown when none is locked yet) — the old
+ * central "dream bar" was removed.
  *
  * "Next deadline" = the soonest calendar event whose date is today-or-later
  * (events come from /pug/api/events; an event with an end_datetime is a span).
  */
 (function () {
   const KEY      = 'veyra_header_bar';
-  const SWAP_MS  = 5 * 60 * 1000;     // swap wisdom <-> deadline every ~5 min in 'both'
+  const SWAP_MS  = 5 * 60 * 1000;     // swap dream <-> deadline every ~5 min in 'both'
   const slot     = document.getElementById('dreamContainer');
   if (!slot) return;
 
-  const offlineMix = [
-    "Discipline equals freedom. - Jocko Willink",
-    "The obstacle is the way. - Marcus Aurelius",
-    "We suffer more often in imagination than in reality. - Seneca",
-    "Amateurs sit and wait for inspiration, the rest of us just get up and go to work. - Stephen King",
-  ];
-
-  let nextEvent  = null;     // {id,title,start,end} or null
-  let wisdomText = '';
-  let swapTimer  = null;
-  let bothShow   = 'deadline';   // which face is visible while mode === 'both'
+  let nextEvent = null;     // {id,title,start,end} or null
+  let dreamText = null;     // string when locked, '' when not set yet, null until loaded
+  let swapTimer = null;
+  let bothShow  = 'deadline';   // which face is visible while mode === 'both'
 
   const ICON = '<svg class="hdr-dl-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12M6 22h12M6 2c0 4 4 5 6 8 2-3 6-4 6-8M6 22c0-4 4-5 6-8 2 3 6 4 6 8"/></svg>';
 
   function getMode() {
-    const m = localStorage.getItem(KEY);
-    return (m === 'wisdom' || m === 'deadline' || m === 'both') ? m : 'both';
+    let m = localStorage.getItem(KEY);
+    if (m === 'wisdom') m = 'dream';   // back-compat: header no longer shows wisdom
+    return (m === 'dream' || m === 'deadline' || m === 'both') ? m : 'both';
   }
 
   // ── data ───────────────────────────────────────────────────────────────────
@@ -57,14 +55,13 @@
     } catch (_) { /* leave previous value */ }
   }
 
-  async function loadWisdom() {
+  async function loadDream() {
     try {
-      const res  = await fetch('/pug/api/wisdom');
+      const res  = await fetch('/pug/api/dream', { credentials: 'include' });
       const data = await res.json();
-      if (data && data.text) { wisdomText = data.text; return; }
-      throw new Error('empty');
+      dreamText = (data && data.dream) ? data.dream : '';
     } catch (_) {
-      wisdomText = offlineMix[Math.floor(Math.random() * offlineMix.length)];
+      if (dreamText === null) dreamText = '';
     }
   }
 
@@ -112,27 +109,55 @@
       `</span>`;
   }
 
-  function renderWisdom() {
-    slot.innerHTML = `<span class="hdr-wisdom">${esc(wisdomText)}</span>`;
+  function renderDream() {
+    if (dreamText) {
+      slot.innerHTML = `<span class="dream-text" title="${esc(dreamText)}">" ${esc(dreamText)} "</span>`;
+      return;
+    }
+    // No dream locked yet — let the user set it right here (one-shot).
+    slot.innerHTML =
+      `<input type="text" id="dreamInput" class="dream-input" maxlength="120" ` +
+      `placeholder="Define your ultimate long-term dream…" autocomplete="off" spellcheck="false">`;
+    const input = slot.querySelector('#dreamInput');
+    input.addEventListener('keydown', async (e) => {
+      if (e.key !== 'Enter') return;
+      const val = input.value.trim();
+      if (!val) return;
+      input.disabled = true;
+      try {
+        const res = await fetch('/pug/api/dream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ title: val }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (data && data.status === 'success') {
+          dreamText = data.dream;
+          render();
+        } else {
+          input.disabled = false;
+        }
+      } catch (_) { input.disabled = false; }
+    });
   }
 
   function render() {
     const mode = getMode();
-    if (mode === 'wisdom') return renderWisdom();
     if (mode === 'deadline') return renderDeadline();
+    if (mode === 'dream')    return renderDream();
     // both: show whichever face is active; fall back to the other if empty
     if (bothShow === 'deadline') {
-      if (nextEvent) return renderDeadline();
-      return renderWisdom();
+      return nextEvent ? renderDeadline() : renderDream();
     }
-    return wisdomText ? renderWisdom() : renderDeadline();
+    return dreamText ? renderDream() : renderDeadline();
   }
 
   function startSwap() {
     clearInterval(swapTimer);
     if (getMode() !== 'both') return;
     swapTimer = setInterval(() => {
-      bothShow = (bothShow === 'deadline') ? 'wisdom' : 'deadline';
+      bothShow = (bothShow === 'deadline') ? 'dream' : 'deadline';
       render();
     }, SWAP_MS);
   }
@@ -153,7 +178,7 @@
 
   // ── boot ────────────────────────────────────────────────────────────────────
   (async function init() {
-    await Promise.all([loadNextEvent(), loadWisdom()]);
+    await Promise.all([loadNextEvent(), loadDream()]);
     render();
     startSwap();
     // keep the deadline current (date rolls over, new events) without a swap

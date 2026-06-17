@@ -176,7 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Header Bar setting (Deadline / Wisdom / Both) ────────────────────────
     if (ppHeaderBarSelect) {
-        const savedHB = localStorage.getItem('veyra_header_bar') || 'both';
+        let savedHB = localStorage.getItem('veyra_header_bar') || 'both';
+        if (savedHB === 'wisdom') savedHB = 'dream';   // header no longer shows wisdom
         ppHeaderBarSelect.value = savedHB;
         ppHeaderBarSelect.addEventListener('change', () => {
             if (window.veyraHeaderBar) window.veyraHeaderBar.setMode(ppHeaderBarSelect.value);

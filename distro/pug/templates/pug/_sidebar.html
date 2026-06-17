@@ -1,28 +1,7 @@
 <!-- _sidebar.html — the right sidebar: event calendar, BlinkBot card, and the goals widget. -->
 <aside class="r-bar">
 
-  <!-- 0. Clock / date / weather + Stats — moved here from the header so it sits in
-       the rbar instead of overflowing the top bar. -->
-  <div class="clock-widget stats-integrated">
-    <div class="cw-info">
-      <div class="cw-row">
-        <span class="cw-time" id="cwTime">00:00</span>
-        <span class="cw-sep">|</span>
-        <span class="cw-weather" id="cwWeather">☀️ --°</span>
-      </div>
-      <div class="cw-row">
-        <span class="cw-date" id="cwDate">Jan 1</span>
-        <span class="cw-sep">|</span>
-        <span class="cw-day" id="cwDay">Monday</span>
-      </div>
-    </div>
-    <button id="statsBtn" class="stats-btn-inner">
-      <span class="stats-label" data-i18n="header_stats">STATS</span>
-      <div class="stats-icon">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
-      </div>
-    </button>
-  </div>
+  <!-- (Clock / date / weather + Stats moved back to the header, far right.) -->
 
   <!-- 1. Calendar — always first -->
   <div class="r-card calender" id="calendarCard">

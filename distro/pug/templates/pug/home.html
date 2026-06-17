@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=108">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=109">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=78">
 </head>
@@ -46,6 +46,10 @@
       </div>
     </div>
 
+    <!-- Deadline / Dream bar (swaps every ~5 min) — sits next to the greeting.
+         Owned by headerbar.js. (#dreamContainer id kept for back-compat.) -->
+    <div class="header-dream" id="dreamContainer"></div>
+
     <nav class="header-nav header-nav-right">
       <a href="#notes" class="nav-pill" data-home="true">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
@@ -65,10 +69,28 @@
       </button>
     </div>
 
-    <!-- Header bar: next deadline / wisdom / both — owned by headerbar.js.
-         Pinned to the far right so it sits above the rbar/calendar; sized to
-         var(--rbar-w). (#dreamContainer id kept for back-compat.) -->
-    <div class="header-dream" id="dreamContainer"></div>
+    <!-- Clock / date / weather + Stats — back in the header, far right, matched
+         to the rbar width so it sits above the Event Calendar. -->
+    <div class="clock-widget stats-integrated header-clock">
+      <div class="cw-info">
+        <div class="cw-row">
+          <span class="cw-time" id="cwTime">00:00</span>
+          <span class="cw-sep">|</span>
+          <span class="cw-weather" id="cwWeather">☀️ --°</span>
+        </div>
+        <div class="cw-row">
+          <span class="cw-date" id="cwDate">Jan 1</span>
+          <span class="cw-sep">|</span>
+          <span class="cw-day" id="cwDay">Monday</span>
+        </div>
+      </div>
+      <button id="statsBtn" class="stats-btn-inner">
+        <span class="stats-label" data-i18n="header_stats">STATS</span>
+        <div class="stats-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+        </div>
+      </button>
+    </div>
   </header>
 
   <!-- Left capsule rail — Notes, Skills, Habits & Physique -->
@@ -86,10 +108,7 @@
       {% include 'pug/cards/_profile.html' %}
       {% include 'pug/cards/_request.html' %}
 
-      <!-- Dream bar — your locked long-term trajectory (filled by gaps.js) -->
-      <div class="dream-standalone" id="dreamStandalone"></div>
-
-      <!-- Wisdom line — always visible -->
+      <!-- Wisdom line — always visible (the Dream now lives in the header) -->
       <div class="wisdom-bar wisdom-bar-top">
         <span class="quote-text random-quote">Loading wisdom...</span>
       </div>
@@ -356,11 +375,10 @@
   <script src="{{ url_for('pug.static', filename='consistency.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='clock.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='gaps.js') }}?v=2"></script>
-  <script src="{{ url_for('pug.static', filename='headerbar.js') }}?v=1"></script>
-  <script src="{{ url_for('pug.static', filename='quickask.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='headerbar.js') }}?v=2"></script>
   {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='clientlog.js') }}?v=1"></script>
-  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=4"></script>
+  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=5"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
@@ -464,7 +482,7 @@
       history.push({ role: 'user', content: q });
       setThinking(true);
       input.disabled = true; sendBtn.disabled = true;
-      fetch('/pug/api/blinkbot', {
+      fetch('/pug/api/quickask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: q, history: history.slice(-10) })
@@ -472,7 +490,7 @@
       .then(function(r) { return r.json(); })
       .then(function(d) {
         setThinking(false);
-        var text = d.answer || d.error || 'No response.';
+        var text = d.reply || d.error || 'No response.';
         addBubble(text, 'ai');
         history.push({ role: 'assistant', content: text });
       })

@@ -47,11 +47,42 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (_) {}
   }
 
+  // Timezone → ISO country. The IANA zone reflects where the user actually IS,
+  // which the browser *language* often doesn't (e.g. an en-US locale in India was
+  // pulling US holidays — July 4th, Juneteenth — that mean nothing there).
+  const TZ_COUNTRY = {
+    'Asia/Kolkata': 'IN', 'Asia/Calcutta': 'IN',
+    'Asia/Karachi': 'PK', 'Asia/Dhaka': 'BD', 'Asia/Colombo': 'LK', 'Asia/Kathmandu': 'NP',
+    'Asia/Dubai': 'AE', 'Asia/Riyadh': 'SA', 'Asia/Jerusalem': 'IL', 'Asia/Tehran': 'IR',
+    'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Shanghai': 'CN', 'Asia/Hong_Kong': 'HK',
+    'Asia/Singapore': 'SG', 'Asia/Bangkok': 'TH', 'Asia/Jakarta': 'ID', 'Asia/Manila': 'PH',
+    'Asia/Kuala_Lumpur': 'MY', 'Asia/Ho_Chi_Minh': 'VN', 'Asia/Taipei': 'TW',
+    'Europe/London': 'GB', 'Europe/Dublin': 'IE', 'Europe/Berlin': 'DE', 'Europe/Paris': 'FR',
+    'Europe/Madrid': 'ES', 'Europe/Rome': 'IT', 'Europe/Amsterdam': 'NL', 'Europe/Brussels': 'BE',
+    'Europe/Vienna': 'AT', 'Europe/Zurich': 'CH', 'Europe/Lisbon': 'PT', 'Europe/Warsaw': 'PL',
+    'Europe/Prague': 'CZ', 'Europe/Stockholm': 'SE', 'Europe/Oslo': 'NO', 'Europe/Helsinki': 'FI',
+    'Europe/Copenhagen': 'DK', 'Europe/Athens': 'GR', 'Europe/Budapest': 'HU', 'Europe/Bucharest': 'RO',
+    'Europe/Moscow': 'RU', 'Europe/Istanbul': 'TR', 'Europe/Kyiv': 'UA', 'Europe/Kiev': 'UA',
+    'America/New_York': 'US', 'America/Chicago': 'US', 'America/Denver': 'US',
+    'America/Los_Angeles': 'US', 'America/Phoenix': 'US', 'America/Anchorage': 'US',
+    'America/Toronto': 'CA', 'America/Vancouver': 'CA', 'America/Mexico_City': 'MX',
+    'America/Sao_Paulo': 'BR', 'America/Buenos_Aires': 'AR', 'America/Bogota': 'CO',
+    'America/Santiago': 'CL', 'America/Lima': 'PE',
+    'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU', 'Australia/Perth': 'AU',
+    'Australia/Brisbane': 'AU', 'Pacific/Auckland': 'NZ',
+    'Africa/Johannesburg': 'ZA', 'Africa/Cairo': 'EG', 'Africa/Lagos': 'NG', 'Africa/Nairobi': 'KE',
+  };
+
   function detectCountry() {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (TZ_COUNTRY[tz]) return TZ_COUNTRY[tz];
+    } catch (_) {}
+    // Fallback: region embedded in an explicit locale (e.g. 'en-GB' -> 'GB').
     const langs = navigator.languages || [navigator.language || ''];
     for (const l of langs) {
       const m = /[-_]([A-Za-z]{2})$/.exec(l || '');
-      if (m) return m[1].toUpperCase();   // 'en-IN' -> 'IN'
+      if (m) return m[1].toUpperCase();
     }
     return null;
   }
