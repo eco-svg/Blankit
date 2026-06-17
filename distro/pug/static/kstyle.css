@@ -657,16 +657,21 @@ body.header-hidden .l-bar {
 .r-blinkbot-soon {
   flex: 1;                 /* stretch to fill the sidebar — absorbs leftover column space */
   display: flex;
-  align-items: center;
+  align-items: stretch;    /* let the inner fill the card height so we can pin the input */
   justify-content: center;
   cursor: default;
   border-style: dashed;
   border-color: rgba(74,122,170,0.25) !important;
 }
 .r-blinkbot-soon:hover { transform: none; box-shadow: none; border-color: rgba(74,122,170,0.4) !important; }
-/* width:100% so the inline input row fills the card instead of overflowing its
-   edges (the card centers a shrink-to-fit inner). */
-.r-blinkbot-soon-inner { text-align: center; width: 100%; box-sizing: border-box; padding: 0 4px; }
+/* Column so the header sits at the top and the input row gets pinned to the
+   bottom (margin-top:auto). width:100% so the input row fills the card width. */
+.r-blinkbot-soon-inner {
+  text-align: center; width: 100%; box-sizing: border-box; padding: 0 4px;
+  display: flex; flex-direction: column;
+}
+.r-blinkbot-soon-inner > .r-blinkbot-io,
+.r-blinkbot-soon-inner > .r-blinkbot-dl-btn { margin-top: auto; }
 .r-blinkbot-soon-name {
   font-family: var(--font-mono);
   font-size: 0.9rem;
