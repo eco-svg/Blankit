@@ -58,6 +58,10 @@ html { scroll-behavior: smooth; font-size: 17px; }
 }
 
 body {
+  /* The UI was designed at 80% browser zoom, so at everyone else's default 100%
+     it looks ~25% too big. Render the whole page at 80% to match the design.
+     NOTE: to preview this yourself, set YOUR browser back to 100% zoom. */
+  zoom: 0.8;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
