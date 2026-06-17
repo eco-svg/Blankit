@@ -7078,6 +7078,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .credits-tx-cancel:hover { background: rgba(248,113,113,0.12); }
 .credits-tx-pos { color: #4caf87; }
 .credits-tx-neg { color: #f87171; }
+.credits-tx-void { color: var(--text-dim); font-weight: 500; font-style: italic; }
 
 /* Pending topup hint icon + tooltip */
 .credits-tx-hint {

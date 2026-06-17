@@ -129,8 +129,14 @@
       const cls    = t.amount >= 0 ? 'credits-tx-pos' : 'credits-tx-neg';
       const label  = TX_LABELS[t.tx_type] || t.tx_type;
       const date   = t.created_at ? new Date(t.created_at).toLocaleDateString() : '';
-      const status = t.status !== 'completed'
+      // Cancelled / rejected requests never moved any Eyes, so don't show a
+      // misleading +/- amount — show the outcome instead.
+      const voided = (t.status === 'cancelled' || t.status === 'rejected');
+      const status = (t.status !== 'completed' && !voided)
         ? `<span class="credits-tx-status credits-tx-status-${t.status}">${t.status}</span>` : '';
+      const amtHtml = voided
+        ? `<span class="credits-tx-amt credits-tx-void">${t.status === 'rejected' ? 'Rejected' : 'Cancelled'}</span>`
+        : `<span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>`;
 
       let hint   = '';
       let cancel = '';
@@ -152,7 +158,7 @@
           <span class="credits-tx-date">${date}</span>
           ${cancel}
         </div>
-        <span class="credits-tx-amt ${cls}">${sign}${fmt(Math.abs(t.amount))} Eyes</span>
+        ${amtHtml}
       </div>`;
     }).join('');
   }
