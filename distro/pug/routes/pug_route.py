@@ -471,6 +471,7 @@ def _call_blinkbot_server(message, session_history, user_context, user_id=None):
 # append every mutation to a per-user action log so `undo` can reverse the last.
 # ─────────────────────────────────────────────────────────────────────────────
 _BLINK_DESTRUCTIVE = {'remove_habit', 'delete_log', 'edit_log'}
+_BLINK_NOTE_TITLE  = 'Passed by bot'   # title for notes BlinkBot logs; also sorts them last
 _BLINK_STOPWORDS   = {'the', 'a', 'an', 'my', 'me', 'i', 'log', 'logs', 'entry',
                       'that', 'this', 'one', 'of', 'for', 'from', 'about', 'it',
                       'remove', 'delete', 'take', 'off', 'get', 'rid', 'scratch'}
@@ -761,6 +762,7 @@ def _blink_execute(user_id, actions, confirmed=False):
             if not txt:
                 continue
             n = Note(user_id=user_id, entry_type='note')
+            n.title = _BLINK_NOTE_TITLE          # so it's not "untitled" + sorts to the bottom
             n.body = txt
             db.session.add(n)
             db.session.flush()
@@ -1360,6 +1362,9 @@ def get_notes():
     notes = Note.query.filter_by(
         user_id=session['user_id'], entry_type='note', is_deleted=False
     ).order_by(Note.updated_at.desc()).all()
+    # Titles are encrypted, so can't sort bot-notes last in SQL — do it in Python.
+    # Stable sort preserves updated_at-desc within each group; bot-notes (True) sink.
+    notes.sort(key=lambda n: n.title == _BLINK_NOTE_TITLE)
     return jsonify([n.to_dict() for n in notes])
 
 
@@ -4031,28 +4036,60 @@ def proxy_weather():
         return jsonify({'error': 'unavailable'}), 502
 
 
+# Block religious + sexual wisdom (random third-party quotes/facts can be either) —
+# the bar is shown to kids and quotes about these topics are a liability. Kept to
+# clearly-religious / clearly-sexual terms so secular uses ("have faith") still pass.
+_WISDOM_BLOCK = re.compile(r'\b(?:' + '|'.join([
+    'god', 'gods', 'jesus', 'christ', 'christian', 'christianity', 'allah',
+    'muhammad', 'islam', 'islamic', 'muslim', 'bible', 'biblical', 'quran', 'koran',
+    'torah', 'church', 'mosque', 'temple', 'synagogue', 'pray', 'prayer', 'praying',
+    'heaven', 'hell', 'gospel', 'scripture', 'buddha', 'buddhist', 'buddhism',
+    'hindu', 'hinduism', 'jew', 'jewish', 'judaism', 'religion', 'religious',
+    'worship', 'prophet', 'satan', 'devil', 'salvation', 'almighty', 'messiah',
+    'sin', 'sinful',
+    'sex', 'sexual', 'sexuality', 'orgasm', 'penis', 'vagina', 'erotic', 'erotica',
+    'porn', 'pornography', 'nude', 'naked', 'genital', 'genitals', 'masturbate',
+    'masturbation', 'intercourse', 'libido', 'horny', 'foreplay', 'fetish', 'sperm',
+    'semen', 'condom', 'lust', 'lustful', 'seduce', 'seductive', 'aroused',
+]) + r')\b', re.IGNORECASE)
+_WISDOM_FALLBACK = [
+    'The secret of getting ahead is getting started.',
+    'Honeybees can recognize human faces.',
+    'Small daily improvements add up to stunning results.',
+    'A group of flamingos is called a "flamboyance".',
+    'Discipline is choosing between what you want now and what you want most.',
+    'Octopuses have three hearts.',
+]
+
+
 @pug_bp.route('/pug/api/wisdom', methods=['GET'])
 def proxy_wisdom():
-    """Return a daily wisdom quote (proxied/cached)."""
+    """Return a daily wisdom quote/fact, filtered to drop religious/sexual content."""
     err = login_required_api()
     if err: return err
     import requests as req
     import random
-    try:
+
+    def _fetch_one():
         if random.random() > 0.5:
             r = req.get('https://uselessfacts.jsph.pl/api/v2/facts/random', timeout=8)
             r.raise_for_status()
-            return jsonify({'text': r.json().get('text', '')})
-        else:
-            r = req.get('https://dummyjson.com/quotes/random', timeout=8)
-            r.raise_for_status()
-            d = r.json()
-            q, a = d.get('quote', ''), d.get('author', '')
-            if not q:
-                raise ValueError('empty quote')
-            return jsonify({'text': f'"{q}" — {a}'})
-    except Exception:
-        return jsonify({'error': 'unavailable'}), 502
+            return r.json().get('text', '')
+        r = req.get('https://dummyjson.com/quotes/random', timeout=8)
+        r.raise_for_status()
+        d = r.json()
+        q, a = d.get('quote', ''), d.get('author', '')
+        return f'"{q}" — {a}' if q else ''
+
+    # Retry a few times to find a clean one before falling back to a safe canned list.
+    for _ in range(5):
+        try:
+            text = _fetch_one()
+        except Exception:
+            break
+        if text and not _WISDOM_BLOCK.search(text):
+            return jsonify({'text': text})
+    return jsonify({'text': random.choice(_WISDOM_FALLBACK)})
 
 
 

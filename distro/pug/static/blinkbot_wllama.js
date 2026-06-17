@@ -271,6 +271,37 @@
     processInput(inputQueue.shift()).finally(pumpQueue);   // strictly serial
   }
 
+  // Warm-up: if BlinkBot is installed & still active, load the engine and run ONE
+  // throwaway generation in the background at page load — so the user's first REAL
+  // message isn't the slow cold one. Output is discarded: no server call, no action.
+  let warmedUp = false;
+  function maybeWarmUp() {
+    if (warmedUp || wllama || generating) return;
+    if (localStorage.getItem(LS_INSTALLED) !== '1') return;
+    if (!status.activated || status.expired) return;
+    warmedUp = true;
+    const go = () => warmUp();
+    if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 5000 });
+    else setTimeout(go, 2500);
+  }
+  async function warmUp() {
+    if (wllama || generating) return;
+    generating = true;
+    try {
+      await ensureEngine();
+      await wllama.createChatCompletion(
+        [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: 'hello' }],
+        { nPredict: 1, sampling: { temp: 0 }, useCache: true });   // primes load + system-prompt KV
+      console.log('[blinkbot] warmed up — first real reply will be fast');
+      setStatus('Ready.', false);
+    } catch (e) {
+      console.warn('[blinkbot] warmup skipped', e);
+    } finally {
+      generating = false;
+      pumpQueue();   // run anything the user queued during warm-up
+    }
+  }
+
   // The whole point: text/voice → parsed actions → server executes them. No chat.
   // Streams the model's output into the card subtitle so generation is visible.
   async function processInput(msg) {
@@ -572,7 +603,7 @@
     const card = $('rGroqCard'), btn = $('blinkCardBtn');
     if (!card) return;
     injectStyles();
-    refreshStatus();
+    refreshStatus().then(maybeWarmUp);   // auto-load + prime in the background once status is known
 
     const input = $('blinkCardInput'), send = $('blinkCardSend'), mic = $('blinkCardMic');
     if (mic) mic.innerHTML = ICON.mic;
