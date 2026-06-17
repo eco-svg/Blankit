@@ -3,12 +3,30 @@
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true;
 
-  if (isStandalone) return; // already installed — hide button entirely
+  if (isStandalone) {
+    // Already installed — no install needed; hide pug's permanent profile button.
+    document.addEventListener('DOMContentLoaded', () => {
+      const b = document.getElementById('ppInstallApp');
+      if (b) b.style.display = 'none';
+    });
+    return;
+  }
 
   let deferredPrompt = null;
 
   function showBtn() {
     document.querySelectorAll('.pwa-install-btn').forEach(b => b.classList.remove('pwa-hidden'));
+  }
+
+  function pwaTip(html) {
+    let tip = document.getElementById('pwa-ios-tip');
+    if (tip) tip.remove();
+    tip = document.createElement('div');
+    tip.id = 'pwa-ios-tip';
+    tip.innerHTML = html;
+    tip.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#e0e0e0;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;max-width:300px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);';
+    document.body.appendChild(tip);
+    setTimeout(() => tip.remove(), 4500);
   }
 
   window.addEventListener('beforeinstallprompt', e => {
@@ -22,7 +40,8 @@
   });
 
   document.addEventListener('click', async e => {
-    const btn = e.target.closest('.pwa-install-btn');
+    // pug's permanent profile button (#ppInstallApp) + any header pill (.pwa-install-btn).
+    const btn = e.target.closest('#ppInstallApp, .pwa-install-btn');
     if (!btn) return;
 
     if (deferredPrompt) {
@@ -31,18 +50,14 @@
       deferredPrompt = null;
       if (outcome === 'accepted') {
         btn.classList.add('pwa-hidden');
+        const pp = document.getElementById('ppInstallApp');
+        if (pp) pp.style.display = 'none';
       }
     } else if (isIOS) {
-      // Show iOS tip
-      let tip = document.getElementById('pwa-ios-tip');
-      if (!tip) {
-        tip = document.createElement('div');
-        tip.id = 'pwa-ios-tip';
-        tip.innerHTML = 'Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> to install Veyra.';
-        tip.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#e0e0e0;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;max-width:280px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);';
-        document.body.appendChild(tip);
-        setTimeout(() => tip.remove(), 4000);
-      }
+      pwaTip('Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> to install Veyra.');
+    } else {
+      // Desktop / Android where the prompt isn't available yet — guide them.
+      pwaTip('Open your browser menu (⋮) and choose <strong>Install app</strong> to install Veyra.');
     }
   });
 
