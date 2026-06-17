@@ -679,8 +679,8 @@ body.header-hidden .l-bar {
 /* Center the header/badge (so the badge doesn't stretch full-width); the input
    row spans the full width. */
 .r-blinkbot-soon-inner {
-  text-align: center; width: 100%; box-sizing: border-box; padding: 6px 6px 2px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px;
+  text-align: center; width: 100%; box-sizing: border-box; padding: 10px 6px;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 7px;
 }
 .r-blinkbot-soon-inner > .r-blinkbot-io { width: 100%; margin-top: 4px; }
 .r-blinkbot-soon-inner > .r-blinkbot-dl-btn { width: 100%; }
@@ -4851,6 +4851,16 @@ button.nav-pill:not(.btn-ghost):hover {
   flex: 0 0 calc(var(--rbar-w) - var(--gap) - 8px);
   margin-right: -12px;
 }
+/* Keep the STATS button at full size (never let it shrink/crush), and pin the
+   clock text in px so the 19px root bump doesn't inflate it past the width. */
+.clock-widget.header-clock .stats-btn-inner { flex-shrink: 0; width: 82px; }
+.clock-widget.header-clock .cw-info { min-width: 0; overflow: hidden; padding: 6px 12px; }
+.clock-widget.header-clock .cw-row  { gap: 7px; }
+.clock-widget.header-clock .cw-time { font-size: 16px; min-width: 0; }
+.clock-widget.header-clock .cw-weather { font-size: 12px; }
+.clock-widget.header-clock .cw-date,
+.clock-widget.header-clock .cw-day  { font-size: 11px; }
+.clock-widget.header-clock .cw-sep  { font-size: 12px; }
 
 /* ── Header deadline / wisdom bar ─────────────────────── */
 .hdr-deadline {
