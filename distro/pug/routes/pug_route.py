@@ -2370,6 +2370,36 @@ def desktop_buddybot_chat():
         return jsonify({'reply': 'BuddyBot unavailable right now.'}), 503
 
 
+@pug_bp.route('/pug/api/quickask', methods=['POST'])
+@limiter.limit("15 per minute")
+def quick_ask():
+    """Quick Ask — the home chat card. Sends the message to the Groq cloud model
+    along with the user's context and returns the reply."""
+    err = login_required_api()
+    if err: return err
+
+    user_id = session['user_id']
+    data    = request.get_json(silent=True) or {}
+    message = (data.get('message') or '').strip()
+    if not message:
+        return jsonify({'reply': ''}), 200
+    if len(message) > 2000:
+        return jsonify({'reply': "That's a bit long — trim it down and try again.",
+                        'source': 'error'}), 200
+
+    history = data.get('history') if isinstance(data.get('history'), list) else []
+    try:
+        user_context = _assemble_user_context(user_id, session.get('username', ''))
+        answer = _call_groq_chat(message, history, user_context, user_id)
+    except Exception as e:
+        current_app.logger.error(f"Quick Ask error: {e}")
+        answer = None
+
+    if not answer:
+        return jsonify({'reply': "Quick Ask is unavailable right now — try again in a moment.",
+                        'source': 'unavailable'}), 200
+    return jsonify({'reply': answer, 'source': 'groq'})
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # SKILLS, STATS & RANKS  (the skill-ranking identity system)

@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=107">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=108">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=78">
 </head>
@@ -46,10 +46,6 @@
       </div>
     </div>
 
-    <!-- Header bar: next deadline / wisdom / both — owned by headerbar.js.
-         (#dreamContainer id kept for back-compat; sized to var(--rbar-w).) -->
-    <div class="header-dream" id="dreamContainer"></div>
-
     <nav class="header-nav header-nav-right">
       <a href="#notes" class="nav-pill" data-home="true">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
@@ -68,6 +64,11 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
       </button>
     </div>
+
+    <!-- Header bar: next deadline / wisdom / both — owned by headerbar.js.
+         Pinned to the far right so it sits above the rbar/calendar; sized to
+         var(--rbar-w). (#dreamContainer id kept for back-compat.) -->
+    <div class="header-dream" id="dreamContainer"></div>
   </header>
 
   <!-- Left capsule rail — Notes, Skills, Habits & Physique -->
@@ -356,9 +357,10 @@
   <script src="{{ url_for('pug.static', filename='clock.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='gaps.js') }}?v=2"></script>
   <script src="{{ url_for('pug.static', filename='headerbar.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='quickask.js') }}?v=1"></script>
   {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='clientlog.js') }}?v=1"></script>
-  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=3"></script>
+  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=4"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
