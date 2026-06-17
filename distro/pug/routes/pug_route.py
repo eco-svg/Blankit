@@ -1338,9 +1338,14 @@ def home():
     guard = login_required_page()
     if guard:
         return guard
+    # Admin (the owner) runs an 80%-scaled system, so exempt that account from the
+    # site-wide zoom:0.8 (it would otherwise double-scale for them). See kstyle.
+    from shared.auth.user import User
+    _u = db.session.get(User, session.get('user_id'))
     return render_template('pug/home.html',
                            username=session.get('username', 'User'),
-                           distro=session.get('distro', 'Ocellus'))
+                           distro=session.get('distro', 'Ocellus'),
+                           zoom_exempt=bool(_u and _u.is_admin))
 
 
 

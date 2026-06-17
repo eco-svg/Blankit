@@ -69,6 +69,9 @@ body {
   line-height: 1.62;
   overflow-x: hidden;
 }
+/* The owner's whole SYSTEM runs at 80%, so the site-wide zoom would double up for
+   them — exempt the admin account (set server-side on <body>). */
+body.zoom-exempt { zoom: 1; }
 
 /* vignette overlay removed — flat background */
 
