@@ -18,9 +18,9 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=106">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=107">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
-  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=77">
+  <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=78">
 </head>
 <body{% if zoom_exempt %} class="zoom-exempt"{% endif %}>
 
@@ -46,7 +46,8 @@
       </div>
     </div>
 
-    <!-- Dream banner lives in the header now -->
+    <!-- Header bar: next deadline / wisdom / both — owned by headerbar.js.
+         (#dreamContainer id kept for back-compat; sized to var(--rbar-w).) -->
     <div class="header-dream" id="dreamContainer"></div>
 
     <nav class="header-nav header-nav-right">
@@ -84,7 +85,10 @@
       {% include 'pug/cards/_profile.html' %}
       {% include 'pug/cards/_request.html' %}
 
-      <!-- Wisdom line — always visible, replaces dream standalone slot -->
+      <!-- Dream bar — your locked long-term trajectory (filled by gaps.js) -->
+      <div class="dream-standalone" id="dreamStandalone"></div>
+
+      <!-- Wisdom line — always visible -->
       <div class="wisdom-bar wisdom-bar-top">
         <span class="quote-text random-quote">Loading wisdom...</span>
       </div>
@@ -350,14 +354,15 @@
   <script src="{{ url_for('pug.static', filename='goals.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='consistency.js') }}"></script>
   <script src="{{ url_for('pug.static', filename='clock.js') }}"></script>
-  <script src="{{ url_for('pug.static', filename='gaps.js') }}"></script>
+  <script src="{{ url_for('pug.static', filename='gaps.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='headerbar.js') }}?v=1"></script>
   {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='clientlog.js') }}?v=1"></script>
-  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=3"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
-  <script src="{{ url_for('pug.static', filename='profile.js') }}?v=5"></script>
+  <script src="{{ url_for('pug.static', filename='profile.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='community.js') }}?v=14"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=13"></script>

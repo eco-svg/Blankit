@@ -193,6 +193,13 @@
     min-height: 0;
   }
 
+  /* rbar-w is 0 on mobile — let the header deadline/wisdom bar flex instead of
+     collapsing to zero width. */
+  .header-dream {
+    width: auto;
+    flex: 1 1 auto;
+  }
+
   .dream-standalone {
     grid-column: 1 !important;
     grid-row: 1 !important;

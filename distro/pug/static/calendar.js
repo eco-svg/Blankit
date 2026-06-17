@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (!res.ok) return;
       await window.refreshNexusCalendar();
+      if (window.veyraHeaderBar) window.veyraHeaderBar.refresh();
       renderPopList(dateStr, eventsOn(dateStr));
       const t = document.getElementById('evTitle');
       if (t) { t.value = ''; t.focus(); }
@@ -207,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`/pug/api/events/${id}`, { method: 'DELETE', credentials: 'include' });
       if (!res.ok) return;
       await window.refreshNexusCalendar();
+      if (window.veyraHeaderBar) window.veyraHeaderBar.refresh();
       renderPopList(dateStr, eventsOn(dateStr));
     } catch (_) {}
   }

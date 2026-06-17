@@ -4829,13 +4829,57 @@ button.nav-pill:not(.btn-ghost):hover {
 
 /* Dream text in the header */
 .header-dream {
-  flex: 1;
+  /* Sized to match the right sidebar (var(--rbar-w)) instead of stretching the
+     whole header — the deadline/wisdom bar lines up with the rbar width. */
+  width: var(--rbar-w);
+  flex: 0 0 var(--rbar-w);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   padding: 0 16px;
   overflow: hidden;
   min-width: 0;
+}
+
+/* ── Header deadline / wisdom bar ─────────────────────── */
+.hdr-deadline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.hdr-dl-ico { color: var(--accent); flex-shrink: 0; }
+.hdr-dl-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.hdr-dl-when {
+  flex-shrink: 0;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--accent-glow);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  color: var(--accent);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.hdr-dl-empty,
+.hdr-wisdom {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .header-dream .dream-text {
   font-size: 0.90rem !important;
@@ -4856,7 +4900,7 @@ button.nav-pill:not(.btn-ghost):hover {
 /* Wisdom bar in top slot — replaces dream card */
 .wisdom-bar-top {
   grid-column: 1 / -1;
-  grid-row: 1;
+  grid-row: 2;   /* row 1 is the dream bar */
   margin-top: 15px;
   margin-bottom: 15px;
   border-bottom: 1px solid color-mix(in srgb, var(--accent) 10%, transparent);

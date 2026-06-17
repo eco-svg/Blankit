@@ -25,7 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- 1. THE ONE-SHOT DREAM LOGIC ---
-    const dreamContainer = document.getElementById('dreamContainer');
+    // Lives in its own standalone bar atop the content now — the header slot
+    // (#dreamContainer) was handed to headerbar.js (Deadline / Wisdom).
+    const dreamContainer = document.getElementById('dreamStandalone');
 
     function renderDreamInput() {
         if (!dreamContainer) return;
