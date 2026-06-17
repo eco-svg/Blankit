@@ -152,12 +152,13 @@
   .greeting-name  { font-size: 0.85rem; }
   .header-rank-badge { display: none; }
 
-  /* Mobile top bar: compact clock widget */
+  /* Mobile top bar: compact clock widget (no rbar to align to here) */
   .clock-widget.stats-integrated {
     width: auto;
     height: 40px;
     padding: 0;
   }
+  .clock-widget.header-clock { margin-right: 0; }
   .cw-info { padding: 4px 10px; }
   .cw-row:last-child { display: none; }
   .cw-row:first-child { flex-direction: column; align-items: flex-start; gap: 1px; }

@@ -4841,11 +4841,15 @@ button.nav-pill:not(.btn-ghost):hover {
   overflow: hidden;
 }
 
-/* Clock/stats widget back in the header — matched to the rbar width and pinned
-   to the far right (the nav's margin-left:auto pushes it over the calendar). */
+/* Clock/stats widget back in the header — aligned to sit exactly above the rbar
+   cards. The rbar insets its cards by var(--gap)=12px on the left and 8px on the
+   right, while the header pads 20px; so the widget matches the card *inner* box
+   (width = rbar-w - 12 - 8) and is nudged right by (20 - 8)=12px so both edges
+   line up with the Event Calendar below it. */
 .clock-widget.header-clock {
-  width: calc(var(--rbar-w) - 5px);
-  flex: 0 0 calc(var(--rbar-w) - 5px);
+  width: calc(var(--rbar-w) - var(--gap) - 8px);
+  flex: 0 0 calc(var(--rbar-w) - var(--gap) - 8px);
+  margin-right: -12px;
 }
 
 /* ── Header deadline / wisdom bar ─────────────────────── */
