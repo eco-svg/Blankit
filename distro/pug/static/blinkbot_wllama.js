@@ -255,6 +255,22 @@
     return wllama;
   }
 
+  // Queue so you can fire several messages without waiting for each — they log
+  // one-by-one. (One message can also carry many activities; the model batches
+  // those into multiple actions itself.)
+  const inputQueue = [];
+  function enqueue(msg) {
+    msg = (msg || '').trim();
+    if (!msg) return;
+    inputQueue.push(msg);
+    if (generating) setStatus(`Queued — ${inputQueue.length} waiting…`, true);
+    pumpQueue();
+  }
+  function pumpQueue() {
+    if (generating || !inputQueue.length) return;
+    processInput(inputQueue.shift()).finally(pumpQueue);   // strictly serial
+  }
+
   // The whole point: text/voice → parsed actions → server executes them. No chat.
   // Streams the model's output into the card subtitle so generation is visible.
   async function processInput(msg) {
@@ -489,7 +505,7 @@
     if (!text) return;
     const inp = $('blinkCardInput');
     if (inp) { inp.value = text; inp.focus(); }
-    processInput(text);
+    enqueue(text);
   }
 
   // ── styles (self-contained; uses theme vars with fallbacks) ─────────────────
@@ -561,7 +577,7 @@
     const input = $('blinkCardInput'), send = $('blinkCardSend'), mic = $('blinkCardMic');
     if (mic) mic.innerHTML = ICON.mic;
 
-    const run = () => { const v = input ? input.value : ''; if (input) input.value = ''; processInput(v); };
+    const run = () => { const v = input ? input.value : ''; if (input) input.value = ''; enqueue(v); };
     if (send)  send.addEventListener('click', (e) => { e.stopPropagation(); run(); });
     if (input) {
       input.addEventListener('click', (e) => e.stopPropagation());

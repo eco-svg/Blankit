@@ -722,20 +722,14 @@ def _blink_execute(user_id, actions, confirmed=False):
             name = (a.get('name') or '').strip()
             if not name:
                 continue
-            h = _blink_find_habit(user_id, name)
-            if not h:                       # ticking implies the habit exists — create it
+            # Exact match first, then fuzzy — so the model's "Sprint" / "Dev" tick the
+            # real "400m Sprint" / "Software Development" instead of spawning duplicates.
+            h = _blink_find_habit(user_id, name) or _blink_match_habit_from_text(user_id, name)
+            if not h:                       # genuinely new → ticking implies it exists, create
                 h = Habit(user_id=user_id, name=name, track_type='manual', is_active=True)
                 db.session.add(h)
                 db.session.flush()
-            hl = HabitLog.query.filter_by(habit_id=h.id, date=today).first()
-            if not hl:
-                hl = HabitLog(habit_id=h.id, date=today, done=True)
-                db.session.add(hl)
-            else:
-                hl.done = True
-            performed.append(f"ticked {h.name}")
-            _blink_log_action(user_id, f"tick {h.name}",
-                              {'undo': 'untick_habit', 'habit_id': h.id, 'date': today.isoformat()})
+            _blink_tick_habit_obj(user_id, h, today, performed)
 
         elif t == 'add_habit':
             name = (a.get('name') or '').strip()
@@ -853,6 +847,14 @@ def _blink_execute(user_id, actions, confirmed=False):
         elif t == 'logout':
             nav = {'action': 'logout'}
             performed.append("logging out")
+
+        else:
+            # Unknown/hallucinated type (e.g. the model emitting "tick_achievement").
+            # If any text field clearly names a habit, tick it; otherwise ignore safely.
+            blob = ' '.join(str(a.get(k, '')) for k in ('name', 'title', 'text', 'target'))
+            _hab = _blink_match_habit_from_text(user_id, blob) if blob.strip() else None
+            if _hab:
+                _blink_tick_habit_obj(user_id, _hab, today, performed)
 
     db.session.commit()
     return {'performed': performed, 'pending_confirm': pending, 'nav': nav}
