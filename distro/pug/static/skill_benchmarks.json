@@ -1538,25 +1538,10 @@
   "Motion Design": {
     "type": "exp"
   },
-  "Stovetop Cooking": {
+  "Cooking": {
     "type": "exp"
   },
-  "BBQ & Grilling": {
-    "type": "exp"
-  },
-  "Baking & Roasting": {
-    "type": "exp"
-  },
-  "Meal Prep": {
-    "type": "exp"
-  },
-  "Bread & Sourdough": {
-    "type": "exp"
-  },
-  "Pastry & Cakes": {
-    "type": "exp"
-  },
-  "Cookies & Biscuits": {
+  "Baking": {
     "type": "exp"
   },
   "Wheel Throwing": {

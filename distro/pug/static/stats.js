@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Benchmarks + EXP config ──────────────────────────────────────────────
     function fetchBenchmarks() {
-        fetch('/pug_style/skill_benchmarks.json')
+        fetch('/pug_style/skill_benchmarks.json?v=2')
             .then(r => r.json())
             .then(data => { benchmarks = data; if (sheet) renderMainCard(); })
             .catch(() => {});
