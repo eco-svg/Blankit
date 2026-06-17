@@ -5020,8 +5020,8 @@ button.nav-pill:not(.btn-ghost):hover {
   margin-top: 4px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  max-height: 220px;
+  gap: 4px;
+  max-height: 260px;
   overflow-y: auto;
 }
 .skill-adder-empty { font-size: 0.75rem; opacity: 0.4; padding: 6px 12px; }
@@ -5038,6 +5038,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .skill-add-row {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;            /* don't let rows get squished/clipped in the scroll list */
   padding: 0;
   border-radius: 6px;
   background: var(--surface-2);
@@ -5050,13 +5051,14 @@ button.nav-pill:not(.btn-ghost):hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
+  padding: 9px 11px;
   cursor: pointer;
 }
 .skill-add-name {
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   font-weight: 600;
-  opacity: 0.75;
+  line-height: 1.35;        /* full line so descenders aren't cut */
+  opacity: 1;               /* was 0.75 — names were too faint to read */
 }
 .skill-add-arrow {
   font-size: 0.9rem;
