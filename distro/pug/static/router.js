@@ -4,7 +4,7 @@
 
 (function () {
   const ROUTES = {
-    'notes':    ['sec-notes', 'sec-blinkbot'],
+    'notes':    ['sec-notes'],   // Quick Ask (sec-blinkbot) moved into the right sidebar panel
     'skills':   ['sec-skills-wrapper'],
     'social':   ['sec-comms'],
     'habits':   ['sec-habits', 'sec-habit-pulse'],

@@ -206,6 +206,8 @@ def _migrate_schema():
             ('dob',                  'DATE'),
             ('last_seen',            'TIMESTAMP'),
             ('is_admin',             'BOOLEAN DEFAULT FALSE'),
+            ('violation_count',      'INTEGER DEFAULT 0'),     # confirmed-report tally → mute escalation
+            ('muted_until',          'TIMESTAMP'),             # can't post/comment/DM until this time
         ]
         existing = {c['name'] for c in inspector.get_columns('users')}
         for col, col_type in new_cols:

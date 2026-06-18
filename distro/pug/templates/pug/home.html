@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=113">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=114">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=79">
 </head>
@@ -384,11 +384,11 @@
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=6"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}?v=14"></script>
-  <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=13"></script>
-  <script src="{{ url_for('pug.static', filename='habits.js') }}?v=4"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=15"></script>
+  <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=14"></script>
+  <script src="{{ url_for('pug.static', filename='habits.js') }}?v=5"></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=3"></script>
-  <script src="{{ url_for('pug.static', filename='router.js') }}?v=3"></script>
+  <script src="{{ url_for('pug.static', filename='router.js') }}?v=4"></script>
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}?v=2"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
@@ -586,78 +586,18 @@
     });
   })();
 
-  // Quick Ask — rbar chatbot (legacy, kept for compatibility)
+  // Quick Ask — toggle the right sidebar between its cards and the Quick Ask
+  // panel (panel takes the sidebar's place; the cards are just hidden, not torn
+  // down, so their state survives). The chat logic itself is the mainGroq IIFE.
   (function() {
-    var input    = document.getElementById('rGroqInput');
-    var sendBtn  = document.getElementById('rGroqSendBtn');
-    var clearBtn = document.getElementById('rGroqClearBtn');
-    var messages = document.getElementById('rGroqMessages');
-    if (!input || !sendBtn || !messages) return;
-
-    var history = [];
-
-    function addBubble(text, role) {
-      var el = document.createElement('div');
-      el.className = 'r-groq-bubble r-groq-' + role;
-      el.textContent = text;
-      messages.appendChild(el);
-      messages.scrollTop = messages.scrollHeight;
-    }
-
-    function setThinking(on) {
-      var el = document.getElementById('rGroqThinking');
-      if (on && !el) {
-        el = document.createElement('div');
-        el.id = 'rGroqThinking';
-        el.className = 'r-groq-bubble r-groq-ai r-groq-thinking';
-        el.textContent = 'thinking…';
-        messages.appendChild(el);
-        messages.scrollTop = messages.scrollHeight;
-      } else if (!on && el) {
-        el.remove();
-      }
-    }
-
-    function ask() {
-      var q = input.value.trim();
-      if (!q) return;
-      input.value = '';
-      var ph = messages.querySelector('.r-groq-placeholder');
-      if (ph) ph.remove();
-      addBubble(q, 'user');
-      history.push({ role: 'user', content: q });
-      setThinking(true);
-      input.disabled = true;
-      sendBtn.disabled = true;
-      fetch('/pug/api/blinkbot', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: q, history: history.slice(-10) })
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        setThinking(false);
-        var text = d.answer || d.error || 'No response.';
-        addBubble(text, 'ai');
-        history.push({ role: 'assistant', content: text });
-      })
-      .catch(function() {
-        setThinking(false);
-        addBubble('Error — try again.', 'ai');
-      })
-      .finally(function() {
-        input.disabled = false;
-        sendBtn.disabled = false;
-        input.focus();
-      });
-    }
-
-    if (clearBtn) clearBtn.addEventListener('click', function() {
-      history = [];
-      messages.innerHTML = '<div class="r-groq-placeholder">Ask anything…</div>';
+    var rbar = document.querySelector('.r-bar');
+    var btn  = document.getElementById('rQaToggle');
+    if (!rbar || !btn) return;
+    btn.addEventListener('click', function() {
+      var open = rbar.classList.toggle('qa-open');
+      btn.setAttribute('aria-pressed', open ? 'true' : 'false');
+      if (open) { var i = document.getElementById('mainGroqInput'); if (i) i.focus(); }
     });
-    sendBtn.addEventListener('click', ask);
-    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(); });
   })();
   </script>
 

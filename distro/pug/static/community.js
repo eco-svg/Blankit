@@ -388,9 +388,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const ago      = timeAgo(p.created_at);
         const rankHtml = p.rank
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
+        // Owners delete their own post; admins get the same delete on ANY post
+        // (data-mod flags it as a moderation removal → confirm before deleting).
         const deleteBtn = p.is_mine
             ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>`
-            : `<button class="comm-more-btn" title="Report or block">⋯</button>`;
+            : (p.can_moderate
+                ? `<button class="comm-del-btn" data-id="${p.id}" data-mod="1" title="Remove (admin)">×</button>`
+                : `<button class="comm-more-btn" title="Report or block">⋯</button>`);
         const distHtml = (!p.is_mine && feedMode === 'radar' && p.dist_km !== null && p.dist_km !== undefined)
             ? `<span class="comm-dist-badge">${fmtDist(p.dist_km)}</span>` : '';
 
@@ -468,7 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>`;
 
-        el.querySelector('.comm-del-btn')?.addEventListener('click', () => deletePost(p.id));
+        el.querySelector('.comm-del-btn')?.addEventListener('click', e =>
+            deletePost(p.id, e.currentTarget.dataset.mod === '1'));
         el.querySelector('.comm-more-btn')?.addEventListener('click', e => openPostMenu(e, p));
         el.querySelector('.comm-username-link')?.addEventListener('click', e => openProfile(p.user_id, p.username, p.is_mine, e));
 
@@ -752,7 +757,9 @@ document.addEventListener('DOMContentLoaded', () => {
           .finally(() => { delete input.dataset.sending; });
     }
 
-    function deletePost(id) {
+    function deletePost(id, isMod) {
+        // Deleting someone else's post (admin) is a moderation action — confirm first.
+        if (isMod && !confirm("Remove this user's post? This hides it from the community.")) return;
         fetch(`/pug/api/community/${id}`, { method: 'DELETE' })
             .then(() => { lastPostCount = 0; loadFeed(); }).catch(() => {});
     }

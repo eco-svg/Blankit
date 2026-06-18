@@ -20,6 +20,10 @@ class User(db.Model):
     is_verified      = db.Column(db.Boolean, default=False)        # email confirmed?
     is_admin         = db.Column(db.Boolean, default=False, nullable=False)  # platform admin (moderation, AMA inbox)
 
+    # ── Moderation: escalating mute (set by admins on confirmed reports) ──
+    violation_count  = db.Column(db.Integer, default=0)            # how many times muted → longer next mute
+    muted_until      = db.Column(db.DateTime, nullable=True)       # blocked from posting/commenting/DMing until then
+
     # ── Age (for age-gating / parental-consent rules) ──
     age              = db.Column(db.Integer, nullable=True)
     dob              = db.Column(db.Date, nullable=True)

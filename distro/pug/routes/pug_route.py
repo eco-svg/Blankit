@@ -1318,16 +1318,70 @@ def login_required_api():
     return None
 
 
+def _admin_allowlist():
+    """Admins, defined in the Render env (PUG_ADMIN_EMAILS, comma-separated emails
+    and/or usernames). Env-based so admin can't be granted via a DB compromise and
+    needs no live-DB write to set up — just edit the env var for the ~3 accounts."""
+    raw = os.environ.get('PUG_ADMIN_EMAILS', '')
+    return {x.strip().lower() for x in raw.split(',') if x.strip()}
+
+
+def _is_admin(user_id):
+    """True if the user is in the env allowlist OR carries the legacy is_admin DB
+    flag. Server-side only — never trusts the client/session alone."""
+    if not user_id:
+        return False
+    from shared.auth.user import User
+    u = db.session.get(User, user_id)
+    if not u:
+        return False
+    if u.is_admin:
+        return True
+    allow = _admin_allowlist()
+    return (u.email or '').lower() in allow or (u.username or '').lower() in allow
+
+
 def admin_required_api():
-    """Gate for admin-only endpoints — checks the is_admin flag in the DB, never the session alone."""
+    """Gate for admin-only endpoints — checks the env allowlist / is_admin flag in
+    the DB, never the session alone."""
     err = login_required_api()
     if err:
         return err
-    from shared.auth.user import User
-    u = db.session.get(User, session['user_id'])
-    if not u or not u.is_admin:
+    if not _is_admin(session['user_id']):
         return jsonify({'error': 'Forbidden'}), 403
     return None
+
+
+# ── Escalating mute (admin moderation) ────────────────────────────────────────
+# Each confirmed report an admin acts on bumps violation_count and mutes the user
+# longer: 1d → 3d → 7d → 30d → 1y (capped). A muted user can't post/comment/DM.
+_MUTE_TIERS = [timedelta(days=1), timedelta(days=3), timedelta(days=7),
+               timedelta(days=30), timedelta(days=365)]
+
+
+def _mute_until_for(violations):
+    """Mute end-time for the Nth violation (1-based); caps at the longest tier."""
+    tier = _MUTE_TIERS[min(max(violations, 1) - 1, len(_MUTE_TIERS) - 1)]
+    return datetime.utcnow() + tier
+
+
+def _muted_block():
+    """Return (jsonify, 403) if the caller is currently muted, else None — gates
+    the create-post / comment / DM-send endpoints."""
+    from shared.auth.user import User
+    u = db.session.get(User, session['user_id'])
+    if u and u.muted_until and u.muted_until > datetime.utcnow():
+        return jsonify({'error': 'muted', 'muted_until': u.muted_until.isoformat()}), 403
+    return None
+
+
+def _protect_reporter(reporter_id, reported_id):
+    """After a report, auto-block so the reported user can't see or retaliate against
+    the reporter (blocks hide both directions via _blocked_ids). Caller commits."""
+    if reporter_id == reported_id:
+        return
+    if not UserBlock.query.filter_by(blocker_id=reporter_id, blocked_id=reported_id).first():
+        db.session.add(UserBlock(blocker_id=reporter_id, blocked_id=reported_id))
 
 
 
@@ -2899,6 +2953,7 @@ def get_community_feed():
     err = login_required_api()
     if err: return err
     me = session['user_id']
+    am_admin = _is_admin(me)        # show owner-style delete on every post if admin
     blocked = _blocked_ids(me)
 
     # Optional location filter
@@ -2962,6 +3017,7 @@ def get_community_feed():
             'rank':        rank,
             'rank_color':  color,
             'is_mine':     p.user_id == me,
+            'can_moderate': am_admin,      # admin: same delete access on any post as its owner
             'is_online':   _is_online(u),
             'created_at':  p.created_at.isoformat() if p.created_at else None,
             'dist_km':     round(dist_km, 1) if dist_km is not None else None,
@@ -3053,6 +3109,8 @@ def community_version():
 def create_community_post():
     """Create a community post."""
     err = login_required_api()
+    if err: return err
+    err = _muted_block()
     if err: return err
     data      = request.get_json(force=True) or {}
     text      = (data.get('text') or '').strip()
@@ -3184,13 +3242,18 @@ def get_community_post(pid):
 
 @pug_bp.route('/pug/api/community/<int:pid>', methods=['DELETE'])
 def delete_community_post(pid):
-    """Delete the caller's own community post."""
+    """Delete a community post — the caller's own, or any post if the caller is an admin."""
     err = login_required_api()
     if err: return err
-    p = Note.query.filter_by(id=pid, user_id=session['user_id'], entry_type='community_post').first()
+    me = session['user_id']
+    p = Note.query.filter_by(id=pid, entry_type='community_post').first()
     if not p:
         return jsonify({'error': 'Not found'}), 404
+    if p.user_id != me and not _is_admin(me):
+        return jsonify({'error': 'Forbidden'}), 403
     p.is_deleted = True
+    if p.user_id != me:
+        p.is_hidden = True          # admin moderation removal — also drops it from any cached views
     db.session.commit()
     return jsonify({'ok': True})
 
@@ -3221,6 +3284,7 @@ def report_post(pid):
     p.report_count = PostReport.query.filter_by(post_id=pid).count()
     if (p.report_count or 0) >= _REPORT_HIDE_THRESHOLD:
         p.is_hidden = True
+    _protect_reporter(me, p.user_id)
     db.session.commit()
     return jsonify({'ok': True, 'hidden': bool(p.is_hidden)})
 
@@ -3440,6 +3504,8 @@ def get_post_comments(pid):
 def add_post_comment(pid):
     """Add a comment to a post."""
     err = login_required_api()
+    if err: return err
+    err = _muted_block()
     if err: return err
     me   = session['user_id']
     data = request.get_json(force=True) or {}
@@ -3769,6 +3835,8 @@ def send_dm(other_id):
     """Send a direct message (rejected if either side blocked the other)."""
     err = login_required_api()
     if err: return err
+    err = _muted_block()
+    if err: return err
     from shared.auth.user import User
     me = session['user_id']
     if other_id == me:
@@ -3824,6 +3892,7 @@ def report_dm(other_id):
         return jsonify({'error': 'User not found'}), 404
     reason = ((request.get_json(silent=True) or {}).get('reason') or '').strip()[:300]
     db.session.add(UserReport(reporter_id=me, reported_id=other_id, context='dm', reason=reason))
+    _protect_reporter(me, other_id)
     db.session.commit()
     return jsonify({'ok': True})
 
@@ -3849,6 +3918,79 @@ def admin_user_reports():
             'created_at': r.created_at.isoformat() if r.created_at else None,
         })
     return jsonify(out)
+
+
+@pug_bp.route('/pug/api/admin/users/<int:uid>/mute', methods=['POST'])
+def admin_mute_user(uid):
+    """Admin: mute a user. Each call escalates the duration (1d→3d→7d→30d→1y) via
+    violation_count. A muted user can't post, comment, or send DMs."""
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    u = db.session.get(User, uid)
+    if not u:
+        return jsonify({'error': 'User not found'}), 404
+    u.violation_count = (u.violation_count or 0) + 1
+    u.muted_until = _mute_until_for(u.violation_count)
+    db.session.commit()
+    return jsonify({'ok': True, 'muted_until': u.muted_until.isoformat(),
+                    'violation_count': u.violation_count})
+
+
+@pug_bp.route('/pug/api/admin/users/<int:uid>/unmute', methods=['POST'])
+def admin_unmute_user(uid):
+    """Admin: lift a mute early. Keeps violation_count, so the next mute still escalates."""
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    u = db.session.get(User, uid)
+    if not u:
+        return jsonify({'error': 'User not found'}), 404
+    u.muted_until = None
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/admin/users/<int:uid>/dms', methods=['GET'])
+def admin_read_user_dms(uid):
+    """Admin: read a reported user's DMs for moderation review.
+
+    GATED — only available for a user who has an OPEN report against them, so an
+    admin can't browse arbitrary inboxes. This access is disclosed in the privacy
+    policy. NOTE (GDPR/DPDP data-minimisation): full-thread access is broad; have
+    the policy wording reviewed before relying on it in production."""
+    err = admin_required_api()
+    if err: return err
+    if not UserReport.query.filter_by(reported_id=uid).first():
+        return jsonify({'error': 'No report on file for this user'}), 403
+    from shared.auth.user import User
+    from sqlalchemy import or_
+    if not db.session.get(User, uid):
+        return jsonify({'error': 'User not found'}), 404
+    # DMs are Notes: user_id = sender, mood = str(recipient). Pull both directions.
+    msgs = Note.query.filter(
+        Note.entry_type == 'dm', Note.is_deleted == False,
+        or_(Note.user_id == uid, Note.mood == str(uid))
+    ).order_by(Note.created_at.asc()).limit(1000).all()
+    threads = {}
+    for m in msgs:
+        other = m.mood if m.user_id == uid else str(m.user_id)
+        body = m.body or ''
+        if body.startswith('{'):
+            try: body = (json.loads(body).get('t') or '')
+            except Exception: pass
+        threads.setdefault(other, []).append({
+            'from_uid':   m.user_id,
+            'text':       body,
+            'created_at': m.created_at.isoformat() if m.created_at else None,
+        })
+    out = []
+    for other_s, items in threads.items():
+        ou = db.session.get(User, int(other_s)) if other_s.isdigit() else None
+        out.append({'with_uid': int(other_s) if other_s.isdigit() else other_s,
+                    'with_username': ou.username if ou else other_s,
+                    'messages': items})
+    return jsonify({'user_id': uid, 'threads': out})
 
 
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
@@ -4014,6 +4156,25 @@ def verify_achievement(aid):
 # ═════════════════════════════════════════════════════════════════════════════
 # HABITS — create / toggle / history
 # ═════════════════════════════════════════════════════════════════════════════
+def _client_today():
+    """The caller's LOCAL date (sent by the browser as `d=YYYY-MM-DD`), clamped to
+    ±1 day of the server's UTC date so it can't be used to backdate streaks. Falls
+    back to the server date. Without this, ticks reset on UTC midnight instead of
+    the user's local midnight — so e.g. an IST user sees yesterday's ticks until
+    05:30 and thinks they "never reset"."""
+    from datetime import date, datetime as _dt
+    server = date.today()
+    raw = request.args.get('d') or (request.get_json(silent=True) or {}).get('d')
+    if raw:
+        try:
+            d = _dt.strptime(raw, '%Y-%m-%d').date()
+            if abs((d - server).days) <= 1:
+                return d
+        except (ValueError, TypeError):
+            pass
+    return server
+
+
 @pug_bp.route('/pug/api/habits', methods=['GET'])
 @limiter.limit("60 per minute")
 def get_habits():
@@ -4022,9 +4183,8 @@ def get_habits():
     if err: return err
     from distro.svg.models.habit import Habit
     from distro.svg.models.habit_log import HabitLog
-    from datetime import date
     habits = Habit.query.filter_by(user_id=session['user_id'], is_active=True).order_by(Habit.created_at).all()
-    today = date.today()
+    today = _client_today()
     result = []
     for h in habits:
         log = HabitLog.query.filter_by(habit_id=h.id, date=today).first()
@@ -4072,10 +4232,9 @@ def toggle_habit(habit_id):
     if err: return err
     from distro.svg.models.habit import Habit
     from distro.svg.models.habit_log import HabitLog
-    from datetime import date
     from sqlalchemy.exc import IntegrityError
     h = Habit.query.filter_by(id=habit_id, user_id=session['user_id']).first_or_404()
-    today = date.today()
+    today = _client_today()
     log = HabitLog.query.filter_by(habit_id=habit_id, date=today).first()
     if log:
         log.done = not log.done

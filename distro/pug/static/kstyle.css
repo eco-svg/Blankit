@@ -408,6 +408,57 @@ body.header-hidden .l-bar {
 
 .r-bar::-webkit-scrollbar { width: 0; }
 
+/* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
+.r-qa-toggle {
+  position: fixed;
+  top: calc(var(--header-h) + 14px);
+  right: 14px;
+  z-index: 130;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border2);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.r-qa-toggle:hover { color: var(--text); border-color: var(--accent); }
+.r-bar.qa-open .r-qa-toggle {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+/* Swap the sidebar in place: hide the cards, reveal the panel. Cards are only
+   display:none'd, so their state (calendar month, to-do draft) survives. */
+.r-bar.qa-open > .r-card { display: none; }
+
+.r-quick-ask { display: none; flex: 1; min-height: 0; flex-direction: column; }
+.r-bar.qa-open .r-quick-ask { display: flex; }
+
+.r-qa-header {
+  display: flex; align-items: center; gap: 8px;
+  padding: 2px 40px 10px 4px;   /* right pad clears the fixed launcher */
+}
+.r-qa-title {
+  font-family: var(--font-mono);
+  font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--accent);
+}
+.r-qa-clear {
+  margin-left: auto;
+  font-size: 0.68rem; font-family: var(--font-mono);
+  background: none; border: none; color: var(--text-dim);
+  opacity: 0.45; cursor: pointer;
+}
+.r-qa-clear:hover { opacity: 0.8; }
+.r-quick-ask .chat-window {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; gap: 8px;
+  overflow-y: auto;
+}
+
 .r-card {
   background: var(--surface);
   border: 1px solid var(--border);

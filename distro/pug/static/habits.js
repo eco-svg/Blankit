@@ -5,6 +5,14 @@
 (function () {
   let habits = [];
 
+  // The user's LOCAL date (not UTC) — sent to the API so "today" / the daily
+  // reset follows the user's midnight, not the server's. toISOString() is UTC, so
+  // build it from local parts.
+  function localDate() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
   // ── Delete confirmation modal ─────────────────────────
   const delModal      = document.getElementById('deleteHabitModal');
   const delNameEl     = document.getElementById('deleteHabitName');
@@ -69,7 +77,7 @@
   // ── Load & render ─────────────────────────────────────
   async function loadHabits() {
     try {
-      const res = await fetch('/pug/api/habits');
+      const res = await fetch(`/pug/api/habits?d=${localDate()}`);
       if (!res.ok) return;
       habits = await res.json();
       renderManage();
@@ -203,7 +211,11 @@
     renderManage();
     renderToday();
     try {
-      const res = await fetch(`/pug/api/habits/${id}/toggle`, { method: 'POST' });
+      const res = await fetch(`/pug/api/habits/${id}/toggle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ d: localDate() }),
+      });
       if (!res.ok) { h.done_today = !h.done_today; renderManage(); renderToday(); return; }
       const data = await res.json();
       h.done_today = data.done;

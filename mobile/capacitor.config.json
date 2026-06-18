@@ -1,0 +1,16 @@
+{
+  "appId": "com.veyra.blinkbot",
+  "appName": "Veyra",
+  "webDir": "www",
+  "server": {
+    "url": "https://veyra-bmzb.onrender.com/pug/home",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "always"
+  }
+}

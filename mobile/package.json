@@ -1,0 +1,23 @@
+{
+  "name": "veyra-mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Veyra / BlinkBot mobile app (Capacitor). Wraps the live site; a native llama.cpp plugin runs the BlinkBot GGUF on-device instead of WASM.",
+  "scripts": {
+    "sync": "cap sync",
+    "add:android": "cap add android",
+    "add:ios": "cap add ios",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios",
+    "run:android": "cap run android",
+    "run:ios": "cap run ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/ios": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}

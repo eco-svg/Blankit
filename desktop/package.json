@@ -1,0 +1,32 @@
+{
+  "name": "blinkbot-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Veyra / BlinkBot desktop shell — runs the BlinkBot GGUF NATIVELY (llama.cpp via node-llama-cpp) instead of WASM, so it uses every core, the GPU, and full system RAM.",
+  "author": "Ocellus",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start:local": "BLINK_APP_URL=http://localhost:5000 electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "node-llama-cpp": "^3.6.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.veyra.blinkbot",
+    "productName": "Veyra",
+    "files": ["main.js", "preload.js", "llm.js", "package.json"],
+    "asarUnpack": ["**/node_modules/node-llama-cpp/**"],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg", "category": "public.app-category.productivity" },
+    "linux": { "target": "AppImage", "category": "Utility" }
+  }
+}

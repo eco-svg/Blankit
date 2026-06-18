@@ -3,6 +3,15 @@
 
   <!-- (Clock / date / weather + Stats moved back to the header, far right.) -->
 
+  <!-- Quick Ask launcher — pinned top-right; toggles the sidebar between its
+       cards and the Quick Ask panel below (handled in home.html). -->
+  <button class="r-qa-toggle" id="rQaToggle" type="button"
+          title="Quick Ask" aria-label="Quick Ask" aria-pressed="false">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 1 1 16.1-3.8z"/>
+    </svg>
+  </button>
+
   <!-- 1. Calendar — always first -->
   <div class="r-card calender" id="calendarCard">
     <div class="r-card-header" data-i18n="sidebar_event_calendar">Event Calendar</div>
@@ -69,6 +78,24 @@
         </div>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Quick Ask panel — shown in place of the cards when .r-bar.qa-open.
+       Keeps the mainGroq* IDs the existing chat JS (home.html) binds to. -->
+  <div class="r-quick-ask" id="rQuickAsk">
+    <div class="r-qa-header">
+      <span class="r-qa-title">Quick Ask</span>
+      <button id="mainGroqClearBtn" class="r-qa-clear" type="button">✕ clear</button>
+    </div>
+    <div class="chat-window" id="mainGroqMessages">
+      <div style="color:var(--text-dim);opacity:0.35;font-size:0.74rem;">Ask anything…</div>
+    </div>
+    <div class="chat-input-pill">
+      <input type="text" id="mainGroqInput" placeholder="Ask Groq…" autocomplete="off">
+      <button class="send-ai-btn" id="mainGroqSendBtn" type="button" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+      </button>
     </div>
   </div>
 

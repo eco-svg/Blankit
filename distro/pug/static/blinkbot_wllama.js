@@ -12,6 +12,43 @@
 (() => {
   'use strict';
 
+  // ── Mobile bridge (Capacitor) ───────────────────────────────────────────────
+  // The desktop shell injects window.BlinkNative via an Electron preload. The
+  // mobile app can't preload, so build the SAME bridge here from the native
+  // llama.cpp Capacitor plugin (BlinkbotLlama) when it's present. No-op in a
+  // normal browser, in the desktop shell (preload already set it), or when the
+  // plugin isn't installed — so the WASM path is the default everywhere else.
+  (function installCapacitorBridge() {
+    const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.BlinkbotLlama;
+    if (!plugin || window.BlinkNative) return;
+    window.BlinkNative = {
+      available: true,
+      load: async ({ systemPrompt, contextSize, onProgress }) => {
+        const h = onProgress ? await plugin.addListener('loadProgress', onProgress) : null;
+        try { await plugin.load({ systemPrompt, contextSize }); }
+        finally { if (h) h.remove(); }
+      },
+      createChatCompletion: async (messages, opts = {}) => {
+        let running = '';
+        const tok = await plugin.addListener('token', ({ delta }) => {
+          running += delta;
+          if (opts.onNewToken) opts.onNewToken(null, null, running);
+        });
+        if (opts.abortSignal) {
+          opts.abortSignal.addEventListener('abort', () => plugin.abort(), { once: true });
+        }
+        try {
+          const r = await plugin.generate({
+            messages,
+            nPredict: opts.nPredict,
+            temp: opts.sampling && opts.sampling.temp,
+          });
+          return (r && r.text) || running;
+        } finally { tok.remove(); }
+      },
+    };
+  })();
+
   // Must stay byte-identical to BLINKBOT_TRANSLATE_SYSTEM (bot_prompts.py) /
   // generate_v4.py NEW_SYSTEM — the model was fine-tuned on exactly this.
   const SYSTEM_PROMPT =
@@ -183,21 +220,28 @@
     try { const a = await api('/pug/api/blinkbot/activate', {}); if (a.ok) status = a.json; }
     catch (_) {}
 
-    // 2) load wllama + the GGUF (cached after first time)
+    // 2) load the GGUF (cached after first time). Native shell downloads + runs
+    //    it through llama.cpp; the browser uses wllama (WASM). Same progress bar.
     try {
-      // jsdelivr's auto-ESM (/+esm) 404s for this package — use its real ESM entry.
-      const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
-      wllama = new Wllama(WASM_PATHS);
-      console.log('[blinkbot] crossOriginIsolated:', self.crossOriginIsolated, '| n_threads:', N_THREADS);
-      await wllama.loadModelFromUrl(MODEL_URL, {
-        n_ctx: 2048,
-        n_threads: N_THREADS,
-        progressCallback: ({ loaded, total }) => {
-          const pct = total ? Math.round((loaded / total) * 100) : 0;
-          if (fill) fill.style.width = pct + '%';
-          if (txt)  txt.textContent = total ? `Downloading… ${pct}%` : 'Loading…';
-        },
-      });
+      const onProg = ({ loaded, total }) => {
+        const pct = total ? Math.round((loaded / total) * 100) : 0;
+        if (fill) fill.style.width = pct + '%';
+        if (txt)  txt.textContent = total ? `Downloading… ${pct}%` : 'Loading…';
+      };
+      const nat = nativeLLM();
+      if (nat) {
+        await nat.load({ systemPrompt: SYSTEM_PROMPT, contextSize: 2048, onProgress: onProg });
+        wllama = nat;
+      } else {
+        // jsdelivr's auto-ESM (/+esm) 404s for this package — use its real ESM entry.
+        const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
+        wllama = new Wllama(WASM_PATHS);
+        await wllama.loadModelFromUrl(MODEL_URL, {
+          n_ctx: 2048,
+          n_threads: N_THREADS,
+          progressCallback: onProg,
+        });
+      }
       localStorage.setItem(LS_INSTALLED, '1');
       if (txt) txt.textContent = 'Ready.';
       loading = false;
@@ -229,16 +273,38 @@
     } catch (_) { return null; }
   }
 
+  // Native bridge: the desktop shell (Electron) and, later, the mobile app expose
+  // window.BlinkNative — the same GGUF run through real llama.cpp (all cores, GPU,
+  // full system RAM) instead of WASM. It mirrors the wllama API we use, so it's a
+  // drop-in: set `wllama = BlinkNative` and the rest of the code is unchanged. In a
+  // plain browser window.BlinkNative is undefined and we fall through to wllama.
+  const nativeLLM = () => (window.BlinkNative && window.BlinkNative.available) ? window.BlinkNative : null;
+
   // Load the cached engine into memory (after a refresh wllama is null again).
   // First-time install goes through startDownload (popup + progress); this is the
   // lightweight "wake it back up from cache" path the inline input uses.
   async function ensureEngine() {
     if (wllama) return wllama;
     setStatus('Waking up…', true);
+
+    const nat = nativeLLM();
+    if (nat) {
+      await nat.load({
+        systemPrompt: SYSTEM_PROMPT,
+        contextSize: 2048,
+        onProgress: ({ loaded, total }) => {
+          const pct = total ? Math.round((loaded / total) * 100) : 0;
+          setStatus(total ? `Loading model… ${pct}%` : 'Loading model…', true);
+        },
+      });
+      wllama = nat;            // sentinel "loaded"; createChatCompletion dispatches natively
+      setStatus('Thinking…', true);
+      return wllama;
+    }
+
     const { Wllama } = await import(`${WLLAMA_CDN}/esm/index.js`);
     const w = new Wllama(WASM_PATHS);
     const t0 = performance.now();
-    console.log('[blinkbot] crossOriginIsolated:', self.crossOriginIsolated, '| n_threads:', N_THREADS);
     await w.loadModelFromUrl(MODEL_URL, {
       n_ctx: 2048,
       n_threads: N_THREADS,
@@ -249,7 +315,6 @@
         setStatus(total ? `Loading model… ${pct}%` : 'Loading model…', true);
       },
     });
-    console.log('[blinkbot] engine loaded in', Math.round(performance.now() - t0), 'ms');
     wllama = w;
     setStatus('Thinking…', true);
     return wllama;
@@ -292,10 +357,9 @@
       await wllama.createChatCompletion(
         [{ role: 'system', content: SYSTEM_PROMPT }, { role: 'user', content: 'hello' }],
         { nPredict: 1, sampling: { temp: 0 }, useCache: true });   // primes load + system-prompt KV
-      console.log('[blinkbot] warmed up — first real reply will be fast');
       setStatus('Ready.', false);
     } catch (e) {
-      console.warn('[blinkbot] warmup skipped', e);
+      /* warm-up is best-effort; first real reply just won't be pre-primed */
     } finally {
       generating = false;
       pumpQueue();   // run anything the user queued during warm-up
@@ -337,10 +401,7 @@
             setStatus(currentText.replace(/<think>/g, '').trim() || '…', true),
         });
       raw = typeof raw === 'string' ? raw : (raw?.content || '');
-      console.log('[blinkbot] gen done in', Math.round(performance.now() - t0), 'ms; chars:', raw.length);
-      console.log('[blinkbot] RAW OUTPUT:\n' + raw);          // what the model actually emitted
       parsed = parseOut(raw);
-      console.log('[blinkbot] PARSED:', parsed, '| actions:', parsed && parsed.actions);
     } catch (e) {
       setStatus(ctrl.signal.aborted ? 'Timed out — too slow on this device.' : 'BlinkBot error.', false);
       console.error('[blinkbot] gen failed', e);
@@ -357,7 +418,6 @@
       message: parsed.needs_groq ? msg : undefined,
       actions: parsed.actions, needs_groq: parsed.needs_groq, reply: parsed.reply,
     });
-    console.log('[blinkbot] SERVER:', r.code, r.json);        // performed[] shows what the DB did
     if (r.code === 402 && r.json.paywall) {
       setStatus(r.json.reply || 'Free period ended.', false);
       offerRenew();

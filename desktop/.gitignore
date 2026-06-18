@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.log
+# downloaded model cache (if ever placed here during dev)
+*.gguf
