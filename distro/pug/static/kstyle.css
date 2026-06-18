@@ -411,18 +411,21 @@ body.header-hidden .l-bar {
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
 .r-qa-toggle {
   position: fixed;
-  top: calc(var(--header-h) + 14px);
-  right: 14px;
+  top: calc(var(--header-h) + 22px);
+  right: calc(var(--rbar-w) + 20px);   /* in the open band just left of the sidebar */
   z-index: 130;
-  width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 50%;
+  height: 30px; padding: 0 12px;
+  display: flex; align-items: center; gap: 6px;
+  border-radius: 16px;
   background: var(--surface-2);
   border: 1px solid var(--border2);
   color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem; letter-spacing: 0.05em;
   cursor: pointer;
   transition: background .15s, color .15s, border-color .15s;
 }
+.r-qa-toggle .r-qa-label { white-space: nowrap; }
 .r-qa-toggle:hover { color: var(--text); border-color: var(--accent); }
 .r-bar.qa-open .r-qa-toggle {
   color: var(--accent);
