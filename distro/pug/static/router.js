@@ -22,7 +22,7 @@
 
   function getHomeTab() {
     const stored = localStorage.getItem(HOME_TAB_KEY);
-    return (stored && ROUTES[stored] !== undefined) ? stored : 'notes';
+    return (stored && ROUTES[stored] !== undefined) ? stored : 'habits';
   }
 
   function getRoute() {
