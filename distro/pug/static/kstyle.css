@@ -411,8 +411,7 @@ body.header-hidden .l-bar {
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
 .r-qa-toggle {
   position: fixed;
-  top: 50%;                             /* vertically centred against the sidebar */
-  transform: translateY(-50%);
+  top: calc(var(--header-h) + 44px);    /* upper gap, just below the header */
   right: var(--rbar-w);                  /* flush to the sidebar's inner edge */
   z-index: 130;
   width: 26px; padding: 16px 0;
