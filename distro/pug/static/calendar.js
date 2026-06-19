@@ -17,7 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentDate = new Date();
   let events   = [];               // [{id,title,start_datetime,end_datetime}]
   let holidays = {};               // 'YYYY-MM-DD' -> [name, ...]
+  let habitPct = {};               // 'YYYY-MM-DD' -> habit completion % (last 90 days)
   const holidayYears = new Set();  // years already fetched
+
+  // A past day where you crushed your habits (≥ this %) "fills in" gold and hides
+  // a little reveal-puzzle behind it — a reward for the days you showed up.
+  const CRUSH_THRESHOLD = 80;
 
   injectStyles();
 
@@ -27,8 +32,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/pug/api/events');
       if (res.ok) events = await res.json();
     } catch (_) {}
+    await loadHabitHistory();
     renderCalendar();
   };
+
+  async function loadHabitHistory() {
+    try {
+      const res = await fetch('/pug/api/habits/history?days=90');
+      if (!res.ok) return;
+      const rows = await res.json();
+      habitPct = {};
+      rows.forEach(r => { if (r && r.date != null) habitPct[r.date] = r.pct; });
+    } catch (_) {}
+  }
 
   async function loadHolidays(year) {
     if (holidayYears.has(year)) return;
@@ -106,6 +122,34 @@ document.addEventListener('DOMContentLoaded', () => {
     return (t && t !== '00:00') ? t : '';
   }
 
+  // A past day counts as "crushed" if its habit completion cleared the threshold.
+  function isCrushed(dateStr, todayStr) {
+    const pct = habitPct[dateStr];
+    return dateStr < todayStr && pct != null && pct >= CRUSH_THRESHOLD;
+  }
+
+  // Reveal-puzzles: a small fixed bank, picked deterministically from the date so
+  // the same day always shows the same riddle.
+  const PUZZLES = [
+    { q: 'The more of me you take, the more you leave behind. What am I?', a: 'Footsteps.' },
+    { q: 'I speak without a mouth and hear without ears. What am I?', a: 'An echo.' },
+    { q: "What has keys but can't open locks?", a: 'A piano.' },
+    { q: 'What gets wetter the more it dries?', a: 'A towel.' },
+    { q: 'I am tall when young and short when old. What am I?', a: 'A candle.' },
+    { q: "What has hands but can't clap?", a: 'A clock.' },
+    { q: 'What can travel around the world while staying in a corner?', a: 'A stamp.' },
+    { q: 'The day after tomorrow is two days before Friday. What day is it today?', a: 'Sunday.' },
+    { q: 'What has many teeth but cannot bite?', a: 'A comb.' },
+    { q: 'What goes up but never comes down?', a: 'Your age.' },
+    { q: 'I have cities but no houses, mountains but no trees, water but no fish. What am I?', a: 'A map.' },
+    { q: 'What 5-letter word becomes shorter when you add two letters?', a: '"Short" → "Shorter".' },
+  ];
+  function puzzleFor(dateStr) {
+    let h = 0;
+    for (let i = 0; i < dateStr.length; i++) h = (h * 31 + dateStr.charCodeAt(i)) >>> 0;
+    return PUZZLES[h % PUZZLES.length];
+  }
+
   // ── render ──────────────────────────────────────────────────────────────
   function renderCalendar() {
     daysContainer.innerHTML = '';
@@ -136,6 +180,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const evs   = eventsOn(dateStr);
       const holid = holidays[dateStr];
 
+      // Past days fill in; the ones you crushed (≥ threshold) fill gold and hide a
+      // reveal-puzzle (see openDayPopup).
+      if (dateStr < todayStr) {
+        cell.classList.add('past');
+        if (isCrushed(dateStr, todayStr)) cell.classList.add('crushed');
+      }
+
       if (evs.length) {
         cell.classList.add('has-ev', evs.length >= 3 ? 'ev3' : (evs.length === 2 ? 'ev2' : 'ev1'));
       }
@@ -145,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tip = [];
       evs.forEach(e => tip.push((timeOf(e) ? timeOf(e) + ' ' : '') + e.title));
       if (holid) holid.forEach(n => tip.push('🎉 ' + n));
+      if (isCrushed(dateStr, todayStr)) tip.push(`🧩 ${habitPct[dateStr]}% — tap to reveal`);
       if (tip.length) cell.title = tip.join('\n');
 
       cell.addEventListener('click', () => openDayPopup(dateStr));
@@ -157,6 +209,9 @@ document.addEventListener('DOMContentLoaded', () => {
     closePopup();
     const evs   = eventsOn(dateStr);
     const holid = holidays[dateStr] || [];
+    const todayStr = dstr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    const crushed  = isCrushed(dateStr, todayStr);
+    const pz       = crushed ? puzzleFor(dateStr) : null;
     const pretty = new Date(dateStr + 'T00:00').toLocaleDateString('default',
       { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -168,6 +223,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="cal-pop-head"><span>${pretty}</span>
           <button class="cal-pop-x" id="calPopClose" aria-label="Close">&times;</button></div>
         ${holid.map(n => `<div class="cal-pop-holiday">🎉 ${escapeHtml(n)}</div>`).join('')}
+        ${crushed ? `<div class="cal-pop-reward">
+            <div class="cal-pop-reward-top">🧩 ${habitPct[dateStr]}% crushed — reveal unlocked</div>
+            <div class="cal-pop-riddle">${escapeHtml(pz.q)}</div>
+            <button class="cal-pop-reveal" id="calReveal">Reveal answer</button>
+            <div class="cal-pop-answer hidden" id="calAnswer">${escapeHtml(pz.a)}</div>
+          </div>` : ''}
         <div class="cal-pop-list" id="calPopList"></div>
         <div class="cal-pop-form">
           <input type="text" id="evTitle" placeholder="Add an event or plan…" autocomplete="off" maxlength="200">
@@ -181,6 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ov);
     ov.addEventListener('click', e => { if (e.target === ov) closePopup(); });
     document.getElementById('calPopClose').onclick = closePopup;
+    if (crushed) {
+      const rb = document.getElementById('calReveal');
+      if (rb) rb.onclick = () => {
+        document.getElementById('calAnswer')?.classList.remove('hidden');
+        rb.classList.add('hidden');
+      };
+    }
 
     renderPopList(dateStr, evs);
 
@@ -259,6 +327,14 @@ document.addEventListener('DOMContentLoaded', () => {
     s.textContent = `
       .calendar-day{cursor:pointer;border-radius:50%;transition:background .15s}
       .calendar-day:not(.empty):hover{background:var(--surface-2,#23252c)}
+      /* past days fill in faintly; a "crushed" day (high habit completion) fills gold
+         with a tiny puzzle dot, hinting there's a reveal behind it */
+      .calendar-day.past:not(.crushed):not(.has-ev){background:rgba(255,255,255,.04);color:var(--text-dim,#7d828c)}
+      .calendar-day.crushed{position:relative;color:#1a1407;font-weight:700;
+        background:radial-gradient(circle at 50% 38%,#ffd27a,#e0a23c 70%);
+        box-shadow:0 0 10px rgba(224,162,60,.45)}
+      .calendar-day.crushed:hover{background:radial-gradient(circle at 50% 38%,#ffdd92,#e8ad48 70%)}
+      .calendar-day.crushed::before{content:'🧩';position:absolute;top:-2px;right:-1px;font-size:9px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
       /* event days: encircle the number + colour the font, hotter as it gets busier */
       .calendar-day.has-ev{position:relative;font-weight:700}
       .calendar-day.ev1{color:#e0a23c;box-shadow:inset 0 0 0 1.5px rgba(224,162,60,.6)}
@@ -274,6 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
       .cal-pop-head{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:18px;margin-bottom:16px}
       .cal-pop-x{background:none;border:none;color:var(--text-dim,#9aa0aa);font-size:26px;cursor:pointer;line-height:1}
       .cal-pop-holiday{font-size:14px;color:#3ea37a;margin-bottom:10px}
+      .cal-pop-reward{background:linear-gradient(135deg,rgba(224,162,60,.14),rgba(232,132,47,.08));border:1px solid rgba(224,162,60,.4);border-radius:12px;padding:13px 15px;margin-bottom:16px}
+      .cal-pop-reward-top{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#e0a23c;margin-bottom:8px}
+      .cal-pop-riddle{font-size:15px;line-height:1.5;color:var(--text,#e6e6e6);margin-bottom:10px}
+      .cal-pop-reveal{padding:7px 14px;border-radius:9px;border:1px solid rgba(224,162,60,.55);background:rgba(224,162,60,.12);color:#e0a23c;font-size:13px;font-weight:600;cursor:pointer}
+      .cal-pop-reveal:hover{background:rgba(224,162,60,.22)}
+      .cal-pop-answer{font-size:15px;color:#ffd27a;font-weight:600;margin-top:4px}
+      .cal-pop-answer.hidden{display:none}
       .cal-pop-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:240px;overflow-y:auto}
       .cal-pop-empty{font-size:14px;color:var(--text-dim,#7d828c)}
       .cal-pop-item{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;background:var(--surface-2,#1d1f25);border-radius:9px;padding:10px 13px}
