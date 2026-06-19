@@ -245,13 +245,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const locPrompt    = document.getElementById('commLocPrompt');
     const locPromptBtn = document.getElementById('commLocPromptBtn');
 
-    function requestLocation() {
-        if (!navigator.geolocation) return;
+    // Community requires a location so neighbours can find each other on the
+    // radar. When `enforce` is set, a user who blocks/has no location gets bounced
+    // out to the Notes tab instead of being allowed to lurk location-less.
+    function bounceFromCommunity() {
+        modToast('Community needs your location so people nearby can find you. Turn it on, then come back.');
+        if (window._veyraNavigate) window._veyraNavigate('notes', true);
+    }
+
+    function requestLocation(enforce) {
+        if (!navigator.geolocation) { if (enforce) bounceFromCommunity(); return; }
         locPrompt?.classList.add('hidden');
         navigator.geolocation.getCurrentPosition(pos => {
             myLat = pos.coords.latitude;
             myLng = pos.coords.longitude;
             locPrompt?.classList.add('hidden');
+            // Persist as the user's last-known location — radar reads this so they
+            // stay visible to others on later visits even before re-sharing.
             fetch('/pug/api/location', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -262,13 +272,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }, () => {
             if (rangeLabel) { rangeLabel.classList.remove('locating'); rangeLabel.style.display = 'none'; }
             locPrompt?.classList.add('hidden');
+            if (enforce) bounceFromCommunity();
         }, { timeout: 8000 });
     }
 
-    locPromptBtn?.addEventListener('click', requestLocation);
+    locPromptBtn?.addEventListener('click', () => requestLocation(true));
 
+    // Gate the Community tab on location: enforce on first load if we land here,
+    // and every time the user navigates in without a location yet.
+    const onCommunityAtLoad = document.body.getAttribute('data-route') === 'social';
     if (feedMode === 'radar') locPrompt?.classList.remove('hidden');
-    requestLocation();
+    requestLocation(onCommunityAtLoad);
+
+    document.addEventListener('veyra:navigate', e => {
+        if (e.detail && e.detail.route === 'social' && (myLat === null || myLng === null)) {
+            requestLocation(true);
+        }
+    });
 
     // ── Feed ───────────────────────────────────────────────────────────────────
     function loadFeed() {
