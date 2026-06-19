@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=117">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=118">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=79">
 </head>
@@ -89,12 +89,13 @@
     </div>
   </header>
 
-  <!-- Left capsule rail — Habits (home), Skills, Notes, DMs & Physique -->
+  <!-- Left capsule rail — Habits (home), Skills, Notes & Physique.
+       (DMs ride along on the Notes tab, so no separate rail capsule — the header
+        "DMs" pill is the labelled entry point.) -->
   <div class="veyra-lbar" id="veyraLbar">
     <button class="lbar-capsule" data-route="habits">Habits</button>
     <button class="lbar-capsule" data-route="skills">Skills</button>
     <button class="lbar-capsule" data-route="notes">Notes</button>
-    <button class="lbar-capsule nav-pill-dms" data-route="notes" aria-label="Messages">DMs<span class="dm-unread-badge" id="dmUnreadDot"></span></button>
     <button class="lbar-capsule lbar-capsule-soon" id="physiqueCapsule">Physique</button>
   </div>
 
