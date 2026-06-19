@@ -21,15 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
         "There are more trees on Earth than stars in the Milky Way galaxy."
     ];
 
+    // Keep short quotes at the full 25px; shrink the text the longer the quote
+    // gets so big ones don't dominate / wrap into a wall of text.
+    function sizeWisdom(el) {
+        const n = (el.textContent || '').length;
+        let px = 25;
+        if (n > 220)      px = 16;
+        else if (n > 165) px = 18;
+        else if (n > 115) px = 21;
+        el.style.fontSize = px + 'px';
+    }
+
     async function fetchWisdom(el) {
         try {
             const res = await fetch('/pug/api/wisdom');
             const data = await res.json();
-            if (data.text) { el.textContent = data.text; return; }
+            if (data.text) { el.textContent = data.text; sizeWisdom(el); return; }
             throw new Error('empty');
         } catch (err) {
             const fallback = offlineMix[Math.floor(Math.random() * offlineMix.length)];
             el.textContent = fallback;
+            sizeWisdom(el);
         }
     }
 

@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function deletePost(id, isMod) {
         // Deleting someone else's post (admin) is a moderation action — confirm first.
-        if (isMod && !confirm("Remove this user's post? This hides it from the community.")) return;
+        if (isMod && !confirm("Permanently delete this user's post? It's removed from the community for good.")) return;
         fetch(`/pug/api/community/${id}`, { method: 'DELETE' })
             .then(() => { lastPostCount = 0; loadFeed(); }).catch(() => {});
     }

@@ -3251,9 +3251,14 @@ def delete_community_post(pid):
         return jsonify({'error': 'Not found'}), 404
     if p.user_id != me and not _is_admin(me):
         return jsonify({'error': 'Forbidden'}), 403
-    p.is_deleted = True
-    if p.user_id != me:
-        p.is_hidden = True          # admin moderation removal — also drops it from any cached views
+    # Hard delete — wipe the post and everything keyed off it (reactions + comments
+    # are Notes with mood=post id) so nothing lingers in the DB.
+    pid_s = str(p.id)
+    Note.query.filter(
+        Note.entry_type.in_(['post_react', 'post_comment']),
+        Note.mood == pid_s
+    ).delete(synchronize_session=False)
+    db.session.delete(p)
     db.session.commit()
     return jsonify({'ok': True})
 

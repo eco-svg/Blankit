@@ -415,7 +415,7 @@ body.header-hidden .l-bar {
      lines the tab's top edge up with the calendar card's top edge. The top
      tracks the sidebar so when the page header auto-hides (and the sidebar
      slides up), the tab rides up with the calendar instead of overlapping it. */
-  top: calc(var(--header-h) + var(--gap));
+  top: calc(var(--header-h) + var(--gap) + 2px);   /* +2px OCD nudge to line up with the card */
   /* Butt the tab's right edge against the calendar card's left edge. The card
      sits var(--gap) inside the sidebar (its left padding), so pull the tab that
      far in past the sidebar border — no gap, physically joined to the card. */
@@ -436,7 +436,7 @@ body.header-hidden .l-bar {
   transition: top 0.32s cubic-bezier(0.4,0,0.2,1),
               background .15s, color .15s, border-color .15s;
 }
-body.header-hidden .r-qa-toggle { top: var(--gap); }
+body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 2px); }
 .r-qa-toggle .r-qa-label { writing-mode: vertical-rl; white-space: nowrap; }
 .r-qa-toggle:hover { color: var(--text); border-color: var(--accent); }
 .r-bar.qa-open .r-qa-toggle {
