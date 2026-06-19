@@ -411,19 +411,22 @@ body.header-hidden .l-bar {
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
 .r-qa-toggle {
   position: fixed;
-  top: calc(var(--header-h) + 78px);   /* beside the calendar, in the open band */
-  right: calc(var(--rbar-w) + 6px);     /* nestled just left of the sidebar */
+  top: 50%;                             /* vertically centred against the sidebar */
+  transform: translateY(-50%);
+  right: var(--rbar-w);                  /* flush to the sidebar's inner edge */
   z-index: 130;
-  width: 30px; padding: 12px 0;
-  display: flex; flex-direction: column; align-items: center; gap: 7px;
-  border-radius: 16px;
+  width: 26px; padding: 16px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  border-radius: 14px 0 0 14px;          /* pull-tab: rounded on the left only */
   background: var(--surface-2);
   border: 1px solid var(--border2);
+  border-right: none;
   color: var(--text-muted);
   font-family: var(--font-mono);
-  font-size: 0.72rem; letter-spacing: 0.1em;
+  font-size: 0.72rem; letter-spacing: 0.12em;
   text-transform: uppercase;
   cursor: pointer;
+  box-shadow: -4px 0 14px rgba(0,0,0,0.25);
   transition: background .15s, color .15s, border-color .15s;
 }
 .r-qa-toggle .r-qa-label { writing-mode: vertical-rl; white-space: nowrap; }
