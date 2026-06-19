@@ -540,8 +540,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Cross-module DM open (from community marketplace CTAs) ────────────────
     document.addEventListener('veyra:open-dm', e => {
-        // DMs are now their own tab — bring it into view before opening the chat.
-        if (window._veyraNavigate) window._veyraNavigate('dms', true);
+        // The DM card lives on the Notes tab — bring that tab up, then scroll the
+        // card into view, before opening the chat.
+        if (window._veyraNavigate) window._veyraNavigate('notes', true);
+        setTimeout(() => document.getElementById('sec-dms')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
         openChat(e.detail.uid, e.detail.username);
         const msg = e.detail.autoMessage;
         if (msg) {

@@ -4,8 +4,7 @@
 
 (function () {
   const ROUTES = {
-    'notes':    ['sec-notes'],   // Quick Ask (sec-blinkbot) moved into the right sidebar panel
-    'dms':      ['sec-dms'],
+    'notes':    ['sec-notes', 'sec-dms'],   // DMs fill the old Quick Ask column slot beside Notes
     'skills':   ['sec-skills-wrapper'],
     'social':   ['sec-comms'],
     'habits':   ['sec-habits', 'sec-habit-pulse'],
@@ -17,7 +16,7 @@
     'credits':  ['sec-credits'],
   };
 
-  const LBAR_ROUTES = new Set(['notes', 'dms', 'habits', 'skills']);
+  const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);
   const HOME_TAB_KEY = 'veyra_home_tab';
   const ALL_SECTIONS = [...new Set(Object.values(ROUTES).flat())];
 
