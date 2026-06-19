@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'buy' })
                 }).catch(() => {});
-                document.getElementById('commDmLbar')?.classList.add('open');
                 document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
             }
             closeBuyModal();
@@ -509,7 +508,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ action: actionKey })
                     }).catch(() => {});
                 }
-                document.getElementById('commDmLbar')?.classList.add('open');
                 document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
             });
         });
@@ -550,7 +548,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                     this.dataset.fired = '1';
                                     if (actionKey2) fetch(`/pug/api/community/${p.id}/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: actionKey2 }) }).catch(() => {});
-                                    document.getElementById('commDmLbar')?.classList.add('open');
                                     document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid: uid2, username: username2, autoMessage } }));
                                 });
                             });
@@ -1228,7 +1225,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const cls = Array.from(btn.classList).find(c => PUB_ACTION_MESSAGES[c]);
             const autoMessage = cls ? PUB_ACTION_MESSAGES[cls]() : null;
             pubModal.classList.add('hidden');
-            document.getElementById('commDmLbar')?.classList.add('open');
             document.dispatchEvent(new CustomEvent('veyra:open-dm', { detail: { uid, username, autoMessage } }));
         });
     });

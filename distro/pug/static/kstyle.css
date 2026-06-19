@@ -3097,20 +3097,12 @@ div.infinite-canvas video {
 #sec-comms {
 }
 
-/* ── DM lbar inside community card ───────────────────── */
-.comm-dm-lbar {
-  width: 0;
-  overflow: hidden;
-  flex-shrink: 0;
+/* ── DM card (standalone tab, beside Notes) ──────────── */
+.card.dms {
   display: flex;
   flex-direction: column;
-  border-right: 0px solid var(--border);
-  transition: width 0.26s cubic-bezier(0.4,0,0.2,1),
-              border-right-width 0.26s;
-}
-.comm-dm-lbar.open {
-  width: 340px;
-  border-right-width: 1px;
+  padding: 0;
+  overflow: hidden;
 }
 .comm-dm-lbar-header {
   display: flex;

@@ -158,17 +158,17 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/pug/api/dms')
             .then(r => r.json())
             .then(convs => {
-                // always update header badge regardless of open chat
+                // always update every DM entry-point badge (header pill + lbar
+                // capsule) regardless of which chat is open
                 const totalUnread = convs.reduce((s, c) => s + (c.unread_count || 0), 0);
-                const badge = document.getElementById('dmUnreadDot');
-                if (badge) {
+                document.querySelectorAll('.dm-unread-badge').forEach(badge => {
                     if (totalUnread > 0) {
                         badge.textContent = totalUnread > 99 ? '99+' : totalUnread;
                         badge.style.display = '';
                     } else {
                         badge.style.display = 'none';
                     }
-                }
+                });
                 if (currentOtherId) return;
                 convList.innerHTML = '';
                 if (!convs.length) {
@@ -540,6 +540,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Cross-module DM open (from community marketplace CTAs) ────────────────
     document.addEventListener('veyra:open-dm', e => {
+        // DMs are now their own tab — bring it into view before opening the chat.
+        if (window._veyraNavigate) window._veyraNavigate('dms', true);
         openChat(e.detail.uid, e.detail.username);
         const msg = e.detail.autoMessage;
         if (msg) {

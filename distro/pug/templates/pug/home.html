@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=116">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=117">
   <script nonce="{{ csp_nonce }}">(function(){['veyra-pug-palette','veyra-pug-wallpaper','veyra-pug-filter','veyra_theme'].forEach(function(k){localStorage.removeItem(k);});})();</script>
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=79">
 </head>
@@ -54,6 +54,7 @@
       <a href="#notes" class="nav-pill" data-home="true">Home</a>
       <a href="#buddybot" class="nav-pill">BuddyBot</a>
       <a href="#social"   class="nav-pill">Community</a>
+      <a href="#dms"      class="nav-pill nav-pill-dms">DMs<span class="dm-unread-badge"></span></a>
       <a href="#request"  class="nav-pill">Request</a>
       <a href="#credits"  class="nav-pill">Eyes</a>
     </nav>
@@ -93,7 +94,7 @@
     <button class="lbar-capsule" data-route="habits">Habits</button>
     <button class="lbar-capsule" data-route="skills">Skills</button>
     <button class="lbar-capsule" data-route="notes">Notes</button>
-    <button class="lbar-capsule" id="dmBarToggle" aria-label="Messages">DMs<span class="dm-unread-badge" id="dmUnreadDot"></span></button>
+    <button class="lbar-capsule" data-route="dms" aria-label="Messages">DMs<span class="dm-unread-badge" id="dmUnreadDot"></span></button>
     <button class="lbar-capsule lbar-capsule-soon" id="physiqueCapsule">Physique</button>
   </div>
 
@@ -110,6 +111,7 @@
       </div>
 
       {% include 'pug/cards/_notes.html' %}
+      {% include 'pug/cards/_dms.html' %}
       {% include 'pug/cards/_skills.html' %}
       {% include 'pug/cards/_social.html' %}
       {% include 'pug/cards/_habits.html' %}
@@ -379,12 +381,12 @@
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
   <script src="{{ url_for('pug.static', filename='profile.js') }}?v=6"></script>
-  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=6"></script>
-  <script src="{{ url_for('pug.static', filename='community.js') }}?v=15"></script>
+  <script src="{{ url_for('pug.static', filename='dms.js') }}?v=7"></script>
+  <script src="{{ url_for('pug.static', filename='community.js') }}?v=16"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=14"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=6"></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=3"></script>
-  <script src="{{ url_for('pug.static', filename='router.js') }}?v=5"></script>
+  <script src="{{ url_for('pug.static', filename='router.js') }}?v=6"></script>
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}?v=2"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>
@@ -601,27 +603,6 @@
   (function() {
     var pc = document.getElementById('physiqueCapsule');
     if (pc) pc.addEventListener('click', function(e) { e.stopPropagation(); });
-  })();
-  </script>
-
-  <script nonce="{{ csp_nonce }}">
-  (function() {
-    var toggle = document.getElementById('dmBarToggle');
-    if (!toggle) return;
-    function lbar() { return document.getElementById('commDmLbar'); }
-    function openDm()  { var l = lbar(); if (l) l.classList.add('open');    toggle.classList.add('active'); }
-    function closeDm() { var l = lbar(); if (l) l.classList.remove('open'); toggle.classList.remove('active'); }
-    toggle.addEventListener('click', function() {
-      var onComm = document.body.getAttribute('data-route') === 'social';
-      var l = lbar();
-      if (!onComm) {
-        if (window._veyraNavigate) window._veyraNavigate('social', true);
-        openDm();
-      } else {
-        if (l && l.classList.contains('open')) closeDm(); else openDm();
-      }
-    });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeDm(); });
   })();
   </script>
 
