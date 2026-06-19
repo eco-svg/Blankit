@@ -416,7 +416,10 @@ body.header-hidden .l-bar {
      tracks the sidebar so when the page header auto-hides (and the sidebar
      slides up), the tab rides up with the calendar instead of overlapping it. */
   top: calc(var(--header-h) + var(--gap));
-  right: var(--rbar-w);                  /* flush to the sidebar's inner edge */
+  /* Butt the tab's right edge against the calendar card's left edge. The card
+     sits var(--gap) inside the sidebar (its left padding), so pull the tab that
+     far in past the sidebar border — no gap, physically joined to the card. */
+  right: calc(var(--rbar-w) - var(--gap));
   z-index: 130;
   width: 26px; padding: 16px 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
