@@ -411,11 +411,11 @@ body.header-hidden .l-bar {
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
 .r-qa-toggle {
   position: fixed;
-  /* Pinned to the calendar card's top-left. The 44px lines it up with the
-     "EVENT CALENDAR" header; the top tracks the sidebar so when the page header
-     auto-hides (and the sidebar slides up), the tab rides up with the calendar
-     instead of being left behind to overlap it. */
-  top: calc(var(--header-h) + 44px);
+  /* Pinned to the calendar card's top-left: var(--gap) below the sidebar top
+     lines the tab's top edge up with the calendar card's top edge. The top
+     tracks the sidebar so when the page header auto-hides (and the sidebar
+     slides up), the tab rides up with the calendar instead of overlapping it. */
+  top: calc(var(--header-h) + var(--gap));
   right: var(--rbar-w);                  /* flush to the sidebar's inner edge */
   z-index: 130;
   width: 26px; padding: 16px 0;
@@ -433,7 +433,7 @@ body.header-hidden .l-bar {
   transition: top 0.32s cubic-bezier(0.4,0,0.2,1),
               background .15s, color .15s, border-color .15s;
 }
-body.header-hidden .r-qa-toggle { top: 44px; }
+body.header-hidden .r-qa-toggle { top: var(--gap); }
 .r-qa-toggle .r-qa-label { writing-mode: vertical-rl; white-space: nowrap; }
 .r-qa-toggle:hover { color: var(--text); border-color: var(--accent); }
 .r-bar.qa-open .r-qa-toggle {
