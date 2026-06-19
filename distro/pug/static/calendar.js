@@ -20,9 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let habitPct = {};               // 'YYYY-MM-DD' -> habit completion % (last 90 days)
   const holidayYears = new Set();  // years already fetched
 
-  // A past day where you crushed your habits (≥ this %) "fills in" gold and hides
-  // a little reveal-puzzle behind it — a reward for the days you showed up.
+  // A past day where you crushed your habits (≥ this %) becomes a "window" onto a
+  // hidden picture: each such day paints its own slice, so the image self-assembles
+  // across the month as you stack good days. Swap REVEAL_IMAGE for any pic/meme/quote.
   const CRUSH_THRESHOLD = 80;
+  const REVEAL_IMAGE = '/static/icons/icon-192.png';
 
   injectStyles();
 
@@ -128,26 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
     return dateStr < todayStr && pct != null && pct >= CRUSH_THRESHOLD;
   }
 
-  // Reveal-puzzles: a small fixed bank, picked deterministically from the date so
-  // the same day always shows the same riddle.
-  const PUZZLES = [
-    { q: 'The more of me you take, the more you leave behind. What am I?', a: 'Footsteps.' },
-    { q: 'I speak without a mouth and hear without ears. What am I?', a: 'An echo.' },
-    { q: "What has keys but can't open locks?", a: 'A piano.' },
-    { q: 'What gets wetter the more it dries?', a: 'A towel.' },
-    { q: 'I am tall when young and short when old. What am I?', a: 'A candle.' },
-    { q: "What has hands but can't clap?", a: 'A clock.' },
-    { q: 'What can travel around the world while staying in a corner?', a: 'A stamp.' },
-    { q: 'The day after tomorrow is two days before Friday. What day is it today?', a: 'Sunday.' },
-    { q: 'What has many teeth but cannot bite?', a: 'A comb.' },
-    { q: 'What goes up but never comes down?', a: 'Your age.' },
-    { q: 'I have cities but no houses, mountains but no trees, water but no fish. What am I?', a: 'A map.' },
-    { q: 'What 5-letter word becomes shorter when you add two letters?', a: '"Short" → "Shorter".' },
-  ];
-  function puzzleFor(dateStr) {
-    let h = 0;
-    for (let i = 0; i < dateStr.length; i++) h = (h * 31 + dateStr.charCodeAt(i)) >>> 0;
-    return PUZZLES[h % PUZZLES.length];
+  // Paint each crushed day with its slice of REVEAL_IMAGE: the image is sized to the
+  // whole grid and offset by the cell's position, so the cells together reconstruct
+  // the picture (circular "portholes"). Re-run on layout changes.
+  function paintRevealSlices() {
+    const cells = daysContainer.querySelectorAll('.calendar-day.crushed');
+    cells.forEach(c => {
+      c.style.backgroundImage    = `url("${REVEAL_IMAGE}")`;
+      c.style.backgroundSize     = `${daysContainer.clientWidth}px ${daysContainer.clientHeight}px`;
+      c.style.backgroundPosition = `-${c.offsetLeft}px -${c.offsetTop}px`;
+      c.style.backgroundRepeat   = 'no-repeat';
+    });
   }
 
   // ── render ──────────────────────────────────────────────────────────────
@@ -202,7 +195,16 @@ document.addEventListener('DOMContentLoaded', () => {
       cell.addEventListener('click', () => openDayPopup(dateStr));
       daysContainer.appendChild(cell);
     }
+
+    paintRevealSlices();   // fill crushed cells with their image slices
   }
+
+  // Re-slice when the sidebar/card resizes (cell offsets change).
+  let _revealResizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(_revealResizeT);
+    _revealResizeT = setTimeout(paintRevealSlices, 150);
+  });
 
   // ── add/list popup for a day ────────────────────────────────────────────
   function openDayPopup(dateStr) {
@@ -211,7 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const holid = holidays[dateStr] || [];
     const todayStr = dstr(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
     const crushed  = isCrushed(dateStr, todayStr);
-    const pz       = crushed ? puzzleFor(dateStr) : null;
     const pretty = new Date(dateStr + 'T00:00').toLocaleDateString('default',
       { weekday: 'long', month: 'long', day: 'numeric' });
 
@@ -224,10 +225,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="cal-pop-x" id="calPopClose" aria-label="Close">&times;</button></div>
         ${holid.map(n => `<div class="cal-pop-holiday">🎉 ${escapeHtml(n)}</div>`).join('')}
         ${crushed ? `<div class="cal-pop-reward">
-            <div class="cal-pop-reward-top">🧩 ${habitPct[dateStr]}% crushed — reveal unlocked</div>
-            <div class="cal-pop-riddle">${escapeHtml(pz.q)}</div>
-            <button class="cal-pop-reveal" id="calReveal">Reveal answer</button>
-            <div class="cal-pop-answer hidden" id="calAnswer">${escapeHtml(pz.a)}</div>
+            <div class="cal-pop-reward-top">🧩 ${habitPct[dateStr]}% crushed</div>
+            <div class="cal-pop-riddle">You uncovered a piece of this month's picture — keep stacking good days to reveal the whole thing.</div>
           </div>` : ''}
         <div class="cal-pop-list" id="calPopList"></div>
         <div class="cal-pop-form">
@@ -242,13 +241,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(ov);
     ov.addEventListener('click', e => { if (e.target === ov) closePopup(); });
     document.getElementById('calPopClose').onclick = closePopup;
-    if (crushed) {
-      const rb = document.getElementById('calReveal');
-      if (rb) rb.onclick = () => {
-        document.getElementById('calAnswer')?.classList.remove('hidden');
-        rb.classList.add('hidden');
-      };
-    }
 
     renderPopList(dateStr, evs);
 
@@ -325,16 +317,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const s = document.createElement('style');
     s.id = 'calStyles';
     s.textContent = `
+      .calendar-days{position:relative}
       .calendar-day{cursor:pointer;border-radius:50%;transition:background .15s}
       .calendar-day:not(.empty):hover{background:var(--surface-2,#23252c)}
-      /* past days fill in faintly; a "crushed" day (high habit completion) fills gold
-         with a tiny puzzle dot, hinting there's a reveal behind it */
+      /* past days fill in faintly; a "crushed" day (high habit completion) becomes a
+         porthole onto the hidden picture (its image slice is painted inline by JS) */
       .calendar-day.past:not(.crushed):not(.has-ev){background:rgba(255,255,255,.04);color:var(--text-dim,#7d828c)}
-      .calendar-day.crushed{position:relative;color:#1a1407;font-weight:700;
-        background:radial-gradient(circle at 50% 38%,#ffd27a,#e0a23c 70%);
-        box-shadow:0 0 10px rgba(224,162,60,.45)}
-      .calendar-day.crushed:hover{background:radial-gradient(circle at 50% 38%,#ffdd92,#e8ad48 70%)}
-      .calendar-day.crushed::before{content:'🧩';position:absolute;top:-2px;right:-1px;font-size:9px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}
+      .calendar-day.crushed{position:relative;color:#fff;font-weight:700;
+        text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.95);
+        box-shadow:inset 0 0 0 1.5px rgba(255,210,122,.7),0 0 8px rgba(224,162,60,.35)}
+      .calendar-day.crushed::before{content:'🧩';position:absolute;top:-3px;right:-2px;font-size:8px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
       /* event days: encircle the number + colour the font, hotter as it gets busier */
       .calendar-day.has-ev{position:relative;font-weight:700}
       .calendar-day.ev1{color:#e0a23c;box-shadow:inset 0 0 0 1.5px rgba(224,162,60,.6)}
@@ -352,11 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .cal-pop-holiday{font-size:14px;color:#3ea37a;margin-bottom:10px}
       .cal-pop-reward{background:linear-gradient(135deg,rgba(224,162,60,.14),rgba(232,132,47,.08));border:1px solid rgba(224,162,60,.4);border-radius:12px;padding:13px 15px;margin-bottom:16px}
       .cal-pop-reward-top{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#e0a23c;margin-bottom:8px}
-      .cal-pop-riddle{font-size:15px;line-height:1.5;color:var(--text,#e6e6e6);margin-bottom:10px}
-      .cal-pop-reveal{padding:7px 14px;border-radius:9px;border:1px solid rgba(224,162,60,.55);background:rgba(224,162,60,.12);color:#e0a23c;font-size:13px;font-weight:600;cursor:pointer}
-      .cal-pop-reveal:hover{background:rgba(224,162,60,.22)}
-      .cal-pop-answer{font-size:15px;color:#ffd27a;font-weight:600;margin-top:4px}
-      .cal-pop-answer.hidden{display:none}
+      .cal-pop-riddle{font-size:13.5px;line-height:1.5;color:var(--text-dim,#9aa0aa)}
       .cal-pop-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:240px;overflow-y:auto}
       .cal-pop-empty{font-size:14px;color:var(--text-dim,#7d828c)}
       .cal-pop-item{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;background:var(--surface-2,#1d1f25);border-radius:9px;padding:10px 13px}
