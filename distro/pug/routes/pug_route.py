@@ -1401,6 +1401,7 @@ def home():
     return render_template('pug/home.html',
                            username=session.get('username', 'User'),
                            distro=session.get('distro', 'Ocellus'),
+                           is_admin=_is_admin(session.get('user_id')),
                            zoom_exempt=bool(_u and _u.is_admin))
 
 

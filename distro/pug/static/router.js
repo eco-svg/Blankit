@@ -14,6 +14,7 @@
     'profile':  ['sec-profile'],
     'stats':    ['sec-stats-wrapper'],
     'credits':  ['sec-credits'],
+    'admin':    ['sec-admin'],   // only present for admin accounts
   };
 
   const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);

@@ -1,0 +1,25 @@
+<!-- Admin moderation panel — only included for admin accounts (home.html guards the
+     include with an is_admin check). Reached via Profile → "Admin Panel". Driven by
+     admin.js against the /pug/api/admin/* endpoints that already exist in pug_route.py. -->
+<div class="card admin" id="sec-admin">
+  <div class="card-top-bar">
+    <h2 class="card-title">Admin · Moderation</h2>
+    <button class="icon-btn" id="adminRefreshBtn" title="Refresh">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-atab="posts">Reported Posts <span class="admin-count" id="adminPostsCount"></span></button>
+    <button class="admin-tab" data-atab="users">Reported Users <span class="admin-count" id="adminUsersCount"></span></button>
+  </div>
+
+  <div class="admin-body">
+    <div id="adminPostsPane" class="admin-pane">
+      <div id="adminPostsList" class="admin-list"></div>
+    </div>
+    <div id="adminUsersPane" class="admin-pane hidden">
+      <div id="adminUsersList" class="admin-list"></div>
+    </div>
+  </div>
+</div>
