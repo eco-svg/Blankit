@@ -7,7 +7,7 @@ This is svg's OWN community, separate from pug's.
 """
 import os
 import uuid
-from flask import Blueprint, jsonify, request, session
+from flask import Blueprint, jsonify, request, session, url_for
 from shared.extensions import db, limiter
 from shared.auth.user import User
 from distro.svg.models.habit import Habit
@@ -94,8 +94,8 @@ def _pug_global_rows(user_id):
     """Pug's shared (g-flagged) posts, normalised into svg's post shape (source='pug').
 
     Pug stores posts as Note rows and uses like/dislike; we map its like-count to svg's
-    single vote_count and a caller's like to 'voted'. Read directly (same DB). Pug media is
-    skipped for now (its media endpoint is pug-gated).
+    single vote_count and a caller's like to 'voted'. Read directly (same DB). Image media is
+    surfaced via pug's shared-media endpoint (public to any logged-in user — same app/session).
     """
     posts = Note.query.filter(
         Note.entry_type == 'community_post', Note.is_deleted == False,
@@ -103,21 +103,25 @@ def _pug_global_rows(user_id):
     ).order_by(Note.created_at.desc()).limit(50).all()
     rows = []
     for p in posts:
-        body, is_g = (p.body or ''), False
+        body, is_g, media_key = (p.body or ''), False, None
         if body.startswith('{'):
             try:
-                bd = _json.loads(body); body = bd.get('t', ''); is_g = bool(bd.get('g'))
+                bd = _json.loads(body); body = bd.get('t', ''); is_g = bool(bd.get('g')); media_key = bd.get('m')
             except Exception:
                 body = p.body or ''
         if not is_g:
             continue
+        # svg's feed renders image_url as an <img>; only surface image media (skip video/audio).
+        image_url = None
+        if media_key and str(media_key).rsplit('.', 1)[-1].lower() in ('jpg', 'jpeg', 'png', 'gif', 'webp'):
+            image_url = url_for('pug.serve_media_shared', object_name=media_key)
         reacts = Note.query.filter_by(entry_type='post_react', mood=str(p.id), is_deleted=False).all()
         likes  = sum(1 for r in reacts if r.is_finished)
         voted  = any(r.user_id == user_id and r.is_finished for r in reacts)
         ccount = Note.query.filter_by(entry_type='post_comment', mood=str(p.id), is_deleted=False).count()
         author = User.query.get(p.user_id)
         rows.append({
-            'id': p.id, 'title': '', 'body': body, 'image_url': None, 'tag': 'general',
+            'id': p.id, 'title': '', 'body': body, 'image_url': image_url, 'tag': 'general',
             'vote_count': likes, 'voted': voted, 'comment_count': ccount,
             'author': author.username if author else '?', 'distro': p.mood or 'Ocellus',
             'created_at': p.created_at.isoformat() if p.created_at else '',
