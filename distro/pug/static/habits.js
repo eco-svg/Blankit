@@ -90,7 +90,17 @@
   function renderManage() {
     if (!manageList) return;
     if (!habits.length) {
-      manageList.innerHTML = '<li class="habit-empty">No habits yet — add one above.</li>';
+      manageList.innerHTML =
+        '<li class="habit-empty-cta">' +
+          '<div class="habit-empty-illu">' +
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>' +
+          '</div>' +
+          '<div class="habit-empty-title">No habits yet</div>' +
+          '<div class="habit-empty-text">Pick something to do daily — a run, reading, 8&nbsp;hours sleep. Add your first habit to start a streak.</div>' +
+          '<button type="button" class="habit-empty-btn" id="habitEmptyAdd">+ Add your first habit</button>' +
+        '</li>';
+      var emptyAdd = document.getElementById('habitEmptyAdd');
+      if (emptyAdd) emptyAdd.addEventListener('click', openAdd);
       renderFooter();
       return;
     }

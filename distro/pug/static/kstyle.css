@@ -6318,6 +6318,50 @@ button.nav-pill:not(.btn-ghost):hover {
   text-align: center;
   opacity: 0.5;
 }
+
+/* Empty-state tutorial callout — fills the habits card when there are no habits */
+.habit-empty-cta {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 9px;
+  margin: 14px 6px;
+  padding: 30px 22px;
+  border: 1px dashed var(--border2);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.habit-empty-illu { color: var(--accent); opacity: 0.85; }
+.habit-empty-title {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+.habit-empty-text {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+  max-width: 270px;
+}
+.habit-empty-btn {
+  margin-top: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 9px 16px;
+  border-radius: 10px;
+  background: var(--accent-glow);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.habit-empty-btn:hover {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  border-color: var(--accent);
+}
 .habit-manage-item {
   display: flex;
   align-items: center;
