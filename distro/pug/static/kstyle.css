@@ -5934,36 +5934,56 @@ button.nav-pill:not(.btn-ghost):hover {
 .comm-capture-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 16px;
+  gap: 8px;
+  padding: 10px;
 }
 .comm-capture-btn {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;          /* compact horizontal chip, not a big square */
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 18px 12px;
+  padding: 11px 12px;
   background: var(--surface-2);
-  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 10px;
-  color: var(--text-dim);
+  color: var(--text-muted);     /* brighter than text-dim — was near-invisible */
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 .comm-capture-btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
-  background: color-mix(in srgb, var(--accent) 6%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
   color: var(--accent);
 }
 .comm-capture-btn svg {
-  opacity: 0.55;
+  width: 18px; height: 18px;    /* was 28px — took too much room */
+  opacity: 0.85;
   transition: opacity 0.15s;
 }
-.comm-capture-btn:hover svg { opacity: 0.9; }
+.comm-capture-btn:hover svg { opacity: 1; }
+
+/* Community top-bar actions (search + new post) — bigger, softer, more button-like */
+.card-top-bar #commSearchBtn,
+.card-top-bar #commComposeBtn,
+.card-top-bar #cancelCommPostBtn {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--surface-2);
+  border-color: var(--border2);
+  box-shadow: 0 2px 9px rgba(0,0,0,0.20);
+}
+.card-top-bar #commComposeBtn {            /* the + is the primary action — accent it */
+  font-size: 1.35rem; line-height: 1;
+  background: var(--accent-glow);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  color: var(--accent);
+}
+.card-top-bar #commComposeBtn:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.card-top-bar #commSearchBtn svg { width: 16px; height: 16px; }
 
 /* ── Camera recorder modal ───────────────────────────────────────────────── */
 .cam-recorder-overlay {
@@ -6669,19 +6689,24 @@ button.nav-pill:not(.btn-ghost):hover {
   border-color: var(--accent);
   color: var(--accent);
 }
+/* DM unread — red notification badge pinned to the top-right of the header DMs pill */
+.nav-pill-dms { position: relative; }
 .dm-unread-badge {
-  background: var(--accent);
-  color: var(--text-on-accent);
-  font-size: 0.60rem;
+  position: absolute;
+  top: -5px; right: -7px;
+  background: #e5484d;                       /* red, so it reads as "you have mail" */
+  color: #fff;
+  font-size: 0.58rem;
   font-weight: 700;
   font-family: var(--font-mono);
   border-radius: 10px;
   padding: 1px 5px;
-  min-width: 16px;
+  min-width: 15px;
   text-align: center;
+  line-height: 1.35;
+  box-shadow: 0 0 0 2px var(--surface, #0a0a0a);  /* ring so it pops off the pill */
   flex-shrink: 0;
   display: none;
-  line-height: 1.4;
 }
 
 /* ── Progression system ─────────────────────────────── */
