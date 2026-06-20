@@ -8,8 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshBtn = document.getElementById('adminRefreshBtn');
     const postsList  = document.getElementById('adminPostsList');
     const usersList  = document.getElementById('adminUsersList');
+    const eyesList   = document.getElementById('adminEyesList');
     const postsCount = document.getElementById('adminPostsCount');
     const usersCount = document.getElementById('adminUsersCount');
+    const eyesCount  = document.getElementById('adminEyesCount');
     if (!postsList || !usersList) return;   // card not on the page (non-admin)
 
     function esc(s) {
@@ -150,6 +152,46 @@ document.addEventListener('DOMContentLoaded', () => {
         ov.querySelector('#adminDmClose').onclick = () => ov.remove();
     }
 
+    // ── Eyes top-up requests ───────────────────────────────────────────────────
+    function loadEyes() {
+        if (!eyesList) return;
+        eyesList.innerHTML = '<div class="admin-empty">Loading…</div>';
+        fetch('/pug/api/admin/eyes-requests').then(r => r.json()).then(rows => {
+            if (eyesCount) eyesCount.textContent = rows.length ? rows.length : '';
+            if (!rows.length) { eyesList.innerHTML = '<div class="admin-empty">No pending Eyes requests.</div>'; return; }
+            eyesList.innerHTML = '';
+            rows.forEach(t => {
+                const el = document.createElement('div');
+                el.className = 'admin-row';
+                el.innerHTML = `
+                    <div class="admin-row-main">
+                        <div class="admin-row-head">
+                            <span class="admin-row-author">${esc(t.user)}</span>
+                            <span class="admin-row-badge admin-badge-ctx">${esc(t.amount)} Eyes · ${esc(t.currency)}</span>
+                            <span class="admin-row-when">${esc(fmtWhen(t.created_at))}</span>
+                        </div>
+                        <div class="admin-row-text">Wants to top up — confirm their payment, then fulfil to credit the Eyes.</div>
+                    </div>
+                    <div class="admin-row-actions">
+                        <button class="admin-act admin-act-keep" data-act="fulfill">Fulfil</button>
+                        <button class="admin-act admin-act-remove" data-act="dismiss">Dismiss</button>
+                    </div>`;
+                el.querySelector('[data-act="fulfill"]').onclick = () => {
+                    if (confirm(`Credit ${t.amount} Eyes to ${t.user}? Do this only after their payment is confirmed.`)) eyesAction(t.id, 'fulfill', el);
+                };
+                el.querySelector('[data-act="dismiss"]').onclick = () => eyesAction(t.id, 'dismiss', el);
+                eyesList.appendChild(el);
+            });
+        }).catch(() => { eyesList.innerHTML = '<div class="admin-empty">Failed to load.</div>'; });
+    }
+    function eyesAction(txId, action, el) {
+        fetch(`/pug/api/admin/eyes-requests/${txId}/${action}`, { method: 'POST' })
+            .then(r => r.json()).then(d => {
+                if (d && d.ok) { el.remove(); toast(action === 'fulfill' ? 'Eyes credited.' : 'Request dismissed.'); loadEyes(); }
+                else toast((d && d.error) || 'Action failed.');
+            }).catch(() => toast('Action failed.'));
+    }
+
     // ── Tabs / nav ─────────────────────────────────────────────────────────────
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -158,10 +200,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const which = tab.getAttribute('data-atab');
             document.getElementById('adminPostsPane').classList.toggle('hidden', which !== 'posts');
             document.getElementById('adminUsersPane').classList.toggle('hidden', which !== 'users');
+            document.getElementById('adminEyesPane').classList.toggle('hidden', which !== 'eyes');
         });
     });
 
-    function loadAll() { loadPosts(); loadUsers(); }
+    function loadAll() { loadPosts(); loadUsers(); loadEyes(); }
 
     openBtn?.addEventListener('click', () => {
         if (window._veyraNavigate) window._veyraNavigate('admin', true);

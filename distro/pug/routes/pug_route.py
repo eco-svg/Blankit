@@ -4126,6 +4126,53 @@ def admin_read_user_dms(uid):
     return jsonify({'user_id': uid, 'threads': out})
 
 
+@pug_bp.route('/pug/api/admin/eyes-requests', methods=['GET'])
+def admin_eyes_requests():
+    """Admin: pending Eyes top-up requests awaiting payment confirmation."""
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    txs = (WalletTx.query
+           .filter_by(tx_type='topup_request', status='pending')
+           .order_by(WalletTx.created_at.desc()).limit(100).all())
+    out = []
+    for t in txs:
+        u = db.session.get(User, t.user_id)
+        out.append({
+            'id':         t.id,
+            'user':       u.username if u else str(t.user_id),
+            'user_id':    t.user_id,
+            'amount':     t.amount,
+            'currency':   t.ref_id,
+            'note':       t.note,
+            'created_at': t.created_at.isoformat() if t.created_at else None,
+        })
+    return jsonify(out)
+
+
+@pug_bp.route('/pug/api/admin/eyes-requests/<int:tx_id>/<action>', methods=['POST'])
+def admin_eyes_request_action(tx_id, action):
+    """Admin: fulfill (credit the Eyes + mark completed) or dismiss (cancel) a top-up."""
+    err = admin_required_api()
+    if err: return err
+    tx = WalletTx.query.filter_by(id=tx_id, tx_type='topup_request', status='pending').first()
+    if not tx:
+        return jsonify({'error': 'Request not found or already handled'}), 404
+    if action == 'fulfill':
+        w = _get_or_create_wallet(tx.user_id)
+        w.balance = (w.balance or 0) + tx.amount
+        tx.status = 'completed'
+        db.session.add(WalletTx(user_id=tx.user_id, tx_type='topup', amount=tx.amount,
+                                ref_id=tx.ref_id, note=f'Top-up credited: {tx.amount} Eyes',
+                                status='completed'))
+    elif action == 'dismiss':
+        tx.status = 'cancelled'
+    else:
+        return jsonify({'error': 'Unknown action'}), 400
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
 def mark_dms_read(other_id):
     """Mark the conversation with another user as read."""
@@ -5030,7 +5077,7 @@ def wallet_topup():
     ).filter(WalletTx.created_at >= cutoff).first()
     if existing:
         return jsonify({'ok': True, 'tx_id': existing.id,
-                        'message': 'Top-up request already pending.'})
+                        'message': 'Top-up request already pending — it can take up to 1 day to be confirmed.'})
     tx = WalletTx(
         user_id = uid,
         tx_type = 'topup_request',
@@ -5042,7 +5089,8 @@ def wallet_topup():
     db.session.add(tx)
     db.session.commit()
     return jsonify({'ok': True, 'tx_id': tx.id,
-                    'message': 'Top-up request received. Eyes will be added after payment is confirmed.'})
+                    'message': 'Top-up request received. Once your payment is confirmed your Eyes are added — '
+                               'this can take up to 1 day. You’ll see them in your wallet then.'})
 
 
 @pug_bp.route('/pug/api/wallet/sellback', methods=['POST'])
