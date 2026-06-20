@@ -158,6 +158,24 @@ class SharedMedia(db.Model):
     created_at  = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class SiteVisit(db.Model):
+    """Privacy-light daily page-view counter (one row per day). No personal data —
+    just a tally of HTML page loads. Admin/owner traffic is excluded at record time."""
+    __tablename__ = 'site_visits'
+    day   = db.Column(db.Date, primary_key=True)
+    views = db.Column(db.Integer, nullable=False, default=0)
+
+
+class SiteVisitor(db.Model):
+    """Daily UNIQUE-visitor dedupe set. Stores only a one-way hash of (day + secret +
+    IP + user-agent) — the IP itself is never persisted, and the hash rotates daily,
+    so it can't be reversed to identify anyone (Plausible-style). Uniques for a day =
+    count of rows for that day."""
+    __tablename__ = 'site_visitors'
+    day   = db.Column(db.Date, primary_key=True)
+    vhash = db.Column(db.String(64), primary_key=True)
+
+
 # ── Rate constants ────────────────────────────────────────────────────────────
 
 _EYE_USD  = 0.01   # 1 Eye = $0.01 (base)

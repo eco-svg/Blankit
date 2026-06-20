@@ -46,11 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalError      = document.getElementById('commModalError');
     const rangeLabel      = document.getElementById('commRangeLabel');
 
-    // Write tab
-    const tabWrite        = document.getElementById('commTabWrite');
-    const tabQuick        = document.getElementById('commTabQuick');
-    const writePane       = document.getElementById('commWritePane');
-    const quickPane       = document.getElementById('commQuickPane');
+    // Unified compose
     const modalInput      = document.getElementById('commModalInput');
     const modalCharCount  = document.getElementById('commModalCharCount');
     const fileInput       = document.getElementById('commFileInput');
@@ -58,23 +54,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const uploadProgress  = document.getElementById('commUploadProgress');
     const progressBar     = document.getElementById('commProgressBar');
 
-    // Quick tab
-    const quickZone        = document.getElementById('commQuickZone');
+    // Camera capture fallback inputs (used when getUserMedia is unavailable)
     const quickPhotoInput  = document.getElementById('commQuickPhotoInput');
     const quickVideoInput  = document.getElementById('commQuickVideoInput');
-    const quickPlaceholder = document.getElementById('commQuickPlaceholder');
-    const quickPreview    = document.getElementById('commQuickPreview');
-    const quickProgress   = document.getElementById('commQuickProgress');
-    const quickProgressBar= document.getElementById('commQuickProgressBar');
-    const quickCaption    = document.getElementById('commQuickCaption');
-    const quickCaptionCount = document.getElementById('commQuickCaptionCount');
 
     const MAX_LEN = 500;
     let lastPostCount  = 0;
     let posting        = false;
     let pendingMedia   = null;
-    let pendingQuick   = null;
-    let activeTab      = 'write';
     let myLat = null, myLng = null;
     let activeSkill    = '';
     let activePostType = null;
@@ -925,35 +912,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Tab switcher ───────────────────────────────────────────────────────────
-    tabWrite?.addEventListener('click', () => switchTab('write'));
-    tabQuick?.addEventListener('click', () => switchTab('quick'));
-
-    function switchTab(tab) {
-        activeTab = tab;
-        tabWrite?.classList.toggle('active', tab === 'write');
-        tabQuick?.classList.toggle('active', tab === 'quick');
-        writePane?.classList.toggle('hidden', tab !== 'write');
-        quickPane?.classList.toggle('hidden', tab !== 'quick');
-    }
-
     // ── Compose modal open/close ───────────────────────────────────────────────
     composeBtn?.addEventListener('click', openModal);
     cancelPostBtn?.addEventListener('click', closeModal);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
     function openModal() {
-        pendingMedia = null; pendingQuick = null; activePostType = null; activeSkillTag = null;
+        pendingMedia = null; activePostType = null; activeSkillTag = null;
         document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
         if (modalInput) modalInput.textContent = '';
         if (modalCharCount) modalCharCount.textContent = `0 / ${MAX_LEN}`;
         if (modalError) modalError.textContent = '';
         if (mediaPreview) { mediaPreview.innerHTML = ''; mediaPreview.classList.add('hidden'); }
-        if (quickPreview) { quickPreview.innerHTML = ''; quickPreview.classList.add('hidden'); }
-        if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
-        if (quickCaption) quickCaption.value = '';
-        if (quickCaptionCount) quickCaptionCount.textContent = '0 / 150';
-        switchTab('write');
         commTitleBlock?.classList.add('hidden');
         composeBtn && (composeBtn.style.display = 'none');
         cancelPostBtn && (cancelPostBtn.style.display = '');
@@ -967,7 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
         commTitleBlock?.classList.remove('hidden');
         composeBtn && (composeBtn.style.display = '');
         cancelPostBtn && (cancelPostBtn.style.display = 'none');
-        pendingMedia = null; pendingQuick = null; activePostType = null; activeSkillTag = null;
+        pendingMedia = null; activePostType = null; activeSkillTag = null;
         document.querySelectorAll('.comm-type-pill').forEach(p => p.classList.remove('active'));
         if (skillPickerEl) skillPickerEl.innerHTML = '';
     }
@@ -980,12 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    quickCaption?.addEventListener('input', () => {
-        const len = quickCaption.value.length;
-        if (quickCaptionCount) quickCaptionCount.textContent = `${len} / 150`;
-    });
-
-    // ── Write tab media attach ─────────────────────────────────────────────────
+    // ── Media attach (paperclip) ───────────────────────────────────────────────
     // ── Client-side nudity pre-filter (NSFWJS — runs on the user's own device) ──
     // Loaded lazily on first image upload. ALWAYS fail-open: if the model can't
     // load or classify, the upload proceeds (the report/admin system is the backstop).
@@ -1044,26 +1009,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
 
-    // ── Quick tab media ────────────────────────────────────────────────────────
+    // ── Camera capture media ───────────────────────────────────────────────────
+    // Photo/video captured from the webcam (or the capture file-input fallback)
+    // feed the same pendingMedia + preview as the paperclip attach, so the single
+    // unified compose has one media slot regardless of how it was added.
     async function uploadQuickFile(file) {
         if (modalError) modalError.textContent = (file.type || '').startsWith('image/') ? 'Checking image…' : '';
         if (await isImageNSFW(file)) {
-            if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
             if (modalError) modalError.textContent = NSFW_BLOCK_MSG;
             return;
         }
         if (modalError) modalError.textContent = '';
         const fd = new FormData(); fd.append('file', file);
-        if (quickPlaceholder) quickPlaceholder.classList.add('hidden');
-        uploadWithProgress('/pug/api/upload_shared', fd, quickProgress, quickProgressBar)
+        uploadWithProgress('/pug/api/upload_shared', fd, uploadProgress, progressBar)
             .then(data => {
                 if (!data || data.error) {
-                    if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
                     if (modalError) modalError.textContent = data?.error || 'Upload failed.';
                     return;
                 }
-                pendingQuick = data;
-                renderQuickPreview(data);
+                pendingMedia = data;
+                renderMediaPreview(mediaPreview, data, () => { pendingMedia = null; });
             });
     }
 
@@ -1179,38 +1144,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('commCapturePhotoBtn')?.addEventListener('click', () => openCameraModal('photo'));
     document.getElementById('commCaptureVideoBtn')?.addEventListener('click', () => openCameraModal('video'));
 
-    function renderQuickPreview(media) {
-        if (!quickPreview) return;
-        quickPreview.innerHTML = '';
-        let el;
-        if (media.type === 'image') {
-            el = document.createElement('img');
-            el.src = media.url;
-            el.className = 'comm-quick-preview-img';
-        } else if (media.type === 'video') {
-            el = document.createElement('video');
-            el.src = media.url; el.controls = true;
-            el.className = 'comm-quick-preview-video';
-        } else {
-            el = document.createElement('audio');
-            el.src = media.url; el.controls = true;
-            el.className = 'comm-quick-preview-audio';
-        }
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'dm-media-remove'; removeBtn.textContent = '×';
-        removeBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            pendingQuick = null;
-            quickPreview.innerHTML = ''; quickPreview.classList.add('hidden');
-            if (quickPlaceholder) quickPlaceholder.classList.remove('hidden');
-        });
-        const wrap = document.createElement('div');
-        wrap.className = 'dm-media-preview-wrap comm-quick-preview-wrap';
-        wrap.appendChild(el); wrap.appendChild(removeBtn);
-        quickPreview.appendChild(wrap);
-        quickPreview.classList.remove('hidden');
-    }
-
     function renderMediaPreview(container, media, onRemove) {
         if (!container) return;
         container.classList.remove('hidden'); container.innerHTML = '';
@@ -1232,18 +1165,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function submitPost() {
         if (posting) return;
-        let text = '', media_key = '';
-
-        if (activeTab === 'quick') {
-            if (!pendingQuick) { if (modalError) modalError.textContent = 'Choose a photo, video, or audio first.'; return; }
-            text      = quickCaption?.value.trim() || '';
-            media_key = pendingQuick.key;
-        } else {
-            text = (modalInput?.textContent || '').trim();
-            if (!text && !pendingMedia) { if (modalError) modalError.textContent = 'Write something or attach media.'; return; }
-            if (text.length > MAX_LEN) { if (modalError) modalError.textContent = 'Too long.'; return; }
-            media_key = pendingMedia?.key || '';
-        }
+        const text = (modalInput?.textContent || '').trim();
+        if (!text && !pendingMedia) { if (modalError) modalError.textContent = 'Write something or attach media.'; return; }
+        if (text.length > MAX_LEN) { if (modalError) modalError.textContent = 'Too long.'; return; }
+        const media_key = pendingMedia?.key || '';
 
         posting = true;
         if (confirmPostBtn) confirmPostBtn.disabled = true;

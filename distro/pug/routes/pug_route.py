@@ -4086,44 +4086,71 @@ def admin_unmute_user(uid):
 
 @pug_bp.route('/pug/api/admin/users/<int:uid>/dms', methods=['GET'])
 def admin_read_user_dms(uid):
-    """Admin: read a reported user's DMs for moderation review.
+    """Admin: read the reported conversation for moderation review.
 
-    GATED — only available for a user who has an OPEN report against them, so an
-    admin can't browse arbitrary inboxes. This access is disclosed in the privacy
-    policy. NOTE (GDPR/DPDP data-minimisation): full-thread access is broad; have
-    the policy wording reviewed before relying on it in production."""
+    DATA-MINIMISED (GDPR/DPDP): rather than exposing the reported user's whole
+    inbox, this returns ONLY the thread(s) between the reported user and whoever
+    reported them, capped to the last 30 messages leading UP TO the moment each
+    report was filed. That window is the context an admin needs to judge the
+    report, and nothing more. Disclosed in terms §4 / the privacy policy."""
     err = admin_required_api()
     if err: return err
-    if not UserReport.query.filter_by(reported_id=uid).first():
+    reports = (UserReport.query.filter_by(reported_id=uid)
+               .order_by(UserReport.created_at.desc()).all())
+    if not reports:
         return jsonify({'error': 'No report on file for this user'}), 403
     from shared.auth.user import User
-    from sqlalchemy import or_
+    from sqlalchemy import or_, and_
     if not db.session.get(User, uid):
         return jsonify({'error': 'User not found'}), 404
-    # DMs are Notes: user_id = sender, mood = str(recipient). Pull both directions.
-    msgs = Note.query.filter(
-        Note.entry_type == 'dm', Note.is_deleted == False,
-        or_(Note.user_id == uid, Note.mood == str(uid))
-    ).order_by(Note.created_at.asc()).limit(1000).all()
-    threads = {}
-    for m in msgs:
-        other = m.mood if m.user_id == uid else str(m.user_id)
-        body = m.body or ''
-        if body.startswith('{'):
-            try: body = (json.loads(body).get('t') or '')
-            except Exception: pass
-        threads.setdefault(other, []).append({
-            'from_uid':   m.user_id,
-            'text':       body,
-            'created_at': m.created_at.isoformat() if m.created_at else None,
-        })
+
+    WINDOW = 30
+    # One thread per distinct reporter, anchored at their most recent report time.
+    anchors = {}
+    for r in reports:
+        if r.reporter_id not in anchors:
+            anchors[r.reporter_id] = r.created_at
+
     out = []
-    for other_s, items in threads.items():
-        ou = db.session.get(User, int(other_s)) if other_s.isdigit() else None
-        out.append({'with_uid': int(other_s) if other_s.isdigit() else other_s,
-                    'with_username': ou.username if ou else other_s,
-                    'messages': items})
-    return jsonify({'user_id': uid, 'threads': out})
+    for reporter_id, anchor in anchors.items():
+        # DMs are Notes: user_id = sender, mood = str(recipient). Only the two-way
+        # thread between the reported user and this reporter, at/before the report.
+        q = Note.query.filter(
+            Note.entry_type == 'dm', Note.is_deleted == False,
+            or_(
+                and_(Note.user_id == uid, Note.mood == str(reporter_id)),
+                and_(Note.user_id == reporter_id, Note.mood == str(uid)),
+            )
+        )
+        if anchor:
+            q = q.filter(Note.created_at <= anchor)
+        rows = q.order_by(Note.created_at.desc()).limit(WINDOW).all()
+        rows.reverse()  # newest-first query → back to chronological for display
+        items = []
+        for m in rows:
+            body = m.body or ''
+            if body.startswith('{'):
+                try: body = (json.loads(body).get('t') or '')
+                except Exception: pass
+            items.append({
+                'from_uid':   m.user_id,
+                'text':       body,
+                'created_at': m.created_at.isoformat() if m.created_at else None,
+            })
+        ru = db.session.get(User, reporter_id)
+        out.append({
+            'with_uid':      reporter_id,
+            'with_username': ru.username if ru else str(reporter_id),
+            'reported_at':   anchor.isoformat() if anchor else None,
+            'messages':      items,
+        })
+    return jsonify({
+        'user_id': uid,
+        'window':  WINDOW,
+        'note':    f'Showing up to the last {WINDOW} messages before each report — '
+                   'full DM history is not accessible by policy.',
+        'threads': out,
+    })
 
 
 @pug_bp.route('/pug/api/admin/eyes-requests', methods=['GET'])
@@ -4197,6 +4224,46 @@ def admin_users_overview():
             'created_at': u.created_at.isoformat() if u.created_at else None,
             'online':     _is_online(u),
         } for u in recent],
+    })
+
+
+@pug_bp.route('/pug/api/admin/visits', methods=['GET'])
+def admin_visits():
+    """Admin: site visit stats — per-day page views and unique visitors for the last
+    N days (default 14), plus all-time totals. Owner/admin traffic is excluded at
+    record time, so these are real visitor numbers. See SiteVisit/SiteVisitor."""
+    err = admin_required_api()
+    if err: return err
+    from distro.pug.routes.notes import SiteVisit, SiteVisitor
+    from datetime import date, timedelta
+    from sqlalchemy import func
+    days  = max(1, min(int(request.args.get('days', 14)), 90))
+    start = date.today() - timedelta(days=days - 1)
+
+    views = {r.day: r.views for r in
+             SiteVisit.query.filter(SiteVisit.day >= start).all()}
+    uniq  = dict(db.session.query(SiteVisitor.day, func.count())
+                 .filter(SiteVisitor.day >= start)
+                 .group_by(SiteVisitor.day).all())
+
+    series = []
+    for i in range(days):
+        d = start + timedelta(days=i)
+        series.append({'day': d.isoformat(),
+                       'views':   int(views.get(d, 0)),
+                       'uniques': int(uniq.get(d, 0))})
+
+    total_views   = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
+    total_uniques = int(db.session.query(func.count()).select_from(SiteVisitor).scalar() or 0)
+    today = series[-1] if series else {'views': 0, 'uniques': 0}
+    return jsonify({
+        'days':            series,
+        'today_views':     today['views'],
+        'today_uniques':   today['uniques'],
+        'window_views':    sum(s['views'] for s in series),
+        'window_uniques':  sum(s['uniques'] for s in series),
+        'total_views':     total_views,
+        'total_uniques':   total_uniques,
     })
 
 

@@ -135,10 +135,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const threads = (data && data.threads) || [];
         const ov = document.createElement('div');
         ov.className = 'admin-dm-overlay';
+        const noteHtml = data && data.note ? `<div class="admin-dm-note">${esc(data.note)}</div>` : '';
         const body = threads.length
             ? threads.map(t => `
                 <div class="admin-dm-thread">
-                    <div class="admin-dm-with">with ${esc(t.with_username)}</div>
+                    <div class="admin-dm-with">with ${esc(t.with_username)}${t.reported_at ? ` · reported ${esc(new Date(t.reported_at).toLocaleString())}` : ''}</div>
                     ${(t.messages || []).map(m => {
                         const mine = m.from_uid === uid;
                         return `<div class="admin-dm-msg"><b>${esc(mine ? name : t.with_username)}:</b> ${esc(m.text) || '<i>(media)</i>'}</div>`;
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             : '<div class="admin-empty">No DM threads found.</div>';
         ov.innerHTML = `<div class="admin-dm-sheet">
             <div class="admin-dm-head">DMs · ${esc(name)} <button class="icon-btn" id="adminDmClose">✕</button></div>
-            <div class="admin-dm-body">${body}</div>
+            <div class="admin-dm-body">${noteHtml}${body}</div>
         </div>`;
         document.body.appendChild(ov);
         ov.addEventListener('click', e => { if (e.target === ov) ov.remove(); });
@@ -227,6 +228,31 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(() => { membersList.innerHTML = '<div class="admin-empty">Failed to load.</div>'; });
     }
 
+    function loadVisits() {
+        const chart = document.getElementById('adminVisitsChart');
+        const stats = document.getElementById('adminVisitsStats');
+        if (!chart || !stats) return;
+        chart.innerHTML = '<div class="admin-empty">Loading…</div>';
+        fetch('/pug/api/admin/visits').then(r => r.json()).then(d => {
+            if (d && d.error) { chart.innerHTML = `<div class="admin-empty">${esc(d.error)}</div>`; return; }
+            stats.innerHTML =
+                `<div class="admin-stat"><div class="admin-stat-num">${d.today_views}</div><div class="admin-stat-lbl">Views · today</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.today_uniques}</div><div class="admin-stat-lbl">Visitors · today</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num">${d.total_views}</div><div class="admin-stat-lbl">Views · all time</div></div>`;
+            const series = d.days || [];
+            const max = Math.max(1, ...series.map(s => s.views));
+            chart.innerHTML = series.map(s => {
+                const h = Math.round((s.views / max) * 100);
+                const lbl = (s.day || '').slice(5);   // MM-DD
+                return `<div class="admin-bar-col" title="${esc(s.day)} · ${s.views} views, ${s.uniques} visitors">
+                    <div class="admin-bar-val">${s.views || ''}</div>
+                    <div class="admin-bar" style="height:${h}%"></div>
+                    <div class="admin-bar-lbl">${esc(lbl)}</div>
+                </div>`;
+            }).join('') || '<div class="admin-empty">No visits recorded yet.</div>';
+        }).catch(() => { chart.innerHTML = '<div class="admin-empty">Failed to load.</div>'; });
+    }
+
     // ── Tabs / nav ─────────────────────────────────────────────────────────────
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -237,6 +263,8 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('adminUsersPane').classList.toggle('hidden', which !== 'users');
             document.getElementById('adminEyesPane').classList.toggle('hidden', which !== 'eyes');
             document.getElementById('adminMembersPane').classList.toggle('hidden', which !== 'members');
+            document.getElementById('adminVisitsPane').classList.toggle('hidden', which !== 'visits');
+            if (which === 'visits') loadVisits();
         });
     });
 

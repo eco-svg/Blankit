@@ -53,19 +53,10 @@
       <span id="commUserFilterLabel"></span>
     </div>
 
-    <!-- Inline compose pane -->
+    <!-- Inline compose pane — single unified "Post" flow (Write + Quick merged;
+         the camera lives as compact icon buttons in the action row below). -->
     <div id="commInlineCompose" class="comm-inline-compose hidden">
-      <div class="comm-modal-tabs">
-        <button class="comm-modal-tab active" id="commTabWrite">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-          Write
-        </button>
-        <button class="comm-modal-tab" id="commTabQuick">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
-          Quick
-        </button>
-      </div>
-      <div style="font-size:0.68rem;font-family:var(--font-mono);color:var(--text-dim);letter-spacing:0.08em;margin-top:10px;margin-bottom:4px;">POST TYPE</div>
+      <div style="font-size:0.68rem;font-family:var(--font-mono);color:var(--text-dim);letter-spacing:0.08em;margin-top:2px;margin-bottom:4px;">POST TYPE</div>
       <div class="comm-type-pills" id="commTypePills">
         <button class="comm-type-pill" data-type="blog">Blog</button>
         <button class="comm-type-pill" data-type="showoff">ShowOff</button>
@@ -75,35 +66,24 @@
 
       <div id="commWritePane" style="margin-top:10px;">
         <div id="commModalInput" class="comm-modal-textarea" contenteditable="true" data-placeholder="What's on your mind..."></div>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
-          <label class="dm-attach-btn" id="commAttachLabel" title="Attach media" style="cursor:pointer;">
+        <div class="comm-compose-actions">
+          <label class="dm-attach-btn" id="commAttachLabel" title="Attach a file" style="cursor:pointer;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
             <input type="file" id="commFileInput" accept="image/*,video/*,audio/*" style="display:none;">
           </label>
-          <span class="comm-char-count" id="commModalCharCount" style="flex:1;">0 / 500</span>
+          <button type="button" class="dm-attach-btn" id="commCapturePhotoBtn" title="Take a photo">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+          </button>
+          <button type="button" class="dm-attach-btn" id="commCaptureVideoBtn" title="Record a video">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/></svg>
+          </button>
+          <!-- Fallback inputs used when getUserMedia (webcam) is denied/unavailable. -->
+          <input type="file" id="commQuickPhotoInput" accept="image/*" capture="environment" style="display:none;">
+          <input type="file" id="commQuickVideoInput" accept="video/*" capture="environment" style="display:none;">
+          <span class="comm-char-count" id="commModalCharCount" style="flex:1;text-align:right;">0 / 500</span>
         </div>
         <div id="commUploadProgress" class="upload-progress hidden" style="margin-top:6px;"><div class="upload-progress-bar" id="commProgressBar"></div></div>
         <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
-      </div>
-      <div id="commQuickPane" class="hidden" style="margin-top:10px;">
-        <div class="comm-quick-zone" id="commQuickZone">
-          <input type="file" id="commQuickPhotoInput" accept="image/*" capture="environment" style="display:none;">
-          <input type="file" id="commQuickVideoInput" accept="video/*" capture="environment" style="display:none;">
-          <div id="commQuickPlaceholder" class="comm-capture-grid">
-            <button type="button" class="comm-capture-btn" id="commCapturePhotoBtn">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-              <span>Photo</span>
-            </button>
-            <button type="button" class="comm-capture-btn" id="commCaptureVideoBtn">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect x="2" y="6" width="14" height="12" rx="2" ry="2"/></svg>
-              <span>Video</span>
-            </button>
-          </div>
-          <div id="commQuickPreview" class="hidden"></div>
-        </div>
-        <div id="commQuickProgress" class="upload-progress hidden" style="margin-top:8px;"><div class="upload-progress-bar" id="commQuickProgressBar"></div></div>
-        <input type="text" id="commQuickCaption" class="comm-quick-caption" placeholder="Caption (optional)..." maxlength="150" autocomplete="off">
-        <span class="comm-char-count" id="commQuickCaptionCount">0 / 150</span>
       </div>
       <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
       <div class="modal-actions" style="margin-top:12px;display:flex;align-items:center;gap:10px;">

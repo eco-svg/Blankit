@@ -8,7 +8,7 @@ Veyra hosts three independent "distros" (skins/products) on one Flask backend:
 Shared code (auth, DB, config, common templates) lives in shared/.
 
 What this file does, in order:
-  1. Helper functions to download the on-device AI models (BlinkBot / BuddyBot) at startup.
+  1. A privacy-light site visit counter (page views + daily uniques, admins excluded).
   2. create_app() — the "application factory": builds the Flask app, loads config,
      connects the database/mail/rate-limiter, and registers every distro's routes.
   3. A set of idempotent startup migrations (_migrate_* / _sync_*) that patch the live
@@ -20,7 +20,9 @@ run against live data — that's why every one is wrapped in try/except and guar
 "is this change already applied?" check.
 """
 import os
-from flask import Flask, session, render_template
+import hashlib
+from datetime import date
+from flask import Flask, session, render_template, request
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from shared.config import Config
@@ -28,60 +30,62 @@ from shared.extensions import db
 from distro.svg.services.badge_service import seed_badges
 from shared.extensions import limiter
 
-# Where large runtime files (the AI model weights) live. On the hosting box a
-# persistent disk is mounted at /data; locally we just use the repo folder.
-_DATA_DIR = '/data' if os.path.isdir('/data') else os.path.dirname(os.path.abspath(__file__))
+# ─────────────────────────────────────────────────────────────────────────────
+# AI MODELS
+# BlinkBot's on-device weights are streamed to the browser from B2 (set via
+# BLINKBOT_MODEL_URL and served through /pug/install/blinkbot-model.gguf). The old
+# startup Hugging Face download was removed — nothing in production used it, and the
+# private HF repo / token are no longer needed.
+# ─────────────────────────────────────────────────────────────────────────────
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# AI MODEL DOWNLOADS
-# BlinkBot/BuddyBot are GGUF model files too big to commit. At startup we make sure
-# they exist on disk (downloading from Hugging Face if missing) so the app can serve
-# BlinkBot to the browser and, where enabled, run inference.
+# SITE VISIT COUNTER (privacy-light)
+# Counts top-level HTML page loads as "views" and de-dupes daily "uniques" via a
+# one-way, daily-rotating hash of IP+UA (the IP itself is never stored). Admin/owner
+# traffic is excluded so the owner's own visits don't inflate the numbers. Surfaced
+# in the pug admin panel (/pug/api/admin/visits).
 # ─────────────────────────────────────────────────────────────────────────────
-def _hf_download(repo_id, filename, dest_path, token):
-    """Download one file from a Hugging Face repo to dest_path. Returns True on success."""
-    os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+def _visitor_is_staff(uid):
+    """True if the current visitor is an admin/owner (excluded from the counter)."""
+    if not uid:
+        return False
     try:
-        from huggingface_hub import hf_hub_download
-        hf_hub_download(
-            repo_id=repo_id,
-            filename=filename,
-            local_dir=os.path.dirname(dest_path),
-            token=token,
-        )
-        print(f'[startup] Downloaded {filename} → {dest_path}')
-        return True
-    except Exception as e:
-        print(f'[startup] Download failed ({repo_id}/{filename}): {e}')
+        from shared.auth.user import User
+        u = db.session.get(User, uid)
+        if u and getattr(u, 'is_admin', False):
+            return True
+        allow = (os.environ.get('PUG_ADMIN_EMAILS', '') + ',' +
+                 os.environ.get('SVG_ADMIN_EMAILS', '')).lower()
+        return bool(u and u.email and u.email.lower() in
+                    {e.strip() for e in allow.split(',') if e.strip()})
+    except Exception:
         return False
 
 
-def _ensure_blinkbot_model():
-    """Download BlinkBot GGUF to /data so the proxy can serve it directly to the browser."""
-    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'blinkbot', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
-    model_path   = os.environ.get('BLINKBOT_PATH', default_path)
-    if os.path.exists(model_path):
-        print(f'[startup] BlinkBot found: {model_path}')
-        return
-    repo_id  = os.environ.get('BLINKBOT_REPO',    'SomeWhatPug/Buddybot_veyra')
-    filename = os.environ.get('BLINKBOT_FILENAME', 'BlinkBot_1.5B_Final.Q4_K_M.gguf')
-    token    = os.environ.get('HF_TOKEN')
-    print(f'[startup] BlinkBot not found — downloading from {repo_id}/{filename} ...')
-    _hf_download(repo_id, filename, model_path, token)
+def _visitor_hash(req, secret, day):
+    """One-way daily hash of the visitor. Combines the day + app secret so it rotates
+    every day and can't be reversed to an IP/UA. The IP is used only to compute this
+    hash, never persisted."""
+    ip = (req.headers.get('X-Forwarded-For', req.remote_addr or '') or '').split(',')[0].strip()
+    ua = req.headers.get('User-Agent', '')
+    raw = f'{day.isoformat()}|{secret}|{ip}|{ua}'
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest()
 
 
-def _ensure_buddybot_model():
-    default_path = os.path.join(_DATA_DIR, 'distro', 'pug', 'llm', 'buddybot', 'BuddyBot_8B_Final.Q4_K_M.gguf')
-    model_path   = os.environ.get('BUDDYBOT_PATH', default_path)
-    if os.path.exists(model_path):
-        print(f'[startup] BuddyBot found: {model_path}')
-        return
-    repo_id  = os.environ.get('BUDDYBOT_REPO',    'SomeWhatPug/Buddybot_veyra')
-    filename = os.environ.get('BUDDYBOT_FILENAME', 'BuddyBot_8B_Final.Q4_K_M.gguf')
-    token    = os.environ.get('HF_TOKEN')
-    print(f'[startup] BuddyBot not found — downloading from {repo_id}/{filename} ...')
-    _hf_download(repo_id, filename, model_path, token)
+def _record_visit(req, secret):
+    """Bump today's view count and record the visitor hash (insert-ignore for uniques)."""
+    from distro.pug.routes.notes import SiteVisit, SiteVisitor
+    today = date.today()
+    sv = db.session.get(SiteVisit, today)
+    if not sv:
+        sv = SiteVisit(day=today, views=0)
+        db.session.add(sv)
+    sv.views = (sv.views or 0) + 1
+    vhash = _visitor_hash(req, secret, today)
+    if not db.session.get(SiteVisitor, (today, vhash)):
+        db.session.add(SiteVisitor(day=today, vhash=vhash))
+    db.session.commit()
 
 
 # Each distro registers its URLs through a Flask "blueprint" (a bundle of routes).
@@ -361,6 +365,24 @@ def create_app():
     app.register_blueprint(catalystcrew_bp)
     app.register_blueprint(pug_bp)
 
+    # ── Privacy-light visit counter ──
+    # Count a "view" for each successful top-level HTML page load (the SPA loads its
+    # shell once per visit, so this tracks visits, not in-app tab switches). Skips
+    # assets/APIs and excludes admin/owner traffic. Best-effort: never break a page.
+    @app.after_request
+    def _track_visit(resp):
+        try:
+            if (request.method == 'GET'
+                    and resp.status_code == 200
+                    and 'text/html' in (resp.content_type or '')
+                    and not request.path.startswith(('/static', '/sw.js', '/favicon'))
+                    and '/static/' not in request.path
+                    and not _visitor_is_staff(session.get('user_id'))):
+                _record_visit(request, app.config.get('SECRET_KEY', ''))
+        except Exception:
+            db.session.rollback()
+        return resp
+
     # ── PWA service worker (must be served from root scope) ──
     @app.route('/sw.js')
     def service_worker():
@@ -474,10 +496,6 @@ def create_app():
 
     @app.route('/under13')
     def under13(): return render_template('shared/under13.html')
-
-    if os.environ.get('ENABLE_LOCAL_INFERENCE', 'auto').lower() != 'false':
-        _ensure_blinkbot_model()
-        _ensure_buddybot_model()
 
     if (os.environ.get('MINIO_ACCESS_KEY', 'minioadmin') == 'minioadmin'
             and os.environ.get('FLASK_ENV') != 'development'):

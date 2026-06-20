@@ -411,10 +411,10 @@ body.header-hidden .l-bar {
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
 .r-qa-toggle {
   position: fixed;
-  /* Centre the tab on the Quick Actions card's vertical midline: the card top is
-     var(--header-h) + var(--gap) (sidebar padding), and its centre is ~44px below
-     that. translateY(-50%) then pins the tab's OWN centre to that axis, so the two
-     stay aligned regardless of the tab's height. */
+  /* Pinned beside the top card (now the calendar, since the timer moved to the
+     bottom) — unchanged spot: the sidebar's top card starts at var(--header-h) +
+     var(--gap), and +44px sits the tab against its upper area. translateY(-50%)
+     pins the tab's OWN centre to that axis, so it stays put regardless of height. */
   top: calc(var(--header-h) + var(--gap) + 44px);
   transform: translateY(-50%);
   /* Butt the tab's right edge against the card's left edge — the card sits
@@ -5776,33 +5776,14 @@ button.nav-pill:not(.btn-ghost):hover {
   margin-bottom: 14px;
 }
 
-.comm-modal-tabs {
+/* Compose action row: attach + compact camera (photo/video) icons + char count.
+   The old Write/Quick tab split and the big capture-grid were merged into this
+   single row — the camera is now two small icon buttons beside the paperclip. */
+.comm-compose-actions {
   display: flex;
-  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.comm-modal-tab {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.07em;
-  padding: 8px 0;
-  cursor: pointer;
-  transition: all 0.15s;
-  font-weight: 500;
-}
-.comm-modal-tab + .comm-modal-tab { border-left: 1px solid color-mix(in srgb, var(--accent) 14%, transparent); }
-.comm-modal-tab:hover { color: var(--text); background: var(--surface-2); }
-.comm-modal-tab.active {
-  background: color-mix(in srgb, var(--accent) 11%, transparent);
-  color: var(--accent);
-  font-weight: 600;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 /* ── Feed mode toggle (inline in title row) ─────────────── */
@@ -5926,7 +5907,7 @@ button.nav-pill:not(.btn-ghost):hover {
 
 /* ── Quick Actions sidebar card (minimal focus timer) ─────────────────────── */
 .r-quick-actions {
-  flex: 0 0 auto;          /* compact — sits above the calendar, content height */
+  flex: 0 0 auto;          /* compact — pinned at the bottom of the rbar, content height */
   display: flex;
   flex-direction: column;
   padding-top: 12px;
@@ -6099,49 +6080,6 @@ button.nav-pill:not(.btn-ghost):hover {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 7%, transparent);
 }
 
-.comm-quick-zone {
-  border: 2px dashed color-mix(in srgb, var(--accent) 22%, transparent);
-  border-radius: 12px;
-  background: var(--surface-2);
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-}
-.comm-capture-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 10px;
-}
-.comm-capture-btn {
-  display: flex;
-  flex-direction: row;          /* compact horizontal chip, not a big square */
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 11px 12px;
-  background: var(--surface-2);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-  border-radius: 10px;
-  color: var(--text-muted);     /* brighter than text-dim — was near-invisible */
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-}
-.comm-capture-btn:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--accent);
-}
-.comm-capture-btn svg {
-  width: 18px; height: 18px;    /* was 28px — took too much room */
-  opacity: 0.85;
-  transition: opacity 0.15s;
-}
-.comm-capture-btn:hover svg { opacity: 1; }
-
 /* Community top-bar actions (search + new post) — bigger, softer, more button-like */
 .card-top-bar #commSearchBtn,
 .card-top-bar #commComposeBtn,
@@ -6239,43 +6177,6 @@ button.nav-pill:not(.btn-ghost):hover {
 @keyframes cam-rec-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.35; }
-}
-
-.comm-quick-caption {
-  width: 100%;
-  margin-top: 10px;
-  background: var(--surface-2);
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
-  border-radius: 8px;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  padding: 9px 12px;
-  outline: none;
-  transition: border-color 0.15s;
-  display: block;
-}
-.comm-quick-caption:focus { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
-.comm-quick-caption::placeholder { color: var(--text-dim); opacity: 0.5; }
-
-.comm-quick-preview-img {
-  max-width: 100%; max-height: 200px;
-  border-radius: 9px; display: block; object-fit: contain;
-}
-.comm-quick-preview-video {
-  max-width: 100%; max-height: 200px;
-  border-radius: 9px; display: block;
-  accent-color: var(--accent);
-}
-.comm-quick-preview-audio {
-  width: 100%;
-  accent-color: var(--accent);
-}
-.comm-quick-preview-wrap {
-  position: relative;
-  display: inline-block;
-  max-width: 100%;
-  width: 100%;
 }
 
 .comm-field-label {
@@ -7676,6 +7577,16 @@ button.nav-pill:not(.btn-ghost):hover {
   padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight: 600; color: var(--text);
 }
 .admin-dm-body { overflow-y: auto; padding: 12px 16px; }
+.admin-dm-note {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  line-height: 1.45;
+}
 .admin-dm-thread { margin-bottom: 16px; }
 .admin-dm-with { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; }
 .admin-dm-msg { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; padding: 3px 0; }
@@ -7720,3 +7631,22 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-stat-num.admin-stat-on { color: var(--green, #4ade80); }
 .admin-stat-lbl { font-size: 0.62rem; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; }
 .admin-members-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 9px; }
+
+/* ── Admin visits bar chart ── */
+.admin-visits-chart {
+  display: flex; align-items: flex-end; gap: 4px;
+  height: 150px; padding: 4px 0 0;
+}
+.admin-bar-col {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-end; height: 100%; min-width: 0;
+}
+.admin-bar-val { font-size: 0.6rem; font-variant-numeric: tabular-nums; color: var(--text-dim); margin-bottom: 3px; }
+.admin-bar {
+  width: 100%; max-width: 22px; min-height: 2px;
+  background: var(--accent); border-radius: 3px 3px 0 0;
+  transition: height 0.2s;
+}
+.admin-bar-col:hover .admin-bar { background: var(--text); }
+.admin-bar-lbl { font-size: 0.54rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 5px; white-space: nowrap; transform: rotate(-45deg); transform-origin: center; }
+.admin-visits-note { font-size: 0.68rem; color: var(--text-dim); margin-top: 18px; line-height: 1.45; }
