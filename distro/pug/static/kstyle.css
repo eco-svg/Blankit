@@ -7685,6 +7685,20 @@ button.nav-pill:not(.btn-ghost):hover {
 .guest-banner-cta:hover { opacity: 0.92; }
 body.has-guest-banner .playground { padding-bottom: 56px; }
 
+/* "Saved locally — sign up" nudge toast (slides up above the banner) */
+.guest-nudge {
+  position: fixed; left: 50%; bottom: 64px; transform: translate(-50%, 16px);
+  z-index: 420; max-width: 90vw;
+  background: var(--surface); border: 1px solid var(--accent);
+  color: var(--text-muted); font-size: 0.8rem;
+  padding: 10px 16px; border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  opacity: 0; pointer-events: none; transition: opacity 0.28s, transform 0.28s;
+}
+.guest-nudge.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.guest-nudge a { color: var(--accent); font-weight: 600; text-decoration: none; }
+.guest-nudge a:hover { text-decoration: underline; }
+
 .guest-prompt-overlay {
   position: fixed; inset: 0; z-index: 500;
   display: flex; align-items: center; justify-content: center;

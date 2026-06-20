@@ -202,7 +202,11 @@
         var body = {};
         if (init && init.body) { try { body = JSON.parse(init.body); } catch (_) {} }
         var res = handle(method, path, body);
-        if (res) return Promise.resolve(res);
+        if (res) {
+          // Signal a local save so guest.js can nudge "sign up to keep this".
+          if (method !== 'GET') { try { document.dispatchEvent(new CustomEvent('veyra:guest-saved')); } catch (_) {} }
+          return Promise.resolve(res);
+        }
       }
     } catch (_) {}
     return _fetch(input, init);

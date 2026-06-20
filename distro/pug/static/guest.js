@@ -68,6 +68,22 @@
     }, true);
   });
 
+  // ── "Sign up to save" nudge — when a guest saves something locally, gently remind
+  //    them it's browser-only. Throttled so it never spams (once per ~45s). ──
+  var _lastNudge = 0;
+  document.addEventListener('veyra:guest-saved', function () {
+    var now = Date.now();
+    if (now - _lastNudge < 45000) return;
+    _lastNudge = now;
+    if (document.querySelector('.guest-nudge')) return;
+    var t = document.createElement('div');
+    t.className = 'guest-nudge';
+    t.innerHTML = 'Saved in this browser only — <a href="/">sign up</a> to keep it &amp; sync across devices.';
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 300); }, 5000);
+  });
+
   // Persistent bottom banner.
   document.addEventListener('DOMContentLoaded', function () {
     var b = document.createElement('div');
