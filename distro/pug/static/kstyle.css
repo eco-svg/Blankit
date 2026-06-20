@@ -7654,6 +7654,13 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-stat-num.admin-stat-on { color: var(--green, #4ade80); }
 .admin-stat-lbl { font-size: 0.62rem; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; }
 .admin-members-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 9px; }
+.admin-ov-divider { height: 1px; background: var(--border); margin: 20px 0 16px; }
+.admin-reset-btn {
+  background: transparent; border: 1px solid var(--border2); color: var(--text-dim);
+  font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.06em;
+  padding: 3px 10px; border-radius: 7px; cursor: pointer; text-transform: lowercase;
+}
+.admin-reset-btn:hover { color: #e87a5a; border-color: #e87a5a; }
 
 /* ── Admin visits bar chart ── */
 .admin-visits-chart {

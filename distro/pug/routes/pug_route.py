@@ -4343,6 +4343,18 @@ def admin_visits():
     })
 
 
+@pug_bp.route('/pug/api/admin/visits/reset', methods=['POST'])
+def admin_visits_reset():
+    """Admin: wipe all recorded visit stats (page views + unique-visitor hashes)."""
+    err = admin_required_api()
+    if err: return err
+    from distro.pug.routes.notes import SiteVisit, SiteVisitor
+    SiteVisitor.query.delete()
+    SiteVisit.query.delete()
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/admin/notif', methods=['GET'])
 def admin_notif():
     """Cheap poll for the live admin header bell: distro headcount + pending-action

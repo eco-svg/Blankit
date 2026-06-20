@@ -19,7 +19,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=151">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=152">
   <!-- Desktop-only gate: force desktop layout + notice on phones. Runs early so the
        viewport is pinned before first layout. -->
   <script src="{{ url_for('pug.static', filename='mobile-gate.js') }}?v=2"></script>
@@ -424,8 +424,8 @@
   <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=16"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=8"></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=4"></script>
-  {% if is_admin %}<script src="{{ url_for('pug.static', filename='admin.js') }}?v=6"></script>{% endif %}
-  <script src="{{ url_for('pug.static', filename='router.js') }}?v=12"></script>
+  {% if is_admin %}<script src="{{ url_for('pug.static', filename='admin.js') }}?v=7"></script>{% endif %}
+  <script src="{{ url_for('pug.static', filename='router.js') }}?v=13"></script>
   {% if is_guest %}<script src="{{ url_for('pug.static', filename='guest.js') }}?v=5"></script>{% endif %}
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}?v=2"></script>

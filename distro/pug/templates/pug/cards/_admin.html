@@ -1,6 +1,7 @@
-<!-- Admin moderation panel — only included for admin accounts (home.html guards the
-     include with an is_admin check). Reached via Profile → "Admin Panel". Driven by
-     admin.js against the /pug/api/admin/* endpoints that already exist in pug_route.py. -->
+<!-- Admin panel — only included for admin accounts (home.html guards the include with
+     an is_admin check). Reached via Profile → "Admin Panel". Two cards side by side in
+     the playground grid: the moderation queues (left) and an always-on Overview (right).
+     Driven by admin.js against the /pug/api/admin/* endpoints in pug_route.py. -->
 <div class="card admin" id="sec-admin">
   <div class="card-top-bar">
     <h2 class="card-title">Admin · Moderation</h2>
@@ -13,8 +14,6 @@
     <button class="admin-tab active" data-atab="posts">Reported Posts <span class="admin-count" id="adminPostsCount"></span></button>
     <button class="admin-tab" data-atab="users">Reported Users <span class="admin-count" id="adminUsersCount"></span></button>
     <button class="admin-tab" data-atab="eyes">Eyes Requests <span class="admin-count" id="adminEyesCount"></span></button>
-    <button class="admin-tab" data-atab="members">Members <span class="admin-count" id="adminMembersCount"></span></button>
-    <button class="admin-tab" data-atab="visits">Visits</button>
   </div>
 
   <div class="admin-body">
@@ -27,16 +26,29 @@
     <div id="adminEyesPane" class="admin-pane hidden">
       <div id="adminEyesList" class="admin-list"></div>
     </div>
-    <div id="adminMembersPane" class="admin-pane hidden">
-      <div id="adminMembersStats" class="admin-members-stats"></div>
-      <div class="admin-members-label">Recent sign-ups</div>
-      <div id="adminMembersList" class="admin-list"></div>
+  </div>
+</div>
+
+<!-- Overview — Members + Visits, all visible at once (no tab switching). -->
+<div class="card admin admin-overview" id="sec-admin-overview">
+  <div class="card-top-bar">
+    <h2 class="card-title">Overview</h2>
+  </div>
+  <div class="admin-body">
+    <div class="admin-members-label">Members <span class="admin-count" id="adminMembersCount"></span></div>
+    <div id="adminMembersStats" class="admin-members-stats"></div>
+    <div class="admin-members-label">Recent sign-ups</div>
+    <div id="adminMembersList" class="admin-list"></div>
+
+    <div class="admin-ov-divider"></div>
+
+    <div class="admin-members-label" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Visits</span>
+      <button id="adminVisitsReset" class="admin-reset-btn" type="button" title="Clear all visit data">reset</button>
     </div>
-    <div id="adminVisitsPane" class="admin-pane hidden">
-      <div id="adminVisitsStats" class="admin-members-stats"></div>
-      <div class="admin-members-label">Last 14 days</div>
-      <div id="adminVisitsChart" class="admin-visits-chart"></div>
-      <div class="admin-visits-note">Page views &amp; unique visitors. Your own (admin) visits are not counted. No cookies or IP addresses are stored.</div>
-    </div>
+    <div id="adminVisitsStats" class="admin-members-stats"></div>
+    <div class="admin-members-label">Last 14 days</div>
+    <div id="adminVisitsChart" class="admin-visits-chart"></div>
+    <div class="admin-visits-note">Page views &amp; unique visitors. Your own admin visits aren’t counted (opt-out cookie + ANALYTICS_EXCLUDE_IPS). No visitor cookies or IPs are stored.</div>
   </div>
 </div>

@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch(() => { chart.innerHTML = '<div class="admin-empty">Failed to load.</div>'; });
     }
 
-    // ── Tabs / nav ─────────────────────────────────────────────────────────────
+    // ── Tabs / nav (moderation queues only; Members + Visits live in the Overview card) ──
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -262,13 +262,20 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('adminPostsPane').classList.toggle('hidden', which !== 'posts');
             document.getElementById('adminUsersPane').classList.toggle('hidden', which !== 'users');
             document.getElementById('adminEyesPane').classList.toggle('hidden', which !== 'eyes');
-            document.getElementById('adminMembersPane').classList.toggle('hidden', which !== 'members');
-            document.getElementById('adminVisitsPane').classList.toggle('hidden', which !== 'visits');
-            if (which === 'visits') loadVisits();
         });
     });
 
-    function loadAll() { loadPosts(); loadUsers(); loadEyes(); loadMembers(); }
+    // Reset visit stats (clears the counter tables).
+    document.getElementById('adminVisitsReset')?.addEventListener('click', () => {
+        if (!confirm('Clear all visit data? This cannot be undone.')) return;
+        fetch('/pug/api/admin/visits/reset', { method: 'POST' })
+            .then(r => r.json())
+            .then(d => { if (d && d.ok) { toast('Visit data cleared.'); loadVisits(); } else toast((d && d.error) || 'Reset failed.'); })
+            .catch(() => toast('Reset failed.'));
+    });
+
+    // Members + Visits are always shown in the Overview card (no tab gating).
+    function loadAll() { loadPosts(); loadUsers(); loadEyes(); loadMembers(); loadVisits(); }
 
     // ── Live header bell — polls for new sign-ups + pending actions, lights the bell
     //    in the header even when the admin isn't on the panel. ──────────────────────

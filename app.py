@@ -390,13 +390,22 @@ def create_app():
     @app.after_request
     def _track_visit(resp):
         try:
+            is_staff = _visitor_is_staff(session.get('user_id'))
+            # Stamp a long-lived opt-out cookie on the owner's device the moment they're
+            # seen as staff — so their later GUEST (logged-out) visits aren't counted
+            # either, no matter how their IP changes. This is the reliable "exclude me".
+            if is_staff and request.cookies.get('veyra_noac') != '1':
+                resp.set_cookie('veyra_noac', '1', max_age=31536000,
+                                httponly=True, samesite='Lax')
+            excluded = (is_staff
+                        or request.cookies.get('veyra_noac') == '1'
+                        or _ip_excluded(request))
             if (request.method == 'GET'
                     and resp.status_code == 200
                     and 'text/html' in (resp.content_type or '')
                     and not request.path.startswith(('/static', '/sw.js', '/favicon'))
                     and '/static/' not in request.path
-                    and not _visitor_is_staff(session.get('user_id'))
-                    and not _ip_excluded(request)):
+                    and not excluded):
                 _record_visit(request, app.config.get('SECRET_KEY', ''))
         except Exception:
             db.session.rollback()
