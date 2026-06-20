@@ -1863,9 +1863,8 @@ def upload_shared():
 
 @pug_bp.route('/pug/api/media/shared/<path:object_name>')
 def serve_media_shared(object_name):
-    """Stream a shared media file."""
-    err = login_required_api()
-    if err: return err
+    """Stream a shared media file. Post media is public (guests included, so the feed
+    renders for logged-out visitors); DM attachments stay private to the participants."""
     # Block path traversal and enforce shared/ prefix
     if (not object_name.startswith('shared/')
             or '..' in object_name
@@ -1873,11 +1872,11 @@ def serve_media_shared(object_name):
             or object_name != object_name.replace('\\', '')):
         return jsonify({'error': 'Forbidden'}), 403
     # DM attachments are private: only the two participants may fetch them. Post media (and
-    # legacy uploads with no record) stay public to any logged-in user.
+    # legacy uploads with no record) stay public — including to guests.
     rec = SharedMedia.query.filter_by(object_name=object_name).first()
     if rec and rec.context == 'dm':
-        me = session['user_id']
-        if me != rec.uploader_id and me != rec.peer_id:
+        me = session.get('user_id')
+        if not me or (me != rec.uploader_id and me != rec.peer_id):
             return jsonify({'error': 'Forbidden'}), 403
     try:
         response = minio_client.get_object(MINIO_BUCKET, object_name)
