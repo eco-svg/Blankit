@@ -78,7 +78,7 @@
     if (document.querySelector('.guest-nudge')) return;
     var t = document.createElement('div');
     t.className = 'guest-nudge';
-    t.innerHTML = 'Saved in this browser only — <a href="/">sign up</a> to keep it &amp; sync across devices.';
+    t.innerHTML = 'Saved on this device — <a href="/">sign up</a> to sync across devices &amp; keep it safe.';
     document.body.appendChild(t);
     requestAnimationFrame(function () { t.classList.add('show'); });
     setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 300); }, 5000);
@@ -89,7 +89,7 @@
     var b = document.createElement('div');
     b.className = 'guest-banner';
     b.innerHTML =
-      '<span class="guest-banner-text">Exploring as a guest — your notes &amp; habits stay in <b>this browser only</b>. Sign up to save them &amp; join the community.</span>' +
+      '<span class="guest-banner-text">Exploring as a guest — your notes &amp; habits are <b>saved on this device</b>. Sign up to sync across devices &amp; join the community.</span>' +
       '<a class="guest-banner-cta" href="/">Sign up</a>';
     document.body.appendChild(b);
     document.body.classList.add('has-guest-banner');

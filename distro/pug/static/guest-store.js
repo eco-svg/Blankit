@@ -14,6 +14,11 @@
 (function () {
   if (!window.VEYRA_GUEST) return;
 
+  // Ask the browser to keep guest data durable (don't auto-evict under storage
+  // pressure). Best-effort — it stays in localStorage either way; this just makes it
+  // survive longer. Only a user clearing browsing data / incognito wipes it.
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (_) {}
+
   var K = { notes:'veyra_guest_notes', goals:'veyra_guest_goals', events:'veyra_guest_events',
             habits:'veyra_guest_habits', logs:'veyra_guest_habit_logs', stats:'veyra_guest_stats',
             seq:'veyra_guest_seq' };
