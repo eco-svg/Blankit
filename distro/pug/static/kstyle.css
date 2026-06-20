@@ -5830,6 +5830,32 @@ button.nav-pill:not(.btn-ghost):hover {
   color: var(--accent);
 }
 
+/* ── Mobile desktop-only gate ─────────────────────────────────────────────── */
+#mobileGate {
+  position: fixed; inset: 0; z-index: 100000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(6,7,9,0.82); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  padding: 24px;
+}
+#mobileGate .mg-box {
+  max-width: 420px; width: 100%;
+  background: var(--surface-1, #15161a);
+  border: 1px solid var(--border2, #2a2c33);
+  border-radius: 18px;
+  padding: 30px 26px;
+  text-align: center;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+}
+#mobileGate .mg-icon { font-size: 3rem; line-height: 1; margin-bottom: 14px; }
+#mobileGate .mg-title { font-size: 1.45rem; font-weight: 700; color: var(--text, #e6e6e6); margin-bottom: 12px; }
+#mobileGate .mg-text { font-size: 0.95rem; line-height: 1.6; color: var(--text-muted, #b6bcc6); margin-bottom: 24px; }
+#mobileGate .mg-btn {
+  background: var(--accent, #6c8cff); color: var(--text-on-accent, #fff);
+  border: none; border-radius: 11px; padding: 12px 28px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+}
+#mobileGate .mg-btn:hover { opacity: 0.9; }
+
 /* ── Quick Actions sidebar card (timer) ───────────────────────────────────── */
 .r-quick-actions {
   flex: 0.5;               /* the half freed by the shrunk BlinkBot card (To-do keeps flex:1) */
