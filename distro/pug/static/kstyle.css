@@ -406,6 +406,13 @@ body.header-hidden .l-bar {
   height: 100vh;
 }
 
+/* The guest banner is fixed at the bottom — shrink the side bars by its height so
+   their last card (the timer) isn't hidden behind it. */
+body.has-guest-banner .r-bar,
+body.has-guest-banner .l-bar { height: calc(100vh - var(--header-h) - 48px); }
+body.has-guest-banner.header-hidden .r-bar,
+body.has-guest-banner.header-hidden .l-bar { height: calc(100vh - 48px); }
+
 .r-bar::-webkit-scrollbar { width: 0; }
 
 /* ── Quick Ask: in-sidebar launcher + panel (desktop) ─────────────────────── */
