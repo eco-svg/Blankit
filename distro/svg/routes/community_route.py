@@ -101,6 +101,7 @@ def _pug_global_rows(user_id):
         Note.entry_type == 'community_post', Note.is_deleted == False,
         Note.is_hidden.isnot(True), Note.mood.in_(['Ocellus', 'ThePug'])
     ).order_by(Note.created_at.desc()).limit(50).all()
+    am_admin = _svg_is_admin(user_id)
     rows = []
     for p in posts:
         body, is_g, media_key = (p.body or ''), False, None
@@ -126,6 +127,7 @@ def _pug_global_rows(user_id):
             'author': author.username if author else '?', 'distro': p.mood or 'Ocellus',
             'created_at': p.created_at.isoformat() if p.created_at else '',
             'is_mine': p.user_id == user_id, 'source': 'pug',
+            'can_unshare': am_admin,   # svg admin can remove a pug post from the common feed
         })
     return rows
 
@@ -144,6 +146,7 @@ def get_posts():
 
     posts = q.order_by(CommunityPost.created_at.desc()).offset((page - 1) * 20).limit(20).all()
 
+    am_admin = _svg_is_admin(user_id)
     result = []
     for p in posts:
         voted         = PostVote.query.filter_by(user_id=user_id, post_id=p.id).first() is not None
@@ -162,6 +165,7 @@ def get_posts():
             'created_at':    p.created_at.isoformat(),
             'is_mine':       p.user_id == user_id,
             'source':        'post',
+            'can_unshare':   bool(p.is_global and (p.user_id == user_id or am_admin)),
         })
 
     # ── Merge Pug AMA chat into GLOBAL feed (read-only) ──
@@ -296,6 +300,45 @@ def _pug_post(pid):
     """The pug community-post Note #pid if it exists (and isn't deleted/hidden), else None."""
     return Note.query.filter(Note.id == pid, Note.entry_type == 'community_post',
                              Note.is_deleted == False, Note.is_hidden.isnot(True)).first()
+
+
+def _svg_is_admin(user_id):
+    """Platform admin (shared User.is_admin flag). svg has no env allowlist of its own."""
+    u = User.query.get(user_id)
+    return bool(u and getattr(u, 'is_admin', False))
+
+
+@community_api.route('/posts/<int:post_id>/unshare', methods=['POST'])
+def unshare_post(post_id):
+    """Remove an svg post from the COMMON (global) feed without deleting it — owner or
+    any platform admin. It stays in svg's own local feed."""
+    user_id = require_user()
+    p = CommunityPost.query.get_or_404(post_id)
+    if p.user_id != user_id and not _svg_is_admin(user_id):
+        return jsonify({'error': 'Forbidden'}), 403
+    p.is_global = False
+    db.session.commit()
+    return jsonify({'success': True})
+
+
+@community_api.route('/xpost/pug/<int:pid>/unshare', methods=['POST'])
+def xunshare_pug(pid):
+    """An svg admin removes a PUG post from the COMMON feed (pug keeps it locally) —
+    flips the pug post's 'g' flag off. Platform admin only."""
+    user_id = require_user()
+    if not _svg_is_admin(user_id):
+        return jsonify({'error': 'Forbidden'}), 403
+    p = _pug_post(pid)
+    if not p:
+        return jsonify({'error': 'Not found'}), 404
+    body = p.body or ''
+    if body.startswith('{'):
+        try:
+            bd = _json.loads(body); bd['g'] = False; p.body = _json.dumps(bd)
+            db.session.commit()
+        except Exception:
+            return jsonify({'error': 'Could not update'}), 500
+    return jsonify({'success': True})
 
 
 @community_api.route('/xpost/pug/<int:pid>/vote', methods=['POST'])

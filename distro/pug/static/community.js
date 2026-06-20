@@ -407,13 +407,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const ago      = timeAgo(p.created_at);
         const rankHtml = p.rank
             ? `<span class="comm-rank-badge" style="color:${p.rank_color};">${p.rank}</span>` : '';
-        // Owners delete their own post; admins get the same delete on ANY post
-        // (data-mod flags it as a moderation removal → confirm before deleting).
-        const deleteBtn = p.is_mine
-            ? `<button class="comm-del-btn" data-id="${p.id}" title="Delete">×</button>`
-            : (p.can_moderate
-                ? `<button class="comm-del-btn" data-id="${p.id}" data-mod="1" title="Remove (admin)">×</button>`
-                : `<button class="comm-more-btn" title="Report or block">⋯</button>`);
+        // Owners + home-distro admins delete (remove from this distro's feed). The ⋯
+        // menu carries report/block (others' posts) and "remove from common" (any admin
+        // un-sharing a post from the shared all-distros feed — see can_unshare).
+        const showDelete = p.is_mine || p.can_moderate;
+        const showMenu   = (!p.is_mine) || p.can_unshare;
+        const deleteBtn =
+            (showDelete ? `<button class="comm-del-btn" data-id="${p.id}"${p.is_mine ? '' : ' data-mod="1"'} title="${p.is_mine ? 'Delete' : 'Remove from my distro'}">×</button>` : '')
+          + (showMenu   ? `<button class="comm-more-btn" title="More">⋯</button>` : '');
         const distHtml = (!p.is_mine && feedMode === 'radar' && p.dist_km !== null && p.dist_km !== undefined)
             ? `<span class="comm-dist-badge">${fmtDist(p.dist_km)}</span>` : '';
 
@@ -803,13 +804,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openPostMenu(e, p) {
         e.stopPropagation();
-        const ov = modOverlay(`
-            <button class="comm-mod-item" data-act="report">⚑ Report post</button>
-            <button class="comm-mod-item" data-act="block">⊘ Block @${esc(p.username)}</button>
-            <button class="comm-mod-item comm-mod-cancel" data-act="cancel">Cancel</button>`);
-        ov.querySelector('[data-act="report"]').onclick = () => { ov.remove(); reportFlow(p); };
-        ov.querySelector('[data-act="block"]').onclick  = () => { ov.remove(); blockFlow(p); };
+        const items = [];
+        if (!p.is_mine) {
+            items.push(`<button class="comm-mod-item" data-act="report">⚑ Report post</button>`);
+            items.push(`<button class="comm-mod-item" data-act="block">⊘ Block @${esc(p.username)}</button>`);
+        }
+        if (p.can_unshare) {
+            items.push(`<button class="comm-mod-item" data-act="unshare">⤫ Remove from common feed</button>`);
+        }
+        items.push(`<button class="comm-mod-item comm-mod-cancel" data-act="cancel">Cancel</button>`);
+        const ov = modOverlay(items.join(''));
+        ov.querySelector('[data-act="report"]')?.addEventListener('click', () => { ov.remove(); reportFlow(p); });
+        ov.querySelector('[data-act="block"]')?.addEventListener('click',  () => { ov.remove(); blockFlow(p); });
+        ov.querySelector('[data-act="unshare"]')?.addEventListener('click', () => { ov.remove(); unshareFlow(p); });
         ov.querySelector('[data-act="cancel"]').onclick = () => ov.remove();
+    }
+
+    // "Remove from common feed" — un-shares a post from the all-distros feed without
+    // deleting it from its home distro. Routes by source (pug post vs svg post).
+    function unshareFlow(p) {
+        const url = p.source === 'svg'
+            ? `/pug/api/xpost/svg/${p.id}/unshare`
+            : `/pug/api/community/${p.id}/unshare`;
+        fetch(url, { method: 'POST' })
+            .then(r => r.json())
+            .then(d => {
+                if (d && d.ok) { modToast('Removed from the common feed.'); lastPostCount = 0; loadFeed(); }
+                else modToast((d && d.error) || 'Could not remove.');
+            })
+            .catch(() => modToast('Could not remove.'));
     }
 
     const REPORT_REASONS = ['Nudity or sexual content', 'Harassment or hate', 'Spam or scam', 'Violence or threats', 'Other'];

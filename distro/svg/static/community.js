@@ -158,6 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
       actions.appendChild(delBtn);
     }
 
+    // Admin (or owner) can remove a post from the COMMON/global feed without deleting it
+    // from its home distro. postBase() routes svg→/posts, pug→/xpost/pug.
+    if (p.can_unshare) {
+      const unBtn = el('button', 'comm-delete-btn', '⤫ remove from common');
+      unBtn.addEventListener('click', async () => {
+        if (!confirm('Remove this post from the shared (global) feed? It stays in its home distro.')) return;
+        const r = await fetch(`${postBase(p)}/unshare`, {method:'POST'});
+        if (r.ok) card.remove();
+      });
+      actions.appendChild(unBtn);
+    }
+
     card.appendChild(actions);
     return card;
   }

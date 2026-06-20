@@ -1331,7 +1331,8 @@ def _admin_allowlist():
 
 def _is_admin(user_id):
     """True if the user is in the env allowlist OR carries the legacy is_admin DB
-    flag. Server-side only — never trusts the client/session alone."""
+    flag. Server-side only — never trusts the client/session alone. This is the
+    'any platform admin' check (used for cross-distro 'remove from common')."""
     if not user_id:
         return False
     from shared.auth.user import User
@@ -1342,6 +1343,21 @@ def _is_admin(user_id):
         return True
     allow = _admin_allowlist()
     return (u.email or '').lower() in allow or (u.username or '').lower() in allow
+
+
+# Distros that count as "this is the pug home feed". A pug post can only be hard-deleted
+# by an admin whose own account lives in the pug distro (the home admin) — a foreign
+# (e.g. svg) admin can only un-share it from the common/all-distros feed.
+_PUG_DISTROS = {'ocellus', 'thepug'}
+
+def _is_pug_home_admin(user_id):
+    """Admin who governs the PUG distro itself (delete rights on pug posts): a platform
+    admin AND a pug-distro account."""
+    if not _is_admin(user_id):
+        return False
+    from shared.auth.user import User
+    u = db.session.get(User, user_id)
+    return bool(u and (u.distro or '').lower() in _PUG_DISTROS)
 
 
 def admin_required_api():
@@ -2904,7 +2920,7 @@ def _blocked_ids(me):
     return {(r.blocked_id if r.blocker_id == me else r.blocker_id) for r in rows}
 
 
-def _svg_global_rows(me, blocked):
+def _svg_global_rows(me, blocked, am_admin=False):
     """Cross-distro feed: svg's shared (is_global) posts, normalised into the pug feed shape.
 
     svg keeps its own store (community_posts); we read it directly since it's the same DB.
@@ -2947,6 +2963,7 @@ def _svg_global_rows(me, blocked):
             'rank':        None,
             'rank_color':  None,
             'is_mine':     p.user_id == me,
+            'can_unshare': am_admin,       # pug admin can remove an svg post from the common feed
             'is_online':   False,
             'created_at':  p.created_at.isoformat() if p.created_at else None,
             'dist_km':     None,
@@ -2968,7 +2985,8 @@ def get_community_feed():
     err = login_required_api()
     if err: return err
     me = session['user_id']
-    am_admin = _is_admin(me)        # show owner-style delete on every post if admin
+    am_admin = _is_admin(me)              # any platform admin → can un-share from common
+    am_home_admin = _is_pug_home_admin(me)  # pug-home admin → can hard-delete pug posts
     blocked = _blocked_ids(me)
 
     # Optional location filter
@@ -3032,7 +3050,8 @@ def get_community_feed():
             'rank':        rank,
             'rank_color':  color,
             'is_mine':     p.user_id == me,
-            'can_moderate': am_admin,      # admin: same delete access on any post as its owner
+            'can_moderate': am_home_admin,   # delete (remove from pug feed) — home admins only
+            'can_unshare':  am_admin and is_global_post,  # remove from common — any admin
             'is_online':   _is_online(u),
             'created_at':  p.created_at.isoformat() if p.created_at else None,
             'dist_km':     round(dist_km, 1) if dist_km is not None else None,
@@ -3099,7 +3118,7 @@ def get_community_feed():
     result = _enrich(result)
     # All-distros view: merge in other distros' shared posts (svg today; div has none yet).
     if distro_scope == 'all' and not user_filter:
-        result = result + _svg_global_rows(me, blocked)
+        result = result + _svg_global_rows(me, blocked, am_admin=am_admin)
         result.sort(key=lambda r: r.get('created_at') or '', reverse=True)
     return jsonify({'posts': result, 'radius_km': None})
 
@@ -3264,16 +3283,61 @@ def delete_community_post(pid):
     p = Note.query.filter_by(id=pid, entry_type='community_post').first()
     if not p:
         return jsonify({'error': 'Not found'}), 404
-    if p.user_id != me and not _is_admin(me):
+    # Hard delete from the HOME distro feed — owner, or a pug-home admin only. A foreign
+    # admin can't delete a pug post (they can only un-share it from the common feed).
+    if p.user_id != me and not _is_pug_home_admin(me):
         return jsonify({'error': 'Forbidden'}), 403
-    # Hard delete — wipe the post and everything keyed off it (reactions + comments
-    # are Notes with mood=post id) so nothing lingers in the DB.
+    # Wipe the post and everything keyed off it (reactions + comments are Notes with
+    # mood=post id) so nothing lingers in the DB.
     pid_s = str(p.id)
     Note.query.filter(
         Note.entry_type.in_(['post_react', 'post_comment']),
         Note.mood == pid_s
     ).delete(synchronize_session=False)
     db.session.delete(p)
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/community/<int:pid>/unshare', methods=['POST'])
+def unshare_community_post(pid):
+    """Remove a PUG post from the COMMON (all-distros) feed without deleting it — it
+    stays in pug's own feed. Allowed for the owner or ANY platform admin (incl. a
+    foreign-distro admin moderating the shared feed)."""
+    err = login_required_api()
+    if err: return err
+    me = session['user_id']
+    p = Note.query.filter_by(id=pid, entry_type='community_post').first()
+    if not p:
+        return jsonify({'error': 'Not found'}), 404
+    if p.user_id != me and not _is_admin(me):
+        return jsonify({'error': 'Forbidden'}), 403
+    # Flip the 'g' (global/shared) flag off in the post's JSON body.
+    body = p.body or ''
+    if body.startswith('{'):
+        try:
+            bd = json.loads(body)
+            bd['g'] = False
+            p.body = json.dumps(bd)
+            db.session.commit()
+        except Exception:
+            return jsonify({'error': 'Could not update post'}), 500
+    return jsonify({'ok': True})
+
+
+@pug_bp.route('/pug/api/xpost/svg/<int:sid>/unshare', methods=['POST'])
+def unshare_svg_post(sid):
+    """A pug admin removes an SVG post from the COMMON feed (svg keeps it in its own
+    local feed). Writes svg's store directly (same DB). Any platform admin only."""
+    err = login_required_api()
+    if err: return err
+    if not _is_admin(session['user_id']):
+        return jsonify({'error': 'Forbidden'}), 403
+    from distro.svg.models.community import CommunityPost
+    sp = CommunityPost.query.get(sid)
+    if not sp:
+        return jsonify({'error': 'Not found'}), 404
+    sp.is_global = False
     db.session.commit()
     return jsonify({'ok': True})
 
