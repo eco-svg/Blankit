@@ -28,7 +28,7 @@
 </head>
 <body{% if zoom_exempt %} class="zoom-exempt"{% endif %}{% if is_guest %} data-guest="true"{% endif %}>
 {% if is_guest %}<script nonce="{{ csp_nonce }}">window.VEYRA_GUEST = true;</script>
-<script src="{{ url_for('pug.static', filename='guest-store.js') }}?v=1"></script>{% endif %}
+<script src="{{ url_for('pug.static', filename='guest-store.js') }}?v=2"></script>{% endif %}
 
   <!-- Initial-load veil — hides the empty/un-hydrated cards until content is ready -->
   <div id="appLoader">

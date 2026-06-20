@@ -15,7 +15,16 @@
   if (!window.VEYRA_GUEST) return;
 
   var K = { notes:'veyra_guest_notes', goals:'veyra_guest_goals', events:'veyra_guest_events',
-            habits:'veyra_guest_habits', logs:'veyra_guest_habit_logs', seq:'veyra_guest_seq' };
+            habits:'veyra_guest_habits', logs:'veyra_guest_habit_logs', stats:'veyra_guest_stats',
+            seq:'veyra_guest_seq' };
+
+  function guestSheet() {
+    return read(K.stats, null) || {
+      class_official: 'Guest Explorer', personality: '—', personality_desc: '',
+      bio: 'Sign up to generate your full AI character sheet — Veyra reads your notes & habits to build it.',
+      skills: [], suggestions: []
+    };
+  }
 
   function read(k, def) { try { return JSON.parse(localStorage.getItem(k)) || def; } catch (_) { return def; } }
   function write(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} }
@@ -142,6 +151,42 @@
         out.push({ date: ds, pct: hs3.length ? Math.round((done/hs3.length)*100) : 0 });
       }
       return json(out);
+    }
+
+    // ── SKILLS / STATS (local sheet; AI character analysis stays a sign-up perk) ──
+    if (hbase === '/pug/api/stats' && method === 'GET') {
+      return json({ notes_count: read(K.notes, []).filter(function (n){ return !n.is_deleted; }).length,
+                    streak: 0, media_count: 0, sheet: guestSheet() });
+    }
+    if (path === '/pug/api/stats/skill' && method === 'POST') {
+      var name = (body.name||'').trim(); if (!name) return json({ error:'name required' }, 400);
+      var sh = guestSheet();
+      if (!sh.skills.some(function (s){ return s.name === name && (s.class_id||'') === (body.class_id||''); })) {
+        sh.skills.push({ name:name, rank:'E-', verified:false, context:'',
+          note:'Sign up + add proof in Achievements to unlock a real rank.',
+          class_id: body.class_id||'', class_label: body.class_label||'', exp:0, user_added:true });
+        sh.suggestions = (sh.suggestions||[]).filter(function (s){ return s.name !== name; });
+        write(K.stats, sh);
+      }
+      return json({ ok:true, sheet: sh });
+    }
+    if (path === '/pug/api/stats/skill' && method === 'DELETE') {
+      var sh2 = guestSheet(), nm = (body.name||'').trim(), cid = body.class_id||'';
+      sh2.skills = sh2.skills.filter(function (s){ return !(s.name === nm && (s.class_id||'') === cid); });
+      write(K.stats, sh2); return json({ ok:true, sheet: sh2 });
+    }
+    if (path === '/pug/api/stats/skill-class' && method === 'PATCH') {
+      var sh3 = guestSheet();
+      sh3.skills.forEach(function (s){ if (s.name === (body.name||'').trim()) { s.class_id = body.class_id||''; s.class_label = body.class_label||''; } });
+      write(K.stats, sh3); return json({ ok:true });
+    }
+    if (path === '/pug/api/stats/skill-suggestion/dismiss' && method === 'POST') {
+      var sh4 = guestSheet();
+      sh4.suggestions = (sh4.suggestions||[]).filter(function (s){ return s.name !== (body.name||'').trim(); });
+      write(K.stats, sh4); return json({ ok:true });
+    }
+    if (path === '/pug/api/stats/skill/exp' && method === 'POST') {
+      return json({ ok:true, sheet: guestSheet() });   // exp/ranking is a signed-in feature
     }
 
     return null;  // not a personal endpoint → let it pass through to the server
