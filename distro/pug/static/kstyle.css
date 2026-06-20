@@ -3643,6 +3643,13 @@ div.infinite-canvas video {
 }
 .comm-skill-tag-chip:hover  { border-color: var(--accent); color: var(--text); }
 .comm-skill-tag-chip.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+.comm-skill-empty-link {
+    background: none; border: none; padding: 0;
+    font-size: 0.72rem; font-family: var(--font-body);
+    color: var(--accent); cursor: pointer; text-align: left;
+    opacity: 0.85; transition: opacity .12s;
+}
+.comm-skill-empty-link:hover { opacity: 1; text-decoration: underline; }
 .comm-skill-tag-badge {
     display: inline-block;
     padding: 1px 7px;
@@ -5782,8 +5789,24 @@ button.nav-pill:not(.btn-ghost):hover {
 .comm-compose-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   margin-top: 8px;
+}
+/* Make the attach + camera icons clearly tappable (they were too small/faint). */
+.comm-compose-actions .dm-attach-btn {
+  opacity: 0.75;
+  padding: 7px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+.comm-compose-actions .dm-attach-btn svg { width: 21px; height: 21px; }
+.comm-compose-actions .dm-attach-btn:hover {
+  opacity: 1;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 /* ── Feed mode toggle (inline in title row) ─────────────── */
@@ -5976,17 +5999,6 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 
 /* "Share to all distros" checkbox in the composer */
-.comm-reach-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  user-select: none;
-}
-.comm-reach-toggle input { accent-color: var(--accent); cursor: pointer; }
-
 /* Foreign-distro posts: a subtle left accent to signal the post is from another distro
    (interactions are fully live and routed to that distro's store). */
 .comm-post.comm-foreign { border-left: 2px solid color-mix(in srgb, var(--accent) 35%, transparent); }

@@ -86,10 +86,9 @@
         <div id="commModalMediaPreview" class="dm-media-preview hidden" style="margin-top:8px;"></div>
       </div>
       <div id="commModalError" style="color:#e87a5a;font-size:0.78rem;min-height:1em;margin-top:8px;"></div>
+      <!-- Posts always go everywhere (all distros); what each viewer sees is decided by
+           the feed mode (radar / global / all-distros), not by a per-post toggle. -->
       <div class="modal-actions" style="margin-top:12px;display:flex;align-items:center;gap:10px;">
-        <label class="comm-reach-toggle" title="Also show this post to people on the other distros">
-          <input type="checkbox" id="commPostAllDistros"> Share to all distros
-        </label>
         <button id="confirmCommPostBtn" class="nav-pill" style="margin-left:auto;background:var(--accent);color:var(--text-on-accent);border-color:var(--accent);">Post</button>
       </div>
     </div>

@@ -3195,8 +3195,10 @@ def create_community_post():
     if text_order not in (None, 'tm', 'mt'):
         text_order = None
     skill_tag = (data.get('skill_tag') or '').strip() or None
-    # Cross-distro visibility: 'g' (global) = also surface this post in the all-distros feed.
-    all_distros = bool(data.get('all_distros'))
+    # Cross-distro visibility: every post is shared everywhere by default ('g' = global,
+    # surfaced in the all-distros feed). What each viewer sees is decided by the feed mode
+    # (radar / global / all-distros), not by hiding the post at creation time.
+    all_distros = bool(data.get('all_distros', True))
     if media_key or post_type or text_order or skill_tag or all_distros:
         body_val = json.dumps({k: v for k, v in {'t': text, 'm': media_key or None, 'pt': post_type or None, 'to': text_order, 'sk': skill_tag, 'g': all_distros or None}.items() if v})
     else:

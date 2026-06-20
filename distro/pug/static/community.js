@@ -92,7 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
         skillPickerEl.innerHTML = '';
         activeSkillTag = null;
         if (!skills.length) {
-            skillPickerEl.innerHTML = '<span style="font-size:0.7rem;color:var(--text-dim);">No skills added yet.</span>';
+            // You can only tag skills you've added on the Skills tab — guide there.
+            skillPickerEl.innerHTML = '<button type="button" class="comm-skill-empty-link">No skills yet — add one in the Skills tab to tag it here →</button>';
+            skillPickerEl.querySelector('.comm-skill-empty-link')?.addEventListener('click', () => {
+                closeModal();
+                if (window._veyraNavigate) window._veyraNavigate('skills', true);
+            });
             return;
         }
         skills.forEach(name => {
@@ -1175,7 +1180,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = { text, media_key };
         if (activePostType) payload.post_type = activePostType;
         if (activeSkillTag) payload.skill_tag = activeSkillTag;
-        if (document.getElementById('commPostAllDistros')?.checked) payload.all_distros = true;
+        // Every post goes to all distros by default (backend defaults all_distros=true);
+        // the feed mode controls what each viewer actually sees, not the post itself.
         fetch('/pug/api/community', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
