@@ -7662,3 +7662,53 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-bar-col:hover .admin-bar { background: var(--text); }
 .admin-bar-lbl { font-size: 0.54rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 5px; white-space: nowrap; transform: rotate(-45deg); transform-origin: center; }
 .admin-visits-note { font-size: 0.68rem; color: var(--text-dim); margin-top: 18px; line-height: 1.45; }
+
+/* ── Guest mode (read-only) ─────────────────────────────────────────────────
+   Active when <body data-guest="true">. Hides write-only / personal entry points
+   that make no sense logged-out; interactive writes are gated in guest.js. */
+body[data-guest] #commComposeBtn { display: none; }          /* new post */
+body[data-guest] #rGroqCard,                                 /* BlinkBot card */
+body[data-guest] .goal-flip-card { display: none; }          /* To-do card */
+
+.guest-banner {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 400;
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  padding: 10px 16px;
+  background: var(--surface-2); border-top: 1px solid var(--border);
+  font-size: 0.82rem; color: var(--text-muted);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.25);
+}
+.guest-banner-text { opacity: 0.9; }
+.guest-banner-cta {
+  flex-shrink: 0; padding: 5px 16px; border-radius: 8px;
+  background: var(--accent); color: var(--text-on-accent);
+  font-weight: 600; text-decoration: none; font-size: 0.8rem;
+}
+.guest-banner-cta:hover { opacity: 0.92; }
+body.has-guest-banner .playground { padding-bottom: 56px; }
+
+.guest-prompt-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(2px);
+}
+.guest-prompt {
+  width: min(380px, 90vw);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 22px 22px 18px; text-align: center;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.5);
+}
+.guest-prompt-title { font-family: var(--font-display); font-size: 1.15rem; color: var(--text); margin-bottom: 8px; }
+.guest-prompt-sub { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; margin-bottom: 18px; }
+.guest-prompt-actions { display: flex; gap: 10px; justify-content: center; }
+.guest-prompt-cancel {
+  padding: 8px 16px; border-radius: 9px; cursor: pointer;
+  background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+  font-size: 0.82rem;
+}
+.guest-prompt-cancel:hover { color: var(--text); border-color: var(--text-dim); }
+.guest-prompt-cta {
+  padding: 8px 18px; border-radius: 9px; text-decoration: none;
+  background: var(--accent); color: var(--text-on-accent); font-weight: 600; font-size: 0.82rem;
+}
+.guest-prompt-cta:hover { opacity: 0.92; }
