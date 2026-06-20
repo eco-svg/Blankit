@@ -4329,17 +4329,18 @@ def admin_visits():
                        'views':   int(views.get(d, 0)),
                        'uniques': int(uniq.get(d, 0))})
 
-    total_views   = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
-    total_uniques = int(db.session.query(func.count()).select_from(SiteVisitor).scalar() or 0)
+    # VIEWS = raw opens (every time the app is loaded). VISITS = unique people, via the
+    # stable visitor hash: per day (distinct rows that day) and since launch (distinct
+    # hash across all days).
+    views_alltime  = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
+    unique_alltime = int(db.session.query(func.count(func.distinct(SiteVisitor.vhash))).scalar() or 0)
     today = series[-1] if series else {'views': 0, 'uniques': 0}
     return jsonify({
-        'days':            series,
-        'today_views':     today['views'],
-        'today_uniques':   today['uniques'],
-        'window_views':    sum(s['views'] for s in series),
-        'window_uniques':  sum(s['uniques'] for s in series),
-        'total_views':     total_views,
-        'total_uniques':   total_uniques,
+        'days':           series,            # [{day, views, uniques}] for the graph
+        'views_today':    today['views'],
+        'views_alltime':  views_alltime,
+        'unique_today':   today['uniques'],   # unique visits today
+        'unique_alltime': unique_alltime,     # unique visits since launch
     })
 
 

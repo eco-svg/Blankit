@@ -502,11 +502,10 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 .buddybot { flex: 1; background: var(--surface); border-color: var(--border) !important; }
 .buddybot:hover { border-color: rgba(74,122,170,0.45) !important; }
-/* Calendar, BlinkBot and To-do all share the rbar's free space equally (flex-grow:1
-   from their natural height), each with a min-height so their content never gets
-   crushed / overflows when the page is zoomed. The timer stays compact (flex:0 0 auto).
-   If the viewport is too short for all min-heights, the rbar scrolls (overflow-y:auto). */
-.calender { flex: 1 1 auto; min-height: 290px; }
+/* rbar cards are sized to their own content (no flex-grow) so the layout is robust
+   under the site-wide zoom:0.8 — flex-grow + 100vh + zoom fought each other and
+   pushed the bottom card (timer) off-screen. The rbar scrolls if it's all too tall. */
+.calender { flex: 0 0 auto; }
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
@@ -759,8 +758,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 /* ── BlinkBot card (rbar) — sized to content, centered, small status badge ── */
 .r-blinkbot-soon {
-  flex: 1 1 auto;          /* shares the rbar's free space equally with calendar + to-do */
-  min-height: 160px;       /* never shorter than its content — avoids the overflow sliver */
+  flex: 0 0 auto;          /* content height — no stretch (robust under zoom) */
+  min-height: 150px;       /* never shorter than its content — avoids the overflow sliver */
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -1446,8 +1445,7 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
   /* No animation override here: inherit the unified .r-card fadeUp spawn so the
      To-do card pops in with the same animation + speed as every other rbar card
      (and replays when the Quick Ask panel closes). */
-  flex: 1 1 auto;          /* shares the rbar's free space equally with calendar + BlinkBot */
-  min-height: 200px;
+  flex: 0 0 300px;         /* fixed height — the 3D flip faces (inset:0) need a defined box */
 }
 .goal-flip-card:hover { transform: none; }
 
@@ -7655,6 +7653,21 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-stat-lbl { font-size: 0.62rem; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; }
 .admin-members-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 9px; }
 .admin-ov-divider { height: 1px; background: var(--border); margin: 20px 0 16px; }
+
+/* Overview flip card — front (stats) ⟷ back (views graph). Faces don't scroll. */
+.ov-flip { flex: 1; min-height: 0; perspective: 1600px; }
+.ov-flip-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ov-flip-inner.flipped { transform: rotateY(180deg); }
+.ov-face {
+  position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.ov-back { transform: rotateY(180deg); }
+.ov-signups { gap: 8px; }
+.ov-back .admin-visits-chart { flex: 1; height: auto; min-height: 120px; }
 .admin-reset-btn {
   background: transparent; border: 1px solid var(--border2); color: var(--text-dim);
   font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.06em;

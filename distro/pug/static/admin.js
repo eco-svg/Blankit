@@ -236,9 +236,9 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch('/pug/api/admin/visits').then(r => r.json()).then(d => {
             if (d && d.error) { chart.innerHTML = `<div class="admin-empty">${esc(d.error)}</div>`; return; }
             stats.innerHTML =
-                `<div class="admin-stat"><div class="admin-stat-num">${d.today_views}</div><div class="admin-stat-lbl">Views · today</div></div>` +
-                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.today_uniques}</div><div class="admin-stat-lbl">Visitors · today</div></div>` +
-                `<div class="admin-stat"><div class="admin-stat-num">${d.total_views}</div><div class="admin-stat-lbl">Views · all time</div></div>`;
+                `<div class="admin-stat"><div class="admin-stat-num">${d.views_today}</div><div class="admin-stat-lbl">Views · today</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.unique_today}</div><div class="admin-stat-lbl">Visits · today</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num">${d.unique_alltime}</div><div class="admin-stat-lbl">Visits · all-time</div></div>`;
             const series = d.days || [];
             const max = Math.max(1, ...series.map(s => s.views));
             chart.innerHTML = series.map(s => {
@@ -263,6 +263,16 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('adminUsersPane').classList.toggle('hidden', which !== 'users');
             document.getElementById('adminEyesPane').classList.toggle('hidden', which !== 'eyes');
         });
+    });
+
+    // Overview card flip — front = stats, back = views graph.
+    const ovFlipBtn = document.getElementById('ovFlipBtn');
+    const ovFlipInner = document.getElementById('ovFlipInner');
+    const ovTitle = document.getElementById('ovTitle');
+    ovFlipBtn?.addEventListener('click', () => {
+        const flipped = ovFlipInner.classList.toggle('flipped');
+        ovFlipBtn.title = flipped ? 'Show overview' : 'Show views graph';
+        if (ovTitle) ovTitle.textContent = flipped ? 'Views' : 'Overview';
     });
 
     // Reset visit stats (clears the counter tables).

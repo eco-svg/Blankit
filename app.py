@@ -89,13 +89,14 @@ def _ip_excluded(req):
     return bool(ip) and ip in {x.strip() for x in raw.split(',') if x.strip()}
 
 
-def _visitor_hash(req, secret, day):
-    """One-way daily hash of the visitor. Combines the day + app secret so it rotates
-    every day and can't be reversed to an IP/UA. The IP is used only to compute this
-    hash, never persisted."""
+def _visitor_hash(req, secret):
+    """Stable one-way hash of a visitor (IP+UA+app secret). One-way — the IP is never
+    stored and can't be recovered. Stable (no daily rotation) so the same person maps
+    to the same hash across days, which lets us count UNIQUE visitors since launch as
+    well as per day."""
     ip = _client_ip(req)
     ua = req.headers.get('User-Agent', '')
-    raw = f'{day.isoformat()}|{secret}|{ip}|{ua}'
+    raw = f'{secret}|{ip}|{ua}'
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
 
 
@@ -108,7 +109,7 @@ def _record_visit(req, secret):
         sv = SiteVisit(day=today, views=0)
         db.session.add(sv)
     sv.views = (sv.views or 0) + 1
-    vhash = _visitor_hash(req, secret, today)
+    vhash = _visitor_hash(req, secret)
     if not db.session.get(SiteVisitor, (today, vhash)):
         db.session.add(SiteVisitor(day=today, vhash=vhash))
     db.session.commit()

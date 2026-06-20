@@ -29,26 +29,35 @@
   </div>
 </div>
 
-<!-- Overview — Members + Visits, all visible at once (no tab switching). -->
+<!-- Overview — Members + Visits, all at once. Flips to the views graph (not scrollable). -->
 <div class="card admin admin-overview" id="sec-admin-overview">
   <div class="card-top-bar">
-    <h2 class="card-title">Overview</h2>
+    <h2 class="card-title" id="ovTitle">Overview</h2>
+    <button class="icon-btn" id="ovFlipBtn" type="button" title="Show views graph">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </button>
   </div>
-  <div class="admin-body">
-    <div class="admin-members-label">Members <span class="admin-count" id="adminMembersCount"></span></div>
-    <div id="adminMembersStats" class="admin-members-stats"></div>
-    <div class="admin-members-label">Recent sign-ups</div>
-    <div id="adminMembersList" class="admin-list"></div>
-
-    <div class="admin-ov-divider"></div>
-
-    <div class="admin-members-label" style="display:flex;align-items:center;justify-content:space-between;">
-      <span>Visits</span>
-      <button id="adminVisitsReset" class="admin-reset-btn" type="button" title="Clear all visit data">reset</button>
+  <div class="ov-flip">
+    <div class="ov-flip-inner" id="ovFlipInner">
+      <!-- Front: members + visit numbers -->
+      <div class="ov-face ov-front">
+        <div class="admin-members-label">Members <span class="admin-count" id="adminMembersCount"></span></div>
+        <div id="adminMembersStats" class="admin-members-stats"></div>
+        <div class="admin-members-label">Recent sign-ups</div>
+        <div id="adminMembersList" class="admin-list ov-signups"></div>
+        <div class="admin-ov-divider"></div>
+        <div class="admin-members-label">Visits</div>
+        <div id="adminVisitsStats" class="admin-members-stats"></div>
+      </div>
+      <!-- Back: views graph -->
+      <div class="ov-face ov-back">
+        <div class="admin-members-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Views · last 14 days</span>
+          <button id="adminVisitsReset" class="admin-reset-btn" type="button" title="Clear all visit data">reset</button>
+        </div>
+        <div id="adminVisitsChart" class="admin-visits-chart"></div>
+        <div class="admin-visits-note">Views = times the app was opened. Visits = unique people. Your own admin visits aren’t counted. No visitor cookies or IPs are stored.</div>
+      </div>
     </div>
-    <div id="adminVisitsStats" class="admin-members-stats"></div>
-    <div class="admin-members-label">Last 14 days</div>
-    <div id="adminVisitsChart" class="admin-visits-chart"></div>
-    <div class="admin-visits-note">Page views &amp; unique visitors. Your own admin visits aren’t counted (opt-out cookie + ANALYTICS_EXCLUDE_IPS). No visitor cookies or IPs are stored.</div>
   </div>
 </div>
