@@ -392,7 +392,7 @@ body.lbar-open .playground {
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: 8px;                /* tighter than --gap so all cards fit without scrolling */
   padding: var(--gap) 8px var(--gap) var(--gap);
   overflow-y: auto;
   transition: top 0.32s cubic-bezier(0.4,0,0.2,1),
@@ -747,7 +747,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 7px); }
 
 /* ── BlinkBot card (rbar) — sized to content, centered, small status badge ── */
 .r-blinkbot-soon {
-  flex: 0 0 auto;          /* compact (title + badge + input); To-do takes the leftover height */
+  flex: 1;                 /* stretches to fill — so the rbar fits everything without scrolling,
+                              and grows further when the header hides and the rbar gets taller */
   min-height: 132px;       /* never shorter than its content — avoids the overflow sliver */
   display: flex;
   align-items: stretch;
@@ -5882,6 +5883,7 @@ button.nav-pill:not(.btn-ghost):hover {
   font-size: 1.4rem; letter-spacing: 0.42em; text-indent: 0.42em;
   text-transform: uppercase; color: var(--text-muted, #b6bcc6); opacity: 0.9;
 }
+#appLoader .app-loader-distro { color: var(--accent, #6c8cff); opacity: 0.85; }
 #appLoader .app-loader-bar {
   width: 150px; height: 3px; border-radius: 3px;
   background: rgba(255,255,255,0.08); overflow: hidden; position: relative;
@@ -5947,6 +5949,7 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .qa-timer-display:hover,
 .qa-timer-display.qa-running { color: var(--accent); }
+.qa-timer-display.qa-overtime { color: #e5484d !important; }   /* ticking past zero */
 .qa-timer-done { color: var(--accent) !important; animation: qaFlash 0.6s ease-in-out 4; }
 @keyframes qaFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
 .qa-timer-reset {

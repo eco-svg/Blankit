@@ -1,8 +1,11 @@
 /**
- * quickactions.js — the Quick Actions sidebar card.
- * For now: one minimal tool — a 25-minute focus timer. Click the time to start/pause,
- * "reset" to clear. Beeps + flashes when it hits zero. Kept deliberately tiny; more
- * quick actions will share this card later.
+ * quickactions.js — the Quick Actions sidebar card. For now: one minimal focus timer.
+ *   • Scroll over the time to SET the minutes (1–180), while it's stopped.
+ *   • Click the time to start / pause.
+ *   • At zero it dings, then keeps ticking into the NEGATIVE (overtime, shown red) —
+ *     a "ticking bomb" feel — until you reset.
+ *   • "reset" returns it to the set duration.
+ * Kept deliberately tiny; more quick actions will share this card later.
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
@@ -10,18 +13,23 @@
     var reset   = document.getElementById('qaTimerReset');
     if (!display) return;
 
-    var totalSec  = 25 * 60;
-    var remaining = totalSec;
+    var setSec    = 25 * 60;   // configured duration
+    var remaining = setSec;    // counts down; may go negative (overtime)
     var running   = false;
     var endAt     = 0;
     var tick      = null;
+    var dinged    = false;
 
     function fmt(s) {
-      s = Math.max(0, Math.round(s));
+      var neg = s < 0;
+      s = Math.abs(Math.round(s));
       var m = Math.floor(s / 60), sec = s % 60;
-      return (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
+      return (neg ? '-' : '') + (m < 10 ? '0' : '') + m + ':' + (sec < 10 ? '0' : '') + sec;
     }
-    function render() { display.textContent = fmt(remaining); }
+    function render() {
+      display.textContent = fmt(remaining);
+      display.classList.toggle('qa-overtime', remaining < 0);
+    }
     function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
 
     function start() {
@@ -30,22 +38,21 @@
       endAt = Date.now() + remaining * 1000;
       tick = setInterval(function () {
         remaining = (endAt - Date.now()) / 1000;
-        if (remaining <= 0) { remaining = 0; render(); finish(); return; }
+        if (remaining <= 0 && !dinged) { dinged = true; ding(); }
         render();
-      }, 250);
+      }, 200);
     }
     function pause() {
       running = false;
       display.classList.remove('qa-running');
       stopTick();
     }
-    function finish() {
-      pause();
-      display.classList.add('qa-timer-done');
-      setTimeout(function () { display.classList.remove('qa-timer-done'); }, 4000);
+    function ding() {
       beep();
+      display.classList.add('qa-timer-done');
+      setTimeout(function () { display.classList.remove('qa-timer-done'); }, 1500);
       if (window.Notification && Notification.permission === 'granted') {
-        try { new Notification('Timer done', { body: 'Your focus timer finished.' }); } catch (e) {}
+        try { new Notification('Time’s up', { body: 'Focus timer hit zero — now in overtime.' }); } catch (e) {}
       }
     }
     function beep() {
@@ -67,10 +74,23 @@
         try { Notification.requestPermission(); } catch (e) {}
       }
     }
+    function doReset() { pause(); remaining = setSec; dinged = false; render(); }
 
     display.addEventListener('click', toggle);
-    display.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
-    if (reset) reset.addEventListener('click', function () { pause(); remaining = totalSec; render(); });
+    display.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+    });
+    if (reset) reset.addEventListener('click', doReset);
+
+    // Scroll over the digits to set the minutes (only while stopped).
+    display.addEventListener('wheel', function (e) {
+      if (running) return;
+      e.preventDefault();
+      setSec = Math.max(60, Math.min(180 * 60, setSec + (e.deltaY < 0 ? 60 : -60)));
+      remaining = setSec;
+      dinged = false;
+      render();
+    }, { passive: false });
 
     render();
   });

@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=136">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=137">
   <!-- Desktop-only gate: force desktop layout + notice on phones. Runs early so the
        viewport is pinned before first layout. -->
   <script src="{{ url_for('pug.static', filename='mobile-gate.js') }}?v=1"></script>
@@ -29,7 +29,7 @@
 
   <!-- Initial-load veil — hides the empty/un-hydrated cards until content is ready -->
   <div id="appLoader">
-    <div class="app-loader-word">Veyra</div>
+    <div class="app-loader-word">Veyra <span class="app-loader-distro">~Ocellus</span></div>
     <div class="app-loader-bar"></div>
   </div>
   <script nonce="{{ csp_nonce }}">
@@ -405,7 +405,7 @@
   {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='clientlog.js') }}?v=1"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=8"></script>
-  <script src="{{ url_for('pug.static', filename='quickactions.js') }}?v=2"></script>
+  <script src="{{ url_for('pug.static', filename='quickactions.js') }}?v=3"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>
