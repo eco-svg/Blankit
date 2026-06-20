@@ -20,8 +20,8 @@
     '.pub-action-btn',                 // Hire / Collab / +Friend on the profile modal
     '.comm-comment-send',              // post a comment
     '.comm-comment-input',             // (focus) post a comment
-    '#blinkCardInput', '#blinkCardSend', '#blinkCardMic', '#blinkCardBtn',  // BlinkBot
-    '#rNewGoalInput', '#rAddGoalBtn'   // to-do
+    '#blinkCardInput', '#blinkCardSend', '#blinkCardMic', '#blinkCardBtn'  // BlinkBot (guest-try is a later step)
+    // NOTE: Notes / Habits / To-do are NOT gated — they work locally via guest-store.js.
   ].join(',');
 
   function verbFor(t) {
@@ -30,7 +30,6 @@
     if (t.matches('[data-action="like"],[data-action="dislike"]')) return 'react to posts';
     if (t.matches('.comm-comment-send,.comm-comment-input')) return 'comment';
     if (t.matches('#blinkCardInput,#blinkCardSend,#blinkCardMic,#blinkCardBtn')) return 'use BlinkBot';
-    if (t.matches('#rNewGoalInput,#rAddGoalBtn')) return 'add a to-do';
     return 'do this';
   }
 
@@ -74,7 +73,7 @@
     var b = document.createElement('div');
     b.className = 'guest-banner';
     b.innerHTML =
-      '<span class="guest-banner-text">You’re browsing as a guest — sign up to post, message &amp; track your progress.</span>' +
+      '<span class="guest-banner-text">Exploring as a guest — your notes &amp; habits stay in <b>this browser only</b>. Sign up to save them &amp; join the community.</span>' +
       '<a class="guest-banner-cta" href="/">Sign up</a>';
     document.body.appendChild(b);
     document.body.classList.add('has-guest-banner');

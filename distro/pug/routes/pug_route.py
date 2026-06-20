@@ -1707,9 +1707,7 @@ _holidays_cache = {}  # (country, year) -> [{date, name}] — in-memory per proc
 def get_holidays():
     """Official public holidays for a country/year, proxied + cached from Nager.Date
     (free, no key). Country comes from the client's browser locale. Same-origin so
-    the CSP needs no third-party host."""
-    err = login_required_api()
-    if err: return err
+    the CSP needs no third-party host. Public data — open to guests too."""
     country = (request.args.get('country') or '').strip().upper()
     try:
         year = int(request.args.get('year') or 0)

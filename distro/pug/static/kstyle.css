@@ -7663,12 +7663,10 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-bar-lbl { font-size: 0.54rem; font-family: var(--font-mono); color: var(--text-dim); margin-top: 5px; white-space: nowrap; transform: rotate(-45deg); transform-origin: center; }
 .admin-visits-note { font-size: 0.68rem; color: var(--text-dim); margin-top: 18px; line-height: 1.45; }
 
-/* ── Guest mode (read-only) ─────────────────────────────────────────────────
-   Active when <body data-guest="true">. Hides write-only / personal entry points
-   that make no sense logged-out; interactive writes are gated in guest.js. */
-body[data-guest] #commComposeBtn { display: none; }          /* new post */
-body[data-guest] #rGroqCard,                                 /* BlinkBot card */
-body[data-guest] .goal-flip-card { display: none; }          /* To-do card */
+/* ── Guest mode ──────────────────────────────────────────────────────────────
+   Guests see the WHOLE app. Personal tools (notes/habits/to-do) work locally via
+   guest-store.js; only social/money actions are gated (guest.js → sign-up prompt).
+   Nothing is hidden. */
 
 .guest-banner {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 400;

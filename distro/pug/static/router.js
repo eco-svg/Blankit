@@ -46,12 +46,6 @@
     const sections = ROUTES[route];
     if (sections === undefined) return;
 
-    // Guests may only browse the community; every other tab is account-gated.
-    if (window.VEYRA_GUEST && route !== 'social') {
-      if (window._veyraGuestPrompt) window._veyraGuestPrompt('use this');
-      return;
-    }
-
     ALL_SECTIONS.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('page-hidden');

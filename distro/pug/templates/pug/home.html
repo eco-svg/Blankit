@@ -19,7 +19,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=147">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=148">
   <!-- Desktop-only gate: force desktop layout + notice on phones. Runs early so the
        viewport is pinned before first layout. -->
   <script src="{{ url_for('pug.static', filename='mobile-gate.js') }}?v=2"></script>
@@ -27,7 +27,8 @@
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=79">
 </head>
 <body{% if zoom_exempt %} class="zoom-exempt"{% endif %}{% if is_guest %} data-guest="true"{% endif %}>
-{% if is_guest %}<script nonce="{{ csp_nonce }}">window.VEYRA_GUEST = true;</script>{% endif %}
+{% if is_guest %}<script nonce="{{ csp_nonce }}">window.VEYRA_GUEST = true;</script>
+<script src="{{ url_for('pug.static', filename='guest-store.js') }}?v=1"></script>{% endif %}
 
   <!-- Initial-load veil — hides the empty/un-hydrated cards until content is ready -->
   <div id="appLoader">
@@ -421,11 +422,11 @@
   <script src="{{ url_for('pug.static', filename='dms.js') }}?v=10"></script>
   <script src="{{ url_for('pug.static', filename='community.js') }}?v=23"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=16"></script>
-  <script src="{{ url_for('pug.static', filename='habits.js') }}?v=7"></script>
+  <script src="{{ url_for('pug.static', filename='habits.js') }}?v=8"></script>
   <script src="{{ url_for('pug.static', filename='credits.js') }}?v=4"></script>
   {% if is_admin %}<script src="{{ url_for('pug.static', filename='admin.js') }}?v=6"></script>{% endif %}
-  <script src="{{ url_for('pug.static', filename='router.js') }}?v=10"></script>
-  {% if is_guest %}<script src="{{ url_for('pug.static', filename='guest.js') }}?v=2"></script>{% endif %}
+  <script src="{{ url_for('pug.static', filename='router.js') }}?v=11"></script>
+  {% if is_guest %}<script src="{{ url_for('pug.static', filename='guest.js') }}?v=3"></script>{% endif %}
   <style>.pwa-install-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:var(--surface-2);color:var(--text,#e0e0e0);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.2s;white-space:nowrap}.pwa-install-btn:hover{background:var(--surface-2);border-color:var(--border-hover)}.pwa-hidden{display:none!important}</style>
   <script src="{{ url_for('static', filename='pwa-install.js') }}?v=2"></script>
   <script src="{{ url_for('static', filename='cookie-consent.js') }}"></script>

@@ -235,6 +235,6 @@
     } catch (e) { h.done_today = !h.done_today; renderManage(); renderToday(); }
   }
 
-  if (!window.VEYRA_GUEST) loadHabits();   // guests have no habits — skip the authed load
+  loadHabits();   // guests included — guest-store.js serves habits from localStorage
   document.addEventListener('blinkbot:applied', loadHabits);   // BlinkBot ticked/added a habit
 })();
