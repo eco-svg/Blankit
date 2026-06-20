@@ -495,7 +495,11 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 .buddybot { flex: 1; background: var(--surface); border-color: var(--border) !important; }
 .buddybot:hover { border-color: rgba(74,122,170,0.45) !important; }
-.calender { flex: 0 0 270px; }
+/* Calendar, BlinkBot and To-do all share the rbar's free space equally (flex-grow:1
+   from their natural height), each with a min-height so their content never gets
+   crushed / overflows when the page is zoomed. The timer stays compact (flex:0 0 auto).
+   If the viewport is too short for all min-heights, the rbar scrolls (overflow-y:auto). */
+.calender { flex: 1 1 auto; min-height: 290px; }
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
@@ -748,9 +752,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 /* ── BlinkBot card (rbar) — sized to content, centered, small status badge ── */
 .r-blinkbot-soon {
-  flex: 1;                 /* stretches to fill — so the rbar fits everything without scrolling,
-                              and grows further when the header hides and the rbar gets taller */
-  min-height: 132px;       /* never shorter than its content — avoids the overflow sliver */
+  flex: 1 1 auto;          /* shares the rbar's free space equally with calendar + to-do */
+  min-height: 160px;       /* never shorter than its content — avoids the overflow sliver */
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -1436,7 +1439,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
   /* No animation override here: inherit the unified .r-card fadeUp spawn so the
      To-do card pops in with the same animation + speed as every other rbar card
      (and replays when the Quick Ask panel closes). */
-  flex: 0 0 300px;
+  flex: 1 1 auto;          /* shares the rbar's free space equally with calendar + BlinkBot */
+  min-height: 200px;
 }
 .goal-flip-card:hover { transform: none; }
 
