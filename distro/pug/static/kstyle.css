@@ -58,10 +58,10 @@ html { scroll-behavior: smooth; font-size: 19px; }  /* bumped from 17px — larg
 }
 
 body {
-  /* The UI was designed at 80% browser zoom, so at everyone else's default 100%
-     it looks ~25% too big. Render the whole page at 80% to match the design.
-     NOTE: to preview this yourself, set YOUR browser back to 100% zoom. */
-  zoom: 0.8;
+  /* No forced page zoom. We used to set zoom:0.8 (UI was designed at 80%), but that
+     double-shrank for anyone whose OS/browser was already below 100% and broke the
+     fixed sidebars' 100vh height (ghost space). The app now respects the user's own
+     OS/browser scale — consistent for everyone; users can zoom with Ctrl +/- to taste. */
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-body);
@@ -69,9 +69,6 @@ body {
   line-height: 1.62;
   overflow-x: hidden;
 }
-/* The owner's whole SYSTEM runs at 80%, so the site-wide zoom would double up for
-   them — exempt the admin account (set server-side on <body>). */
-body.zoom-exempt { zoom: 1; }
 
 /* vignette overlay removed — flat background */
 
@@ -502,10 +499,10 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 .buddybot { flex: 1; background: var(--surface); border-color: var(--border) !important; }
 .buddybot:hover { border-color: rgba(74,122,170,0.45) !important; }
-/* rbar cards are sized to their own content (no flex-grow) so the layout is robust
-   under the site-wide zoom:0.8 — flex-grow + 100vh + zoom fought each other and
-   pushed the bottom card (timer) off-screen. The rbar scrolls if it's all too tall. */
-.calender { flex: 0 0 auto; }
+/* Calendar, BlinkBot and To-do share the rbar's free space (grow from natural height)
+   so the bar fills top-to-bottom with the timer pinned at the end and no ghost gap;
+   each has a min-height so content never crushes, and the rbar scrolls if too short. */
+.calender { flex: 1 1 auto; min-height: 290px; }
 
 /* ── Sidebar Goals Card ─────────────────────────────── */
 .r-goals-card {
@@ -758,7 +755,7 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
 
 /* ── BlinkBot card (rbar) — sized to content, centered, small status badge ── */
 .r-blinkbot-soon {
-  flex: 0 0 auto;          /* content height — no stretch (robust under zoom) */
+  flex: 1 1 auto;          /* shares the rbar's free space with calendar + to-do */
   min-height: 150px;       /* never shorter than its content — avoids the overflow sliver */
   display: flex;
   align-items: stretch;
@@ -1445,7 +1442,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
   /* No animation override here: inherit the unified .r-card fadeUp spawn so the
      To-do card pops in with the same animation + speed as every other rbar card
      (and replays when the Quick Ask panel closes). */
-  flex: 0 0 300px;         /* fixed height — the 3D flip faces (inset:0) need a defined box */
+  flex: 1 1 auto;          /* grows with the others; flex gives it a definite box for the flip faces */
+  min-height: 200px;
 }
 .goal-flip-card:hover { transform: none; }
 
