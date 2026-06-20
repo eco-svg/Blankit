@@ -1409,19 +1409,26 @@ def _protect_reporter(reporter_id, reported_id):
 # ═════════════════════════════════════════════════════════════════════════════
 @pug_bp.route('/pug/home')
 def home():
-    """Serve the pug single-page app shell (the home page)."""
-    guard = login_required_page()
-    if guard:
-        return guard
+    """Serve the pug single-page app shell (the home page).
+
+    Guests (logged-out, or logged into another distro) get a READ-ONLY shell so they
+    can browse the community before signing up — `is_guest` drives the UI gating."""
+    uid = session.get('user_id')
+    is_guest = (not uid) or (session.get('distro') != 'Ocellus')
+    if is_guest:
+        return render_template('pug/home.html',
+                               username='Guest', distro='Ocellus',
+                               is_admin=False, zoom_exempt=False, is_guest=True)
     # Admin (the owner) runs an 80%-scaled system, so exempt that account from the
     # site-wide zoom:0.8 (it would otherwise double-scale for them). See kstyle.
     from shared.auth.user import User
-    _u = db.session.get(User, session.get('user_id'))
+    _u = db.session.get(User, uid)
     return render_template('pug/home.html',
                            username=session.get('username', 'User'),
                            distro=session.get('distro', 'Ocellus'),
-                           is_admin=_is_admin(session.get('user_id')),
-                           zoom_exempt=bool(_u and _u.is_admin))
+                           is_admin=_is_admin(uid),
+                           zoom_exempt=bool(_u and _u.is_admin),
+                           is_guest=False)
 
 
 
@@ -2995,15 +3002,24 @@ def _sort_feed(rows, sort_by):
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     """Return the community feed (filtered by location/skill; hidden + blocked excluded)."""
-    err = login_required_api()
-    if err: return err
-    me = session['user_id']
-    am_admin = _is_admin(me)              # any platform admin → can un-share from common
-    am_home_admin = _is_pug_home_admin(me)  # pug-home admin → can hard-delete pug posts
-    blocked = _blocked_ids(me)
+    # Guests (logged-out, or on another distro) get a READ-ONLY view: global feed only
+    # (no radar/location precision) with minors' posts excluded. me=None is handled
+    # cleanly by the row builders below (is_mine=False, my_reaction=None, no mod perms).
+    me = session.get('user_id')
+    is_guest = (not me) or (session.get('distro') != 'Ocellus')
+    if is_guest:
+        me = None
+        am_admin = am_home_admin = False
+        blocked = set()
+    else:
+        am_admin = _is_admin(me)              # any platform admin → can un-share from common
+        am_home_admin = _is_pug_home_admin(me)  # pug-home admin → can hard-delete pug posts
+        blocked = _blocked_ids(me)
 
-    # Optional location filter
+    # Optional location filter — never for guests (no "who's nearby" for logged-out users)
     try:
+        if is_guest:
+            raise KeyError
         my_lat = float(request.args['lat'])
         my_lng = float(request.args['lng'])
         use_location = True
@@ -3023,6 +3039,11 @@ def get_community_feed():
         q = q.filter_by(user_id=user_filter)
     if blocked:
         q = q.filter(~Note.user_id.in_(blocked))
+    if is_guest:
+        # Minors' posts are logged-in only — never shown to logged-out visitors.
+        from shared.auth.user import User
+        minor_ids = db.session.query(User.id).filter(User.age.isnot(None), User.age < 18)
+        q = q.filter(~Note.user_id.in_(minor_ids))
     posts = q.order_by(Note.created_at.desc()).limit(200).all()
 
     # All per-author data in 3 batched queries (users, stats caches, locations)
@@ -3132,7 +3153,9 @@ def get_community_feed():
         result.append(_build_row(p, m))
     result = _enrich(result)
     # All-distros view: merge in other distros' shared posts (svg today; div has none yet).
-    if distro_scope == 'all' and not user_filter:
+    # Not for guests — we can't age-filter svg's store here, so logged-out visitors stay
+    # on pug's own (minor-filtered) global feed.
+    if distro_scope == 'all' and not user_filter and not is_guest:
         result = result + _svg_global_rows(me, blocked, am_admin=am_admin)
     return jsonify({'posts': _sort_feed(result, sort_by), 'radius_km': None})
 
@@ -3142,9 +3165,7 @@ def community_version():
     """Cheap change marker for the feed. Every community mutation (post, comment,
     react toggle, pin, delete, type change) touches Note.updated_at via onupdate,
     so MAX(updated_at) changes iff something changed. Clients poll this and only
-    re-fetch the feed when the value differs."""
-    err = login_required_api()
-    if err: return err
+    re-fetch the feed when the value differs. Open to guests (no user data here)."""
     from sqlalchemy import func as sqlfunc
     v = db.session.query(sqlfunc.max(Note.updated_at)).filter(
         Note.entry_type.in_(['community_post', 'post_comment', 'post_react', 'comment_react'])

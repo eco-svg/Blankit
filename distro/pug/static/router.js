@@ -22,6 +22,9 @@
   const ALL_SECTIONS = [...new Set(Object.values(ROUTES).flat())];
 
   function getHomeTab() {
+    // Guests land on the community feed (the only thing they can browse); habits and
+    // the other tabs are personal/account-gated.
+    if (window.VEYRA_GUEST) return 'social';
     const stored = localStorage.getItem(HOME_TAB_KEY);
     return (stored && ROUTES[stored] !== undefined) ? stored : 'habits';
   }
