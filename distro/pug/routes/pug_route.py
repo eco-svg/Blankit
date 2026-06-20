@@ -3914,6 +3914,21 @@ def get_dm_thread(other_id):
     return jsonify(rows)
 
 
+def _is_minor(u):
+    """Under-18 by stored age/dob. Unknown age → treated as adult (signup collects
+    age, so real accounts always have it)."""
+    if not u:
+        return False
+    if u.age is not None:
+        return u.age < 18
+    if getattr(u, 'dob', None):
+        from datetime import date as _d
+        t = _d.today()
+        yrs = t.year - u.dob.year - ((t.month, t.day) < (u.dob.month, u.dob.day))
+        return yrs < 18
+    return False
+
+
 @pug_bp.route('/pug/api/dms/<int:other_id>', methods=['POST'])
 def send_dm(other_id):
     """Send a direct message (rejected if either side blocked the other)."""
@@ -3931,6 +3946,13 @@ def send_dm(other_id):
     if other_id in _blocked_ids(me):
         return jsonify({'error': 'You cannot message this user.'}), 403
     data      = request.get_json(force=True) or {}
+    # Minor protection: an adult cannot DM a minor (one-directional — minors may still
+    # message adults). Exception: a marketplace contact (Hire/Buy/Collab auto-DM) sends
+    # mkt=true and is allowed to initiate. NOTE: the mkt flag is client-asserted, so
+    # marketplace adult→minor threads still need report/admin-review moderation; harden
+    # later by verifying a real community action exists between the two users.
+    if _is_minor(recipient) and not _is_minor(User.query.get(me)) and not data.get('mkt'):
+        return jsonify({'error': 'For their safety, you can’t message this user.'}), 403
     body      = (data.get('body') or '').strip()
     media_key = (data.get('media_key') or '').strip()
     if not body and not media_key:

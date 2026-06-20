@@ -358,12 +358,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ── Send text/file message ────────────────────────────────────────────────
+    let mktNext = false;   // next send is a marketplace (Hire/Buy/Collab) contact
+
     function sendMsg() {
         const body = dmInput?.value.trim();
         if (!body && !pendingMedia) return;
         if (!currentOtherId) return;
         const mediaKey = pendingMedia?.key || '';
         const savedBody = body;
+        const mkt = mktNext; mktNext = false;   // consume the one-shot flag
         dmInput.value = '';
         clearMediaPreview();
         pendingMedia = null;
@@ -371,12 +374,13 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(`/pug/api/dms/${currentOtherId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ body, media_key: mediaKey })
+            body: JSON.stringify({ body, media_key: mediaKey, mkt })
         })
         .then(r => r.json())
         .then(m => {
             if (m.error) {
                 if (dmInput) dmInput.value = savedBody;
+                dmToast(m.error);   // e.g. minor-protection / muted / blocked
             } else {
                 lastMsgCount++;
                 dmMessages.appendChild(makeMsg({ ...m, is_mine: true }));
@@ -547,9 +551,12 @@ document.addEventListener('DOMContentLoaded', () => {
         openChat(e.detail.uid, e.detail.username);
         const msg = e.detail.autoMessage;
         if (msg) {
-            // wait for chat to open + messages to load, then auto-send
+            // wait for chat to open + messages to load, then auto-send. This is a
+            // marketplace contact (Hire/Buy/Collab) → flagged mkt so it's allowed to
+            // reach a minor (general adult→minor DMs are blocked server-side).
             setTimeout(() => {
                 if (dmInput) dmInput.value = msg;
+                mktNext = true;
                 sendMsg();
             }, 600);
         }

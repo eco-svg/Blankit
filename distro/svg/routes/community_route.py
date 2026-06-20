@@ -303,9 +303,16 @@ def _pug_post(pid):
 
 
 def _svg_is_admin(user_id):
-    """Platform admin (shared User.is_admin flag). svg has no env allowlist of its own."""
+    """svg admin: in the SVG_ADMIN_EMAILS env allowlist (comma-sep emails/usernames),
+    OR carrying the shared User.is_admin DB flag. Parallel to pug's PUG_ADMIN_EMAILS."""
     u = User.query.get(user_id)
-    return bool(u and getattr(u, 'is_admin', False))
+    if not u:
+        return False
+    if getattr(u, 'is_admin', False):
+        return True
+    raw = os.environ.get('SVG_ADMIN_EMAILS', '')
+    allow = {x.strip().lower() for x in raw.split(',') if x.strip()}
+    return (u.email or '').lower() in allow or (u.username or '').lower() in allow
 
 
 @community_api.route('/posts/<int:post_id>/unshare', methods=['POST'])
