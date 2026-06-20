@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const WN_KEY       = 'veyra_whatsnew_seen';
     const wnModal      = document.getElementById('whatsNewModal');
     const wnDismissBtn = document.getElementById('whatsNewDismiss');
-    if (wnModal && !localStorage.getItem(WN_KEY)) {
+    if (wnModal && !window.VEYRA_GUEST && !localStorage.getItem(WN_KEY)) {
         setTimeout(() => wnModal.classList.remove('hidden'), 600);
         wnDismissBtn?.addEventListener('click', () => {
             wnModal.classList.add('hidden');

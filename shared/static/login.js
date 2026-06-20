@@ -149,6 +149,9 @@ function updateDistroLabels(distro) {
   document.getElementById('registerDistroLabel').textContent = distro;
   const mcd = document.getElementById('mobileConDistro');
   if (mcd) mcd.textContent = distro;
+  // "Explore as a guest" is pug-specific (it lands on /pug/home) — show it only on Ocellus.
+  const ge = document.getElementById('guestEntry');
+  if (ge) ge.style.display = (distro === 'Ocellus') ? 'block' : 'none';
 }
 
 /* ══════════════════════════════
