@@ -443,6 +443,9 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 7px); }
   color: var(--accent);
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
+  /* While the panel is open there's no calendar card to butt against — pull the tab
+     out into the gap so it doesn't overlap the panel's "Quick Ask" header. */
+  right: calc(var(--rbar-w) + 3px);
 }
 
 /* Swap the sidebar in place: hide the cards, reveal the panel. Cards are only
@@ -2054,6 +2057,7 @@ div.infinite-canvas video {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 9px;                       /* breathing room between the right-side action buttons */
 }
 .card-title {
     font-size: 1.1rem;
@@ -4537,8 +4541,6 @@ button.nav-pill:not(.btn-ghost):hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-direction: row-reverse;   /* title to the right; any action button to the left */
-  text-align: right;
 }
 
 /* ── Profile popup rank legend ────────────────────────── */

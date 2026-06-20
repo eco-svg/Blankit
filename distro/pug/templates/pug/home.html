@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=134">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=135">
   <!-- Desktop-only gate: force desktop layout + notice on phones. Runs early so the
        viewport is pinned before first layout. -->
   <script src="{{ url_for('pug.static', filename='mobile-gate.js') }}?v=1"></script>
@@ -625,6 +625,15 @@
       var open = rbar.classList.toggle('qa-open');
       btn.setAttribute('aria-pressed', open ? 'true' : 'false');
       if (open) { var i = document.getElementById('mainGroqInput'); if (i) i.focus(); }
+      else {
+        // Cards come back from display:none — CSS animations don't auto-replay on a
+        // display change, so re-trigger the spawn so To-do/Quick Actions animate too.
+        rbar.querySelectorAll('.r-card').forEach(function (c) {
+          c.style.animation = 'none';
+          void c.offsetWidth;            // force reflow
+          c.style.animation = '';
+        });
+      }
     });
   })();
   </script>
