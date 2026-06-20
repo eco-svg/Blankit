@@ -3734,6 +3734,7 @@ def community_post_action(pid):
     ).first()
     if not already:
         log = Note(user_id=me, entry_type='post_action_log', mood=action_tag, is_deleted=False)
+        log.title = str(post.user_id)   # post owner — lets send_dm verify a real marketplace contact
         db.session.add(log)
         db.session.commit()
         sk = _post_skill_tag(post)
@@ -3947,12 +3948,24 @@ def send_dm(other_id):
         return jsonify({'error': 'You cannot message this user.'}), 403
     data      = request.get_json(force=True) or {}
     # Minor protection: an adult cannot DM a minor (one-directional — minors may still
-    # message adults). Exception: a marketplace contact (Hire/Buy/Collab auto-DM) sends
-    # mkt=true and is allowed to initiate. NOTE: the mkt flag is client-asserted, so
-    # marketplace adult→minor threads still need report/admin-review moderation; harden
-    # later by verifying a real community action exists between the two users.
-    if _is_minor(recipient) and not _is_minor(User.query.get(me)) and not data.get('mkt'):
-        return jsonify({'error': 'For their safety, you can’t message this user.'}), 403
+    # message adults). EXCEPTION: a GENUINE marketplace contact — the adult actually
+    # clicked Hire/Buy/Collab on this minor's post, so a post_action_log keyed to the
+    # minor (title=owner id) exists. The client 'mkt' flag is NOT trusted; we verify
+    # server-side. Only the FIRST message is allowed (no prior adult→minor DM), and the
+    # thread is auto-flagged into the admin review queue for proactive moderation.
+    if _is_minor(recipient) and not _is_minor(User.query.get(me)):
+        actioned = Note.query.filter_by(
+            user_id=me, entry_type='post_action_log', title=str(other_id), is_deleted=False
+        ).first()
+        already_dmd = Note.query.filter_by(
+            user_id=me, entry_type='dm', mood=str(other_id), is_deleted=False
+        ).first()
+        if not actioned or already_dmd:
+            return jsonify({'error': 'For their safety, you can’t message this user.'}), 403
+        # Verified one-shot marketplace contact → flag for review (commits with the message).
+        db.session.add(UserReport(
+            reporter_id=other_id, reported_id=me, context='minor_mkt',
+            reason='Auto-flagged: adult first-contacted a minor via a marketplace action.'))
     body      = (data.get('body') or '').strip()
     media_key = (data.get('media_key') or '').strip()
     if not body and not media_key:
