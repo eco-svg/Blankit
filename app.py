@@ -212,6 +212,7 @@ def _migrate_schema():
             ('is_admin',             'BOOLEAN DEFAULT FALSE'),
             ('violation_count',      'INTEGER DEFAULT 0'),     # confirmed-report tally → mute escalation
             ('muted_until',          'TIMESTAMP'),             # can't post/comment/DM until this time
+            ('public_search',        'BOOLEAN DEFAULT FALSE'), # 18+ opt-in: index my profile in search
         ]
         existing = {c['name'] for c in inspector.get_columns('users')}
         for col, col_type in new_cols:

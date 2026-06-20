@@ -1432,7 +1432,9 @@ def home():
                            distro=session.get('distro', 'Ocellus'),
                            is_admin=_is_admin(uid),
                            zoom_exempt=bool(_u and _u.is_admin),
-                           is_guest=False)
+                           is_guest=False,
+                           user_age=(_u.age if _u else None),
+                           user_public_search=bool(_u and _u.public_search))
 
 
 
@@ -2762,6 +2764,50 @@ def update_username():
     session['username'] = new_name
     db.session.commit()
     return jsonify({'ok': True, 'username': new_name})
+
+
+@pug_bp.route('/pug/api/profile/search-visibility', methods=['PATCH'])
+def update_search_visibility():
+    """Toggle whether this user's public profile page (/pug/u/<username>) is indexable
+    by search engines. 18+ only — privacy-by-default, minors can never opt in."""
+    from shared.auth.user import User
+    err = login_required_api()
+    if err: return err
+    data = request.get_json(force=True) or {}
+    want = bool(data.get('public_search'))
+    user = User.query.get(session['user_id'])
+    if want and (user.age is None or user.age < 18):
+        return jsonify({'error': 'Only available for users aged 18 and over.'}), 403
+    user.public_search = want
+    db.session.commit()
+    return jsonify({'ok': True, 'public_search': user.public_search})
+
+
+@pug_bp.route('/pug/u/<username>')
+def public_profile_page(username):
+    """Server-rendered public profile page — a crawlable URL (the in-app profile is a
+    JS modal that search engines can't index). Indexed ONLY when the user is 18+ AND
+    opted in (public_search); otherwise noindex. Viewable by anyone (guests/crawlers);
+    minors are noindex regardless."""
+    from shared.auth.user import User
+    u = User.query.filter(User.username == username, User.distro == 'Ocellus').first()
+    if not u:
+        return render_template('pug/public_profile.html', found=False,
+                               username=username, indexable=False), 404
+    sheet = None
+    n = Note.query.filter_by(user_id=u.id, entry_type='stats_cache', is_deleted=False).first()
+    if n and n.body:
+        try: sheet = json.loads(n.body)
+        except Exception: pass
+    rank, color = _net_rank_for_user(u.id)
+    indexable = bool(u.public_search and u.age is not None and u.age >= 18)
+    resp = make_response(render_template('pug/public_profile.html',
+        found=True, username=u.username, rank=rank, rank_color=color,
+        sheet=sheet, is_online=_is_online(u), connections=_connection_count(u.id),
+        indexable=indexable))
+    if not indexable:
+        resp.headers['X-Robots-Tag'] = 'noindex, nofollow'
+    return resp
 
 
 @pug_bp.route('/pug/api/profile/password', methods=['PATCH'])

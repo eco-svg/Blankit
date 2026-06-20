@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<!--
+  public_profile.html — server-rendered, crawlable public profile page (/pug/u/<username>).
+  Indexed only when the user is 18+ and opted in (indexable flag); otherwise noindex.
+  Deliberately standalone/minimal (own styles) so it renders without the SPA.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="{% if indexable %}index, follow{% else %}noindex, nofollow{% endif %}">
+  <title>{% if found %}{{ username }} on Veyra{% else %}Profile not found · Veyra{% endif %}</title>
+  {% if found %}<meta name="description" content="{{ username }}'s profile on Veyra{% if rank %} — rank {{ rank }}{% endif %}. See their skills and connect.">{% endif %}
+  <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
+  <style>
+    :root { --bg:#0a0a0a; --surface:#141414; --surface-2:#1c1c1c; --border:#2a2a2a;
+            --text:#ede7d4; --text-muted:#bdb6a6; --text-dim:#7a7266; --accent:#d4a574; }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--text);
+           font-family:'Inter',system-ui,sans-serif; min-height:100vh;
+           display:flex; align-items:center; justify-content:center; padding:24px; }
+    .pp-card { width:min(420px,100%); background:var(--surface); border:1px solid var(--border);
+               border-radius:18px; padding:30px 26px; text-align:center; }
+    .pp-avatar { width:76px; height:76px; border-radius:50%; margin:0 auto 14px;
+                 background:var(--surface-2); border:1px solid var(--border);
+                 display:flex; align-items:center; justify-content:center;
+                 font-size:2rem; color:var(--accent); font-weight:600; }
+    .pp-name { font-size:1.5rem; font-weight:600; margin:0 0 4px; }
+    .pp-meta { font-size:0.82rem; color:var(--text-dim); margin-bottom:18px; }
+    .pp-rank { display:inline-block; font-family:'DM Mono',monospace; font-weight:600;
+               border:1px solid currentColor; border-radius:6px; padding:2px 10px; font-size:0.9rem; }
+    .pp-online { color:#4ade80; }
+    .pp-section-label { font-family:'DM Mono',monospace; font-size:0.64rem; letter-spacing:0.12em;
+                        text-transform:uppercase; color:var(--text-dim); margin:20px 0 10px; text-align:left; }
+    .pp-skill { display:flex; justify-content:space-between; padding:6px 0;
+                border-bottom:1px dashed var(--border); font-size:0.9rem; }
+    .pp-skill:last-child { border-bottom:none; }
+    .pp-skill-rank { font-family:'DM Mono',monospace; font-weight:600; }
+    .pp-cta { display:inline-block; margin-top:24px; padding:11px 26px; border-radius:10px;
+              background:var(--accent); color:#1a1206; font-weight:600; text-decoration:none; }
+    .pp-cta:hover { opacity:0.92; }
+    .pp-empty { color:var(--text-dim); font-size:0.9rem; margin-top:20px; }
+  </style>
+</head>
+<body>
+  <div class="pp-card">
+    {% if not found %}
+      <div class="pp-name">Profile not found</div>
+      <div class="pp-empty">No Veyra member with that name.</div>
+      <a class="pp-cta" href="/">Go to Veyra</a>
+    {% else %}
+      <div class="pp-avatar">{{ username[0]|upper }}</div>
+      <h1 class="pp-name">{{ username }}</h1>
+      <div class="pp-meta">
+        {% if rank %}<span class="pp-rank" style="color:{{ rank_color or '#888' }}">{{ rank }}</span>{% endif %}
+        {% if is_online %}&nbsp; <span class="pp-online">● Online</span>{% endif %}
+        {% if connections %}&nbsp; · {{ connections }} connection{{ 's' if connections != 1 else '' }}{% endif %}
+      </div>
+      {% if sheet and sheet.class_official %}<div class="pp-meta">{{ sheet.class_official }}</div>{% endif %}
+      {% if sheet and sheet.skills %}
+        <div class="pp-section-label">Skills</div>
+        {% for s in sheet.skills %}
+          <div class="pp-skill">
+            <span>{{ s.name }}</span>
+            <span class="pp-skill-rank">{{ s.rank if s.verified != False else '?' }}</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="pp-empty">No skills listed yet.</div>
+      {% endif %}
+      <a class="pp-cta" href="/">Connect on Veyra →</a>
+    {% endif %}
+  </div>
+</body>
+</html>

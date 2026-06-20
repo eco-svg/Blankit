@@ -254,6 +254,24 @@ document.addEventListener('DOMContentLoaded', () => {
     unInput?.addEventListener('keydown', e => { if (e.key === 'Enter') submitUsername(); });
     unConfirmBtn?.addEventListener('click', submitUsername);
 
+    // ── Appear in Google search (18+ opt-in; the toggle is only rendered for adults) ──
+    const ppSearchToggle = document.getElementById('ppSearchToggle');
+    ppSearchToggle?.addEventListener('change', function () {
+        const want = ppSearchToggle.checked;
+        ppSearchToggle.disabled = true;
+        fetch('/pug/api/profile/search-visibility', {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ public_search: want })
+        })
+        .then(r => r.json())
+        .then(data => {
+            ppSearchToggle.disabled = false;
+            if (data.error) { ppSearchToggle.checked = !want; alert(data.error); return; }
+            ppSearchToggle.checked = !!data.public_search;
+        })
+        .catch(() => { ppSearchToggle.disabled = false; ppSearchToggle.checked = !want; });
+    });
+
     function submitUsername() {
         const val = unInput?.value.trim();
         if (!val) { if (unError) unError.textContent = 'Username cannot be empty.'; return; }

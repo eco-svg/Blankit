@@ -28,6 +28,10 @@ class User(db.Model):
     age              = db.Column(db.Integer, nullable=True)
     dob              = db.Column(db.Date, nullable=True)
 
+    # Opt-in: let this user's public profile page be indexed by search engines.
+    # 18+ only, default off (privacy-by-default). See the /u/<username> page.
+    public_search    = db.Column(db.Boolean, default=False, nullable=False)
+
     # ── Student verification (for student perks; flow partly planned) ──
     student_status       = db.Column(db.String(20), default='none')  # none | pending | approved | rejected
     student_school       = db.Column(db.String(200), nullable=True)
