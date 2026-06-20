@@ -127,21 +127,21 @@
   // ── card state ────────────────────────────────────────────────────────────
   function renderCard() {
     const badge = $('blinkCardBadge'), btn = $('blinkCardBtn'), io = $('blinkCardIO');
-    if (!badge || !btn) return;
+    if (!btn) return;   // badge was removed from the card; guard each use below
     const installed = localStorage.getItem(LS_INSTALLED) === '1';
     // "Ready" = downloaded + still inside the free/credit window → show the inline
     // input instead of a button. (Engine loads on first use after a refresh.)
     const ready = installed && status.activated && !status.expired;
     if (status.expired) {
-      badge.textContent = 'Renew';
+      if (badge) badge.textContent = 'Renew';
       btn.textContent = `Renew · ${status.monthly_credits || 20} cr/mo`;
     } else if (ready) {
-      badge.textContent = 'Ready';
+      if (badge) badge.textContent = 'Ready';
     } else if (status.activated) {
-      badge.textContent = 'Free';
+      if (badge) badge.textContent = 'Free';
       btn.textContent = 'Download';
     } else {
-      badge.textContent = `Free · ${Math.round((status.free_days || 150) / 30)} mo`;
+      if (badge) badge.textContent = `Free · ${Math.round((status.free_days || 150) / 30)} mo`;
       btn.textContent = 'Download';
     }
     if (io)  io.classList.toggle('hidden', !ready);
