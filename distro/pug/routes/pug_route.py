@@ -4173,6 +4173,33 @@ def admin_eyes_request_action(tx_id, action):
     return jsonify({'ok': True})
 
 
+@pug_bp.route('/pug/api/admin/users-overview', methods=['GET'])
+def admin_users_overview():
+    """Admin: pug-distro headcount (total + online now + signups in the last 24h) and
+    the most recent sign-ups, so the admin can spot new members joining their distro."""
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    from datetime import timedelta
+    q = User.query.filter(User.distro.in_(['Ocellus', 'ThePug']))
+    total   = q.count()
+    online_cut = datetime.utcnow() - timedelta(seconds=300)
+    online  = q.filter(User.last_seen.isnot(None), User.last_seen >= online_cut).count()
+    day_cut = datetime.utcnow() - timedelta(hours=24)
+    new_24h = q.filter(User.created_at.isnot(None), User.created_at >= day_cut).count()
+    recent  = q.order_by(User.created_at.desc()).limit(30).all()
+    return jsonify({
+        'total':   total,
+        'online':  online,
+        'new_24h': new_24h,
+        'recent': [{
+            'username':   u.username,
+            'created_at': u.created_at.isoformat() if u.created_at else None,
+            'online':     _is_online(u),
+        } for u in recent],
+    })
+
+
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
 def mark_dms_read(other_id):
     """Mark the conversation with another user as read."""

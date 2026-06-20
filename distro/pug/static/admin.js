@@ -8,10 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const refreshBtn = document.getElementById('adminRefreshBtn');
     const postsList  = document.getElementById('adminPostsList');
     const usersList  = document.getElementById('adminUsersList');
-    const eyesList   = document.getElementById('adminEyesList');
-    const postsCount = document.getElementById('adminPostsCount');
-    const usersCount = document.getElementById('adminUsersCount');
-    const eyesCount  = document.getElementById('adminEyesCount');
+    const eyesList    = document.getElementById('adminEyesList');
+    const membersList = document.getElementById('adminMembersList');
+    const postsCount  = document.getElementById('adminPostsCount');
+    const usersCount  = document.getElementById('adminUsersCount');
+    const eyesCount   = document.getElementById('adminEyesCount');
+    const membersCount= document.getElementById('adminMembersCount');
     if (!postsList || !usersList) return;   // card not on the page (non-admin)
 
     function esc(s) {
@@ -192,6 +194,36 @@ document.addEventListener('DOMContentLoaded', () => {
             }).catch(() => toast('Action failed.'));
     }
 
+    // ── Members overview (distro headcount + recent sign-ups) ──────────────────
+    function loadMembers() {
+        if (!membersList) return;
+        membersList.innerHTML = '<div class="admin-empty">Loading…</div>';
+        fetch('/pug/api/admin/users-overview').then(r => r.json()).then(d => {
+            if (membersCount) membersCount.textContent = d.new_24h ? d.new_24h : '';
+            const stats = document.getElementById('adminMembersStats');
+            if (stats) stats.innerHTML =
+                `<div class="admin-stat"><div class="admin-stat-num">${d.total}</div><div class="admin-stat-lbl">Total</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.online}</div><div class="admin-stat-lbl">Online now</div></div>` +
+                `<div class="admin-stat"><div class="admin-stat-num">${d.new_24h}</div><div class="admin-stat-lbl">New · 24h</div></div>`;
+            const recent = d.recent || [];
+            if (!recent.length) { membersList.innerHTML = '<div class="admin-empty">No members yet.</div>'; return; }
+            membersList.innerHTML = '';
+            recent.forEach(u => {
+                const el = document.createElement('div');
+                el.className = 'admin-row';
+                el.innerHTML = `
+                    <div class="admin-row-main">
+                        <div class="admin-row-head">
+                            <span class="online-dot${u.online ? ' is-online' : ''}"></span>
+                            <span class="admin-row-author">${esc(u.username)}</span>
+                            <span class="admin-row-when">${esc(fmtWhen(u.created_at))}</span>
+                        </div>
+                    </div>`;
+                membersList.appendChild(el);
+            });
+        }).catch(() => { membersList.innerHTML = '<div class="admin-empty">Failed to load.</div>'; });
+    }
+
     // ── Tabs / nav ─────────────────────────────────────────────────────────────
     document.querySelectorAll('.admin-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -201,10 +233,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('adminPostsPane').classList.toggle('hidden', which !== 'posts');
             document.getElementById('adminUsersPane').classList.toggle('hidden', which !== 'users');
             document.getElementById('adminEyesPane').classList.toggle('hidden', which !== 'eyes');
+            document.getElementById('adminMembersPane').classList.toggle('hidden', which !== 'members');
         });
     });
 
-    function loadAll() { loadPosts(); loadUsers(); loadEyes(); }
+    function loadAll() { loadPosts(); loadUsers(); loadEyes(); loadMembers(); }
 
     openBtn?.addEventListener('click', () => {
         if (window._veyraNavigate) window._veyraNavigate('admin', true);
