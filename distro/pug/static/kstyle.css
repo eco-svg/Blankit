@@ -4614,8 +4614,8 @@ button.nav-pill:not(.btn-ghost):hover {
 .premium-soon-list {
   display: flex;
   flex-direction: column;
-  gap: 7px;
-  padding-top: 2px;
+  gap: 10px;
+  padding: 4px 16px 16px;   /* side padding so items don't hug the card walls */
 }
 .premium-soon-item {
   display: flex;
