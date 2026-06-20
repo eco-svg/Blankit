@@ -4329,18 +4329,25 @@ def admin_visits():
                        'views':   int(views.get(d, 0)),
                        'uniques': int(uniq.get(d, 0))})
 
-    # VIEWS = raw opens (every time the app is loaded). VISITS = unique people, via the
-    # stable visitor hash: per day (distinct rows that day) and since launch (distinct
-    # hash across all days).
-    views_alltime  = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
-    unique_alltime = int(db.session.query(func.count(func.distinct(SiteVisitor.vhash))).scalar() or 0)
+    # VIEWS = raw opens (every load). VISITS = unique people. Split each unique count
+    # into EXACT (cookie key 'c:%', from consenting users — reliable) vs APPROX
+    # ('h:%', cookieless IP+UA hash — rough, can over/under-count).
+    td = date.today()
+    exact_today  = SiteVisitor.query.filter(SiteVisitor.day == td, SiteVisitor.vhash.like('c:%')).count()
+    approx_today = SiteVisitor.query.filter(SiteVisitor.day == td, SiteVisitor.vhash.like('h:%')).count()
+    exact_all  = int(db.session.query(func.count(func.distinct(SiteVisitor.vhash))).filter(SiteVisitor.vhash.like('c:%')).scalar() or 0)
+    approx_all = int(db.session.query(func.count(func.distinct(SiteVisitor.vhash))).filter(SiteVisitor.vhash.like('h:%')).scalar() or 0)
+
+    views_alltime = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
     today = series[-1] if series else {'views': 0, 'uniques': 0}
     return jsonify({
         'days':           series,            # [{day, views, uniques}] for the graph
         'views_today':    today['views'],
         'views_alltime':  views_alltime,
-        'unique_today':   today['uniques'],   # unique visits today
-        'unique_alltime': unique_alltime,     # unique visits since launch
+        'unique_today':   today['uniques'],            # total unique visits today
+        'unique_alltime': exact_all + approx_all,      # total unique visits since launch
+        'exact_today':    exact_today,   'approx_today':  approx_today,
+        'exact_alltime':  exact_all,     'approx_alltime': approx_all,
     })
 
 

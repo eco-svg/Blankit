@@ -107,8 +107,8 @@ def _visitor_key(req, secret):
     needed). Either way it's hashed; no raw id/IP is stored."""
     vid = req.cookies.get('veyra_vid')
     if vid:
-        return 'c' + hashlib.sha256(f'{secret}|{vid}'.encode('utf-8')).hexdigest()
-    return _visitor_hash(req, secret)
+        return 'c:' + hashlib.sha256(f'{secret}|{vid}'.encode('utf-8')).hexdigest()
+    return 'h:' + _visitor_hash(req, secret)
 
 
 def _record_visit(req, secret):

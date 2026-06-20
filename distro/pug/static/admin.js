@@ -235,10 +235,11 @@ document.addEventListener('DOMContentLoaded', () => {
         chart.innerHTML = '<div class="admin-empty">Loading…</div>';
         fetch('/pug/api/admin/visits').then(r => r.json()).then(d => {
             if (d && d.error) { chart.innerHTML = `<div class="admin-empty">${esc(d.error)}</div>`; return; }
+            const sub = (ex, ap) => `<div class="admin-stat-sub">${ex} exact · ${ap} approx</div>`;
             stats.innerHTML =
                 `<div class="admin-stat"><div class="admin-stat-num">${d.views_today}</div><div class="admin-stat-lbl">Views · today</div></div>` +
-                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.unique_today}</div><div class="admin-stat-lbl">Visits · today</div></div>` +
-                `<div class="admin-stat"><div class="admin-stat-num">${d.unique_alltime}</div><div class="admin-stat-lbl">Visits · all-time</div></div>`;
+                `<div class="admin-stat"><div class="admin-stat-num admin-stat-on">${d.unique_today}</div><div class="admin-stat-lbl">Visits · today</div>${sub(d.exact_today||0, d.approx_today||0)}</div>` +
+                `<div class="admin-stat"><div class="admin-stat-num">${d.unique_alltime}</div><div class="admin-stat-lbl">Visits · all-time</div>${sub(d.exact_alltime||0, d.approx_alltime||0)}</div>`;
             const series = d.days || [];
             const max = Math.max(1, ...series.map(s => s.views));
             chart.innerHTML = series.map(s => {

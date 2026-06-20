@@ -7649,6 +7649,7 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-stat-num { font-size: 1.7rem; font-weight: 700; color: var(--text); line-height: 1; font-variant-numeric: tabular-nums; }
 .admin-stat-num.admin-stat-on { color: var(--green, #4ade80); }
 .admin-stat-lbl { font-size: 0.62rem; font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin-top: 6px; }
+.admin-stat-sub { font-size: 0.56rem; font-family: var(--font-mono); color: var(--text-dim); opacity: 0.7; margin-top: 4px; }
 .admin-members-label { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 9px; }
 .admin-ov-divider { height: 1px; background: var(--border); margin: 20px 0 16px; }
 
