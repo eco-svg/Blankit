@@ -100,6 +100,17 @@ def _visitor_hash(req, secret):
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
 
 
+def _visitor_key(req, secret):
+    """Unique-visitor key. If the visitor consented to analytics (veyra_vid cookie set
+    by cookie-consent.js on 'Accept all'), use that stable per-browser id — accurate
+    across IP changes. Otherwise fall back to the cookieless IP+UA hash (no consent
+    needed). Either way it's hashed; no raw id/IP is stored."""
+    vid = req.cookies.get('veyra_vid')
+    if vid:
+        return 'c' + hashlib.sha256(f'{secret}|{vid}'.encode('utf-8')).hexdigest()
+    return _visitor_hash(req, secret)
+
+
 def _record_visit(req, secret):
     """Bump today's view count and record the visitor hash (insert-ignore for uniques)."""
     from distro.pug.routes.notes import SiteVisit, SiteVisitor
@@ -109,7 +120,7 @@ def _record_visit(req, secret):
         sv = SiteVisit(day=today, views=0)
         db.session.add(sv)
     sv.views = (sv.views or 0) + 1
-    vhash = _visitor_hash(req, secret)
+    vhash = _visitor_key(req, secret)
     if not db.session.get(SiteVisitor, (today, vhash)):
         db.session.add(SiteVisitor(day=today, vhash=vhash))
     db.session.commit()

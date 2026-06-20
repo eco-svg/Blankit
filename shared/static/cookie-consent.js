@@ -1,5 +1,18 @@
 (function () {
   var KEY = 'veyra_cookie_consent';
+
+  // Analytics visitor id — set ONLY with 'all' consent (GDPR: non-essential cookie).
+  // Lets the server count unique visitors accurately (survives IP changes). Without
+  // consent we fall back server-side to a cookieless IP+UA hash.
+  function hasVid() { return /(^|;)\s*veyra_vid=/.test(document.cookie); }
+  function setVid() {
+    var id = (window.crypto && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+    document.cookie = 'veyra_vid=' + id + ';path=/;max-age=63072000;SameSite=Lax';
+  }
+  if (localStorage.getItem(KEY) === 'all' && !hasVid()) setVid();
+
   if (localStorage.getItem(KEY)) return;
 
   var css = [
@@ -47,6 +60,6 @@
 
   document.body.appendChild(banner);
 
-  document.getElementById('vc-btn-accept').addEventListener('click', function () { dismiss('all'); });
+  document.getElementById('vc-btn-accept').addEventListener('click', function () { setVid(); dismiss('all'); });
   document.getElementById('vc-btn-necessary').addEventListener('click', function () { dismiss('necessary'); });
 })();
