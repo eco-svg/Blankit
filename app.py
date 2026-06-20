@@ -65,11 +65,26 @@ def _visitor_is_staff(uid):
         return False
 
 
+def _client_ip(req):
+    """Best-effort client IP (first hop of X-Forwarded-For, else remote_addr)."""
+    return (req.headers.get('X-Forwarded-For', req.remote_addr or '') or '').split(',')[0].strip()
+
+
+def _ip_excluded(req):
+    """Skip counting visits from IPs in ANALYTICS_EXCLUDE_IPS (comma-separated env).
+    Lets the owner exclude their own home/office IP — incl. their guest browsing."""
+    raw = os.environ.get('ANALYTICS_EXCLUDE_IPS', '')
+    if not raw:
+        return False
+    ip = _client_ip(req)
+    return bool(ip) and ip in {x.strip() for x in raw.split(',') if x.strip()}
+
+
 def _visitor_hash(req, secret, day):
     """One-way daily hash of the visitor. Combines the day + app secret so it rotates
     every day and can't be reversed to an IP/UA. The IP is used only to compute this
     hash, never persisted."""
-    ip = (req.headers.get('X-Forwarded-For', req.remote_addr or '') or '').split(',')[0].strip()
+    ip = _client_ip(req)
     ua = req.headers.get('User-Agent', '')
     raw = f'{day.isoformat()}|{secret}|{ip}|{ua}'
     return hashlib.sha256(raw.encode('utf-8')).hexdigest()
@@ -380,7 +395,8 @@ def create_app():
                     and 'text/html' in (resp.content_type or '')
                     and not request.path.startswith(('/static', '/sw.js', '/favicon'))
                     and '/static/' not in request.path
-                    and not _visitor_is_staff(session.get('user_id'))):
+                    and not _visitor_is_staff(session.get('user_id'))
+                    and not _ip_excluded(request)):
                 _record_visit(request, app.config.get('SECRET_KEY', ''))
         except Exception:
             db.session.rollback()
