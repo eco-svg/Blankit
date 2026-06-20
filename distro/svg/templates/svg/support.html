@@ -1,37 +1,29 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="forest">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VEYRA — Support Us</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap">
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='svg_style.css') }}" />
   <link rel="stylesheet" href="{{ url_for('svg.static', filename='support.css') }}" />
 </head>
-
 <body>
 
   <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <span class="brand">
-        <span class="brand-icon">◈</span>
-        <span class="brand-name">{{ username }}</span>
-      </span>
+      <span class="brand"><span class="brand-icon">◈</span><span class="brand-name">{{ username }}</span></span>
       <button class="sidebar-close" id="sidebarClose">✕</button>
     </div>
     <nav class="sidebar-nav">
       <a class="sidebar-nav-item" href="/"><span class="sidebar-nav-icon">⬡</span> Home</a>
-      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation <span
-          class="sidebar-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/manifestation"><span class="sidebar-nav-icon">✦</span> Manifestation</a>
       <a class="sidebar-nav-item" href="/history"><span class="sidebar-nav-icon">◷</span> History</a>
       <a class="sidebar-nav-item" href="/achievements"><span class="sidebar-nav-icon">◎</span> Achievements</a>
       <a class="sidebar-nav-item" href="/calendar"><span class="sidebar-nav-icon">▦</span> Calendar</a>
-      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community <span
-          class="sidebar-soon-tag">soon</span></a>
+      <a class="sidebar-nav-item" href="/community"><span class="sidebar-nav-icon">⬡</span> Community</a>
       <a class="sidebar-nav-item" href="/settings"><span class="sidebar-nav-icon">⚙</span> Settings</a>
       <a class="sidebar-nav-item active" href="/support"><span class="sidebar-nav-icon">♡</span> Support Us</a>
     </nav>
@@ -40,6 +32,7 @@
         <div class="avatar">{{ username[:2].upper() }}</div>
         <div class="sidebar-profile-info">
           <span class="sidebar-username">{{ username }}</span>
+          <span class="streak-badge" style="font-size:0.65rem" id="sidebarStreak">🔥 — day streak</span>
         </div>
       </div>
     </div>
@@ -48,14 +41,10 @@
 
   <!-- TOPBAR -->
   <header class="topbar">
-    <button class="sidebar-toggle" id="sidebarToggle" title="Menu">
-      <span></span><span></span><span></span>
-    </button>
-    <a class="brand" href="/" style="text-decoration:none">
-      <span class="brand-icon">◈</span>
-      <span class="brand-name">VEYRA</span>
-    </a>
+    <button class="sidebar-toggle" id="sidebarToggle" title="Menu"><span></span><span></span><span></span></button>
+    <a class="brand" href="/" style="text-decoration:none"><span class="brand-icon">◈</span><span class="brand-name">VEYRA</span></a>
     <div class="topbar-right">
+      <span class="streak-badge" id="globalStreak">🔥 — day streak</span>
       <div class="avatar">{{ username[:2].upper() }}</div>
     </div>
   </header>
@@ -68,9 +57,83 @@
       <h1 class="sup-title">Support VEYRA</h1>
       <p class="sup-sub">
         VEYRA is built by a small independent team with no ads, no investors,
-        no data selling. Follow us, share us, or just say hi.
+        no data selling. Your support keeps us alive and building.
       </p>
     </div>
+
+    <!-- DONATE SECTION -->
+    <section class="sup-section">
+      <div class="sup-section-label">Donate via UPI</div>
+
+      <div class="sup-donate-card">
+
+        <!-- LEFT: QR + UPI ID -->
+        <div class="sup-qr-side">
+          <div class="sup-qr-name">{{ username }}</div>
+          <div class="sup-qr-sub">VEYRA — Habit Tracker</div>
+          <img
+            class="sup-qr-img"
+            src="{{ url_for('static', filename='svg_gate_way.png') }}"
+            alt="UPI QR Code"
+          />
+          <div class="sup-upi-id">veyrasvg@nyes</div>
+          <button class="sup-copy-btn" id="copyUpiBtn">⎘ Copy UPI ID</button>
+          <div class="sup-copy-flash hidden" id="copyFlash">✓ Copied!</div>
+        </div>
+
+        <!-- RIGHT: AMOUNT SELECTOR + PAY BUTTON -->
+        <div class="sup-amount-side">
+          <div class="sup-amount-label">Choose amount</div>
+
+          <div class="sup-preset-btns">
+            <button class="sup-preset active" data-amount="29">₹29</button>
+            <button class="sup-preset" data-amount="49">₹49</button>
+            <button class="sup-preset" data-amount="99">₹99</button>
+            <button class="sup-preset" data-amount="199">₹199</button>
+            <button class="sup-preset" data-amount="499">₹499</button>
+            <button class="sup-preset" data-amount="999">₹999</button>
+          </div>
+
+          <div class="sup-custom-row">
+            <span class="sup-rupee">₹</span>
+            <input
+              class="sup-custom-input"
+              type="number"
+              id="customAmount"
+              placeholder="Custom amount"
+              min="1"
+              max="100000"
+            />
+          </div>
+
+          <div class="sup-selected-amount" id="selectedDisplay">₹29 selected</div>
+
+          <div class="sup-upi-apps">
+            <button class="sup-pay-btn gpay"   id="payGpay">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png" alt="GPay" />
+              Google Pay
+            </button>
+            <button class="sup-pay-btn phonepe" id="payPhonepe">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png" alt="PhonePe" />
+              PhonePe
+            </button>
+            <button class="sup-pay-btn paytm"  id="payPaytm">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/512px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm" />
+              Paytm
+            </button>
+            <button class="sup-pay-btn upi"    id="payAny">
+              ⬡ Any UPI App
+            </button>
+          </div>
+
+          <p class="sup-pay-note">
+            Opens your UPI app with the amount pre-filled.<br>
+            You can also scan the QR code on the left.
+          </p>
+        </div>
+
+      </div>
+    </section>
 
     <!-- ROADMAP -->
     <section class="sup-section">
@@ -121,13 +184,9 @@
       <div class="sup-section-label">Find us online</div>
       <div class="sup-socials">
 
-        <a class="sup-social-card" href="https://github.com/eco-svg" target="_blank" rel="noopener"
-          data-platform="github">
+        <a class="sup-social-card" href="https://github.com/eco-svg" target="_blank" rel="noopener" data-platform="github">
           <div class="sup-social-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-              <path
-                d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
           </div>
           <div class="sup-social-body">
             <div class="sup-social-name">GitHub</div>
@@ -137,13 +196,9 @@
           <div class="sup-social-arrow">↗</div>
         </a>
 
-        <a class="sup-social-card" href="https://www.instagram.com/veyra.aim/" target="_blank" rel="noopener"
-          data-platform="instagram">
+        <a class="sup-social-card" href="https://www.instagram.com/veyra.aim/" target="_blank" rel="noopener" data-platform="instagram">
           <div class="sup-social-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-              <path
-                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
           </div>
           <div class="sup-social-body">
             <div class="sup-social-name">Instagram</div>
@@ -155,30 +210,12 @@
 
         <a class="sup-social-card" href="mailto:veyrasupportus@gmail.com" data-platform="gmail">
           <div class="sup-social-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-              <path
-                d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
-            </svg>
+            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
           </div>
           <div class="sup-social-body">
             <div class="sup-social-name">Gmail</div>
             <div class="sup-social-handle">veyrasupportus@gmail.com</div>
             <div class="sup-social-desc">Feature ideas, bug reports, partnerships</div>
-          </div>
-          <div class="sup-social-arrow">↗</div>
-        </a>
-
-        <a class="sup-social-card" href="YOUR_TWITTER_URL" target="_blank" rel="noopener" data-platform="twitter">
-          <div class="sup-social-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
-              <path
-                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-          </div>
-          <div class="sup-social-body">
-            <div class="sup-social-name">X / Twitter</div>
-            <div class="sup-social-handle">YOUR_TWITTER_HANDLE</div>
-            <div class="sup-social-desc">Quick updates, feature announcements</div>
           </div>
           <div class="sup-social-arrow">↗</div>
         </a>
@@ -190,22 +227,12 @@
     <section class="sup-section">
       <div class="sup-section-label">Send us a message</div>
       <div class="sup-contact-card">
-        <p class="sup-contact-desc">
-          Prefer a form? We read every submission — usually within 24 hours.
-        </p>
+        <p class="sup-contact-desc">We read every submission — usually within 24 hours.</p>
         <form class="sup-form" action="https://formspree.io/f/mwvaglrg" method="POST">
-
           <input class="sup-input" type="text" name="name" placeholder="Your name" required />
-
           <input class="sup-input" type="email" name="email" placeholder="your@email.com" required />
-
-          <textarea class="sup-input sup-textarea" name="message" placeholder="Your message…" rows="4"
-            required></textarea>
-
-          <button class="sup-send-btn" type="submit">
-            Send message
-          </button>
-
+          <textarea class="sup-input sup-textarea" name="message" placeholder="Your message…" rows="4" required></textarea>
+          <button class="sup-send-btn" type="submit">Send message</button>
         </form>
       </div>
     </section>
@@ -213,7 +240,7 @@
     <!-- HONEST NOTE -->
     <div class="sup-note">
       <span class="sup-note-icon">◈</span>
-      No ads. No data selling. No VC funding. Just three people building something
+      No ads. No data selling. No VC funding. Just a small team building something
       they believe in. Your support — even just a follow — means everything.
     </div>
 
@@ -221,6 +248,78 @@
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='support.js') }}"></script>
-</body>
+  <script>
+    (async function loadStreak() {
+      try {
+        const res  = await fetch('/api/streak');
+        if (!res.ok) return;
+        const data = await res.json();
+        const n    = data.streak ?? 0;
+        const text = n === 1 ? '🔥 1 day streak' : `🔥 ${n} day streak`;
+        const s1 = document.getElementById('globalStreak');
+        const s2 = document.getElementById('sidebarStreak');
+        if (s1) s1.textContent = text;
+        if (s2) s2.textContent = text;
+      } catch {}
+    })();
 
+    /* ── UPI DONATE LOGIC ── */
+    const UPI_ID   = 'veyrasvg@nyes';
+    const UPI_NAME = 'VEYRA';
+    let selectedAmount = 29;
+
+    function upiUrl(app) {
+      const amt  = selectedAmount;
+      const note = encodeURIComponent('Supporting VEYRA habit tracker');
+      const name = encodeURIComponent(UPI_NAME);
+      const id   = encodeURIComponent(UPI_ID);
+      const base = `upi://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
+      if (app === 'gpay')    return `tez://upi/pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
+      if (app === 'phonepe') return `phonepe://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
+      if (app === 'paytm')   return `paytmmp://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
+      return base;
+    }
+
+    function updateDisplay() {
+      document.getElementById('selectedDisplay').textContent = `₹${selectedAmount} selected`;
+    }
+
+    /* Preset buttons */
+    document.querySelectorAll('.sup-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.sup-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedAmount = parseInt(btn.dataset.amount);
+        document.getElementById('customAmount').value = '';
+        updateDisplay();
+      });
+    });
+
+    /* Custom input */
+    document.getElementById('customAmount').addEventListener('input', function() {
+      const val = parseInt(this.value);
+      if (val > 0) {
+        document.querySelectorAll('.sup-preset').forEach(b => b.classList.remove('active'));
+        selectedAmount = val;
+        updateDisplay();
+      }
+    });
+
+    /* Pay buttons */
+    document.getElementById('payGpay').addEventListener('click',    () => window.location.href = upiUrl('gpay'));
+    document.getElementById('payPhonepe').addEventListener('click', () => window.location.href = upiUrl('phonepe'));
+    document.getElementById('payPaytm').addEventListener('click',   () => window.location.href = upiUrl('paytm'));
+    document.getElementById('payAny').addEventListener('click',     () => window.location.href = upiUrl('any'));
+
+    /* Copy UPI ID */
+    document.getElementById('copyUpiBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(UPI_ID).then(() => {
+        const flash = document.getElementById('copyFlash');
+        flash.classList.remove('hidden');
+        setTimeout(() => flash.classList.add('hidden'), 2000);
+      });
+    });
+  </script>
+
+</body>
 </html>

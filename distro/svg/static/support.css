@@ -226,4 +226,201 @@
 }
 .sup-note-icon { color: var(--accent2); flex-shrink: 0; margin-top: 2px; }
 
-.hidden { display: none !important; }
+.hidden { display: none !important; }/* ═══════════════════════════════════════
+   support.css — donate section additions
+   ═══════════════════════════════════════ */
+
+/* ── DONATE CARD ── */
+.sup-donate-card {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+@media (max-width: 680px) {
+  .sup-donate-card { grid-template-columns: 1fr; }
+}
+
+/* ── QR SIDE ── */
+.sup-qr-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  border-right: 1px solid var(--border);
+  padding-right: 2rem;
+}
+
+@media (max-width: 680px) {
+  .sup-qr-side { border-right: none; border-bottom: 1px solid var(--border); padding-right: 0; padding-bottom: 1.5rem; }
+}
+
+.sup-qr-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem;
+  color: var(--accent);
+  font-style: italic;
+}
+
+.sup-qr-sub {
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.06em;
+}
+
+.sup-qr-img {
+  width: 180px;
+  height: 180px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  object-fit: contain;
+  background: #fff;
+  padding: 6px;
+}
+
+.sup-upi-id {
+  font-size: 0.75rem;
+  color: var(--accent2);
+  letter-spacing: 0.04em;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent2);
+  border-radius: 6px;
+  padding: 4px 12px;
+}
+
+.sup-copy-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 14px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sup-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+
+.sup-copy-flash {
+  font-size: 0.65rem;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+}
+
+/* ── AMOUNT SIDE ── */
+.sup-amount-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sup-amount-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.sup-preset-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.sup-preset {
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sup-preset:hover { border-color: var(--accent2); color: var(--accent2); }
+.sup-preset.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sup-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  background: var(--bg);
+  transition: border-color 0.15s;
+}
+.sup-custom-row:focus-within { border-color: var(--accent); }
+
+.sup-rupee {
+  font-size: 0.9rem;
+  color: var(--text3);
+}
+
+.sup-custom-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.88rem;
+}
+.sup-custom-input::placeholder { color: var(--text3); }
+
+.sup-selected-amount {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-style: italic;
+}
+
+/* ── UPI APP BUTTONS ── */
+.sup-upi-apps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.sup-pay-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  justify-content: center;
+}
+.sup-pay-btn:hover { border-color: var(--accent2); background: var(--accent-soft); }
+.sup-pay-btn img { width: 20px; height: 20px; object-fit: contain; border-radius: 4px; }
+
+.sup-pay-btn.upi {
+  grid-column: span 2;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--bg);
+  font-size: 0.82rem;
+}
+.sup-pay-btn.upi:hover { opacity: 0.85; }
+
+.sup-pay-note {
+  font-size: 0.65rem;
+  color: var(--text3);
+  line-height: 1.6;
+  text-align: center;
+}
