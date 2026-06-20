@@ -1,18 +1,16 @@
 /**
  * quickactions.js — the Quick Actions sidebar card.
- * For now it holds one tool: a focus countdown timer (presets, start/pause, reset,
- * beep + flash + optional notification when it hits zero). More actions can be added
- * to the card later.
+ * For now: one minimal tool — a 25-minute focus timer. Click the time to start/pause,
+ * "reset" to clear. Beeps + flashes when it hits zero. Kept deliberately tiny; more
+ * quick actions will share this card later.
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
     var display = document.getElementById('qaTimerDisplay');
-    var toggle  = document.getElementById('qaTimerToggle');
     var reset   = document.getElementById('qaTimerReset');
-    if (!display || !toggle || !reset) return;
-    var presets = document.querySelectorAll('.qa-preset');
+    if (!display) return;
 
-    var totalSec  = 25 * 60;   // selected duration
+    var totalSec  = 25 * 60;
     var remaining = totalSec;
     var running   = false;
     var endAt     = 0;
@@ -28,8 +26,7 @@
 
     function start() {
       running = true;
-      toggle.textContent = 'Pause';
-      toggle.classList.remove('qa-btn-go');
+      display.classList.add('qa-running');
       endAt = Date.now() + remaining * 1000;
       tick = setInterval(function () {
         remaining = (endAt - Date.now()) / 1000;
@@ -39,20 +36,16 @@
     }
     function pause() {
       running = false;
-      toggle.textContent = 'Start';
-      toggle.classList.add('qa-btn-go');
+      display.classList.remove('qa-running');
       stopTick();
     }
     function finish() {
-      stopTick();
-      running = false;
-      toggle.textContent = 'Start';
-      toggle.classList.add('qa-btn-go');
+      pause();
       display.classList.add('qa-timer-done');
       setTimeout(function () { display.classList.remove('qa-timer-done'); }, 4000);
       beep();
       if (window.Notification && Notification.permission === 'granted') {
-        try { new Notification('Timer done', { body: 'Your Quick Actions timer finished.' }); } catch (e) {}
+        try { new Notification('Timer done', { body: 'Your focus timer finished.' }); } catch (e) {}
       }
     }
     function beep() {
@@ -68,22 +61,16 @@
       } catch (e) {}
     }
 
-    toggle.addEventListener('click', function () { running ? pause() : start(); });
-    reset.addEventListener('click', function () { pause(); remaining = totalSec; render(); });
+    function toggle() {
+      running ? pause() : start();
+      if (window.Notification && Notification.permission === 'default') {
+        try { Notification.requestPermission(); } catch (e) {}
+      }
+    }
 
-    presets.forEach(function (b) {
-      b.addEventListener('click', function () {
-        presets.forEach(function (x) { x.classList.remove('active'); });
-        b.classList.add('active');
-        totalSec  = parseInt(b.dataset.min, 10) * 60;
-        pause();
-        remaining = totalSec;
-        render();
-        if (window.Notification && Notification.permission === 'default') {
-          try { Notification.requestPermission(); } catch (e) {}
-        }
-      });
-    });
+    display.addEventListener('click', toggle);
+    display.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    if (reset) reset.addEventListener('click', function () { pause(); remaining = totalSec; render(); });
 
     render();
   });

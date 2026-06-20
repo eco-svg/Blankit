@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Veyra">
   <link rel="icon" href="/static/icons/icon-192.png" type="image/png">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
-  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=133">
+  <link rel="stylesheet" href="{{ url_for('pug.static', filename='kstyle.css') }}?v=134">
   <!-- Desktop-only gate: force desktop layout + notice on phones. Runs early so the
        viewport is pinned before first layout. -->
   <script src="{{ url_for('pug.static', filename='mobile-gate.js') }}?v=1"></script>
@@ -26,6 +26,29 @@
   <link rel="stylesheet" media="screen and (max-width: 768px)" href="{{ url_for('pug.static', filename='kstyle-mobile.css') }}?v=79">
 </head>
 <body{% if zoom_exempt %} class="zoom-exempt"{% endif %}>
+
+  <!-- Initial-load veil — hides the empty/un-hydrated cards until content is ready -->
+  <div id="appLoader">
+    <div class="app-loader-word">Veyra</div>
+    <div class="app-loader-bar"></div>
+  </div>
+  <script nonce="{{ csp_nonce }}">
+  (function () {
+    var start = Date.now();
+    function hide() {
+      var l = document.getElementById('appLoader');
+      if (!l) return;
+      l.classList.add('app-loader-hide');
+      setTimeout(function () { if (l && l.parentNode) l.parentNode.removeChild(l); }, 500);
+    }
+    // Keep the veil up at least ~0.9s (lets the cards' first data fetches land), then
+    // drop it once everything's loaded. Safety net in case 'load' is slow/never fires.
+    window.addEventListener('load', function () {
+      setTimeout(hide, Math.max(0, 900 - (Date.now() - start)));
+    });
+    setTimeout(hide, 7000);
+  })();
+  </script>
 
   <!-- FLAT BACKGROUND (default dark theme) -->
   <div class="pug-bg"></div>
@@ -382,7 +405,7 @@
   {# <script src="{{ url_for('pug.static', filename='ask.js') }}"></script> #}
   <script src="{{ url_for('pug.static', filename='clientlog.js') }}?v=1"></script>
   <script src="{{ url_for('pug.static', filename='calendar.js') }}?v=8"></script>
-  <script src="{{ url_for('pug.static', filename='quickactions.js') }}?v=1"></script>
+  <script src="{{ url_for('pug.static', filename='quickactions.js') }}?v=2"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="{{ url_for('pug.static', filename='stats.js') }}?v=9"></script>
   <script src="{{ url_for('pug.static', filename='achievements.js') }}?v=5"></script>

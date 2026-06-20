@@ -13,7 +13,16 @@
     <span class="r-qa-label">Ask</span>
   </button>
 
-  <!-- 1. Calendar — always first -->
+  <!-- 0. Quick Actions — minimal; sits above the calendar. For now just a focus timer.
+       (Kept deliberately small — more quick actions will share this space later.) -->
+  <div class="r-card r-quick-actions" id="rQuickActions">
+    <div class="qa-timer">
+      <div class="qa-timer-display" id="qaTimerDisplay" title="Click to start / pause" role="button" tabindex="0">25:00</div>
+      <button type="button" class="qa-timer-reset" id="qaTimerReset">reset</button>
+    </div>
+  </div>
+
+  <!-- 1. Calendar -->
   <div class="r-card calender" id="calendarCard">
     <div class="r-card-header" data-i18n="sidebar_event_calendar">Event Calendar</div>
     <div class="calendar-header">
@@ -39,24 +48,6 @@
         <button class="r-blinkbot-mic" id="blinkCardMic" type="button" title="Speak" aria-label="Speak"></button>
         <input type="text" id="blinkCardInput" placeholder="What did you do?" autocomplete="off">
         <button class="r-blinkbot-send" id="blinkCardSend" type="button" aria-label="Send" title="Send">&#8594;</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 2b. Quick Actions — fills the space freed by the shrunk BlinkBot card. For now: a timer. -->
-  <div class="r-card r-quick-actions" id="rQuickActions">
-    <div class="r-card-header">Quick Actions</div>
-    <div class="qa-timer">
-      <div class="qa-timer-display" id="qaTimerDisplay">25:00</div>
-      <div class="qa-timer-presets">
-        <button type="button" class="qa-preset" data-min="5">5m</button>
-        <button type="button" class="qa-preset" data-min="15">15m</button>
-        <button type="button" class="qa-preset active" data-min="25">25m</button>
-        <button type="button" class="qa-preset" data-min="45">45m</button>
-      </div>
-      <div class="qa-timer-controls">
-        <button type="button" id="qaTimerToggle" class="qa-btn qa-btn-go">Start</button>
-        <button type="button" id="qaTimerReset" class="qa-btn">Reset</button>
       </div>
     </div>
   </div>

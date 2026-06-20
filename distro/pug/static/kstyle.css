@@ -744,8 +744,8 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 7px); }
 
 /* ── BlinkBot card (rbar) — sized to content, centered, small status badge ── */
 .r-blinkbot-soon {
-  flex: 0.5;               /* half of its old share — the other half is the Quick Actions card */
-  min-height: 0;           /* shrinks to ~half — only the title + input need to show */
+  flex: 0 0 auto;          /* compact (title + badge + input); To-do takes the leftover height */
+  min-height: 132px;       /* never shorter than its content — avoids the overflow sliver */
   display: flex;
   align-items: stretch;
   justify-content: center;
@@ -5867,6 +5867,30 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 .mkt-guide-btn:hover { opacity: 0.92; }
 
+/* ── Initial-load veil ────────────────────────────────────────────────────── */
+#appLoader {
+  position: fixed; inset: 0; z-index: 99995;
+  background: #0a0a0a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  transition: opacity 0.45s ease;
+}
+#appLoader.app-loader-hide { opacity: 0; pointer-events: none; }
+#appLoader .app-loader-word {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.4rem; letter-spacing: 0.42em; text-indent: 0.42em;
+  text-transform: uppercase; color: var(--text-muted, #b6bcc6); opacity: 0.9;
+}
+#appLoader .app-loader-bar {
+  width: 150px; height: 3px; border-radius: 3px;
+  background: rgba(255,255,255,0.08); overflow: hidden; position: relative;
+}
+#appLoader .app-loader-bar::after {
+  content: ''; position: absolute; top: 0; left: -45%; height: 100%; width: 45%;
+  background: var(--accent, #6c8cff); border-radius: 3px;
+  animation: appLoaderSlide 1.05s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+@keyframes appLoaderSlide { 0% { left: -45%; } 100% { left: 100%; } }
+
 /* ── Mobile desktop-only gate ─────────────────────────────────────────────── */
 #mobileGate {
   position: fixed; inset: 0; z-index: 100000;
@@ -5893,70 +5917,45 @@ button.nav-pill:not(.btn-ghost):hover {
 }
 #mobileGate .mg-btn:hover { opacity: 0.9; }
 
-/* ── Quick Actions sidebar card (timer) ───────────────────────────────────── */
+/* ── Quick Actions sidebar card (minimal focus timer) ─────────────────────── */
 .r-quick-actions {
-  flex: 0.5;               /* the half freed by the shrunk BlinkBot card (To-do keeps flex:1) */
-  min-height: 0;
+  flex: 0 0 auto;          /* compact — sits above the calendar, content height */
   display: flex;
   flex-direction: column;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 .qa-timer {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 6px 4px 2px;
+  gap: 4px;
 }
 .qa-timer-display {
   font-family: var(--font-mono);
-  font-size: 2.1rem;
+  font-size: 2.2rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: var(--text);
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  transition: color 0.2s;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
 }
-.qa-timer-done { color: var(--accent); animation: qaFlash 0.6s ease-in-out 4; }
+.qa-timer-display:hover,
+.qa-timer-display.qa-running { color: var(--accent); }
+.qa-timer-done { color: var(--accent) !important; animation: qaFlash 0.6s ease-in-out 4; }
 @keyframes qaFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
-.qa-timer-presets { display: flex; gap: 6px; }
-.qa-preset {
-  background: var(--surface-2);
-  border: 1px solid var(--border2);
+.qa-timer-reset {
+  background: none; border: none; cursor: pointer;
   color: var(--text-dim);
   font-family: var(--font-mono);
-  font-size: 0.66rem;
-  border-radius: 7px;
-  padding: 4px 9px;
-  cursor: pointer;
-  transition: background 0.14s, color 0.14s, border-color 0.14s;
+  font-size: 0.6rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 2px 6px;
+  transition: color 0.14s;
 }
-.qa-preset:hover { color: var(--text); border-color: var(--border-hover); }
-.qa-preset.active {
-  background: color-mix(in srgb, var(--accent) 16%, transparent);
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.qa-timer-controls { display: flex; gap: 8px; }
-.qa-btn {
-  background: var(--surface-2);
-  border: 1px solid var(--border2);
-  color: var(--text-muted);
-  font-size: 0.74rem;
-  font-weight: 600;
-  border-radius: 8px;
-  padding: 6px 16px;
-  cursor: pointer;
-  transition: background 0.14s, color 0.14s, border-color 0.14s;
-}
-.qa-btn:hover { border-color: var(--accent); color: var(--accent); }
-.qa-btn-go {
-  background: var(--accent-glow);
-  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
-  color: var(--accent);
-}
+.qa-timer-reset:hover { color: var(--text-muted); }
 
 /* Sort bar (Latest / Popular) — same pill styling as the distro bar */
 .comm-sort-bar {
