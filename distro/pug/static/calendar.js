@@ -326,7 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .calendar-day.crushed{position:relative;color:#fff;font-weight:700;
         text-shadow:0 1px 3px rgba(0,0,0,.9),0 0 2px rgba(0,0,0,.95);
         box-shadow:inset 0 0 0 1.5px rgba(255,210,122,.7),0 0 8px rgba(224,162,60,.35)}
-      .calendar-day.crushed::before{content:'🧩';position:absolute;top:-3px;right:-2px;font-size:8px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
       /* event days: encircle the number + colour the font, hotter as it gets busier */
       .calendar-day.has-ev{position:relative;font-weight:700}
       .calendar-day.ev1{color:#e0a23c;box-shadow:inset 0 0 0 1.5px rgba(224,162,60,.6)}
