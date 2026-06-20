@@ -17,6 +17,7 @@
     '[data-action="like"]',            // react (up)
     '[data-action="dislike"]',         // react (down)
     '.comm-action-btn',                // Buy / Collab / Learn / Hire — opens a DM
+    '.pub-action-btn',                 // Hire / Collab / +Friend on the profile modal
     '.comm-comment-send',              // post a comment
     '.comm-comment-input',             // (focus) post a comment
     '#blinkCardInput', '#blinkCardSend', '#blinkCardMic', '#blinkCardBtn',  // BlinkBot
@@ -25,7 +26,7 @@
 
   function verbFor(t) {
     if (t.matches('#commComposeBtn')) return 'post';
-    if (t.matches('.comm-action-btn')) return 'contact this person';
+    if (t.matches('.comm-action-btn,.pub-action-btn')) return 'contact this person';
     if (t.matches('[data-action="like"],[data-action="dislike"]')) return 'react to posts';
     if (t.matches('.comm-comment-send,.comm-comment-input')) return 'comment';
     if (t.matches('#blinkCardInput,#blinkCardSend,#blinkCardMic,#blinkCardBtn')) return 'use BlinkBot';

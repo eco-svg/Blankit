@@ -1927,13 +1927,19 @@ def save_location():
 
 @pug_bp.route('/pug/api/users/<int:uid>/profile')
 def get_user_profile(uid):
-    """Return another user's public profile (skills, rank, online status)."""
-    err = login_required_api()
-    if err: return err
+    """Return another user's public profile (skills, rank, online status).
+
+    Guest-viewable: this only ever exposes public fields (username, rank, skill sheet,
+    online status, connection count) — no age, email, or contact info. Minors' profiles
+    are hidden from logged-out guests, mirroring the minor-filtered guest feed."""
+    me = session.get('user_id')
+    is_guest = (not me) or (session.get('distro') != 'Ocellus')
     from shared.auth.user import User
     u = User.query.get(uid)
     if not u or u.distro != 'Ocellus':
         return jsonify({'error': 'Not found'}), 404
+    if is_guest and u.age is not None and u.age < 18:
+        return jsonify({'error': 'Not found'}), 404   # minors not visible to guests
     n = Note.query.filter_by(user_id=uid, entry_type='stats_cache', is_deleted=False).first()
     sheet = None
     if n and n.body:
