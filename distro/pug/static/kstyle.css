@@ -7678,6 +7678,34 @@ button.nav-pill:not(.btn-ghost):hover {
 .admin-dm-msg { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; padding: 3px 0; }
 .admin-dm-msg b { color: var(--text); }
 
+/* Live admin header bell */
+.admin-bell {
+  position: relative;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px; border-radius: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+.admin-bell:hover { color: var(--text); background: var(--surface-2); }
+.admin-bell.has-notif { color: var(--accent); }
+.admin-bell.has-notif svg { animation: bellRing 1.5s ease-in-out infinite; transform-origin: 50% 4px; }
+@keyframes bellRing {
+  0%,55%,100% { transform: rotate(0); }
+  60% { transform: rotate(12deg); } 67% { transform: rotate(-10deg); }
+  74% { transform: rotate(8deg); }  81% { transform: rotate(-5deg); } 88% { transform: rotate(0); }
+}
+.admin-bell-badge {
+  position: absolute; top: -3px; right: -4px;
+  min-width: 15px; height: 15px; padding: 0 4px;
+  background: #e5484d; color: #fff;
+  font-size: 0.56rem; font-weight: 700; font-family: var(--font-mono);
+  border-radius: 8px; line-height: 1;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 2px var(--bg, #0a0a0a);
+}
+.admin-bell.has-notif .admin-bell-badge { display: flex; }
+
 /* Members overview — distro headcount stat cards + recent sign-ups */
 .admin-members-stats { display: flex; gap: 10px; margin-bottom: 16px; }
 .admin-stat {

@@ -4200,6 +4200,23 @@ def admin_users_overview():
     })
 
 
+@pug_bp.route('/pug/api/admin/notif', methods=['GET'])
+def admin_notif():
+    """Cheap poll for the live admin header bell: distro headcount + pending-action
+    counts. The client compares `users` against the last count it saw to detect NEW
+    sign-ups; eyes/posts/user_reports are live actionable backlogs."""
+    err = admin_required_api()
+    if err: return err
+    from shared.auth.user import User
+    return jsonify({
+        'users':        User.query.filter(User.distro.in_(['Ocellus', 'ThePug'])).count(),
+        'eyes':         WalletTx.query.filter_by(tx_type='topup_request', status='pending').count(),
+        'posts':        Note.query.filter(Note.entry_type == 'community_post',
+                                          Note.is_deleted == False, Note.report_count > 0).count(),
+        'user_reports': UserReport.query.count(),
+    })
+
+
 @pug_bp.route('/pug/api/dms/<int:other_id>/read', methods=['PATCH'])
 def mark_dms_read(other_id):
     """Mark the conversation with another user as read."""

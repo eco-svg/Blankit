@@ -199,6 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!membersList) return;
         membersList.innerHTML = '<div class="admin-empty">Loading…</div>';
         fetch('/pug/api/admin/users-overview').then(r => r.json()).then(d => {
+            // Viewing the members list = acknowledging current sign-ups → clears the
+            // "new signup" part of the live header bell.
+            if (d.total != null) { localStorage.setItem('veyra-admin-seen-users', String(d.total)); refreshBell(); }
             if (membersCount) membersCount.textContent = d.new_24h ? d.new_24h : '';
             const stats = document.getElementById('adminMembersStats');
             if (stats) stats.innerHTML =
@@ -238,6 +241,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function loadAll() { loadPosts(); loadUsers(); loadEyes(); loadMembers(); }
+
+    // ── Live header bell — polls for new sign-ups + pending actions, lights the bell
+    //    in the header even when the admin isn't on the panel. ──────────────────────
+    const bell      = document.getElementById('adminBell');
+    const bellBadge = document.getElementById('adminBellBadge');
+    let lastNotif   = null;
+    function refreshBell() {
+        if (!bell || !bellBadge || !lastNotif) return;
+        const seen = parseInt(localStorage.getItem('veyra-admin-seen-users') || '', 10);
+        const base = isNaN(seen) ? lastNotif.users : seen;
+        const newSignups = Math.max(0, (lastNotif.users || 0) - base);
+        const pending    = (lastNotif.eyes || 0) + (lastNotif.posts || 0) + (lastNotif.user_reports || 0);
+        const total      = newSignups + pending;
+        bellBadge.textContent = total > 99 ? '99+' : total;
+        bell.classList.toggle('has-notif', total > 0);
+    }
+    function pollBell() {
+        fetch('/pug/api/admin/notif').then(r => r.json()).then(d => {
+            if (!d || d.users == null) return;
+            // First ever poll: baseline the signup count so existing users don't all
+            // read as "new".
+            if (localStorage.getItem('veyra-admin-seen-users') == null) {
+                localStorage.setItem('veyra-admin-seen-users', String(d.users));
+            }
+            lastNotif = d;
+            refreshBell();
+        }).catch(() => {});
+    }
+    if (bell) {
+        bell.addEventListener('click', () => { if (window._veyraNavigate) window._veyraNavigate('admin', true); });
+        pollBell();
+        setInterval(pollBell, 40000);
+        document.addEventListener('visibilitychange', () => { if (!document.hidden) pollBell(); });
+    }
 
     openBtn?.addEventListener('click', () => {
         if (window._veyraNavigate) window._veyraNavigate('admin', true);
