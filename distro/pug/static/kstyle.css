@@ -5830,6 +5830,35 @@ button.nav-pill:not(.btn-ghost):hover {
   color: var(--accent);
 }
 
+/* Sort bar (Latest / Popular) — same pill styling as the distro bar */
+.comm-sort-bar {
+  display: flex;
+  gap: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  border: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+.comm-sort-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  padding: 4px 11px;
+  font-weight: 600;
+  transition: background 0.14s, color 0.14s;
+  white-space: nowrap;
+}
+.comm-sort-btn + .comm-sort-btn { border-left: 1px solid var(--border2); }
+.comm-sort-btn:hover { background: var(--surface-2); color: var(--text); }
+.comm-sort-btn.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
 /* "Share to all distros" checkbox in the composer */
 .comm-reach-toggle {
   display: inline-flex;

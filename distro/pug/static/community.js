@@ -83,6 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let feedMode       = localStorage.getItem('veyra-comm-mode') || 'radar';
     // Distro filter (independent of radar/global): 'mine' = this distro only, 'all' = all distros.
     let distroScope    = localStorage.getItem('veyra-comm-distro') || 'mine';
+    // Sort (independent of every other filter): 'latest' (default) or 'popular'.
+    let feedSort       = localStorage.getItem('veyra-comm-sort') || 'latest';
 
     // ── Skill picker ───────────────────────────────────────────────────────────
     const skillPickerEl = document.getElementById('commSkillPicker');
@@ -146,6 +148,19 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('veyra-comm-distro', distroScope);
             document.querySelectorAll('.comm-distro-btn').forEach(b => b.classList.toggle('active', b.dataset.scope === distroScope));
             // clear the feed so the merged/unmerged set rebuilds cleanly (avoids stale foreign posts)
+            lastPostCount = 0;
+            feed.querySelectorAll('.comm-post').forEach(el => el.remove());
+            loadFeed();
+        });
+    });
+
+    // ── Sort toggle (Latest / Popular) — sits on top of every other filter ─────
+    document.querySelectorAll('.comm-sort-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.sort === feedSort);
+        btn.addEventListener('click', () => {
+            feedSort = btn.dataset.sort;
+            localStorage.setItem('veyra-comm-sort', feedSort);
+            document.querySelectorAll('.comm-sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === feedSort));
             lastPostCount = 0;
             feed.querySelectorAll('.comm-post').forEach(el => el.remove());
             loadFeed();
@@ -301,6 +316,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activeSkill)  params.push(`skill=${encodeURIComponent(activeSkill)}`);
         if (activeUserId) params.push(`user_id=${activeUserId}`);
         params.push(`distro_scope=${distroScope}`);
+        params.push(`sort=${feedSort}`);
         if (params.length) url += '?' + params.join('&');
         fetch(url)
             .then(r => r.json())

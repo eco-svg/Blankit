@@ -2979,6 +2979,19 @@ def _svg_global_rows(me, blocked, am_admin=False):
 # ═════════════════════════════════════════════════════════════════════════════
 # COMMUNITY FEED — posts, comments, reactions, ShowOff actions
 # ═════════════════════════════════════════════════════════════════════════════
+def _sort_feed(rows, sort_by):
+    """Order the feed. 'popular' = most-interacted (comments weighted over likes,
+    dislikes subtract); anything else = 'latest' (newest first). Applied on top of
+    every filter (radar/global, distro), with latest as the default."""
+    if sort_by == 'popular':
+        rows.sort(key=lambda r: ((r.get('likes') or 0) + 2 * (r.get('comment_count') or 0)
+                                 - (r.get('dislikes') or 0),
+                                 r.get('created_at') or ''), reverse=True)
+    else:
+        rows.sort(key=lambda r: r.get('created_at') or '', reverse=True)
+    return rows
+
+
 @pug_bp.route('/pug/api/community', methods=['GET'])
 def get_community_feed():
     """Return the community feed (filtered by location/skill; hidden + blocked excluded)."""
@@ -3001,6 +3014,8 @@ def get_community_feed():
     user_filter  = request.args.get('user_id', type=int)
     # 'mine' = only this distro's posts (default); 'all' = merge in other distros' shared posts.
     distro_scope = (request.args.get('distro_scope') or 'mine').strip().lower()
+    # Sort applies on top of EVERY filter (radar/global, distro). Default 'latest'.
+    sort_by      = (request.args.get('sort') or 'latest').strip().lower()
 
     q = Note.query.filter(Note.entry_type == 'community_post', Note.is_deleted == False,
                           Note.is_hidden.isnot(True), Note.mood.in_(['Ocellus', 'ThePug']))
@@ -3105,7 +3120,7 @@ def get_community_feed():
                     continue
                 result.append(_build_row(p, m, dist_km=dist))
             if len(result) >= 5 or radius_km is None:
-                return jsonify({'posts': _enrich(result), 'radius_km': radius_km})
+                return jsonify({'posts': _sort_feed(_enrich(result), sort_by), 'radius_km': radius_km})
         return jsonify({'posts': [], 'radius_km': None})
 
     result = []
@@ -3119,8 +3134,7 @@ def get_community_feed():
     # All-distros view: merge in other distros' shared posts (svg today; div has none yet).
     if distro_scope == 'all' and not user_filter:
         result = result + _svg_global_rows(me, blocked, am_admin=am_admin)
-        result.sort(key=lambda r: r.get('created_at') or '', reverse=True)
-    return jsonify({'posts': result, 'radius_km': None})
+    return jsonify({'posts': _sort_feed(result, sort_by), 'radius_km': None})
 
 
 @pug_bp.route('/pug/api/community/version', methods=['GET'])
