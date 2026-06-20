@@ -43,6 +43,24 @@
     </div>
   </div>
 
+  <!-- 2b. Quick Actions — fills the space freed by the shrunk BlinkBot card. For now: a timer. -->
+  <div class="r-card r-quick-actions" id="rQuickActions">
+    <div class="r-card-header">Quick Actions</div>
+    <div class="qa-timer">
+      <div class="qa-timer-display" id="qaTimerDisplay">25:00</div>
+      <div class="qa-timer-presets">
+        <button type="button" class="qa-preset" data-min="5">5m</button>
+        <button type="button" class="qa-preset" data-min="15">15m</button>
+        <button type="button" class="qa-preset active" data-min="25">25m</button>
+        <button type="button" class="qa-preset" data-min="45">45m</button>
+      </div>
+      <div class="qa-timer-controls">
+        <button type="button" id="qaTimerToggle" class="qa-btn qa-btn-go">Start</button>
+        <button type="button" id="qaTimerReset" class="qa-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 3. Goals card — flippable (front=active, back=finished/cancelled) -->
   <div class="r-card r-goals-card goal-flip-card">
     <div class="goal-flip-inner" id="goalFlipInner">
