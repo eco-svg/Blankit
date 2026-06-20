@@ -700,15 +700,18 @@ def _blink_undo_last(user_id):
     return "undone"
 
 
-def _blink_execute(user_id, actions, confirmed=False):
+def _blink_execute(user_id, actions, confirmed=False, today=None):
     """Execute a list of action dicts. Destructive actions are skipped (returned as
-    pending_confirm) unless `confirmed` is True. Returns a result dict."""
+    pending_confirm) unless `confirmed` is True. `today` is the user's LOCAL date
+    (the server runs UTC; without this, near-midnight ticks land on the wrong day —
+    the habits tab is local-day, so the tick would look missing). Returns a result dict."""
     from distro.svg.models.habit import Habit
     from distro.svg.models.habit_log import HabitLog
     from datetime import date as _date
 
     performed, pending, nav = [], [], None
-    today = _date.today()
+    if today is None:
+        today = _date.today()
 
     for a in (actions or []):
         if not isinstance(a, dict):
@@ -1987,6 +1990,17 @@ def blinkbot_chat():
     user_id = session['user_id']
     data    = request.get_json(silent=True) or {}
 
+    # The client sends its LOCAL date (YYYY-MM-DD); ticks must land on the user's day,
+    # not the server's UTC day, to match the habits tab. Fall back to server date.
+    _local_today = None
+    try:
+        _ld = (data.get('local_date') or '').strip()
+        if _ld:
+            from datetime import date as _date
+            _local_today = _date.fromisoformat(_ld[:10])
+    except Exception:
+        _local_today = None
+
     # Freemium gate: first use auto-starts the free window (the feature can't be used
     # without a running timer — closes the "never call /activate" bypass), then block
     # once the free window and any paid month are over.
@@ -1999,7 +2013,7 @@ def blinkbot_chat():
     # (1) Confirm round-trip: client re-sends a previously-pending destructive action.
     confirm_action = data.get('confirm_action')
     if isinstance(confirm_action, dict) and confirm_action.get('type') in _BLINK_DESTRUCTIVE:
-        res = _blink_execute(user_id, [confirm_action], confirmed=True)
+        res = _blink_execute(user_id, [confirm_action], confirmed=True, today=_local_today)
         return jsonify({
             'reply':     '; '.join(res['performed']) or 'done',
             'performed': res['performed'],
@@ -2020,7 +2034,7 @@ def blinkbot_chat():
             return jsonify({'reply': data.get('reply') or "Working on it…", 'source': 'blinkbot-v4'}), 200
 
     if isinstance(data.get('actions'), list):
-        res   = _blink_execute(user_id, data['actions'])
+        res   = _blink_execute(user_id, data['actions'], today=_local_today)
         reply = (data.get('reply') or '').strip() or ('; '.join(res['performed']) if res['performed'] else 'ok')
         return jsonify({
             'reply':           reply,
@@ -2054,7 +2068,7 @@ def blinkbot_chat():
         except Exception as e:
             current_app.logger.error(f"BlinkBot groq route error: {e}")
             return jsonify({'reply': parsed.get('reply') or "Working on it…", 'source': 'blinkbot-v4'}), 200
-    res   = _blink_execute(user_id, parsed.get('actions'))
+    res   = _blink_execute(user_id, parsed.get('actions'), today=_local_today)
     reply = parsed.get('reply') or ('; '.join(res['performed']) if res['performed'] else 'ok')
     return jsonify({
         'reply':           reply,

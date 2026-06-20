@@ -15,6 +15,12 @@
             <div class="profile-tab-username">{{ username }}</div>
             <div class="profile-tab-sub" id="headerRankBadge2"></div>
           </div>
+          {% if is_admin %}
+          <button class="nav-pill profile-admin-btn" id="openAdminPanelBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Admin Panel
+          </button>
+          {% endif %}
         </div>
 
         <!-- Home Tab -->
@@ -119,16 +125,6 @@
       </div>
 
       <!-- ── Right column: coming soon, request, support ────────── -->
-      {% if is_admin %}
-      <div class="profile-col profile-col-right" style="flex:0 0 auto;">
-        <div class="pp-label" style="padding-top:14px;">Admin</div>
-        <button class="nav-pill" id="openAdminPanelBtn" style="margin-top:8px;background:var(--surface-2);border-color:var(--border2);">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:5px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          Admin Panel
-        </button>
-      </div>
-      {% endif %}
-
       <div class="profile-col profile-col-right">
 
         <!-- Coming Soon Features -->

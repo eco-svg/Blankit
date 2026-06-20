@@ -102,6 +102,12 @@
   let mediaRec = null, recChunks = [], recording = false;
 
   const $ = (id) => document.getElementById(id);
+  // The user's LOCAL calendar day (matches habits.js) — sent so ticks land on their
+  // day, not the server's UTC day.
+  const localToday = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
   const api = (url, body) => fetch(url, {
     method: body ? 'POST' : 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -417,6 +423,7 @@
     const r = await api('/pug/api/blinkbot', {
       message: parsed.needs_groq ? msg : undefined,
       actions: parsed.actions, needs_groq: parsed.needs_groq, reply: parsed.reply,
+      local_date: localToday(),   // tick on the user's day, not the server's UTC day
     });
     if (r.code === 402 && r.json.paywall) {
       setStatus(r.json.reply || 'Free period ended.', false);
@@ -452,7 +459,7 @@
     const yes = document.createElement('button'); yes.textContent = 'Yes'; yes.className = 'r-blink-confirm-btn';
     const no  = document.createElement('button'); no.textContent  = 'No';  no.className  = 'r-blink-confirm-btn';
     yes.onclick = async () => {
-      const r = await api('/pug/api/blinkbot', { confirm_action: pending.action });
+      const r = await api('/pug/api/blinkbot', { confirm_action: pending.action, local_date: localToday() });
       setStatus((r.json && r.json.reply) || 'Done.', false);
       fireApplied(r.json && r.json.performed);
     };
