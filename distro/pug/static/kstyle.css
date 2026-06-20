@@ -422,7 +422,7 @@ body.header-hidden .l-bar {
      sidebar border. No gap; the tab reads as physically joined to the card. */
   right: calc(var(--rbar-w) - var(--gap));
   z-index: 130;
-  width: 26px; padding: 14px 0;
+  width: 26px; padding: 13px 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   border-radius: 14px 0 0 14px;          /* pull-tab: rounded on the left only */
   background: var(--surface-2);
@@ -1433,7 +1433,9 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
   perspective: 1200px;
   overflow: hidden !important;
   padding: 0;
-  animation: none !important;
+  /* No animation override here: inherit the unified .r-card fadeUp spawn so the
+     To-do card pops in with the same animation + speed as every other rbar card
+     (and replays when the Quick Ask panel closes). */
   flex: 0 0 300px;
 }
 .goal-flip-card:hover { transform: none; }
