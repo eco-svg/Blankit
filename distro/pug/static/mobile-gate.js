@@ -22,8 +22,8 @@
         '<div class="mg-icon">🖥️</div>' +
         '<div class="mg-title">Best on Desktop</div>' +
         '<div class="mg-text">Veyra is built for desktop right now — a mobile experience is rolling out soon.' +
-        '<br><br>For now we’ve switched you to desktop view, so pinch &amp; drag to get around.</div>' +
-        '<button class="mg-btn" id="mgClose" type="button">Got it</button>' +
+        '<br><br>You can still come in: we’ll open the full desktop view, so pinch &amp; drag to get around.</div>' +
+        '<button class="mg-btn" id="mgClose" type="button">Continue in desktop view</button>' +
       '</div>';
     document.body.appendChild(ov);
     var btn = document.getElementById('mgClose');
