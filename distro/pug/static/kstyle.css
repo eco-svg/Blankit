@@ -1773,9 +1773,15 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 7px); }
 .card:nth-child(10) { animation: fadeUp 0.35s 0.50s ease both; }
 .card:nth-child(11) { animation: fadeUp 0.35s 0.55s ease both; }
 
-.r-card:nth-child(1) { animation: fadeUp 0.4s 0.10s ease both; }
-.r-card:nth-child(2) { animation: fadeUp 0.4s 0.22s ease both; }
-.r-card:nth-child(3) { animation: fadeUp 0.4s 0.34s ease both; }
+/* Every rbar card spawns the same way + speed (calendar, BlinkBot, Quick Actions,
+   To-do) — the old nth-child stagger skipped the later cards (the Ask button is the
+   first child, so To-do/Quick Actions fell outside it and popped in instantly).
+   This also replays when the Quick Ask panel closes and the cards come back. */
+.r-card { animation: fadeUp 0.22s ease both; }
+
+/* Quick Ask panel slides/fades in instead of appearing instantly. */
+@keyframes qaSlideIn { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+.r-bar.qa-open .r-quick-ask { animation: qaSlideIn 0.22s ease both; }
 
 /* ── Scrollbar ── */
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; -webkit-tap-highlight-color: transparent; }
@@ -4531,6 +4537,8 @@ button.nav-pill:not(.btn-ghost):hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-direction: row-reverse;   /* title to the right; any action button to the left */
+  text-align: right;
 }
 
 /* ── Profile popup rank legend ────────────────────────── */
