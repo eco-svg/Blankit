@@ -305,6 +305,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // ── Marketplace guide (teach on first Community visit + replay from title bar) ─
+    (function () {
+        const overlay  = document.getElementById('mktGuideOverlay');
+        const openBtn  = document.getElementById('commGuideBtn');
+        const closeBtn = document.getElementById('mktGuideClose');
+        if (!overlay) return;
+        const show = () => overlay.classList.remove('hidden');
+        const hide = () => { overlay.classList.add('hidden'); localStorage.setItem('veyra-mkt-guide-seen', '1'); };
+        openBtn?.addEventListener('click', show);
+        closeBtn?.addEventListener('click', hide);
+        overlay.addEventListener('click', e => { if (e.target === overlay) hide(); });
+        const maybeFirst = () => { if (!localStorage.getItem('veyra-mkt-guide-seen')) show(); };
+        if (document.body.getAttribute('data-route') === 'social') maybeFirst();
+        document.addEventListener('veyra:navigate', e => { if (e.detail && e.detail.route === 'social') maybeFirst(); });
+    })();
+
     // ── Feed ───────────────────────────────────────────────────────────────────
     function loadFeed() {
         let url = '/pug/api/community';

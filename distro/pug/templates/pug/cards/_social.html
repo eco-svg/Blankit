@@ -30,6 +30,9 @@
           <span class="comm-range-badge locating" id="commRangeLabel">locating…</span>
         </div>
       </div>
+      <button class="icon-btn" id="commGuideBtn" title="How the marketplace works">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </button>
       <button class="icon-btn" id="commSearchBtn" title="Search users">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
       </button>
@@ -156,5 +159,36 @@
       <button id="buyInfoContinue" class="buy-info-btn-secondary">Continue to DM</button>
       <button id="buyInfoCredits" class="buy-info-btn-primary">Buy Eyes</button>
     </div>
+  </div>
+</div>
+
+<!-- Marketplace guide — shown on first Community visit; re-openable from the title bar (book icon). -->
+<div id="mktGuideOverlay" class="mkt-guide-overlay hidden">
+  <div class="mkt-guide-modal">
+    <div class="mkt-guide-title">Welcome to the Community Marketplace</div>
+    <div class="mkt-guide-sub">More than a feed — it’s where you discover and trade with people around you.</div>
+    <div class="mkt-guide-list">
+      <div class="mkt-guide-item">
+        <div class="mkt-guide-ico">📍</div>
+        <div><b>Discover nearby</b><span>Radar shows people around you; Global shows everyone. Filter by your distro or all distros, and sort by Latest or Popular.</span></div>
+      </div>
+      <div class="mkt-guide-item">
+        <div class="mkt-guide-ico">🤝</div>
+        <div><b>Take action on a post</b><span>Tap <b>Hire</b>, <b>Buy</b>, <b>Collab</b> or <b>Learn</b> on someone’s post — it opens a DM with them so you can talk.</span></div>
+      </div>
+      <div class="mkt-guide-item">
+        <div class="mkt-guide-ico">👁️</div>
+        <div><b>Pay safely with Eyes</b><span>Pay with Eyes and your money is held in escrow — released to the seller only once you confirm you got what you paid for.</span></div>
+      </div>
+      <div class="mkt-guide-item">
+        <div class="mkt-guide-ico">⭐</div>
+        <div><b>Real reputation</b><span>Sellers are ranked by actual buyers and repeat purchases — no fake reviews. Something off? Raise a dispute and we step in.</span></div>
+      </div>
+      <div class="mkt-guide-item">
+        <div class="mkt-guide-ico">✨</div>
+        <div><b>Show your work</b><span>Post a <b>ShowOff</b> with a skill tag so people can hire you, buy from you, or collab.</span></div>
+      </div>
+    </div>
+    <button id="mktGuideClose" class="mkt-guide-btn">Got it — let’s go</button>
   </div>
 </div>
