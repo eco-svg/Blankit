@@ -555,6 +555,7 @@
     try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
     catch (e) { setStatus('Mic blocked — allow access, or just type.', false); return; }
     recChunks = []; recording = true; micActive(true);
+    setStatus('🎙 Listening… tap the mic again to stop.', false);
     mediaRec = new MediaRecorder(stream);
     mediaRec.ondataavailable = (e) => { if (e.data && e.data.size) recChunks.push(e.data); };
     mediaRec.onstop = () => { stream.getTracks().forEach(t => t.stop()); transcribe(); };
@@ -568,8 +569,9 @@
   }
 
   async function transcribe() {
-    if (!recChunks.length) return;
+    if (!recChunks.length) { setStatus('Didn’t catch any audio — try again.', false); return; }
     micBusy(true);
+    setStatus('Transcribing…', false);
     try {
       const blob  = new Blob(recChunks, { type: recChunks[0].type || 'audio/webm' });
       const audio = await blobToMono16k(blob);
