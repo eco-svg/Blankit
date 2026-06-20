@@ -22,7 +22,9 @@ run against live data — that's why every one is wrapped in try/except and guar
 import os
 import hashlib
 from datetime import date
-from flask import Flask, session, render_template, request
+from urllib.parse import quote
+from flask import Flask, session, render_template, request, Response
+from markupsafe import escape
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 from shared.config import Config
@@ -401,6 +403,36 @@ def create_app():
             'icon-192.png',
             mimetype='image/png',
         )
+
+    # ── SEO: robots.txt + sitemap.xml ──
+    @app.route('/robots.txt')
+    def robots_txt():
+        body = ('User-agent: *\n'
+                'Allow: /\n'
+                f'Sitemap: {request.url_root}sitemap.xml\n')
+        return Response(body, mimetype='text/plain')
+
+    @app.route('/sitemap.xml')
+    def sitemap_xml():
+        """Public pages + opted-in (18+) member profiles, so search engines can find
+        them. Profile pages themselves stay noindex unless the user opted in."""
+        from shared.auth.user import User
+        root = request.url_root  # ends with '/'
+        urls = [root, root + 'privacy', root + 'terms', root + 'under13']
+        try:
+            adults = User.query.filter(
+                User.distro == 'Ocellus',
+                User.public_search.is_(True),
+                User.age.isnot(None), User.age >= 18
+            ).all()
+            urls += [root + 'pug/u/' + quote(u.username) for u in adults]
+        except Exception:
+            pass
+        items = ''.join(f'<url><loc>{escape(u)}</loc></url>' for u in urls)
+        xml = ('<?xml version="1.0" encoding="UTF-8"?>'
+               '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+               f'{items}</urlset>')
+        return Response(xml, mimetype='application/xml')
 
     # ── CSP nonce: a fresh random token per request, used to allow ONLY our own inline
     #    <script> blocks (each tagged nonce="{{ csp_nonce }}"). Lets us drop 'unsafe-inline'

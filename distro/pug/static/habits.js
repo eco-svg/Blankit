@@ -235,6 +235,6 @@
     } catch (e) { h.done_today = !h.done_today; renderManage(); renderToday(); }
   }
 
-  loadHabits();
+  if (!window.VEYRA_GUEST) loadHabits();   // guests have no habits — skip the authed load
   document.addEventListener('blinkbot:applied', loadHabits);   // BlinkBot ticked/added a habit
 })();

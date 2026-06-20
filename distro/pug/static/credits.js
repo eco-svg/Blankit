@@ -421,8 +421,8 @@
     });
     initTopup();
     initSellback();
-    loadRates();
-    loadWallet();
+    // Guests have no wallet — skip the authed loads (the UI handlers above are harmless).
+    if (!window.VEYRA_GUEST) { loadRates(); loadWallet(); }
   }
 
   if (document.readyState === 'loading') {

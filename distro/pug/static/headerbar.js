@@ -178,6 +178,8 @@
 
   // ── boot ────────────────────────────────────────────────────────────────────
   (async function init() {
+    // Guests have no personal events/deadlines — skip the (authed) fetches + poll.
+    if (window.VEYRA_GUEST) return;
     await Promise.all([loadNextEvent(), loadDream()]);
     render();
     startSwap();

@@ -4,6 +4,9 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Guests can't use DMs — skip all setup/polling so we don't fire authed 401s.
+    if (window.VEYRA_GUEST) return;
+
     const convList        = document.getElementById('dmConvList');
     const chatView        = document.getElementById('dmChatView');
     const newDmBtn        = document.getElementById('newDmBtn');
