@@ -30,7 +30,7 @@ import math
 from datetime import datetime, timedelta
 from flask import (
     Blueprint, render_template, request,
-    jsonify, session, redirect, url_for, current_app, Response
+    jsonify, session, redirect, url_for, current_app, Response, make_response
 )
 from minio import Minio
 from minio.error import S3Error
@@ -1416,9 +1416,13 @@ def home():
     uid = session.get('user_id')
     is_guest = (not uid) or (session.get('distro') != 'Ocellus')
     if is_guest:
-        return render_template('pug/home.html',
-                               username='Guest', distro='Ocellus',
-                               is_admin=False, zoom_exempt=False, is_guest=True)
+        # noindex: let crawlers reach the page but never archive users' posts/profiles.
+        # (Per-user opt-in "appear in Google" for 18+ is a planned fast-follow.)
+        resp = make_response(render_template('pug/home.html',
+                             username='Guest', distro='Ocellus',
+                             is_admin=False, zoom_exempt=False, is_guest=True))
+        resp.headers['X-Robots-Tag'] = 'noindex, nofollow'
+        return resp
     # Admin (the owner) runs an 80%-scaled system, so exempt that account from the
     # site-wide zoom:0.8 (it would otherwise double-scale for them). See kstyle.
     from shared.auth.user import User
