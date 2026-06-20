@@ -4340,12 +4340,15 @@ def admin_visits():
 
     views_alltime = int(db.session.query(func.coalesce(func.sum(SiteVisit.views), 0)).scalar() or 0)
     today = series[-1] if series else {'views': 0, 'uniques': 0}
+    # Headline totals are derived from the exact+approx buckets so they can never
+    # disagree with the breakdown (rows recorded before the c:/h: tagging are ignored
+    # — reset once after deploy to clear any old-format rows).
     return jsonify({
         'days':           series,            # [{day, views, uniques}] for the graph
         'views_today':    today['views'],
         'views_alltime':  views_alltime,
-        'unique_today':   today['uniques'],            # total unique visits today
-        'unique_alltime': exact_all + approx_all,      # total unique visits since launch
+        'unique_today':   exact_today + approx_today,   # total unique visits today
+        'unique_alltime': exact_all + approx_all,       # total unique visits since launch
         'exact_today':    exact_today,   'approx_today':  approx_today,
         'exact_alltime':  exact_all,     'approx_alltime': approx_all,
     })
