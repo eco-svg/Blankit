@@ -415,12 +415,17 @@ body.header-hidden .l-bar {
      lines the tab's top edge up with the calendar card's top edge. The top
      tracks the sidebar so when the page header auto-hides (and the sidebar
      slides up), the tab rides up with the calendar instead of overlapping it. */
-  top: calc(var(--header-h) + var(--gap) + 7px);   /* OCD nudge to line up with the card */
+  /* Centre the tab on the Quick Actions card's vertical midline: the card top is
+     var(--header-h) + var(--gap) (sidebar padding), and its centre is ~44px below
+     that. translateY(-50%) then pins the tab's OWN centre to that axis, so the two
+     stay aligned regardless of the tab's height. */
+  top: calc(var(--header-h) + var(--gap) + 44px);
+  transform: translateY(-50%);
   /* Sit in the gap just OUTSIDE the sidebar's left edge so the tab never lands on
      top of the first card (which is now the compact Quick Actions timer). */
   right: var(--rbar-w);
   z-index: 130;
-  width: 26px; padding: 16px 0;
+  width: 26px; padding: 15px 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   border-radius: 14px 0 0 14px;          /* pull-tab: rounded on the left only */
   background: var(--surface-2);
@@ -435,7 +440,7 @@ body.header-hidden .l-bar {
   transition: top 0.32s cubic-bezier(0.4,0,0.2,1),
               background .15s, color .15s, border-color .15s;
 }
-body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 7px); }
+body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card rides up with header; keep tab centred on it */
 .r-qa-toggle .r-qa-label { writing-mode: vertical-rl; white-space: nowrap; }
 .r-qa-toggle:hover { color: var(--text); border-color: var(--accent); }
 .r-bar.qa-open .r-qa-toggle {
