@@ -412,13 +412,16 @@ def create_app():
     def _track_visit(resp):
         try:
             is_staff = _visitor_is_staff(session.get('user_id'))
-            # Stamp a long-lived opt-out cookie on the owner's device the moment they're
-            # seen as staff — so their later GUEST (logged-out) visits aren't counted
-            # either, no matter how their IP changes. This is the reliable "exclude me".
-            if is_staff and request.cookies.get('veyra_noac') != '1':
+            # Manual opt-out: visiting any page with ?noac=1 stamps the opt-out cookie on
+            # THIS browser — works in incognito / any device with no login or fixed IP.
+            manual_optout = request.args.get('noac') == '1'
+            # Stamp a long-lived opt-out cookie when seen as staff OR asked via ?noac=1,
+            # so the owner's later GUEST visits aren't counted no matter the IP.
+            if (is_staff or manual_optout) and request.cookies.get('veyra_noac') != '1':
                 resp.set_cookie('veyra_noac', '1', max_age=31536000,
                                 httponly=True, samesite='Lax')
             excluded = (is_staff
+                        or manual_optout
                         or request.cookies.get('veyra_noac') == '1'
                         or _ip_excluded(request))
             if (request.method == 'GET'
