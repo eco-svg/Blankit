@@ -49,18 +49,27 @@ from shared.extensions import limiter
 # in the pug admin panel (/pug/api/admin/visits).
 # ─────────────────────────────────────────────────────────────────────────────
 def _visitor_is_staff(uid):
-    """True if the current visitor is an admin/owner (excluded from the counter)."""
+    """True if the current visitor is an admin/owner (excluded from the counter).
+    Delegates to pug_route._is_admin so it matches the admin-panel gate exactly
+    (is_admin flag OR email OR username in the allowlist) — otherwise a username-only
+    admin wouldn't be recognised and would keep getting counted."""
     if not uid:
         return False
     try:
+        from distro.pug.routes.pug_route import _is_admin
+        if _is_admin(uid):
+            return True
+    except Exception:
+        pass
+    try:
         from shared.auth.user import User
         u = db.session.get(User, uid)
-        if u and getattr(u, 'is_admin', False):
-            return True
         allow = (os.environ.get('PUG_ADMIN_EMAILS', '') + ',' +
                  os.environ.get('SVG_ADMIN_EMAILS', '')).lower()
-        return bool(u and u.email and u.email.lower() in
-                    {e.strip() for e in allow.split(',') if e.strip()})
+        allow = {e.strip() for e in allow.split(',') if e.strip()}
+        return bool(u and ((u.email or '').lower() in allow
+                           or (u.username or '').lower() in allow
+                           or getattr(u, 'is_admin', False)))
     except Exception:
         return False
 
