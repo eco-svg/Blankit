@@ -16,7 +16,7 @@
         <div class="phys-fields" id="physFields"></div>
         <div class="phys-actions">
           <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
-          <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing recorded. Coming soon.">📷 Scan (soon)</button>
+          <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing is recorded or stored.">📷 Scan with camera</button>
         </div>
         <div id="physMsg" class="phys-msg"></div>
 
@@ -30,6 +30,25 @@
         <div class="phys-mannequin" id="physMannequin"></div>
         <div class="phys-mannequin-cap" id="physMannequinCap">Add measurements to build your figure</div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Live camera measure overlay — on-device pose only; nothing is recorded or stored. -->
+<div id="physCamOverlay" class="phys-cam-overlay hidden">
+  <div class="phys-cam-modal">
+    <div class="phys-cam-head">
+      <span>📷 Live measure — <b>nothing is recorded or stored</b></span>
+      <button id="physCamClose" type="button" class="phys-cam-close" aria-label="Close">✕</button>
+    </div>
+    <div class="phys-cam-stage">
+      <video id="physCamVideo" autoplay muted playsinline></video>
+      <canvas id="physCamCanvas"></canvas>
+    </div>
+    <div class="phys-cam-status" id="physCamStatus">Starting…</div>
+    <div class="phys-cam-hint">Stand back so your whole body is in frame, wear fitted clothing for accuracy, then tap Measure.</div>
+    <div class="phys-cam-actions">
+      <button id="physCamMeasure" type="button" class="phys-save" disabled>Measure</button>
     </div>
   </div>
 </div>

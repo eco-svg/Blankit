@@ -177,9 +177,102 @@
       }).catch(function () { saveBtn.disabled = false; msg('Save failed.'); });
     });
     compareEl && compareEl.addEventListener('change', refreshView);
-    scanBtn && scanBtn.addEventListener('click', function () {
-      msg('Live camera measure is coming soon — nothing will be recorded or stored.');
-    });
+
+    // ── Live camera measure (on-device MediaPipe pose). Nothing is recorded or stored:
+    //    frames are processed live and discarded; only the resulting numbers are kept. ──
+    var camOverlay = document.getElementById('physCamOverlay');
+    var camVideo   = document.getElementById('physCamVideo');
+    var camCanvas  = document.getElementById('physCamCanvas');
+    var camStatus  = document.getElementById('physCamStatus');
+    var camMeasure = document.getElementById('physCamMeasure');
+    var camClose   = document.getElementById('physCamClose');
+    var poseLm = null, camStream = null, rafId = null, lastLm = null;
+
+    function heightVal() {
+      var h = null;
+      inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); });
+      return (h && h > 50 && h < 260) ? h : null;
+    }
+    async function ensurePose() {
+      if (poseLm) return poseLm;
+      camStatus.textContent = 'Loading model…';
+      var V = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.12';
+      var vision = await import(V);
+      var fileset = await vision.FilesetResolver.forVisionTasks(V + '/wasm');
+      poseLm = await vision.PoseLandmarker.createFromOptions(fileset, {
+        baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' },
+        runningMode: 'VIDEO', numPoses: 1
+      });
+      return poseLm;
+    }
+    async function openCam() {
+      if (!camOverlay) return;
+      if (!heightVal()) {
+        msg('Enter your Height first — it calibrates the measurements.');
+        var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus();
+        return;
+      }
+      camOverlay.classList.remove('hidden');
+      camStatus.textContent = 'Starting…'; camMeasure.disabled = true; lastLm = null;
+      try {
+        await ensurePose();
+        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+        camVideo.srcObject = camStream; await camVideo.play();
+        camStatus.textContent = 'Stand back — fit your whole body in frame.';
+        loop();
+      } catch (e) {
+        camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.';
+      }
+    }
+    var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
+    function loop() {
+      if (!camStream) return;
+      var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+      if (vw && vh) {
+        camCanvas.width = vw; camCanvas.height = vh;
+        var res = null;
+        try { res = poseLm.detectForVideo(camVideo, performance.now()); } catch (e) {}
+        var ctx = camCanvas.getContext('2d'); ctx.clearRect(0, 0, vw, vh);
+        if (res && res.landmarks && res.landmarks[0]) {
+          lastLm = res.landmarks[0];
+          ctx.strokeStyle = 'rgba(212,165,116,0.9)'; ctx.lineWidth = 3;
+          CONNECT.forEach(function (c) {
+            var a = lastLm[c[0]], b = lastLm[c[1]]; if (!a || !b) return;
+            ctx.beginPath(); ctx.moveTo(a.x * vw, a.y * vh); ctx.lineTo(b.x * vw, b.y * vh); ctx.stroke();
+          });
+          ctx.fillStyle = '#fff';
+          lastLm.forEach(function (p) { ctx.beginPath(); ctx.arc(p.x * vw, p.y * vh, 3, 0, 7); ctx.fill(); });
+          camMeasure.disabled = false; camStatus.textContent = 'Body detected — tap Measure.';
+        } else { camMeasure.disabled = true; }
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+    function dist(a, b, vw, vh) { var dx = (a.x - b.x) * vw, dy = (a.y - b.y) * vh; return Math.sqrt(dx * dx + dy * dy); }
+    function measureFromPose() {
+      var lm = lastLm, hCm = heightVal();
+      if (!lm || !hCm) { msg('No body detected — try again.'); return; }
+      var vw = camCanvas.width, vh = camCanvas.height;
+      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) * vh - lm[0].y * vh);  // nose→ankle
+      if (bodyPx < 20) { msg('Move back so your whole body is visible.'); return; }
+      var cmPerPx = hCm / (bodyPx / 0.88);                 // nose→ankle ≈ 88% of full height
+      var shW  = dist(lm[11], lm[12], vw, vh) * cmPerPx;   // shoulder width (cm)
+      var hipW = dist(lm[23], lm[24], vw, vh) * cmPerPx;   // hip width (cm)
+      // Rough front-view width→circumference proxies — APPROXIMATE, tune after live testing.
+      var est = { shoulders: shW * 2.4, chest: shW * 2.2, waist: hipW * 2.3, hips: hipW * 2.7 };
+      inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
+      closeCam();
+      msg('Estimated from camera — adjust any number, then Save.');
+    }
+    function closeCam() {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+      if (camVideo) camVideo.srcObject = null;
+      lastLm = null;
+      if (camOverlay) camOverlay.classList.add('hidden');
+    }
+    scanBtn && scanBtn.addEventListener('click', openCam);
+    camMeasure && camMeasure.addEventListener('click', measureFromPose);
+    camClose && camClose.addEventListener('click', closeCam);
     function msg(t) { if (msgEl) { msgEl.textContent = t; setTimeout(function () { if (msgEl.textContent === t) msgEl.textContent = ''; }, 3000); } }
 
     // load when the tab is opened (and once now in case it's the landing tab)

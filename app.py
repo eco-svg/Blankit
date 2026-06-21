@@ -549,7 +549,8 @@ def create_app():
             "media-src 'self' blob:; "
             # BlinkBot on-device (wllama): fetch the WASM runtime from jsdelivr and the
             # GGUF from self or B2; blob: worker for llama.cpp's threads.
-            "connect-src 'self' https://cdn.jsdelivr.net https://*.backblazeb2.com; "
+            # + storage.googleapis.com for the MediaPipe pose model (Physique camera measure).
+            "connect-src 'self' https://cdn.jsdelivr.net https://*.backblazeb2.com https://storage.googleapis.com; "
             "worker-src 'self' blob:; "
             "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
             "frame-ancestors 'self' https://huggingface.co; "

@@ -7811,3 +7811,22 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-mannequin { width: 100%; max-width: 280px; height: 420px; display: flex; align-items: center; justify-content: center; }
 .phys-mannequin svg { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
 .phys-mannequin-cap { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.06em; }
+
+/* Physique live-camera overlay (on-device pose; nothing recorded/stored) */
+.phys-cam-overlay {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(3px);
+}
+.phys-cam-modal {
+  width: min(560px, 94vw); background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px;
+}
+.phys-cam-head { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); }
+.phys-cam-close { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; line-height: 1; }
+.phys-cam-close:hover { color: var(--text); }
+.phys-cam-stage { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: 10px; overflow: hidden; }
+.phys-cam-stage video, .phys-cam-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.phys-cam-status { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.1em; }
+.phys-cam-hint { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
+.phys-cam-actions { display: flex; justify-content: center; }
