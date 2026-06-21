@@ -85,8 +85,11 @@
        (Kept deliberately small — more quick actions will share this space later.) -->
   <div class="r-card r-quick-actions" id="rQuickActions">
     <div class="qa-timer">
-      <div class="qa-timer-display" id="qaTimerDisplay" title="Scroll or type to set · click to start/pause" role="button" tabindex="0">5:00</div>
-      <button type="button" class="qa-timer-reset" id="qaTimerReset">reset</button>
+      <div class="qa-timer-display" id="qaTimerDisplay" title="Click to edit, then type or scroll to set the minutes" role="textbox" tabindex="0">5:00</div>
+      <div class="qa-timer-controls">
+        <button type="button" class="qa-timer-btn" id="qaTimerToggle">Start</button>
+        <button type="button" class="qa-timer-reset" id="qaTimerReset">reset</button>
+      </div>
     </div>
   </div>
 

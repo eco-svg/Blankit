@@ -765,8 +765,9 @@ body.header-hidden .r-qa-toggle { top: calc(var(--gap) + 44px); }   /* card ride
   border-color: rgba(74,122,170,0.25) !important;
 }
 .r-blinkbot-soon:hover { transform: none; box-shadow: none; border-color: rgba(74,122,170,0.4) !important; }
-/* "BlinkBot" reads as a card title (like the other rbar cards) but keeps its blue. */
-.r-blinkbot-header { color: #4a7aaa; border-bottom-color: rgba(74,122,170,0.3); }
+/* "BlinkBot" reads as a card title (like the other rbar cards) but keeps its blue.
+   Double-class so it beats the later .r-card-header { color: var(--text-muted) }. */
+.r-card-header.r-blinkbot-header { color: #4a7aaa; border-bottom-color: rgba(74,122,170,0.3); }
 /* Content below the title — centered; the input row spans full width. */
 .r-blinkbot-soon-inner {
   flex: 1;
@@ -5945,11 +5946,25 @@ button.nav-pill:not(.btn-ghost):hover {
   user-select: none;
   transition: color 0.15s;
 }
-.qa-timer-display:hover,
-.qa-timer-display.qa-running { color: var(--accent); }
+.qa-timer-display:hover { color: var(--accent); }
+.qa-timer-display.qa-running { color: var(--accent); cursor: default; }
 .qa-timer-display.qa-overtime { color: #e5484d !important; }   /* ticking past zero */
+/* Clear EDIT state — so you can tell when you're typing the minutes vs not. */
+.qa-timer-display.qa-editing {
+  color: var(--accent);
+  outline: none;
+  box-shadow: inset 0 -3px 0 var(--accent);
+  border-radius: 3px;
+}
 .qa-timer-done { color: var(--accent) !important; animation: qaFlash 0.6s ease-in-out 4; }
 @keyframes qaFlash { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+.qa-timer-controls { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.qa-timer-btn {
+  background: var(--accent); color: var(--text-on-accent); border: none; cursor: pointer;
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 16px; border-radius: 7px; font-weight: 600; transition: opacity 0.14s;
+}
+.qa-timer-btn:hover { opacity: 0.9; }
 .qa-timer-reset {
   background: none; border: none; cursor: pointer;
   color: var(--text-dim);

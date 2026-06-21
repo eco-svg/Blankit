@@ -1,16 +1,17 @@
 /**
  * quickactions.js — the Quick Actions sidebar card. For now: one minimal focus timer.
- *   • Set the minutes (1–180) by SCROLLING over the time, OR by focusing it and TYPING
- *     the number on the keyboard (digits build up, Backspace edits, Enter/blur commits).
- *   • Click the time to start / pause.
- *   • At zero it dings, then keeps ticking into the NEGATIVE (overtime, red) — a
- *     "ticking bomb" feel — until you reset.
+ *   • Set the minutes (1–180): CLICK the time to edit (it highlights), then TYPE the
+ *     number or SCROLL over it. Enter commits.
+ *   • Use the Start / Pause button to run it (clicking the time no longer starts it —
+ *     that was the confusing part).
+ *   • At zero it dings, then keeps ticking into the NEGATIVE (overtime, red) until reset.
  * Kept deliberately tiny; more quick actions will share this card later.
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
     var display = document.getElementById('qaTimerDisplay');
     var reset   = document.getElementById('qaTimerReset');
+    var toggleBtn = document.getElementById('qaTimerToggle');
     if (!display) return;
 
     var setSec    = 5 * 60;    // configured duration (default 5 min)
@@ -46,8 +47,10 @@
     }
     function stopTick() { if (tick) { clearInterval(tick); tick = null; } }
 
+    function syncBtn() { if (toggleBtn) toggleBtn.textContent = running ? 'Pause' : 'Start'; }
     function start() {
       commitTyping();
+      display.blur(); display.classList.remove('qa-editing');
       running = true;
       display.classList.add('qa-running');
       endAt = Date.now() + remaining * 1000;
@@ -56,8 +59,9 @@
         if (remaining <= 0 && !dinged) { dinged = true; ding(); }
         render();
       }, 200);
+      syncBtn();
     }
-    function pause() { running = false; display.classList.remove('qa-running'); stopTick(); }
+    function pause() { running = false; display.classList.remove('qa-running'); stopTick(); syncBtn(); }
     function ding() {
       beep();
       display.classList.add('qa-timer-done');
@@ -86,9 +90,12 @@
       }
     }
 
-    display.addEventListener('click', toggle);
+    // Clicking the time EDITS it (focus + highlight) — it no longer starts the timer.
+    display.addEventListener('click', function () { if (!running) { display.focus(); } });
+    display.addEventListener('focus', function () { if (!running) { typing = ''; display.classList.add('qa-editing'); } });
+    display.addEventListener('blur', function () { commitTyping(); display.classList.remove('qa-editing'); });
     display.addEventListener('keydown', function (e) {
-      // Type a number to set the minutes (only while stopped).
+      // Type a number to set the minutes (only while stopped / editing).
       if (!running && e.key >= '0' && e.key <= '9') {
         e.preventDefault();
         typing = (typing + e.key).slice(-3);
@@ -101,10 +108,10 @@
         previewMinutes(parseInt(typing || '0', 10));
         return;
       }
-      if (e.key === 'Enter') { e.preventDefault(); typing ? commitTyping() : toggle(); return; }
-      if (e.key === ' ')     { e.preventDefault(); commitTyping(); toggle(); }
+      if (e.key === 'Enter') { e.preventDefault(); commitTyping(); display.blur(); return; }  // commit, don't auto-start
+      if (e.key === 'Escape') { e.preventDefault(); display.blur(); }
     });
-    display.addEventListener('blur', commitTyping);
+    if (toggleBtn) toggleBtn.addEventListener('click', toggle);
 
     // Scroll over the digits to set the minutes (only while stopped).
     display.addEventListener('wheel', function (e) {
