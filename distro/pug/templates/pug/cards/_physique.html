@@ -1,0 +1,35 @@
+<!-- Physique tab — big full-width card, split into two: measurements (left) and a
+     digital mannequin (right) rendered from the numbers. No photos are ever stored;
+     comparison over time is via the mannequin built from saved measurements.
+     Live-camera measurement is a later step (button is a placeholder for now). -->
+<div class="physique-wrap page-hidden" id="sec-physique-wrapper">
+  <div class="card physique-card" id="sec-physique">
+    <div class="card-top-bar">
+      <h2 class="card-title">Physique</h2>
+      <span class="phys-privacy-note">Private · no photos stored</span>
+    </div>
+
+    <div class="physique-body">
+      <!-- LEFT: measurements + history -->
+      <div class="physique-left">
+        <div class="phys-section-label">Your measurements</div>
+        <div class="phys-fields" id="physFields"></div>
+        <div class="phys-actions">
+          <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
+          <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing recorded. Coming soon.">📷 Scan (soon)</button>
+        </div>
+        <div id="physMsg" class="phys-msg"></div>
+
+        <div class="phys-section-label" style="margin-top:18px;">Compare with</div>
+        <select id="physCompareSelect" class="phys-compare"></select>
+        <div id="physDeltas" class="phys-deltas"></div>
+      </div>
+
+      <!-- RIGHT: digital mannequin -->
+      <div class="physique-right">
+        <div class="phys-mannequin" id="physMannequin"></div>
+        <div class="phys-mannequin-cap" id="physMannequinCap">Add measurements to build your figure</div>
+      </div>
+    </div>
+  </div>
+</div>

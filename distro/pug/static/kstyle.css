@@ -7753,3 +7753,61 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
   background: var(--accent); color: var(--text-on-accent); font-weight: 600; font-size: 0.82rem;
 }
 .guest-prompt-cta:hover { opacity: 0.92; }
+
+/* ── Physique tab ──────────────────────────────────────────────────────────── */
+.physique-wrap { grid-column: 1 / -1; }   /* big card spans the full playground width */
+.physique-card { height: auto; min-height: 560px; cursor: default; }
+.phys-privacy-note {
+  margin-left: auto; font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); opacity: 0.7;
+}
+.physique-body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 8px; }
+@media (max-width: 900px) { .physique-body { grid-template-columns: 1fr; } }
+
+.phys-section-label {
+  font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px;
+}
+.phys-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.phys-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: var(--text-muted); }
+.phys-field input {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-family: var(--font-mono); font-size: 0.9rem; padding: 8px 10px; outline: none;
+  transition: border-color 0.14s;
+}
+.phys-field input:focus { border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+
+.phys-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.phys-save {
+  background: var(--accent); color: var(--text-on-accent); border: none; cursor: pointer;
+  font-weight: 600; font-size: 0.82rem; padding: 9px 18px; border-radius: 9px; transition: opacity 0.14s;
+}
+.phys-save:hover { opacity: 0.9; }
+.phys-save:disabled { opacity: 0.5; cursor: default; }
+.phys-scan {
+  background: transparent; color: var(--text-muted); border: 1px solid var(--border2);
+  cursor: pointer; font-size: 0.82rem; padding: 9px 16px; border-radius: 9px;
+}
+.phys-scan:hover { color: var(--text); border-color: var(--accent); }
+.phys-msg { font-size: 0.78rem; color: var(--text-dim); min-height: 1.1em; margin-top: 8px; }
+
+.phys-compare {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-family: var(--font-mono); font-size: 0.82rem; padding: 8px 10px; outline: none;
+}
+.phys-deltas { display: flex; flex-direction: column; gap: 4px; margin-top: 12px; }
+.phys-delta {
+  display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);
+  font-family: var(--font-mono); padding: 3px 0; border-bottom: 1px dashed var(--border);
+}
+.phys-delta.up   span:last-child { color: #5a9fd8; }
+.phys-delta.down span:last-child { color: #6cc070; }
+
+/* right column: mannequin */
+.physique-right {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+}
+.phys-mannequin { width: 100%; max-width: 280px; height: 420px; display: flex; align-items: center; justify-content: center; }
+.phys-mannequin svg { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
+.phys-mannequin-cap { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.06em; }

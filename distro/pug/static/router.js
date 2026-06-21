@@ -6,6 +6,7 @@
   const ROUTES = {
     'notes':    ['sec-notes', 'sec-dms'],   // DMs fill the old Quick Ask column slot beside Notes
     'skills':   ['sec-skills-wrapper'],
+    'physique': ['sec-physique-wrapper'],
     'social':   ['sec-comms'],
     'habits':   ['sec-habits', 'sec-habit-pulse'],
     'buddybot': ['sec-buddybot' /*, 'sec-ask' — Ask Anything card disabled */],
@@ -17,7 +18,7 @@
     'admin':    ['sec-admin', 'sec-admin-overview'],   // only present for admin accounts
   };
 
-  const LBAR_ROUTES = new Set(['notes', 'habits', 'skills']);
+  const LBAR_ROUTES = new Set(['notes', 'habits', 'skills', 'physique']);
   const HOME_TAB_KEY = 'veyra_home_tab';
   const ALL_SECTIONS = [...new Set(Object.values(ROUTES).flat())];
 

@@ -1700,6 +1700,72 @@ def delete_event(event_id):
     return jsonify({'ok': True})
 
 
+# ── Physique: body measurements over time (private; stored ENCRYPTED in Note.body) ──
+# No photos are ever stored — the mannequin is rendered client-side from these numbers.
+_PHYSIQUE_FIELDS = ['height', 'weight', 'neck', 'shoulders', 'chest',
+                    'waist', 'hips', 'arm', 'thigh', 'calf']
+
+
+@pug_bp.route('/pug/api/physique', methods=['GET'])
+def get_physique():
+    """List the user's saved measurement sets (oldest→newest) for trend + comparison."""
+    err = login_required_api()
+    if err: return err
+    logs = Note.query.filter_by(
+        user_id=session['user_id'], entry_type='physique', is_deleted=False
+    ).order_by(Note.created_at.asc()).all()
+    out = []
+    for n in logs:
+        try: m = json.loads(n.body or '{}')
+        except Exception: m = {}
+        out.append({'id': n.id,
+                    'date': n.created_at.isoformat() if n.created_at else None,
+                    'm': m})
+    return jsonify(out)
+
+
+@pug_bp.route('/pug/api/physique', methods=['POST'])
+def add_physique():
+    """Save a measurement set. Body: any of _PHYSIQUE_FIELDS (cm / kg, numbers)."""
+    err = login_required_api()
+    if err: return err
+    data = request.get_json(silent=True) or {}
+    m = {}
+    for f in _PHYSIQUE_FIELDS:
+        v = data.get(f)
+        if v in (None, ''):
+            continue
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            continue
+        if 0 < fv < 1000:
+            m[f] = round(fv, 1)
+    if not m:
+        return jsonify({'error': 'no measurements'}), 400
+    n = Note(user_id=session['user_id'], entry_type='physique')
+    n.body = json.dumps(m)   # encrypted at rest by the Note model
+    db.session.add(n)
+    db.session.commit()
+    return jsonify({'id': n.id,
+                    'date': n.created_at.isoformat() if n.created_at else None,
+                    'm': m}), 201
+
+
+@pug_bp.route('/pug/api/physique/<int:pid>', methods=['DELETE'])
+def del_physique(pid):
+    """Delete one measurement set."""
+    err = login_required_api()
+    if err: return err
+    n = Note.query.filter_by(id=pid, user_id=session['user_id'],
+                             entry_type='physique').first()
+    if not n:
+        return jsonify({'error': 'not found'}), 404
+    n.is_deleted = True
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 _holidays_cache = {}  # (country, year) -> [{date, name}] — in-memory per process
 
 

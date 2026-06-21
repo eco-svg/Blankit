@@ -21,7 +21,7 @@
 
   var K = { notes:'veyra_guest_notes', goals:'veyra_guest_goals', events:'veyra_guest_events',
             habits:'veyra_guest_habits', logs:'veyra_guest_habit_logs', stats:'veyra_guest_stats',
-            seq:'veyra_guest_seq' };
+            physique:'veyra_guest_physique', seq:'veyra_guest_seq' };
 
   function guestSheet() {
     return read(K.stats, null) || {
@@ -192,6 +192,23 @@
     }
     if (path === '/pug/api/stats/skill/exp' && method === 'POST') {
       return json({ ok:true, sheet: guestSheet() });   // exp/ranking is a signed-in feature
+    }
+
+    // ── PHYSIQUE (measurements over time; numbers only, no photos) ──
+    if (path === '/pug/api/physique') {
+      if (method === 'GET') return json(read(K.physique, []).filter(function (p){ return !p.is_deleted; }));
+      if (method === 'POST') {
+        if (!body || !Object.keys(body).length) return json({ error:'no measurements' }, 400);
+        var rec = { id: nextId(), date: nowISO(), m: body, is_deleted: false };
+        var arr = read(K.physique, []); arr.push(rec); write(K.physique, arr);
+        return json({ id: rec.id, date: rec.date, m: rec.m }, 201);
+      }
+    }
+    var mPhys = path.match(/^\/pug\/api\/physique\/(\d+)$/);
+    if (mPhys && method === 'DELETE') {
+      var pid = +mPhys[1], pa = read(K.physique, []);
+      pa.forEach(function (p){ if (p.id === pid) p.is_deleted = true; });
+      write(K.physique, pa); return json({ ok:true });
     }
 
     return null;  // not a personal endpoint → let it pass through to the server
