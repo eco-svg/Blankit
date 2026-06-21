@@ -195,6 +195,9 @@
     }
 
     // ── PHYSIQUE (measurements over time; numbers only, no photos) ──
+    if (path === '/pug/api/physique/clear' && method === 'POST') {
+      write(K.physique, []); return json({ ok: true });
+    }
     if (path === '/pug/api/physique') {
       if (method === 'GET') return json(read(K.physique, []).filter(function (p){ return !p.is_deleted; }));
       if (method === 'POST') {

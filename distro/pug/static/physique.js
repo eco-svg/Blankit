@@ -184,6 +184,15 @@
           load();
         }).catch(function () { saveBtn.disabled = false; msg('Save failed.'); });
     });
+    var clearBtn = document.getElementById('physClearBtn');
+    clearBtn && clearBtn.addEventListener('click', function () {
+      if (!logs.length) { msg('Nothing to clear.'); return; }
+      if (!confirm('This will permanently delete ALL your measurements. Continue?')) return;
+      fetch('/pug/api/physique/clear', { method: 'POST' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) { if (res && res.ok) { logs = []; fillInputs({}); showEditor(); refreshView(); msg('All measurements cleared.'); } else msg('Clear failed.'); })
+        .catch(function () { msg('Clear failed.'); });
+    });
     updateBtn && updateBtn.addEventListener('click', function () { var cur = latest(); fillInputs(cur ? cur.m : {}); showEditor(); });
     dimBtn && dimBtn.addEventListener('click', function () { mode3d = !mode3d; dimBtn.textContent = mode3d ? '2D' : '3D'; swapDim(); if (!figureEl.classList.contains('hidden')) renderFigure(); });
     compareEl && compareEl.addEventListener('change', function () { var cur = latest(); var ghost = compareEl.value ? logById(compareEl.value) : null; renderDeltas(ghost ? ghost.m : null, cur ? cur.m : {}); if (!figureEl.classList.contains('hidden')) renderFigure(); });

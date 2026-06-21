@@ -1752,6 +1752,17 @@ def add_physique():
                     'm': m}), 201
 
 
+@pug_bp.route('/pug/api/physique/clear', methods=['POST'])
+def clear_physique():
+    """Delete ALL of the user's measurement sets."""
+    err = login_required_api()
+    if err: return err
+    Note.query.filter_by(user_id=session['user_id'], entry_type='physique', is_deleted=False)\
+        .update({'is_deleted': True})
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 @pug_bp.route('/pug/api/physique/<int:pid>', methods=['DELETE'])
 def del_physique(pid):
     """Delete one measurement set."""

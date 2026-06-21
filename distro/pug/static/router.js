@@ -40,7 +40,22 @@
     });
   };
 
+  function soonToast(name) {
+    var t = document.createElement('div');
+    t.className = 'veyra-soon-toast';
+    t.textContent = (name || 'This') + ' — coming soon';
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('show'); });
+    setTimeout(function () { t.classList.remove('show'); setTimeout(function () { t.remove(); }, 300); }, 2400);
+  }
+
   function navigate(route, push) {
+    // Physique is admin-only for now — bounce everyone else to home with a "soon" note.
+    if (route === 'physique' && !window.VEYRA_IS_ADMIN) {
+      soonToast('Physique');
+      route = getHomeTab();
+      push = true;
+    }
     const sections = ROUTES[route];
     if (sections === undefined) return;
 

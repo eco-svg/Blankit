@@ -7867,3 +7867,14 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-cam-status { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.1em; }
 .phys-cam-hint { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
 .phys-cam-actions { display: flex; justify-content: center; }
+
+/* Physique title-bar danger button + "coming soon" toast */
+.phys-toolbtn-danger:hover { color: #e87a5a !important; border-color: #e87a5a !important; }
+.veyra-soon-toast {
+  position: fixed; left: 50%; bottom: 28px; transform: translate(-50%, 16px);
+  z-index: 600; background: var(--surface); border: 1px solid var(--accent);
+  color: var(--text-muted); font-size: 0.82rem; padding: 9px 18px; border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.4); opacity: 0; pointer-events: none;
+  transition: opacity 0.28s, transform 0.28s;
+}
+.veyra-soon-toast.show { opacity: 1; transform: translate(-50%, 0); }
