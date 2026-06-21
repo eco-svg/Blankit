@@ -1,7 +1,8 @@
-<!-- Physique tab — big full-width card, split into two: measurements (left) and a
-     digital mannequin (right) rendered from the numbers. No photos are ever stored;
-     comparison over time is via the mannequin built from saved measurements.
-     Live-camera measurement is a later step (button is a placeholder for now). -->
+<!-- Physique tab — full-width card, split in two.
+     LEFT  = stats (current numbers + compare/deltas).
+     RIGHT = the "figure" area: 2 buttons (Update · 2D⇄3D) on top, then EITHER the
+             measurement editor (form + save/scan) OR the digital mannequin.
+     No photos are ever stored — the mannequin is rendered from the numbers. -->
 <div class="physique-wrap page-hidden" id="sec-physique-wrapper">
   <div class="card physique-card" id="sec-physique">
     <div class="card-top-bar">
@@ -10,25 +11,38 @@
     </div>
 
     <div class="physique-body">
-      <!-- LEFT: measurements + history -->
+      <!-- LEFT: stats -->
       <div class="physique-left">
-        <div class="phys-section-label">Your measurements</div>
-        <div class="phys-fields" id="physFields"></div>
-        <div class="phys-actions">
-          <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
-          <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing is recorded or stored.">📷 Scan with camera</button>
-        </div>
-        <div id="physMsg" class="phys-msg"></div>
-
+        <div class="phys-section-label">Your stats</div>
+        <div id="physStats" class="phys-stats"></div>
         <div class="phys-section-label" style="margin-top:18px;">Compare with</div>
         <select id="physCompareSelect" class="phys-compare"></select>
         <div id="physDeltas" class="phys-deltas"></div>
       </div>
 
-      <!-- RIGHT: digital mannequin -->
+      <!-- RIGHT: figure area -->
       <div class="physique-right">
-        <div class="phys-mannequin" id="physMannequin"></div>
-        <div class="phys-mannequin-cap" id="physMannequinCap">Add measurements to build your figure</div>
+        <div class="phys-fig-toolbar">
+          <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update measurements</button>
+          <button id="physDimBtn" type="button" class="phys-toolbtn" title="Toggle 2D / 3D figure">3D</button>
+        </div>
+
+        <!-- editor: the measurement form -->
+        <div id="physEditor" class="phys-editor">
+          <div class="phys-fields" id="physFields"></div>
+          <div class="phys-actions">
+            <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
+            <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing is recorded or stored.">📷 Scan with camera</button>
+          </div>
+          <div id="physMsg" class="phys-msg"></div>
+        </div>
+
+        <!-- figure: the mannequin (2D svg or 3D canvas) -->
+        <div id="physFigure" class="phys-figure hidden">
+          <div class="phys-mannequin" id="physMannequin"></div>
+          <div class="phys-mannequin phys-mannequin-3d hidden" id="physMannequin3d"></div>
+          <div class="phys-mannequin-cap" id="physMannequinCap"></div>
+        </div>
       </div>
     </div>
   </div>

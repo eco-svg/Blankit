@@ -7805,12 +7805,31 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 
 /* right column: mannequin */
 .physique-right {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+  display: flex; flex-direction: column;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
 }
+/* toolbar: Update + 2D/3D toggle */
+.phys-fig-toolbar { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 12px; }
+.phys-toolbtn {
+  background: transparent; border: 1px solid var(--border2); color: var(--text-muted);
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.04em;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: color .14s, border-color .14s;
+}
+.phys-toolbtn:hover { color: var(--text); border-color: var(--accent); }
+.phys-editor { flex: 1; }
+.phys-figure { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .phys-mannequin { width: 100%; max-width: 280px; height: 420px; display: flex; align-items: center; justify-content: center; }
+.phys-mannequin-3d { max-width: 320px; }
 .phys-mannequin svg { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
 .phys-mannequin-cap { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-dim); margin-top: 10px; letter-spacing: 0.06em; }
+
+/* left-column stats list */
+.phys-stats { display: flex; flex-direction: column; gap: 2px; }
+.phys-stat-row {
+  display: flex; justify-content: space-between; font-size: 0.84rem; color: var(--text-muted);
+  font-family: var(--font-mono); padding: 5px 0; border-bottom: 1px dashed var(--border);
+}
+.phys-stat-row span:last-child { color: var(--text); }
 
 /* Physique live-camera overlay (on-device pose; nothing recorded/stored) */
 .phys-cam-overlay {
