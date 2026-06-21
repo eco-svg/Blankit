@@ -8,6 +8,8 @@
     <div class="card-top-bar">
       <h2 class="card-title">Physique</h2>
       <span class="phys-privacy-note">Private · no photos stored</span>
+      <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update</button>
+      <button id="physDimBtn" type="button" class="phys-toolbtn" title="Toggle 2D / 3D figure">3D</button>
     </div>
 
     <div class="physique-body">
@@ -22,11 +24,6 @@
 
       <!-- RIGHT: figure area -->
       <div class="physique-right">
-        <div class="phys-fig-toolbar">
-          <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update measurements</button>
-          <button id="physDimBtn" type="button" class="phys-toolbtn" title="Toggle 2D / 3D figure">3D</button>
-        </div>
-
         <!-- editor: the measurement form -->
         <div id="physEditor" class="phys-editor">
           <div class="phys-fields" id="physFields"></div>

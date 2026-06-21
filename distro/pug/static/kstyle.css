@@ -7817,7 +7817,25 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 }
 .phys-toolbtn:hover { color: var(--text); border-color: var(--accent); }
 .phys-editor { flex: 1; }
-.phys-figure { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+/* Figure viewport with a faint measurement grid (graph-paper look) in the corners. */
+.phys-figure {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; border-radius: 12px; overflow: hidden;
+  background-color: rgba(0,0,0,0.12);
+  background-image:
+    linear-gradient(rgba(212,165,116,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,165,116,0.10) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+/* heavier ruler ticks down the left edge + along the bottom (the "scale") */
+.phys-figure::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 12px;
+  background-image: repeating-linear-gradient(to bottom, rgba(212,165,116,0.35) 0 1px, transparent 1px 28px);
+}
+.phys-figure::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 12px;
+  background-image: repeating-linear-gradient(to right, rgba(212,165,116,0.35) 0 1px, transparent 1px 28px);
+}
 .phys-mannequin { width: 100%; max-width: 280px; height: 420px; display: flex; align-items: center; justify-content: center; }
 .phys-mannequin-3d { max-width: 320px; }
 .phys-mannequin svg { filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3)); }
