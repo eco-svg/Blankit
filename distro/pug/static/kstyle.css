@@ -7878,3 +7878,10 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
   transition: opacity 0.28s, transform 0.28s;
 }
 .veyra-soon-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* Guest mode: hide account-management actions (guests have no account) — esp. Delete. */
+body[data-guest] #ppChangeUsername,
+body[data-guest] #ppChangePassword,
+body[data-guest] #ppStudentVerify,
+body[data-guest] #ppLogoutBtn,
+body[data-guest] #ppDeleteAccount { display: none !important; }

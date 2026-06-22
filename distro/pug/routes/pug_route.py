@@ -359,7 +359,15 @@ def _call_groq_chat(message, session_history, user_context, user_id=None):
         "If you write analysis, context-checking, or any reasoning before [REPLY], it is discarded. "
         "Example:\n[REPLY]\nYour actual response here.\n\n"
     )
-    messages = [{'role': 'system', 'content': groq_override + BUDDYBOT_SYSTEM + '\n\n' + '\n'.join(ctx_lines)}]
+    # Quick Ask is plain GROQ — a neutral assistant. It is NOT BuddyBot: no BuddyBot
+    # persona and no "Nexa" naming easter egg (those belong to BuddyBot only).
+    groq_persona = (
+        "You are Groq, a fast, concise, helpful AI assistant inside the Veyra app. "
+        "Answer clearly, factually and briefly. You are NOT BuddyBot and have no persona, "
+        "backstory, or special name — if asked your name, say you're Groq. Use the user's "
+        "context below only to personalise answers when it's relevant.\n\n"
+    )
+    messages = [{'role': 'system', 'content': groq_override + groq_persona + '\n'.join(ctx_lines)}]
     for h in (session_history or [])[-10:]:
         if h.get('role') in ('user', 'assistant') and h.get('content'):
             messages.append({'role': h['role'], 'content': h['content']})
@@ -3285,8 +3293,13 @@ def get_community_feed():
     # All-distros view: merge in other distros' shared posts (svg today; div has none yet).
     # Not for guests — we can't age-filter svg's store here, so logged-out visitors stay
     # on pug's own (minor-filtered) global feed.
+    # Wrapped defensively: a failure in the cross-distro merge must NOT blank the whole
+    # feed (that was the "All distros → nothing shows" bug) — fall back to pug's posts.
     if distro_scope == 'all' and not user_filter and not is_guest:
-        result = result + _svg_global_rows(me, blocked, am_admin=am_admin)
+        try:
+            result = result + _svg_global_rows(me, blocked, am_admin=am_admin)
+        except Exception as e:
+            current_app.logger.warning(f'svg cross-distro merge failed, showing pug only: {e}')
     return jsonify({'posts': _sort_feed(result, sort_by), 'radius_km': None})
 
 
