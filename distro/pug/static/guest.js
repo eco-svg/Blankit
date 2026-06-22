@@ -93,5 +93,8 @@
       '<a class="guest-banner-cta" href="/">Sign up</a>';
     document.body.appendChild(b);
     document.body.classList.add('has-guest-banner');
+    // Guests aren't signed in — relabel "Sign Out" to make it clearly an exit to login.
+    var lo = document.querySelector('#ppLogoutBtn span');
+    if (lo) lo.textContent = 'Exit guest mode';
   });
 })();

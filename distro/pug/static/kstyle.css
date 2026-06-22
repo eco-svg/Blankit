@@ -7879,9 +7879,9 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 }
 .veyra-soon-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* Guest mode: hide account-management actions (guests have no account) — esp. Delete. */
+/* Guest mode: hide account-management actions (guests have no account) — esp. Delete.
+   Sign Out STAYS (relabeled in guest.js) — it's the guest's way back to the login page. */
 body[data-guest] #ppChangeUsername,
 body[data-guest] #ppChangePassword,
 body[data-guest] #ppStudentVerify,
-body[data-guest] #ppLogoutBtn,
 body[data-guest] #ppDeleteAccount { display: none !important; }
