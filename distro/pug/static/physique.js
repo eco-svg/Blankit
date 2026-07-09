@@ -30,6 +30,7 @@
     ];
     var logs = [];          // [{id, date, m}]
     var mode3d = false;     // 2D by default
+    var gender = localStorage.getItem('veyra_phys_gender') || 'female';  // which 3D body to load
 
     fieldsEl.innerHTML = FIELDS.map(function (f) {
       return '<label class="phys-field"><span>' + f[1] + '</span>' +
@@ -84,47 +85,113 @@
       mannequin.innerHTML = cur ? '<svg viewBox="0 0 200 400" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">'+p+'</svg>' : '';
     }
 
-    // ── 3D mannequin (Three.js, lazy) ──
-    var THREE = null, three = {};   // {renderer, scene, camera, group, raf}
+    // ── 3D mannequin (Three.js + GLB, lazy-loaded) ──
+    // A real clothed body model (rebuilt in Blender from a CC-BY base mesh — see
+    // distro/pug/blender/build_mannequin.py). The GLB carries one CALIBRATED morph target
+    // per body zone (chest/waist/hips/thighs/calves/arms/shoulders), so each of the user's
+    // tape measurements drives its own zone quantitatively (see morphInfluences below).
+    var THREE = null, GLTFLoaderClass = null, three = {};   // three = {renderer, scene, camera, group, raf}
+    var loadToken = 0;                                       // bumped to cancel stale async loads
     async function ensureThree() {
-      if (THREE) return THREE;
-      THREE = await import('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js');
+      if (!THREE) THREE = await import('three');             // resolved by the <importmap> in home.html
       return THREE;
     }
+    async function ensureGLTF() {                            // the add-on imports bare 'three' (needs the map)
+      if (!GLTFLoaderClass) GLTFLoaderClass = (await import('three/addons/loaders/GLTFLoader.js')).GLTFLoader;
+      return GLTFLoaderClass;
+    }
     function disposeThree() {
+      loadToken++;                                           // any in-flight load is now stale
       if (three.raf) cancelAnimationFrame(three.raf);
       if (three.renderer) { three.renderer.dispose(); if (three.renderer.domElement && three.renderer.domElement.parentNode) three.renderer.domElement.parentNode.removeChild(three.renderer.domElement); }
       three = {};
     }
-    function cyl(T, rt, rb, h, y, color) { var g = new T.CylinderGeometry(rt, rb, h, 20); var m = new T.Mesh(g, new T.MeshStandardMaterial({ color: color, roughness: 0.7 })); m.position.y = y; return m; }
-    async function render3D(cur) {
-      if (!cur) { mannequin3d.innerHTML = ''; return; }
+    function modelURL() {
+      var base = window.VEYRA_MANNEQUIN_BASE || '/pug/static/models/';
+      return base + 'mannequin_' + (gender === 'male' ? 'male' : 'female') + '.glb?v=5';  // ?v busts SW/browser cache
+    }
+
+    // The mannequins' OWN girths in cm (measured off the meshes during the Blender build —
+    // the CALIB output of build_mannequin.py). Each morph target is calibrated so that
+    // influence 1.0 == +20% girth in its zone (shoulders: +10% of shoulder circumference).
+    // So:  influence = (user_cm / mannequin_cm - 1) / 0.20   — real tape-measure maths.
+    var MORPH_REF = {
+      male:   { height: 177, shoulders: 124.1,
+                girth: { chest: 96.8, waist: 80.3, hips: 93.9, thigh: 51.7, calf: 38.7, arm: 29.2 } },
+      female: { height: 165, shoulders: 100.0,
+                girth: { chest: 85.7, waist: 75.7, hips: 94.9, thigh: 48.7, calf: 33.7, arm: 22.7 } }
+    };
+    var MORPH_KEY = { chest: 'chest', waist: 'waist', hips: 'hips',      // measurement field ->
+                      thigh: 'thighs', calf: 'calves', arm: 'arms' };    // morph target in the GLB
+    function clampInfl(v) { return Math.max(-1.2, Math.min(2, v)); }     // keep shapes plausible
+
+    // Measurements -> per-zone morph influences. Zones without a measurement stay at the
+    // mannequin's base shape (influence 0).
+    function morphInfluences(m) {
+      var ref = MORPH_REF[gender === 'male' ? 'male' : 'female'];
+      var infl = {};
+      if (!m) return infl;
+      for (var f in MORPH_KEY) {
+        if (m[f]) infl[MORPH_KEY[f]] = clampInfl((m[f] / ref.girth[f] - 1) / 0.20);
+      }
+      if (m.shoulders) infl.shoulders = clampInfl((m.shoulders / ref.shoulders - 1) / 0.10);
+      return infl;
+    }
+
+    // Drive the model's shape keys + height scale from measurements. Cheap: just sets
+    // influences, so it can run live on every measurement change (no reload). The clothing
+    // primitives carry the same shape keys, so the underwear stretches with the body.
+    function applyMorphs(m) {
+      if (!three.morphMeshes) return;
+      var infl = morphInfluences(m);
+      three.morphMeshes.forEach(function (mesh) {
+        var d = mesh.morphTargetDictionary, mi = mesh.morphTargetInfluences;
+        if (!d || !mi) return;
+        for (var k in d) mi[d[k]] = infl[k] || 0;
+      });
+      if (three.group) {                                          // taller user → taller mannequin
+        var refH = MORPH_REF[gender === 'male' ? 'male' : 'female'].height;
+        var s = (m && m.height) ? Math.max(0.85, Math.min(1.18, m.height / refH)) : 1;
+        three.group.scale.set(1, s, 1);
+      }
+    }
+    async function render3D() {
       var T;
       try { T = await ensureThree(); } catch (e) { msg('3D unavailable — staying in 2D.'); mode3d = false; dimBtn.textContent = '3D'; swapDim(); return; }
       disposeThree();
+      var myToken = loadToken;                               // this render's identity
+      mannequin3d.innerHTML = '<div class="phys3d-loading">Loading 3D…</div>';
       var w = mannequin3d.clientWidth || 280, h = mannequin3d.clientHeight || 420;
       var scene = new T.Scene();
-      var camera = new T.PerspectiveCamera(40, w / h, 0.1, 100); camera.position.set(0, 0.2, 6);
+      var camera = new T.PerspectiveCamera(35, w / h, 0.01, 100);
       var renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
       renderer.setSize(w, h); renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-      mannequin3d.innerHTML = ''; mannequin3d.appendChild(renderer.domElement);
-      scene.add(new T.AmbientLight(0xffffff, 0.65));
-      var dir = new T.DirectionalLight(0xffffff, 0.8); dir.position.set(2, 3, 4); scene.add(dir);
-      var col = 0xd4a574;
-      var g = new T.Group();
-      var sh = map(cur.shoulders,90,130,0.5,0.95)/2, ch = map(cur.chest,80,120,0.45,0.85)/2,
-          wa = map(cur.waist,60,110,0.32,0.78)/2, hip = map(cur.hips,80,120,0.45,0.85)/2,
-          arm = map(cur.arm,22,45,0.07,0.17)/2, th = map(cur.thigh,40,72,0.10,0.22)/2;
-      g.add(function(){ var s=new T.Mesh(new T.SphereGeometry(0.28,24,24), new T.MeshStandardMaterial({color:col,roughness:0.7})); s.position.y=2.0; return s; }());
-      g.add(cyl(T, ch, hip, 1.7, 0.85, col));               // torso (chest→hips)
-      g.add(cyl(T, sh*0.5, ch, 0.35, 1.85, col));           // upper chest/shoulders
-      var aL=cyl(T,arm,arm,1.4,0.95,col); aL.position.x=-(sh+arm+0.02); g.add(aL);
-      var aR=cyl(T,arm,arm,1.4,0.95,col); aR.position.x=(sh+arm+0.02); g.add(aR);
-      var lL=cyl(T,th,th*0.7,1.7,-0.95,col); lL.position.x=-hip*0.5; g.add(lL);
-      var lR=cyl(T,th,th*0.7,1.7,-0.95,col); lR.position.x=hip*0.5; g.add(lR);
-      scene.add(g);
-      three = { renderer: renderer, scene: scene, camera: camera, group: g };
-      (function anim() { three.raf = requestAnimationFrame(anim); g.rotation.y += 0.012; renderer.render(scene, camera); })();
+      scene.add(new T.AmbientLight(0xffffff, 0.75));
+      var key = new T.DirectionalLight(0xffffff, 1.5); key.position.set(2, 3, 4); scene.add(key);
+      var rim = new T.DirectionalLight(0xffffff, 0.6); rim.position.set(-2, 2, -3); scene.add(rim);
+      var Loader;
+      try { Loader = await ensureGLTF(); } catch (e) { if (myToken === loadToken) mannequin3d.innerHTML = '<div class="phys3d-loading">3D unavailable.</div>'; return; }
+      if (myToken !== loadToken) return;                     // tab switched / gender changed while importing
+      new Loader().load(modelURL(), function (gltf) {
+        if (myToken !== loadToken) return;                   // superseded before the model finished downloading
+        var model = gltf.scene;
+        var box = new T.Box3().setFromObject(model);
+        var size = new T.Vector3(); box.getSize(size);
+        var center = new T.Vector3(); box.getCenter(center);
+        model.position.sub(center);                          // re-center the body at the origin
+        var grp = new T.Group(); grp.add(model); scene.add(grp);
+        // collect every sub-mesh that has morph targets (body + each clothing primitive)
+        var morphMeshes = [];
+        model.traverse(function (o) { if (o.isMesh && o.morphTargetInfluences && o.morphTargetInfluences.length) morphMeshes.push(o); });
+        var maxd = Math.max(size.x, size.y, size.z) || 1;
+        camera.position.set(0, 0, maxd * 1.7); camera.lookAt(0, 0, 0);
+        mannequin3d.innerHTML = ''; mannequin3d.appendChild(renderer.domElement);
+        three = { renderer: renderer, scene: scene, camera: camera, group: grp, morphMeshes: morphMeshes, gender: gender };
+        applyMorphs(latest() ? latest().m : null);           // shape the body to the user's numbers
+        (function anim() { three.raf = requestAnimationFrame(anim); grp.rotation.y += 0.01; renderer.render(scene, camera); })();
+      }, undefined, function () {
+        if (myToken === loadToken) mannequin3d.innerHTML = '<div class="phys3d-loading">3D model failed to load.</div>';
+      });
     }
 
     function swapDim() {
@@ -138,7 +205,11 @@
       var cur = latest();
       var ghost = compareEl.value ? logById(compareEl.value) : null;
       cap.textContent = cur ? ('Updated ' + fmtDate(cur.date)) : '';
-      if (mode3d) { render3D(cur ? cur.m : null); }
+      if (mode3d) {
+        // model already loaded for this gender → just re-shape it (cheap); else load it
+        if (three.morphMeshes && three.gender === gender) applyMorphs(cur ? cur.m : null);
+        else render3D();
+      }
       else { render2D(cur ? cur.m : null, ghost ? ghost.m : null); }
     }
 
@@ -195,13 +266,63 @@
     });
     updateBtn && updateBtn.addEventListener('click', function () { var cur = latest(); fillInputs(cur ? cur.m : {}); showEditor(); });
     dimBtn && dimBtn.addEventListener('click', function () { mode3d = !mode3d; dimBtn.textContent = mode3d ? '2D' : '3D'; swapDim(); if (!figureEl.classList.contains('hidden')) renderFigure(); });
+
+    // Male/Female toggle for the 3D body (no profile gender field yet → manual pick, remembered).
+    var genderWrap = document.getElementById('physGender');
+    function syncGenderBtns() {
+      genderWrap && genderWrap.querySelectorAll('.phys-gbtn').forEach(function (b) {
+        b.classList.toggle('gbtn-active', b.getAttribute('data-g') === gender);
+      });
+    }
+    if (genderWrap) {
+      genderWrap.querySelectorAll('.phys-gbtn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          gender = b.getAttribute('data-g') === 'male' ? 'male' : 'female';
+          localStorage.setItem('veyra_phys_gender', gender);
+          syncGenderBtns();
+          if (mode3d && !figureEl.classList.contains('hidden')) render3D();  // reload the chosen body
+        });
+      });
+      syncGenderBtns();
+    }
     compareEl && compareEl.addEventListener('change', function () { var cur = latest(); var ghost = compareEl.value ? logById(compareEl.value) : null; renderDeltas(ghost ? ghost.m : null, cur ? cur.m : {}); if (!figureEl.classList.contains('hidden')) renderFigure(); });
 
     // ── Live camera measure (on-device MediaPipe pose; nothing stored) ──
     var camOverlay = document.getElementById('physCamOverlay'), camVideo = document.getElementById('physCamVideo'),
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
         camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose');
+    var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
+    var poseMode = 'VIDEO';                           // the one landmarker serves both live scan and photos
+    // Auto-capture: you can't reach the button from 2m away, so once the WHOLE body is
+    // in frame we count down on-screen and measure automatically (median of the frames).
+    var AUTO_MS = 3000, GRACE_MS = 700;              // countdown length; allowed detection dropout
+    var autoStart = 0, lastGood = 0, samples = [];
+    var audioCtx = null;
+    function beep() {                                 // audible "captured" cue — you're far from the screen
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.frequency.value = 880; g.gain.value = 0.08;
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + 0.18);
+      } catch (e) {}
+    }
+    function fullBody(lm, vh) {                       // nose + shoulders + hips + ankles all visible, in frame, big enough
+      var need = [0, 11, 12, 23, 24, 27, 28];
+      for (var i = 0; i < need.length; i++) {
+        var p = lm[need[i]];
+        if (!p || (p.visibility != null && p.visibility < 0.5) || p.y < -0.02 || p.y > 1.02) return false;
+      }
+      return Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * vh > vh * 0.45;
+    }
+    function drawCount(ctx, vw, vh, n) {              // big enough to read from across the room
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.arc(vw / 2, vh / 2, 70, 0, 7); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 96px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(String(n), vw / 2, vh / 2 + 6);
+    }
     function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
     async function ensurePose() {
       if (poseLm) return poseLm;
@@ -213,17 +334,28 @@
         baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' },
         runningMode: 'VIDEO', numPoses: 1
       });
+      poseMode = 'VIDEO';
       return poseLm;
+    }
+    async function setPoseMode(mode) {               // 'VIDEO' for the live scan, 'IMAGE' for photos
+      await ensurePose();
+      if (poseMode !== mode) { await poseLm.setOptions({ runningMode: mode }); poseMode = mode; }
+    }
+    function drawSkeleton(ctx, lm, vw, vh) {
+      ctx.strokeStyle = 'rgba(212,165,116,0.9)'; ctx.lineWidth = 3;
+      CONNECT.forEach(function (c) { var a = lm[c[0]], b = lm[c[1]]; if (!a || !b) return; ctx.beginPath(); ctx.moveTo(a.x * vw, a.y * vh); ctx.lineTo(b.x * vw, b.y * vh); ctx.stroke(); });
+      ctx.fillStyle = '#fff'; lm.forEach(function (p) { ctx.beginPath(); ctx.arc(p.x * vw, p.y * vh, 3, 0, 7); ctx.fill(); });
     }
     async function openCam() {
       if (!camOverlay) return;
       if (!heightVal()) { msg('Enter your Height first — it calibrates the measurements.'); var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus(); return; }
       camOverlay.classList.remove('hidden'); camStatus.textContent = 'Starting…'; camMeasure.disabled = true; lastLm = null;
+      autoStart = 0; lastGood = 0; samples = []; camVideo.style.display = '';
       try {
-        await ensurePose();
+        await setPoseMode('VIDEO');
         camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
         camVideo.srcObject = camStream; await camVideo.play();
-        camStatus.textContent = 'Stand back — fit your whole body in frame.'; loop();
+        camStatus.textContent = 'Stand back — once your whole body fits, it measures by itself.'; loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
@@ -236,35 +368,114 @@
         var ctx = camCanvas.getContext('2d'); ctx.clearRect(0, 0, vw, vh);
         if (res && res.landmarks && res.landmarks[0]) {
           lastLm = res.landmarks[0];
-          ctx.strokeStyle = 'rgba(212,165,116,0.9)'; ctx.lineWidth = 3;
-          CONNECT.forEach(function (c) { var a = lastLm[c[0]], b = lastLm[c[1]]; if (!a || !b) return; ctx.beginPath(); ctx.moveTo(a.x * vw, a.y * vh); ctx.lineTo(b.x * vw, b.y * vh); ctx.stroke(); });
-          ctx.fillStyle = '#fff'; lastLm.forEach(function (p) { ctx.beginPath(); ctx.arc(p.x * vw, p.y * vh, 3, 0, 7); ctx.fill(); });
-          camMeasure.disabled = false; camStatus.textContent = 'Body detected — tap Measure.';
-        } else { camMeasure.disabled = true; }
+          drawSkeleton(ctx, lastLm, vw, vh);
+          camMeasure.disabled = false;
+          var now = performance.now();
+          if (fullBody(lastLm, vh)) {
+            lastGood = now;
+            if (!autoStart) { autoStart = now; samples = []; }
+            var est = frameEst(lastLm, vw, vh);
+            if (est) samples.push(est);
+            if (now - autoStart >= AUTO_MS) {
+              beep(); measureFromPose();
+              if (camStream) rafId = requestAnimationFrame(loop);
+              return;
+            }
+            var left = Math.ceil((AUTO_MS - (now - autoStart)) / 1000);
+            drawCount(ctx, vw, vh, left);
+            camStatus.textContent = 'Hold still — measuring in ' + left + '…';
+          } else {
+            if (autoStart && now - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
+            camStatus.textContent = 'Fit your WHOLE body (head to feet) in frame — it measures by itself.';
+          }
+        } else {
+          camMeasure.disabled = true;
+          if (autoStart && performance.now() - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
+        }
       }
       rafId = requestAnimationFrame(loop);
     }
     function dist(a, b, vw, vh) { var dx = (a.x - b.x) * vw, dy = (a.y - b.y) * vh; return Math.sqrt(dx * dx + dy * dy); }
-    function measureFromPose() {
-      var lm = lastLm, hCm = heightVal();
-      if (!lm || !hCm) { msg('No body detected — try again.'); return; }
-      var vw = camCanvas.width, vh = camCanvas.height;
-      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) * vh - lm[0].y * vh);
-      if (bodyPx < 20) { msg('Move back so your whole body is visible.'); return; }
-      var cmPerPx = hCm / (bodyPx / 0.88);
+    function frameEst(lm, vw, vh) {                   // one frame -> cm estimates (nose→ankle pixels calibrate the scale)
+      var hCm = heightVal();
+      if (!lm || !hCm) return null;
+      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * vh;
+      if (bodyPx < 20) return null;
+      var cmPerPx = hCm / (bodyPx / 0.88);            // nose→ankle ≈ 88% of standing height
       var shW = dist(lm[11], lm[12], vw, vh) * cmPerPx, hipW = dist(lm[23], lm[24], vw, vh) * cmPerPx;
-      var est = { shoulders: shW * 2.4, chest: shW * 2.2, waist: hipW * 2.3, hips: hipW * 2.7 };
+      // Factors map JOINT-to-JOINT distances (much narrower than the silhouette — hip
+      // joints are ~18cm apart on a ~35cm-wide body) to girths. Calibrated against real
+      // tape measurements 2026-07: chest 83 / waist 78 / hips 89 came out 71/41/48 with
+      // the old guesses (2.2/2.3/2.7).
+      return { shoulders: shW * 2.9, chest: shW * 2.6, waist: hipW * 4.4, hips: hipW * 5.0 };
+    }
+    function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
+    function measureFromPose() {
+      var est;
+      if (samples.length >= 5) {                      // countdown ran: median beats any single jittery frame
+        est = {};
+        ['shoulders', 'chest', 'waist', 'hips'].forEach(function (k) {
+          est[k] = median(samples.map(function (s) { return s[k]; }));
+        });
+      } else {                                        // manual Measure tap: use the current frame
+        est = frameEst(lastLm, camCanvas.width, camCanvas.height);
+      }
+      autoStart = 0; samples = [];
+      if (!est) { msg('No full body detected — try again.'); return; }
       showEditor();
       inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
-      closeCam(); msg('Estimated from camera — adjust any number, then Save.');
+      closeCam(); msg('Measured — adjust any number, then Save.');
+    }
+    // Measure from an uploaded photo — for when the webcam can't frame your whole body
+    // (laptop on a table). The file is read + analyzed HERE in the browser and discarded:
+    // it is never uploaded to the server or saved anywhere.
+    async function openPhoto(file) {
+      if (!camOverlay || !file) return;
+      if (!heightVal()) { msg('Enter your Height first — it calibrates the measurements.'); var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus(); return; }
+      closeCam();                                     // in case the live scan was open
+      camOverlay.classList.remove('hidden'); camMeasure.disabled = true;
+      camVideo.style.display = 'none';                // canvas shows the photo instead
+      camStatus.textContent = 'Analyzing photo…';
+      var url = URL.createObjectURL(file);
+      try {
+        await setPoseMode('IMAGE');
+        var img = new Image();
+        await new Promise(function (ok, bad) { img.onload = ok; img.onerror = bad; img.src = url; });
+        var scale = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));  // phone photos are huge
+        var vw = Math.round(img.naturalWidth * scale), vh = Math.round(img.naturalHeight * scale);
+        camCanvas.width = vw; camCanvas.height = vh;
+        var ctx = camCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, vw, vh);
+        var res = poseLm.detect(camCanvas);
+        if (res && res.landmarks && res.landmarks[0]) {
+          lastLm = res.landmarks[0];
+          drawSkeleton(ctx, lastLm, vw, vh);
+          camMeasure.disabled = !frameEst(lastLm, vw, vh);
+          camStatus.textContent = fullBody(lastLm, vh)
+            ? 'Body found — tap Measure.'
+            : 'Found a body, but maybe not all of it — Measure anyway, or try a photo showing head to feet.';
+        } else {
+          camStatus.textContent = 'No body found in that photo — try one with your whole body, front-on.';
+        }
+      } catch (e) {
+        camStatus.textContent = 'Couldn’t read that photo — try a different one.';
+      } finally { URL.revokeObjectURL(url); }
     }
     function closeCam() {
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
-      if (camVideo) camVideo.srcObject = null; lastLm = null;
+      if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
+      autoStart = 0; lastGood = 0; samples = [];
+      // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
+      if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
     }
     scanBtn && scanBtn.addEventListener('click', openCam);
+    photoBtn && photoBtn.addEventListener('click', function () { photoInput && photoInput.click(); });
+    photoInput && photoInput.addEventListener('change', function () {
+      openPhoto(photoInput.files && photoInput.files[0]);
+      photoInput.value = '';                          // so re-picking the same file re-fires change
+    });
     camMeasure && camMeasure.addEventListener('click', measureFromPose);
     camClose && camClose.addEventListener('click', closeCam);
 

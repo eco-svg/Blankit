@@ -85,7 +85,8 @@ class WalletTx(db.Model):
     user_id    = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     tx_type    = db.Column(db.String(30), nullable=False)  # topup_request|topup_paid|spend|earn|sellback_request|sellback_paid|payout_request|payout_sent
     amount     = db.Column(db.Integer, nullable=False)     # credits; positive = added, negative = deducted
-    ref_id     = db.Column(db.String(100))                 # order/post id if relevant
+    ref_id     = db.Column(db.String(100))                 # currency code (INR/USD…) or in-app order/post id
+    ext_ref    = db.Column(db.String(64))                  # external payment ref: Razorpay order_id (on the request) / payment_id (on the paid tx)
     note       = db.Column(db.String(300))
     status     = db.Column(db.String(20), default='pending')  # pending|completed|rejected
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

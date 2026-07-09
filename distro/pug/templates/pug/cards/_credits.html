@@ -40,7 +40,7 @@
       <button class="credits-action-btn" id="topupSubmitBtn" disabled>Request Top Up</button>
       <div class="credits-msg" id="topupMsg"></div>
       <div class="credits-payment-inst" id="topupPaymentInst" style="display:none;"></div>
-      <p class="credits-fine-print">Eyes are added after payment is confirmed by our team. <a href="/pug/terms#credits" target="_blank">Terms apply.</a></p>
+      <p class="credits-fine-print" id="topupFinePrint">Eyes are added after payment is confirmed by our team. <a href="/pug/terms#credits" target="_blank">Terms apply.</a></p>
     </div>
 
     <!-- SellBack card -->
@@ -82,3 +82,18 @@
   </div>
 
 </div>
+
+<style>
+  /* Backdrop shown while the Razorpay payment popup is open (built by credits.js). */
+  .pay-overlay { position: fixed; inset: 0; z-index: 9999; display: flex;
+    align-items: center; justify-content: center; background: rgba(0,0,0,.62);
+    backdrop-filter: blur(2px); }
+  .pay-overlay-box { background: var(--surface-2, #201b15); color: var(--text, #e8e2d8);
+    border: 1px solid var(--border2, #3a3128); border-radius: 14px; padding: 24px 26px;
+    max-width: 340px; text-align: center; box-shadow: 0 12px 40px rgba(0,0,0,.5); }
+  .pay-overlay-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .pay-overlay-text { font-size: 13px; line-height: 1.5; opacity: .8; margin-bottom: 18px; }
+  .pay-overlay-actions { display: flex; gap: 10px; justify-content: center; }
+  .pay-overlay-cancel { background: var(--accent, #d4a574); color: #1c1915; border: none;
+    border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+</style>

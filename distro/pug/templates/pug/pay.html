@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veyra — Secure payment</title>
+  <!-- Razorpay Checkout. This page is NOT cross-origin-isolated (only pug.home is),
+       so the checkout iframe embeds here without the COEP block. -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    html, body { margin: 0; height: 100%; background: #16130f; color: #e8e2d8;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .wrap { height: 100%; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; padding: 24px; box-sizing: border-box; }
+    .spinner { width: 34px; height: 34px; border: 3px solid rgba(212,165,116,.25);
+      border-top-color: #d4a574; border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #status { font-size: 15px; line-height: 1.5; max-width: 320px; }
+    .hint { margin-top: 10px; font-size: 12px; opacity: .5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="spinner" id="spin"></div>
+    <div id="status">Opening secure payment…</div>
+    <div class="hint">Powered by Razorpay · you can close this window anytime to cancel.</div>
+  </div>
+  <script nonce="{{ csp_nonce }}">
+  (function () {
+    var statusEl = document.getElementById('status'), spin = document.getElementById('spin');
+    // Report the result back to the Eyes tab. The home page is COOP:same-origin (for
+    // BlinkBot's cross-origin isolation), which SEVERS window.opener for this popup —
+    // so postMessage-to-opener can't be relied on. BroadcastChannel + a localStorage
+    // ping are same-origin and work regardless of the opener link; the opener also
+    // polls the wallet as the ultimate source of truth.
+    function report(msg) {
+      var payload = Object.assign({ source: 'veyra-pay', t: Date.now() }, msg);
+      try { var bc = new BroadcastChannel('veyra-pay'); bc.postMessage(payload); bc.close(); } catch (e) {}
+      try { localStorage.setItem('veyra_pay_result', JSON.stringify(payload)); } catch (e) {}
+      try { if (window.opener) window.opener.postMessage(payload, location.origin); } catch (e) {}
+    }
+    function stop(text, keepSpin) { statusEl.textContent = text; if (!keepSpin && spin) spin.style.display = 'none'; }
+    // Only ONE terminal signal ever leaves this window. A failed attempt is NOT terminal
+    // (Razorpay lets the user retry another method in the same sheet), so we never report
+    // it — otherwise the opener would tear down and miss the eventual success.
+    var done = false;
+    function settle(msg) { if (done) return; done = true; report(msg); }
+    function fail(m) { stop(m); settle({ status: 'error', error: m }); }
+
+    var amount = parseInt(new URLSearchParams(location.search).get('amount'), 10);
+    if (!amount || amount < 1) { fail('Invalid amount.'); return; }
+
+    // 1) Create the order server-side (it prices the INR amount authoritatively).
+    fetch('/pug/api/wallet/razorpay/order', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: amount }),
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { fail(res.d.error || 'Could not start payment.'); return; }
+        var d = res.d;
+        stop('Complete your payment…', true);
+        // 2) Open Checkout right here (this window is not isolated → iframe works).
+        var rzp = new Razorpay({
+          key: d.key_id, order_id: d.order_id, amount: d.amount, currency: d.currency,
+          name: d.name, description: d.description,
+          // 3) Verify server-side, then hand the result back to the opener.
+          handler: function (resp) {
+            stop('Verifying payment…', true);
+            fetch('/pug/api/wallet/razorpay/verify', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: resp.razorpay_order_id,
+                razorpay_payment_id: resp.razorpay_payment_id,
+                razorpay_signature: resp.razorpay_signature,
+              }),
+            })
+              .then(function (r) { return r.json().then(function (v) { return { ok: r.ok, v: v }; }); })
+              .then(function (res2) {
+                if (res2.ok) { settle({ status: 'success', balance: res2.v.balance, eyes: amount }); stop('Payment successful! Closing…'); }
+                else { settle({ status: 'pending', error: (res2.v && res2.v.error) || '' }); stop('Payment received — confirming shortly. Closing…'); }
+                setTimeout(function () { window.close(); }, 1200);
+              })
+              .catch(function () {
+                // Verify dropped, but the webhook backstop will still credit it.
+                settle({ status: 'pending' }); stop('Payment received — confirming shortly. Closing…');
+                setTimeout(function () { window.close(); }, 1500);
+              });
+          },
+          modal: {
+            // User closed the whole Razorpay sheet without paying — terminal cancel.
+            // (No-op if we already succeeded, thanks to the `done` guard in settle.)
+            ondismiss: function () { if (done) return; settle({ status: 'cancelled' }); stop('Payment cancelled. Closing…'); setTimeout(function () { window.close(); }, 700); },
+          },
+          theme: { color: '#d4a574' },
+        });
+        // A failed attempt is retryable inside the sheet — just show it, don't signal
+        // the opener (so it keeps waiting for the retry to succeed or the sheet to close).
+        rzp.on('payment.failed', function (r) {
+          var e = (r && r.error) || {};
+          stop((e.description ? e.description + ' — ' : '') + 'try another method above.', true);
+        });
+        rzp.open();
+      })
+      .catch(function () { fail('Network error — please try again.'); });
+  })();
+  </script>
+</body>
+</html>

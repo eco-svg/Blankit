@@ -179,6 +179,16 @@ def _migrate_schema():
                 '''))
         except Exception as e:
             import warnings; warnings.warn(f'[migrate] wallet_transactions: {e}')
+    # ext_ref: external payment reference (Razorpay order_id / payment_id) so an online
+    # top-up can be matched back to its pending request and credited idempotently.
+    if 'wallet_transactions' in inspector.get_table_names():
+        wtx_cols = {c['name'] for c in inspector.get_columns('wallet_transactions')}
+        if 'ext_ref' not in wtx_cols:
+            try:
+                with db.engine.begin() as conn:
+                    conn.execute(text('ALTER TABLE wallet_transactions ADD COLUMN ext_ref VARCHAR(64)'))
+            except Exception as e:
+                import warnings; warnings.warn(f'[migrate] wallet_transactions.ext_ref: {e}')
     if 'eye_rates' not in tables:
         try:
             with db.engine.begin() as conn:
@@ -538,21 +548,27 @@ def create_app():
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         # Only allow the device features the app actually uses, and only from our own origin.
         response.headers['Permissions-Policy'] = (
-            'geolocation=(self), camera=(self), microphone=(self), payment=(), usb=()'
+            # payment=(self) lets the Razorpay Checkout iframe use the Payment Request API
+            # (some card / Google Pay paths); still same-origin only.
+            'geolocation=(self), camera=(self), microphone=(self), payment=(self), usb=()'
         )
         response.headers['Content-Security-Policy'] = (
             "default-src 'self'; "
-            f"script-src 'self' 'nonce-{nonce}' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; "
+            # Razorpay Checkout loads its widget from checkout.razorpay.com.
+            f"script-src 'self' 'nonce-{nonce}' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://*.razorpay.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
-            "img-src 'self' data: blob:; "
+            # Razorpay bank/card logos come from its CDN.
+            "img-src 'self' data: blob: https://*.razorpay.com; "
             "media-src 'self' blob:; "
             # BlinkBot on-device (wllama): fetch the WASM runtime from jsdelivr and the
             # GGUF from self or B2; blob: worker for llama.cpp's threads.
             # + storage.googleapis.com for the MediaPipe pose model (Physique camera measure).
-            "connect-src 'self' https://cdn.jsdelivr.net https://*.backblazeb2.com https://storage.googleapis.com; "
+            # + *.razorpay.com for the Checkout API/analytics calls it makes.
+            "connect-src 'self' https://cdn.jsdelivr.net https://*.backblazeb2.com https://storage.googleapis.com https://*.razorpay.com; "
             "worker-src 'self' blob:; "
-            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; "
+            # Razorpay renders its payment UI (and the UPI/bank redirects) inside an iframe.
+            "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.razorpay.com https://api.razorpay.com; "
             "frame-ancestors 'self' https://huggingface.co; "
             "object-src 'none'; "
             "base-uri 'self';"
@@ -576,6 +592,12 @@ def create_app():
 
     @app.route('/terms')
     def terms(): return render_template('shared/terms.html')
+
+    @app.route('/refund')
+    def refund(): return render_template('shared/refund.html')
+
+    @app.route('/contact')
+    def contact(): return render_template('shared/contact.html')
 
     @app.route('/under13')
     def under13(): return render_template('shared/under13.html')

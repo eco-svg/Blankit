@@ -30,6 +30,16 @@
 {% if is_guest %}<script nonce="{{ csp_nonce }}">window.VEYRA_GUEST = true;</script>
 <script src="{{ url_for('pug.static', filename='guest-store.js') }}?v=6"></script>{% endif %}
 <script nonce="{{ csp_nonce }}">window.VEYRA_IS_ADMIN = {{ 'true' if is_admin else 'false' }};</script>
+<!-- Three.js import map: lets physique.js load three + the GLTFLoader add-on by name
+     (the add-on imports the bare specifier "three", which only resolves via this map). -->
+<script type="importmap" nonce="{{ csp_nonce }}">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<!-- Where the 3D mannequin GLBs live (served from the pug static folder). -->
+<script nonce="{{ csp_nonce }}">window.VEYRA_MANNEQUIN_BASE = "{{ url_for('pug.static', filename='models/') }}";</script>
 
   <!-- Initial-load veil — hides the empty/un-hydrated cards until content is ready -->
   <div id="appLoader">
@@ -425,8 +435,8 @@
   <script src="{{ url_for('pug.static', filename='community.js') }}?v=23"></script>
   <script src="{{ url_for('pug.static', filename='blinkbot_wllama.js') }}?v=17"></script>
   <script src="{{ url_for('pug.static', filename='habits.js') }}?v=8"></script>
-  <script src="{{ url_for('pug.static', filename='physique.js') }}?v=4"></script>
-  <script src="{{ url_for('pug.static', filename='credits.js') }}?v=4"></script>
+  <script src="{{ url_for('pug.static', filename='physique.js') }}?v=11"></script>
+  <script src="{{ url_for('pug.static', filename='credits.js') }}?v=7"></script>
   {% if is_admin %}<script src="{{ url_for('pug.static', filename='admin.js') }}?v=9"></script>{% endif %}
   <script src="{{ url_for('pug.static', filename='router.js') }}?v=15"></script>
   {% if is_guest %}<script src="{{ url_for('pug.static', filename='guest.js') }}?v=5"></script>{% endif %}

@@ -1445,6 +1445,21 @@ def home():
                            user_public_search=bool(_u and _u.public_search))
 
 
+@pug_bp.route('/pug/pay')
+def pay_popup():
+    """Standalone payment window for Razorpay top-ups, opened as a popup from the home SPA.
+
+    The home page is cross-origin-isolated (COOP/COEP) so BlinkBot's WASM runs
+    multithreaded — but that isolation blocks embedding Razorpay's checkout iframe
+    inline. This route is NOT isolated (only pug.home sets those headers), so the
+    iframe loads fine here. It runs Checkout and reports the result back to the opener
+    via postMessage. The amount is re-priced server-side by the /order API, so nothing
+    sensitive rides in the URL."""
+    err = login_required_page()
+    if err: return err
+    return render_template('pug/pay.html')
+
+
 
 # ═════════════════════════════════════════════════════════════════════════════
 # NOTES / GOALS / DREAMS  (personal entries, stored encrypted)
@@ -5313,11 +5328,13 @@ def get_wallet():
     err = login_required_api()
     if err: return err
     uid = session['user_id']
+    _expire_stale_razorpay_topups(uid)   # tidy up abandoned online orders first
     w = _get_or_create_wallet(uid)
     txs = (WalletTx.query
            .filter_by(user_id=uid)
            .order_by(WalletTx.created_at.desc())
            .limit(20).all())
+    key_id, key_secret, _ = _razorpay_keys()
     return jsonify({
         'balance': w.balance,
         'transactions': [{
@@ -5325,10 +5342,14 @@ def get_wallet():
             'tx_type':    t.tx_type,
             'amount':     t.amount,
             'ref_id':     t.ref_id,
+            'ext_ref':    t.ext_ref,          # set => online (Razorpay) order, not a manual one
             'note':       t.note,
             'status':     t.status,
             'created_at': t.created_at.isoformat() if t.created_at else None,
         } for t in txs],
+        # Whether instant online payment (Razorpay, INR) is available, plus the PUBLIC
+        # key id the browser needs to open Checkout. The secret is never sent.
+        'razorpay': {'enabled': bool(key_id and key_secret), 'key_id': key_id or None},
     })
 
 
@@ -5438,6 +5459,193 @@ def cancel_wallet_tx(tx_id):
     tx.status = 'cancelled'
     db.session.commit()
     return jsonify({'ok': True})
+
+
+# ── Razorpay online top-up (INR) ─────────────────────────────────────────────
+# Flow: browser asks for an ORDER (amount priced server-side) → we create it at
+# Razorpay with the SECRET key → browser opens Razorpay Checkout with the returned
+# order_id → on success Razorpay hands back a signed payment → we verify the HMAC
+# signature and credit the Eyes. A webhook (payment.captured) credits the same
+# order independently, so a paid top-up is never lost if the browser tab closes.
+# Both the verify call and the webhook funnel through _credit_topup(), which is
+# idempotent (row-locked) so Eyes are credited exactly once.
+
+def _razorpay_keys():
+    """(key_id, key_secret, webhook_secret) from the environment, or (None, None, None).
+    Keys live only in .env / Render env — never committed, never sent to the browser
+    (except key_id, which Razorpay treats as public)."""
+    return (os.environ.get('RAZORPAY_KEY_ID'),
+            os.environ.get('RAZORPAY_KEY_SECRET'),
+            os.environ.get('RAZORPAY_WEBHOOK_SECRET'))
+
+
+def _rzp_hmac(secret, message_bytes):
+    import hmac, hashlib
+    return hmac.new(secret.encode(), message_bytes, hashlib.sha256).hexdigest()
+
+
+def _verify_payment_signature(order_id, payment_id, signature, secret):
+    """Razorpay signs `order_id|payment_id` with the key secret. If ours matches, the
+    payment is genuine and unaltered — a client cannot forge a 'paid' callback."""
+    import hmac
+    expected = _rzp_hmac(secret, f'{order_id}|{payment_id}'.encode())
+    return hmac.compare_digest(expected, signature or '')
+
+
+def _verify_webhook_signature(raw_body, signature, secret):
+    """Webhooks are signed over the RAW request body with the webhook secret."""
+    import hmac
+    expected = _rzp_hmac(secret, raw_body or b'')
+    return hmac.compare_digest(expected, signature or '')
+
+
+def _expire_stale_razorpay_topups(uid):
+    """Abandoned online orders (Razorpay = ext_ref set) that were never paid pile up as
+    'pending'. Mark ones older than 20 min as 'cancelled' so the wallet stays tidy — and
+    so a stray late webhook can't credit them (see the pending-only guard below)."""
+    from datetime import timedelta
+    cutoff = datetime.utcnow() - timedelta(minutes=20)
+    stale = WalletTx.query.filter(
+        WalletTx.user_id == uid,
+        WalletTx.tx_type == 'topup_request',
+        WalletTx.status == 'pending',
+        WalletTx.ext_ref.isnot(None),
+        WalletTx.created_at < cutoff,
+    ).all()
+    if stale:
+        for t in stale:
+            t.status = 'cancelled'
+        db.session.commit()
+
+
+def _credit_topup(order_id, payment_id):
+    """Idempotently credit the Eyes for a paid Razorpay order. Safe to call from BOTH
+    the client verify and the webhook: the row is locked FOR UPDATE and only a still
+    'pending' order is credited — so the first caller credits and any repeat (or a late
+    webhook for an expired/cancelled order) is a no-op (no double credit, no zombie credit)."""
+    tx = (WalletTx.query
+          .filter_by(tx_type='topup_request', ext_ref=order_id)
+          .with_for_update().first())
+    if not tx:
+        return False
+    if tx.status != 'pending':
+        db.session.commit()   # release the row lock
+        return tx.status == 'completed'
+    tx.status = 'completed'
+    w = _get_or_create_wallet(tx.user_id)
+    w.balance = (w.balance or 0) + tx.amount
+    db.session.add(WalletTx(
+        user_id=tx.user_id, tx_type='topup_paid', amount=tx.amount,
+        ref_id=tx.ref_id, ext_ref=payment_id,
+        note=f'Top-up paid (Razorpay {payment_id}): {tx.amount} Eyes',
+        status='completed'))
+    db.session.commit()
+    return True
+
+
+@pug_bp.route('/pug/api/wallet/razorpay/order', methods=['POST'])
+def wallet_razorpay_order():
+    """Create a Razorpay order for an Eyes top-up. Price is computed HERE from the INR
+    buy-rate — the client never sends the money amount, only how many Eyes it wants."""
+    err = login_required_api()
+    if err: return err
+    key_id, key_secret, _ = _razorpay_keys()
+    if not (key_id and key_secret):
+        return jsonify({'error': 'Online payment is not available right now.'}), 503
+    uid = session['user_id']
+    body   = request.get_json(silent=True) or {}
+    amount = body.get('amount')                      # Eyes
+    currency = 'INR'                                 # Razorpay settles INR; this path is INR-only
+    min_eyes = _currency_min(currency)
+    if not isinstance(amount, int) or amount < min_eyes:
+        return jsonify({'error': f'Minimum top-up is {min_eyes} Eyes'}), 400
+    if amount > 500000:
+        return jsonify({'error': 'Maximum top-up is 500,000 Eyes per request'}), 400
+    rate = EyeRate.query.get('INR')
+    if not rate:
+        return jsonify({'error': 'INR rate unavailable — try again shortly.'}), 503
+    paise = int(round(float(rate.buy_rate) * amount * 100))   # INR → paise (server-authoritative)
+    if paise < 100:                                  # Razorpay minimum is ₹1
+        return jsonify({'error': 'That amount is too small to pay online.'}), 400
+
+    import requests as req
+    receipt = f'eyes_{uid}_{int(datetime.utcnow().timestamp())}'
+    try:
+        resp = req.post('https://api.razorpay.com/v1/orders',
+                        auth=(key_id, key_secret),
+                        json={'amount': paise, 'currency': 'INR', 'receipt': receipt,
+                              'notes': {'user_id': str(uid), 'eyes': str(amount)}},
+                        timeout=15)
+    except req.RequestException:
+        return jsonify({'error': 'Payment service unreachable — please try again.'}), 502
+    if resp.status_code not in (200, 201):
+        current_app.logger.warning('razorpay order create failed %s: %s',
+                                    resp.status_code, resp.text[:300])
+        return jsonify({'error': 'Could not start payment — please try again.'}), 502
+
+    order = resp.json()
+    order_id = order.get('id')
+    if not order_id:
+        return jsonify({'error': 'Could not start payment — please try again.'}), 502
+    # Pending request bound to this order; credited only once the payment is verified.
+    tx = WalletTx(user_id=uid, tx_type='topup_request', amount=amount,
+                  ref_id='INR', ext_ref=order_id, status='pending',
+                  note=f'Top-up via Razorpay: {amount} Eyes (order {order_id})')
+    db.session.add(tx)
+    db.session.commit()
+    return jsonify({'ok': True, 'order_id': order_id, 'amount': paise, 'currency': 'INR',
+                    'key_id': key_id, 'eyes': amount,
+                    'name': 'Veyra — Eyes top-up', 'description': f'{amount} Eyes'})
+
+
+@pug_bp.route('/pug/api/wallet/razorpay/verify', methods=['POST'])
+def wallet_razorpay_verify():
+    """Verify the signed payment returned by Checkout and credit the Eyes."""
+    err = login_required_api()
+    if err: return err
+    _, key_secret, _ = _razorpay_keys()
+    if not key_secret:
+        return jsonify({'error': 'Online payment is not available right now.'}), 503
+    uid = session['user_id']
+    body       = request.get_json(silent=True) or {}
+    order_id   = body.get('razorpay_order_id')
+    payment_id = body.get('razorpay_payment_id')
+    signature  = body.get('razorpay_signature')
+    if not (order_id and payment_id and signature):
+        return jsonify({'error': 'Missing payment details'}), 400
+    if not _verify_payment_signature(order_id, payment_id, signature, key_secret):
+        return jsonify({'error': 'Payment could not be verified'}), 400
+    # Make sure this order belongs to the logged-in user before crediting.
+    owned = WalletTx.query.filter_by(tx_type='topup_request', ext_ref=order_id, user_id=uid).first()
+    if not owned:
+        return jsonify({'error': 'Order not found'}), 404
+    _credit_topup(order_id, payment_id)
+    w = _get_or_create_wallet(uid)
+    return jsonify({'ok': True, 'balance': w.balance})
+
+
+@pug_bp.route('/pug/api/wallet/razorpay/webhook', methods=['POST'])
+def wallet_razorpay_webhook():
+    """Razorpay → us: server-to-server confirmation. Verified by the webhook secret and
+    used as the source of truth so a paid top-up credits even if the browser never
+    returned. No login (Razorpay has no session); signature is the auth."""
+    _, _, webhook_secret = _razorpay_keys()
+    if not webhook_secret:
+        return ('', 503)
+    raw = request.get_data()                         # raw bytes required for the signature
+    sig = request.headers.get('X-Razorpay-Signature', '')
+    if not _verify_webhook_signature(raw, sig, webhook_secret):
+        return ('invalid signature', 400)
+    event = request.get_json(silent=True) or {}
+    if event.get('event') in ('payment.captured', 'order.paid'):
+        try:
+            pay = event['payload']['payment']['entity']
+            order_id, payment_id = pay.get('order_id'), pay.get('id')
+            if order_id:
+                _credit_topup(order_id, payment_id)
+        except (KeyError, TypeError):
+            pass                                     # malformed payload → ack anyway (below)
+    return ('', 200)                                 # 200 so Razorpay stops retrying
 
 
 # ── Ask Me Anything (human-answered) ─────────────────────────────────────────

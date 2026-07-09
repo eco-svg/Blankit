@@ -10,6 +10,12 @@
       <span class="phys-privacy-note">Private · no photos stored</span>
       <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update</button>
       <button id="physDimBtn" type="button" class="phys-toolbtn" title="Toggle 2D / 3D figure">3D</button>
+      <!-- Which body the 3D mannequin uses. No profile gender field yet, so it's a manual
+           pick here (works for guests too); persisted in localStorage by physique.js. -->
+      <span class="phys-gender" id="physGender" title="Body used for the 3D mannequin">
+        <button type="button" class="phys-toolbtn phys-gbtn" data-g="female">Female</button>
+        <button type="button" class="phys-toolbtn phys-gbtn" data-g="male">Male</button>
+      </span>
       <button id="physClearBtn" type="button" class="phys-toolbtn phys-toolbtn-danger" title="Delete all your measurements">Clear</button>
     </div>
 
@@ -31,6 +37,10 @@
           <div class="phys-actions">
             <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
             <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing is recorded or stored.">📷 Scan with camera</button>
+            <!-- Photo is analyzed ON-DEVICE (same pose model) and discarded — never uploaded
+                 or saved. For when the webcam can't see your whole body (laptop on a table). -->
+            <button id="physPhotoBtn" type="button" class="phys-scan" title="Measure from a photo — analyzed on your device, never uploaded or saved.">🖼 From a photo</button>
+            <input type="file" id="physPhotoInput" accept="image/*" hidden>
           </div>
           <div id="physMsg" class="phys-msg"></div>
         </div>
@@ -40,6 +50,8 @@
           <div class="phys-mannequin" id="physMannequin"></div>
           <div class="phys-mannequin phys-mannequin-3d hidden" id="physMannequin3d"></div>
           <div class="phys-mannequin-cap" id="physMannequinCap"></div>
+          <!-- Attribution required by the model's CC-BY-4.0 licence. -->
+          <div class="phys-credit">3D base mesh: “Male&nbsp;&amp;&nbsp;Female Base Mesh Pack” by FormForge3D · CC&nbsp;BY&nbsp;4.0</div>
         </div>
       </div>
     </div>
@@ -50,7 +62,7 @@
 <div id="physCamOverlay" class="phys-cam-overlay hidden">
   <div class="phys-cam-modal">
     <div class="phys-cam-head">
-      <span>📷 Live measure — <b>nothing is recorded or stored</b></span>
+      <span>📷 Measure — <b>nothing is recorded or stored</b></span>
       <button id="physCamClose" type="button" class="phys-cam-close" aria-label="Close">✕</button>
     </div>
     <div class="phys-cam-stage">
@@ -58,9 +70,20 @@
       <canvas id="physCamCanvas"></canvas>
     </div>
     <div class="phys-cam-status" id="physCamStatus">Starting…</div>
-    <div class="phys-cam-hint">Stand back so your whole body is in frame, wear fitted clothing for accuracy, then tap Measure.</div>
+    <div class="phys-cam-hint">Fit your whole body in view and wear fitted clothing for accuracy. The live scan measures by itself; photos are analyzed on this device and never uploaded or saved.</div>
     <div class="phys-cam-actions">
       <button id="physCamMeasure" type="button" class="phys-save" disabled>Measure</button>
     </div>
   </div>
 </div>
+
+<style>
+  /* gender toggle (3D body) */
+  .phys-gender { display:inline-flex; gap:2px; }
+  .phys-gbtn.gbtn-active { background: var(--accent); color:#1c1915; border-color: var(--accent); }
+  /* CC-BY credit line under the figure */
+  .phys-credit { margin-top:6px; font-size:10px; opacity:.5; text-align:center; line-height:1.3; }
+  /* 3D loading / error placeholder shown while the GLB downloads */
+  .phys3d-loading { display:flex; align-items:center; justify-content:center; width:100%; height:100%;
+                    min-height:240px; font-size:12px; opacity:.6; }
+</style>

@@ -20,3 +20,6 @@ distro/pug/new_dataset/
 # Claude Code memory
 .claude/
 distro/pug/static/webllm.js
+
+# 3D mannequin source meshes (local backup only; the rebuilt GLBs in models/ ARE committed)
+distro/pug/static/models/src/
