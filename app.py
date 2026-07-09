@@ -189,6 +189,25 @@ def _migrate_schema():
                     conn.execute(text('ALTER TABLE wallet_transactions ADD COLUMN ext_ref VARCHAR(64)'))
             except Exception as e:
                 import warnings; warnings.warn(f'[migrate] wallet_transactions.ext_ref: {e}')
+    # ── svg support donations (shared Razorpay account, tagged per distro) ──
+    if 'donations' not in tables:
+        try:
+            with db.engine.begin() as conn:
+                conn.execute(text('''
+                    CREATE TABLE donations (
+                        id SERIAL PRIMARY KEY,
+                        user_id INTEGER,
+                        distro VARCHAR(30) NOT NULL DEFAULT 'Eco-Svg',
+                        amount_paise INTEGER NOT NULL,
+                        currency VARCHAR(10) DEFAULT 'INR',
+                        razorpay_order_id VARCHAR(64),
+                        razorpay_payment_id VARCHAR(64),
+                        status VARCHAR(20) DEFAULT \'created\',
+                        created_at TIMESTAMP DEFAULT NOW()
+                    )
+                '''))
+        except Exception as e:
+            import warnings; warnings.warn(f'[migrate] donations: {e}')
     if 'eye_rates' not in tables:
         try:
             with db.engine.begin() as conn:

@@ -63,26 +63,12 @@
 
     <!-- DONATE SECTION -->
     <section class="sup-section">
-      <div class="sup-section-label">Donate via UPI</div>
+      <div class="sup-section-label">Support VEYRA</div>
 
       <div class="sup-donate-card">
 
-        <!-- LEFT: QR + UPI ID -->
-        <div class="sup-qr-side">
-          <div class="sup-qr-name">{{ username }}</div>
-          <div class="sup-qr-sub">VEYRA — Habit Tracker</div>
-          <img
-            class="sup-qr-img"
-            src="{{ url_for('static', filename='svg_gate_way.png') }}"
-            alt="UPI QR Code"
-          />
-          <div class="sup-upi-id">veyrasvg@nyes</div>
-          <button class="sup-copy-btn" id="copyUpiBtn">⎘ Copy UPI ID</button>
-          <div class="sup-copy-flash hidden" id="copyFlash">✓ Copied!</div>
-        </div>
-
-        <!-- RIGHT: AMOUNT SELECTOR + PAY BUTTON -->
-        <div class="sup-amount-side">
+        <!-- AMOUNT SELECTOR + SECURE DONATE -->
+        <div class="sup-amount-side" style="width:100%;">
           <div class="sup-amount-label">Choose amount</div>
 
           <div class="sup-preset-btns">
@@ -108,27 +94,13 @@
 
           <div class="sup-selected-amount" id="selectedDisplay">₹29 selected</div>
 
-          <div class="sup-upi-apps">
-            <button class="sup-pay-btn gpay"   id="payGpay">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Google_Pay_Logo.svg/512px-Google_Pay_Logo.svg.png" alt="GPay" />
-              Google Pay
-            </button>
-            <button class="sup-pay-btn phonepe" id="payPhonepe">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/PhonePe_Logo.svg/512px-PhonePe_Logo.svg.png" alt="PhonePe" />
-              PhonePe
-            </button>
-            <button class="sup-pay-btn paytm"  id="payPaytm">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Paytm_Logo_%28standalone%29.svg/512px-Paytm_Logo_%28standalone%29.svg.png" alt="Paytm" />
-              Paytm
-            </button>
-            <button class="sup-pay-btn upi"    id="payAny">
-              ⬡ Any UPI App
-            </button>
-          </div>
+          <button class="sup-pay-btn upi" id="donateBtn" style="width:100%;justify-content:center;">
+            ♡ Donate ₹29 securely
+          </button>
+          <div class="sup-donate-status" id="donateStatus" style="text-align:center;margin-top:12px;font-size:0.85rem;min-height:1.2em;"></div>
 
           <p class="sup-pay-note">
-            Opens your UPI app with the amount pre-filled.<br>
-            You can also scan the QR code on the left.
+            Secure payment via Razorpay — UPI, cards, or netbanking.
           </p>
         </div>
 
@@ -248,7 +220,8 @@
 
   <script src="{{ url_for('svg.static', filename='svg_animation.js') }}"></script>
   <script src="{{ url_for('svg.static', filename='support.js') }}"></script>
-  <script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script nonce="{{ csp_nonce }}">
     (async function loadStreak() {
       try {
         const res  = await fetch('/api/streak');
@@ -263,25 +236,20 @@
       } catch {}
     })();
 
-    /* ── UPI DONATE LOGIC ── */
-    const UPI_ID   = 'veyrasvg@nyes';
-    const UPI_NAME = 'VEYRA';
+    /* ── DONATE (Razorpay) ──
+       svg/support is NOT cross-origin-isolated (only pug.home is), so the checkout
+       iframe opens inline here — no popup needed. The amount is priced server-side. */
     let selectedAmount = 29;
-
-    function upiUrl(app) {
-      const amt  = selectedAmount;
-      const note = encodeURIComponent('Supporting VEYRA habit tracker');
-      const name = encodeURIComponent(UPI_NAME);
-      const id   = encodeURIComponent(UPI_ID);
-      const base = `upi://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
-      if (app === 'gpay')    return `tez://upi/pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
-      if (app === 'phonepe') return `phonepe://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
-      if (app === 'paytm')   return `paytmmp://pay?pa=${id}&pn=${name}&am=${amt}&cu=INR&tn=${note}`;
-      return base;
-    }
+    const donateBtn    = document.getElementById('donateBtn');
+    const donateStatus = document.getElementById('donateStatus');
 
     function updateDisplay() {
       document.getElementById('selectedDisplay').textContent = `₹${selectedAmount} selected`;
+      if (donateBtn) donateBtn.innerHTML = `♡ Donate ₹${selectedAmount} securely`;
+    }
+    function setStatus(msg, ok) {
+      donateStatus.textContent = msg;
+      donateStatus.style.color = ok ? '#7fce9a' : '#e0896f';
     }
 
     /* Preset buttons */
@@ -305,19 +273,48 @@
       }
     });
 
-    /* Pay buttons */
-    document.getElementById('payGpay').addEventListener('click',    () => window.location.href = upiUrl('gpay'));
-    document.getElementById('payPhonepe').addEventListener('click', () => window.location.href = upiUrl('phonepe'));
-    document.getElementById('payPaytm').addEventListener('click',   () => window.location.href = upiUrl('paytm'));
-    document.getElementById('payAny').addEventListener('click',     () => window.location.href = upiUrl('any'));
-
-    /* Copy UPI ID */
-    document.getElementById('copyUpiBtn').addEventListener('click', () => {
-      navigator.clipboard.writeText(UPI_ID).then(() => {
-        const flash = document.getElementById('copyFlash');
-        flash.classList.remove('hidden');
-        setTimeout(() => flash.classList.add('hidden'), 2000);
-      });
+    /* Donate → create order → Razorpay checkout → verify */
+    donateBtn.addEventListener('click', () => {
+      const amount = selectedAmount;
+      if (!amount || amount < 1) { setStatus('Enter a valid amount.', false); return; }
+      donateBtn.disabled = true;
+      setStatus('Starting secure payment…', true);
+      fetch('/api/donate/order', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amount })
+      })
+        .then(r => r.json().then(d => ({ ok: r.ok, d })))
+        .then(({ ok, d }) => {
+          if (!ok) { setStatus(d.error || 'Could not start payment.', false); donateBtn.disabled = false; return; }
+          if (typeof Razorpay !== 'function') { setStatus('Payment library failed to load — refresh and retry.', false); donateBtn.disabled = false; return; }
+          const rzp = new Razorpay({
+            key: d.key_id, order_id: d.order_id, amount: d.amount, currency: d.currency,
+            name: d.name, description: d.description,
+            handler: function (resp) {
+              setStatus('Verifying…', true);
+              fetch('/api/donate/verify', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  razorpay_order_id: resp.razorpay_order_id,
+                  razorpay_payment_id: resp.razorpay_payment_id,
+                  razorpay_signature: resp.razorpay_signature
+                })
+              })
+                .then(r => r.json().then(v => ({ ok: r.ok, v })))
+                .then(({ ok }) => { setStatus(ok ? '♡ Thank you for supporting VEYRA!' : 'Payment received — thank you!', true); donateBtn.disabled = false; })
+                .catch(() => { setStatus('Payment received — thank you!', true); donateBtn.disabled = false; });
+            },
+            modal: { ondismiss: function () { setStatus('Payment cancelled.', false); donateBtn.disabled = false; } },
+            theme: { color: '#5bb98a' }
+          });
+          rzp.on('payment.failed', function (r) {
+            const e = (r && r.error) || {};
+            setStatus('Payment failed' + (e.description ? ': ' + e.description : '') + '.', false);
+            donateBtn.disabled = false;
+          });
+          rzp.open();
+        })
+        .catch(() => { setStatus('Network error — please try again.', false); donateBtn.disabled = false; });
     });
   </script>
 

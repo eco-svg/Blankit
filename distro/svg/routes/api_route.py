@@ -5,12 +5,14 @@ The JSON endpoints svg's pages call to read/write habits, to-dos, stats, badges,
 streaks. Most business logic lives in services/ (habit_service, badge_service); these
 routes are thin wrappers that check login and hand off to those services.
 """
-from flask import Blueprint, jsonify, request, session
+import os
+from flask import Blueprint, jsonify, request, session, current_app
 from datetime import date
 from shared.extensions import db
 from distro.svg.models.habit import Habit
 from distro.svg.models.habit_log import HabitLog
 from distro.svg.models.todo import Todo
+from distro.svg.models.donation import Donation
 from distro.svg.services import habit_service, badge_service
 from datetime import date, timedelta
 from shared.extensions import limiter
@@ -238,4 +240,92 @@ def get_streak():
             break
 
     return jsonify({'streak': streak})
+
+
+# ══════════════════════════════
+#  SUPPORT DONATIONS (Razorpay)
+# ══════════════════════════════
+# svg donations flow through the SHARED (owner's) Razorpay account — same keys as the
+# rest of the app. Every order is tagged distro=Eco-Svg in Razorpay's notes AND stored
+# in the donations table, so the owner can reconcile what to forward to the partner.
+# Signature verification (HMAC over order_id|payment_id with the key secret) is what
+# proves a donation genuinely completed — a client cannot forge it.
+
+def _razorpay_keys():
+    return (os.environ.get('RAZORPAY_KEY_ID'), os.environ.get('RAZORPAY_KEY_SECRET'))
+
+
+def _verify_donation_signature(order_id, payment_id, signature, secret):
+    import hmac, hashlib
+    expected = hmac.new(secret.encode(), f'{order_id}|{payment_id}'.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature or '')
+
+
+@api.route('/donate/order', methods=['POST'])
+def donate_order():
+    """Create a Razorpay order for a support donation. The amount is validated + priced
+    server-side (rupees → paise); the client only proposes how much to give."""
+    uid = require_user()
+    key_id, key_secret = _razorpay_keys()
+    if not (key_id and key_secret):
+        return jsonify({'error': 'Online payment is not available right now.'}), 503
+    body   = request.get_json(silent=True) or {}
+    amount = body.get('amount')                       # rupees
+    if not isinstance(amount, int) or amount < 1:
+        return jsonify({'error': 'Enter a valid amount.'}), 400
+    if amount > 100000:
+        return jsonify({'error': 'Maximum ₹1,00,000 per donation.'}), 400
+    paise = amount * 100
+
+    import requests as req
+    from datetime import datetime as _dt
+    receipt = f'svgdon_{uid}_{int(_dt.utcnow().timestamp())}'
+    try:
+        resp = req.post('https://api.razorpay.com/v1/orders',
+                        auth=(key_id, key_secret),
+                        json={'amount': paise, 'currency': 'INR', 'receipt': receipt,
+                              'notes': {'distro': 'Eco-Svg', 'purpose': 'donation', 'user_id': str(uid)}},
+                        timeout=15)
+    except req.RequestException:
+        return jsonify({'error': 'Payment service unreachable — please try again.'}), 502
+    if resp.status_code not in (200, 201):
+        current_app.logger.warning('svg donate order failed %s: %s', resp.status_code, resp.text[:300])
+        return jsonify({'error': 'Could not start payment — please try again.'}), 502
+
+    order = resp.json()
+    order_id = order.get('id')
+    if not order_id:
+        return jsonify({'error': 'Could not start payment — please try again.'}), 502
+    db.session.add(Donation(user_id=uid, distro='Eco-Svg', amount_paise=paise,
+                            razorpay_order_id=order_id, status='created'))
+    db.session.commit()
+    return jsonify({'ok': True, 'order_id': order_id, 'amount': paise, 'currency': 'INR',
+                    'key_id': key_id, 'name': 'VEYRA — Support', 'description': f'Donation ₹{amount}'})
+
+
+@api.route('/donate/verify', methods=['POST'])
+def donate_verify():
+    """Verify the signed payment and mark the donation paid."""
+    uid = require_user()
+    _, key_secret = _razorpay_keys()
+    if not key_secret:
+        return jsonify({'error': 'Online payment is not available right now.'}), 503
+    body       = request.get_json(silent=True) or {}
+    order_id   = body.get('razorpay_order_id')
+    payment_id = body.get('razorpay_payment_id')
+    signature  = body.get('razorpay_signature')
+    if not (order_id and payment_id and signature):
+        return jsonify({'error': 'Missing payment details'}), 400
+    if not _verify_donation_signature(order_id, payment_id, signature, key_secret):
+        return jsonify({'error': 'Payment could not be verified'}), 400
+    d = Donation.query.filter_by(razorpay_order_id=order_id).with_for_update().first()
+    if not d:
+        return jsonify({'error': 'Donation not found'}), 404
+    if d.status != 'paid':                            # idempotent
+        d.status = 'paid'
+        d.razorpay_payment_id = payment_id
+        db.session.commit()
+    else:
+        db.session.commit()
+    return jsonify({'ok': True})
 
