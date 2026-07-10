@@ -298,6 +298,7 @@
     // in frame we count down on-screen and measure automatically (median of the frames).
     var AUTO_MS = 3000, GRACE_MS = 700;              // countdown length; allowed detection dropout
     var autoStart = 0, lastGood = 0, samples = [];
+    var pendingEst = null;                           // single estimate from a photo (no countdown)
     var audioCtx = null;
     function beep() {                                 // audible "captured" cue — you're far from the screen
       try {
@@ -332,7 +333,8 @@
       var fileset = await vision.FilesetResolver.forVisionTasks(V + '/wasm');
       poseLm = await vision.PoseLandmarker.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' },
-        runningMode: 'VIDEO', numPoses: 1
+        runningMode: 'VIDEO', numPoses: 1,
+        outputSegmentationMasks: true   // body silhouette → measure real widths (arm/thigh/calf too)
       });
       poseMode = 'VIDEO';
       return poseLm;
@@ -350,12 +352,12 @@
       if (!camOverlay) return;
       if (!heightVal()) { msg('Enter your Height first — it calibrates the measurements.'); var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus(); return; }
       camOverlay.classList.remove('hidden'); camStatus.textContent = 'Starting…'; camMeasure.disabled = true; lastLm = null;
-      autoStart = 0; lastGood = 0; samples = []; camVideo.style.display = '';
+      autoStart = 0; lastGood = 0; samples = []; pendingEst = null; camVideo.style.display = '';
       try {
         await setPoseMode('VIDEO');
         camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
         camVideo.srcObject = camStream; await camVideo.play();
-        camStatus.textContent = 'Stand back — once your whole body fits, it measures by itself.'; loop();
+        camStatus.textContent = 'Stand back, arms a little out, feet apart — once your whole body fits it measures itself.'; loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
@@ -374,7 +376,8 @@
           if (fullBody(lastLm, vh)) {
             lastGood = now;
             if (!autoStart) { autoStart = now; samples = []; }
-            var est = frameEst(lastLm, vw, vh);
+            var mask = readMask(res);                 // reads + frees the mask
+            var est = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
             if (est) samples.push(est);
             if (now - autoStart >= AUTO_MS) {
               beep(); measureFromPose();
@@ -385,10 +388,12 @@
             drawCount(ctx, vw, vh, left);
             camStatus.textContent = 'Hold still — measuring in ' + left + '…';
           } else {
+            closeMask(res);                           // not counting down → don't leak the mask
             if (autoStart && now - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
-            camStatus.textContent = 'Fit your WHOLE body (head to feet) in frame — it measures by itself.';
+            camStatus.textContent = 'Fit your WHOLE body in frame — arms a little out, feet apart — it measures itself.';
           }
         } else {
+          closeMask(res);
           camMeasure.disabled = true;
           if (autoStart && performance.now() - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
         }
@@ -409,19 +414,80 @@
       // the old guesses (2.2/2.3/2.7).
       return { shoulders: shW * 2.9, chest: shW * 2.6, waist: hipW * 4.4, hips: hipW * 5.0 };
     }
+
+    // ── Segmentation measure: read the body SILHOUETTE and measure real outline widths
+    //    at each landmark height, then convert width → girth. Joint distances can't give
+    //    limb thickness; the silhouette can, so this fills arm/thigh/calf/neck too. ──
+    // width(cm) → circumference(cm). Torso is elliptical (~3×), limbs ~round (~π). These
+    // are the CALIBRATION knobs — tune against a tape measure. (2026-07: pre-calibration.)
+    var FAC = { neck: 2.6, shoulders: 2.35, chest: 3.05, waist: 3.0, hips: 3.0,
+                arm: 3.05, thigh: 3.0, calf: 3.05 };
+    function readMask(res) {                          // float32 person-mask (0..1 per px) + dims; frees the GPU mask
+      if (!res || !res.segmentationMasks || !res.segmentationMasks[0]) return null;
+      var m = res.segmentationMasks[0], out = null;
+      try { out = { arr: m.getAsFloat32Array(), w: m.width, h: m.height }; } catch (e) {}
+      try { m.close(); } catch (e) {}
+      return out;
+    }
+    function closeMask(res) { if (res && res.segmentationMasks && res.segmentationMasks[0]) { try { res.segmentationMasks[0].close(); } catch (e) {} } }
+    function isBody(mask, mW, mH, x, y) {
+      x = Math.round(x); y = Math.round(y);
+      if (x < 0 || x >= mW || y < 0 || y >= mH) return false;
+      return mask[y * mW + x] > 0.5;
+    }
+    function runWidthPx(mask, mW, mH, cxN, yN) {      // width (px) of the body run containing (cxN,yN)
+      var y = Math.round(yN * mH), cx = Math.round(cxN * mW);
+      if (!isBody(mask, mW, mH, cx, y)) {             // landmark may sit just off the silhouette → snap onto it
+        var found = -1, lim = Math.round(mW * 0.15);
+        for (var d = 1; d < lim; d++) {
+          if (isBody(mask, mW, mH, cx - d, y)) { found = cx - d; break; }
+          if (isBody(mask, mW, mH, cx + d, y)) { found = cx + d; break; }
+        }
+        if (found < 0) return 0; cx = found;
+      }
+      var l = cx, r = cx;
+      while (isBody(mask, mW, mH, l - 1, y)) l--;
+      while (isBody(mask, mW, mH, r + 1, y)) r++;
+      return r - l + 1;
+    }
+    function segEst(lm, mask, mW, mH) {
+      var hCm = heightVal();
+      if (!lm || !hCm || !mask) return null;
+      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * mH;
+      if (bodyPx < 20) return null;
+      var cmPerPx = hCm / (bodyPx / 0.88);
+      function girth(cxN, yN, fac) { var w = runWidthPx(mask, mW, mH, cxN, yN) * cmPerPx; return (w > 0 && w < 120) ? w * fac : null; }
+      var shX = (lm[11].x + lm[12].x) / 2, shY = (lm[11].y + lm[12].y) / 2;
+      var hpX = (lm[23].x + lm[24].x) / 2, hpY = (lm[23].y + lm[24].y) / 2;
+      var span = hpY - shY, mid = (shX + hpX) / 2, out = {}, v;
+      if ((v = girth(shX, shY - (shY - lm[0].y) * 0.40, FAC.neck)))  out.neck = v;
+      if ((v = girth(mid, shY,                        FAC.shoulders))) out.shoulders = v;
+      if ((v = girth(mid, shY + span * 0.22,          FAC.chest)))   out.chest = v;
+      if ((v = girth(mid, shY + span * 0.72,          FAC.waist)))   out.waist = v;
+      if ((v = girth(hpX, hpY + span * 0.08,          FAC.hips)))    out.hips = v;
+      if ((v = girth((lm[12].x + lm[14].x) / 2, (lm[12].y + lm[14].y) / 2, FAC.arm)))   out.arm = v;
+      if ((v = girth((lm[24].x + lm[26].x) / 2, (lm[24].y + lm[26].y) / 2, FAC.thigh))) out.thigh = v;
+      if ((v = girth((lm[26].x + lm[28].x) / 2, (lm[26].y + lm[28].y) / 2, FAC.calf)))  out.calf = v;
+      return out;
+    }
     function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
     function measureFromPose() {
       var est;
-      if (samples.length >= 5) {                      // countdown ran: median beats any single jittery frame
+      if (samples.length >= 5) {                      // countdown ran: median each field over the frames
         est = {};
-        ['shoulders', 'chest', 'waist', 'hips'].forEach(function (k) {
-          est[k] = median(samples.map(function (s) { return s[k]; }));
+        var keys = {};
+        samples.forEach(function (s) { for (var k in s) keys[k] = 1; });
+        Object.keys(keys).forEach(function (k) {
+          var vals = samples.map(function (s) { return s[k]; }).filter(function (x) { return x != null; });
+          if (vals.length) est[k] = median(vals);
         });
-      } else {                                        // manual Measure tap: use the current frame
+      } else if (pendingEst) {                        // a photo was analyzed → use its estimate
+        est = pendingEst;
+      } else {                                        // manual Measure tap with no samples → current frame
         est = frameEst(lastLm, camCanvas.width, camCanvas.height);
       }
       autoStart = 0; samples = [];
-      if (!est) { msg('No full body detected — try again.'); return; }
+      if (!est || !Object.keys(est).length) { msg('No full body detected — try again.'); return; }
       showEditor();
       inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
       closeCam(); msg('Measured — adjust any number, then Save.');
@@ -450,11 +516,14 @@
         if (res && res.landmarks && res.landmarks[0]) {
           lastLm = res.landmarks[0];
           drawSkeleton(ctx, lastLm, vw, vh);
-          camMeasure.disabled = !frameEst(lastLm, vw, vh);
+          var mask = readMask(res);                    // silhouette from the photo
+          pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
+          camMeasure.disabled = !(pendingEst && Object.keys(pendingEst).length);
           camStatus.textContent = fullBody(lastLm, vh)
             ? 'Body found — tap Measure.'
             : 'Found a body, but maybe not all of it — Measure anyway, or try a photo showing head to feet.';
         } else {
+          closeMask(res);
           camStatus.textContent = 'No body found in that photo — try one with your whole body, front-on.';
         }
       } catch (e) {
@@ -465,7 +534,7 @@
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
-      autoStart = 0; lastGood = 0; samples = [];
+      autoStart = 0; lastGood = 0; samples = []; pendingEst = null;
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
