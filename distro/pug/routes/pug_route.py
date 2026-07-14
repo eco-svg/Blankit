@@ -5627,8 +5627,15 @@ def wallet_razorpay_verify():
 @pug_bp.route('/pug/api/wallet/razorpay/webhook', methods=['POST'])
 def wallet_razorpay_webhook():
     """Razorpay → us: server-to-server confirmation. Verified by the webhook secret and
-    used as the source of truth so a paid top-up credits even if the browser never
-    returned. No login (Razorpay has no session); signature is the auth."""
+    used as the source of truth so a paid top-up (or svg donation — see below) credits
+    even if the browser never returned. No login (Razorpay has no session); signature
+    is the auth.
+
+    This ONE webhook covers BOTH products, because pug's Eyes wallet and svg's donate
+    flow share the same Razorpay account/keys (one webhook registration in the Razorpay
+    dashboard, not two): every payment.captured event lands here regardless of which
+    product created the order, so we try a wallet top-up first and fall through to an
+    svg donation if the order_id doesn't match one."""
     _, _, webhook_secret = _razorpay_keys()
     if not webhook_secret:
         return ('', 503)
@@ -5641,8 +5648,9 @@ def wallet_razorpay_webhook():
         try:
             pay = event['payload']['payment']['entity']
             order_id, payment_id = pay.get('order_id'), pay.get('id')
-            if order_id:
-                _credit_topup(order_id, payment_id)
+            if order_id and not _credit_topup(order_id, payment_id):
+                from distro.svg.routes.api_route import _credit_donation
+                _credit_donation(order_id, payment_id)
         except (KeyError, TypeError):
             pass                                     # malformed payload → ack anyway (below)
     return ('', 200)                                 # 200 so Razorpay stops retrying

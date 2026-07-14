@@ -9,7 +9,13 @@
       <h2 class="card-title">Physique</h2>
       <span class="phys-privacy-note">Private · no photos stored</span>
       <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update</button>
-      <button id="physDimBtn" type="button" class="phys-toolbtn" title="Toggle 2D / 3D figure">3D</button>
+      <!-- Same model in both modes — 2D = held still, front-on; 3D = free to turn. The
+           ACTIVE mode is highlighted (not a single button whose label flips to the OTHER
+           mode, which read as "which one am I in?" confusing). -->
+      <span class="phys-gender" id="physDimGroup" title="Front view (static) or rotating 3D">
+        <button type="button" class="phys-toolbtn phys-gbtn" data-dim="2d">2D</button>
+        <button type="button" class="phys-toolbtn phys-gbtn" data-dim="3d">3D</button>
+      </span>
       <!-- Which body the 3D mannequin uses. No profile gender field yet, so it's a manual
            pick here (works for guests too); persisted in localStorage by physique.js. -->
       <span class="phys-gender" id="physGender" title="Body used for the 3D mannequin">
@@ -33,6 +39,9 @@
       <div class="physique-right">
         <!-- editor: the measurement form -->
         <div id="physEditor" class="phys-editor">
+          <div class="phys-fields-head">
+            <button id="physHowBtn" type="button" class="phys-how-link">📏 How to measure each field</button>
+          </div>
           <div class="phys-fields" id="physFields"></div>
           <div class="phys-actions">
             <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
@@ -58,6 +67,34 @@
   </div>
 </div>
 
+<!-- "How to measure" guide — every field except Height is a CIRCUMFERENCE (tape wrapped
+     all the way around), not a straight-line length. Getting this right matters: it's
+     what makes your numbers comparable to what the scan estimates. -->
+<div id="physHowOverlay" class="phys-cam-overlay hidden">
+  <div class="phys-cam-modal phys-how-modal">
+    <div class="phys-cam-head">
+      <span>📏 How to measure each field</span>
+      <button id="physHowClose" type="button" class="phys-cam-close" aria-label="Close">✕</button>
+    </div>
+    <div class="phys-how-body">
+      <p class="phys-how-lead">Every field below is a <b>circumference</b> — wrap the tape all the way around, snug but not tight — <b>except Height</b>, which is your standing height floor-to-head. Stand relaxed, arms at your sides, tape horizontal (level with the floor) at each spot.</p>
+      <ul class="phys-how-list">
+        <li><b>Height</b> — the one length measurement: barefoot, standing straight, floor to the top of your head.</li>
+        <li><b>Weight</b> — bathroom scale, not tape.</li>
+        <li><b>Neck</b> — all the way around, just below the Adam's apple, head facing forward.</li>
+        <li><b>Shoulders</b> — around the torso <i>at shoulder height</i>, over the deltoids (like a chest measurement, just higher) — not the tailor's shoulder-tip-to-shoulder-tip line.</li>
+        <li><b>Chest</b> — around the ribcage at nipple line, relaxed breathing (not inhaled or exhaled).</li>
+        <li><b>Waist</b> — around your natural waist, the narrowest point, roughly navel level.</li>
+        <li><b>Hips</b> — around the widest point of your hips/glutes.</li>
+        <li><b>Arm</b> — around the upper arm/bicep at its widest point, arm relaxed and hanging (not flexed).</li>
+        <li><b>Thigh</b> — around the upper thigh, just below the glute fold.</li>
+        <li><b>Calf</b> — around the widest point of the calf muscle, leg straight (not flexed or on tiptoes).</li>
+      </ul>
+      <p class="phys-how-lead">Using <b>Scan</b> or <b>From a photo</b>? You never need a tape at all — just enter your height once. For the best read: full body in frame, <b>arms angled clearly out from your body</b> (elbows away from your ribs, like starting a jumping jack — a small lift isn't enough to separate your arm from your torso in the image) and feet apart, phone roughly at chest height and level (not tilted up/down), fitted clothing.</p>
+    </div>
+  </div>
+</div>
+
 <!-- Live camera measure overlay — on-device pose only; nothing is recorded or stored. -->
 <div id="physCamOverlay" class="phys-cam-overlay hidden">
   <div class="phys-cam-modal">
@@ -70,7 +107,7 @@
       <canvas id="physCamCanvas"></canvas>
     </div>
     <div class="phys-cam-status" id="physCamStatus">Starting…</div>
-    <div class="phys-cam-hint">Fit your whole body in view, <b>arms a little out and feet apart</b>, in fitted clothing — that lets it read your outline cleanly (arms, thighs, calves too). The live scan measures by itself; photos are analyzed on this device and never uploaded or saved.</div>
+    <div class="phys-cam-hint">Fit your whole body in view, <b>arms angled clearly out</b> (elbows away from your ribs) and feet apart, in fitted clothing — that lets it read your outline cleanly (arms, thighs, calves too). The live scan measures by itself; photos are analyzed on this device and never uploaded or saved.</div>
     <div class="phys-cam-actions">
       <button id="physCamMeasure" type="button" class="phys-save" disabled>Measure</button>
     </div>

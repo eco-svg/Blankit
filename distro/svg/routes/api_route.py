@@ -261,6 +261,22 @@ def _verify_donation_signature(order_id, payment_id, signature, secret):
     return hmac.compare_digest(expected, signature or '')
 
 
+def _credit_donation(order_id, payment_id):
+    """Idempotently mark a donation paid for a given Razorpay order. Safe to call from
+    BOTH the client verify call AND the shared payment webhook (pug_route.py falls
+    through to this when an order isn't a wallet top-up) — the row is locked FOR UPDATE
+    and only a still-'created' donation is updated, so repeats are no-ops. Returns False
+    if no donation matches this order (e.g. it belongs to a wallet top-up instead)."""
+    d = Donation.query.filter_by(razorpay_order_id=order_id).with_for_update().first()
+    if not d:
+        return False
+    if d.status != 'paid':
+        d.status = 'paid'
+        d.razorpay_payment_id = payment_id
+    db.session.commit()   # also releases the row lock when already paid
+    return True
+
+
 @api.route('/donate/order', methods=['POST'])
 def donate_order():
     """Create a Razorpay order for a support donation. The amount is validated + priced
@@ -318,14 +334,12 @@ def donate_verify():
         return jsonify({'error': 'Missing payment details'}), 400
     if not _verify_donation_signature(order_id, payment_id, signature, key_secret):
         return jsonify({'error': 'Payment could not be verified'}), 400
-    d = Donation.query.filter_by(razorpay_order_id=order_id).with_for_update().first()
-    if not d:
+    # Make sure this order belongs to the logged-in user before crediting (mirrors the
+    # same ownership check on pug's wallet verify) — defense in depth alongside the
+    # signature check, which already proves the payment itself is genuine.
+    owned = Donation.query.filter_by(razorpay_order_id=order_id, user_id=uid).first()
+    if not owned:
         return jsonify({'error': 'Donation not found'}), 404
-    if d.status != 'paid':                            # idempotent
-        d.status = 'paid'
-        d.razorpay_payment_id = payment_id
-        db.session.commit()
-    else:
-        db.session.commit()
+    _credit_donation(order_id, payment_id)
     return jsonify({'ok': True})
 

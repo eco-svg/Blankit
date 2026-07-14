@@ -21,7 +21,7 @@
     var editorEl  = document.getElementById('physEditor');
     var figureEl  = document.getElementById('physFigure');
     var updateBtn = document.getElementById('physUpdateBtn');
-    var dimBtn    = document.getElementById('physDimBtn');
+    var dimGroup  = document.getElementById('physDimGroup');
 
     var FIELDS = [
       ['height','Height','cm'], ['weight','Weight','kg'], ['neck','Neck','cm'],
@@ -52,7 +52,11 @@
 
     // ── editor / figure switching ──
     function showEditor() { editorEl.classList.remove('hidden'); figureEl.classList.add('hidden'); }
-    function showFigure() { editorEl.classList.add('hidden'); figureEl.classList.remove('hidden'); renderFigure(); }
+    // swapDim() un-hides #physMannequin3d (it starts "hidden" in the raw HTML) — call it
+    // here too, not just from the 2D/3D toggle, so the model is actually visible on a
+    // fresh page load (previously it rendered into the container fine but the container
+    // itself stayed hidden until you clicked the toggle at least once).
+    function showFigure() { editorEl.classList.add('hidden'); figureEl.classList.remove('hidden'); swapDim(); renderFigure(); }
 
     // ── stats (left) ──
     function renderStats(m) {
@@ -62,30 +66,10 @@
       }).join('');
     }
 
-    // ── 2D mannequin ──
-    function map(v, a, b, c, d) { if (v == null || isNaN(v)) return (c + d) / 2; var t = Math.max(0, Math.min(1, (v - a) / (b - a))); return c + t * (d - c); }
-    function bodySVG(m, o) {
-      m = m || {}; var cx = 100;
-      var shHW = map(m.shoulders,90,130,26,48), chHW = map(m.chest,80,120,22,42), wHW = map(m.waist,60,110,15,40),
-          hipHW = map(m.hips,80,120,22,42), armW = map(m.arm,22,45,5,13), thW = map(m.thigh,40,72,8,17), nkHW = map(m.neck,30,45,6,10);
-      var neckY=46, shY=58, chY=92, wY=150, hipY=188, kneeY=290, footY=372;
-      var torso='M'+(cx-nkHW)+','+neckY+' L'+(cx-shHW)+','+shY+' L'+(cx-chHW)+','+chY+' L'+(cx-wHW)+','+wY+' L'+(cx-hipHW)+','+hipY+
-                ' L'+(cx+hipHW)+','+hipY+' L'+(cx+wHW)+','+wY+' L'+(cx+chHW)+','+chY+' L'+(cx+shHW)+','+shY+' L'+(cx+nkHW)+','+neckY+' Z';
-      var legL='M'+(cx-hipHW)+','+hipY+' L'+(cx-thW-2)+','+kneeY+' L'+(cx-4)+','+footY+' L'+(cx-2)+','+hipY+' Z';
-      var legR='M'+(cx+hipHW)+','+hipY+' L'+(cx+thW+2)+','+kneeY+' L'+(cx+4)+','+footY+' L'+(cx+2)+','+hipY+' Z';
-      var armL='M'+(cx-shHW)+','+shY+' L'+(cx-shHW-armW)+','+(shY+6)+' L'+(cx-chHW-armW)+','+wY+' L'+(cx-chHW)+','+(wY-6)+' Z';
-      var armR='M'+(cx+shHW)+','+shY+' L'+(cx+shHW+armW)+','+(shY+6)+' L'+(cx+chHW+armW)+','+wY+' L'+(cx+chHW)+','+(wY-6)+' Z';
-      var a='fill="'+o.fill+'"'+(o.stroke?' stroke="'+o.stroke+'" stroke-width="'+o.sw+'"':'')+' opacity="'+(o.opacity!=null?o.opacity:1)+'" stroke-linejoin="round"';
-      return '<circle cx="'+cx+'" cy="28" r="17" '+a+'/><path d="'+armL+'" '+a+'/><path d="'+armR+'" '+a+'/><path d="'+legL+'" '+a+'/><path d="'+legR+'" '+a+'/><path d="'+torso+'" '+a+'/>';
-    }
-    function render2D(cur, ghost) {
-      var p = '';
-      if (ghost) p += bodySVG(ghost, { fill:'none', stroke:'var(--text-dim)', sw:1.4, opacity:0.55 });
-      if (cur) p += bodySVG(cur, { fill:'var(--accent)', opacity:0.9 });
-      mannequin.innerHTML = cur ? '<svg viewBox="0 0 200 400" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">'+p+'</svg>' : '';
-    }
-
     // ── 3D mannequin (Three.js + GLB, lazy-loaded) ──
+    // Both "2D" and "3D" now show the SAME realistic model — "2D" is just a front view
+    // held still (rotation frozen), "3D" lets it turn so you can see it from every side.
+    // (The old flat SVG stick-figure is retired — it never looked like a real body.)
     // A real clothed body model (rebuilt in Blender from a CC-BY base mesh — see
     // distro/pug/blender/build_mannequin.py). The GLB carries one CALIBRATED morph target
     // per body zone (chest/waist/hips/thighs/calves/arms/shoulders), so each of the user's
@@ -157,7 +141,7 @@
     }
     async function render3D() {
       var T;
-      try { T = await ensureThree(); } catch (e) { msg('3D unavailable — staying in 2D.'); mode3d = false; dimBtn.textContent = '3D'; swapDim(); return; }
+      try { T = await ensureThree(); } catch (e) { msg('3D unavailable — staying in 2D.'); mode3d = false; syncDimBtns(); swapDim(); return; }
       disposeThree();
       var myToken = loadToken;                               // this render's identity
       mannequin3d.innerHTML = '<div class="phys3d-loading">Loading 3D…</div>';
@@ -188,29 +172,33 @@
         mannequin3d.innerHTML = ''; mannequin3d.appendChild(renderer.domElement);
         three = { renderer: renderer, scene: scene, camera: camera, group: grp, morphMeshes: morphMeshes, gender: gender };
         applyMorphs(latest() ? latest().m : null);           // shape the body to the user's numbers
-        (function anim() { three.raf = requestAnimationFrame(anim); grp.rotation.y += 0.01; renderer.render(scene, camera); })();
+        // "2D" = this same model, held front-on and still. "3D" = free to turn. Only spin
+        // while in 3D mode; 2D stays pinned at rotation 0 (a clean, static front view).
+        (function anim() {
+          three.raf = requestAnimationFrame(anim);
+          if (mode3d) grp.rotation.y += 0.01; else grp.rotation.y = 0;
+          renderer.render(scene, camera);
+        })();
       }, undefined, function () {
         if (myToken === loadToken) mannequin3d.innerHTML = '<div class="phys3d-loading">3D model failed to load.</div>';
       });
     }
 
     function swapDim() {
-      mannequin.classList.toggle('hidden', mode3d);
-      mannequin3d.classList.toggle('hidden', !mode3d);
-      if (!mode3d) disposeThree();
+      // Both modes render the same model in #physMannequin3d — the retired flat SVG
+      // container (#physMannequin) stays hidden regardless of mode.
+      mannequin.classList.add('hidden');
+      mannequin3d.classList.remove('hidden');
+      if (three.group) three.group.rotation.y = 0;   // snap to front immediately on toggle
     }
 
-    // ── figure render (per current mode) ──
+    // ── figure render (both modes render the same 3D model — see swapDim) ──
     function renderFigure() {
       var cur = latest();
-      var ghost = compareEl.value ? logById(compareEl.value) : null;
       cap.textContent = cur ? ('Updated ' + fmtDate(cur.date)) : '';
-      if (mode3d) {
-        // model already loaded for this gender → just re-shape it (cheap); else load it
-        if (three.morphMeshes && three.gender === gender) applyMorphs(cur ? cur.m : null);
-        else render3D();
-      }
-      else { render2D(cur ? cur.m : null, ghost ? ghost.m : null); }
+      // model already loaded for this gender → just re-shape it (cheap); else load it
+      if (three.morphMeshes && three.gender === gender) applyMorphs(cur ? cur.m : null);
+      else render3D();
     }
 
     // ── comparison ──
@@ -265,7 +253,25 @@
         .catch(function () { msg('Clear failed.'); });
     });
     updateBtn && updateBtn.addEventListener('click', function () { var cur = latest(); fillInputs(cur ? cur.m : {}); showEditor(); });
-    dimBtn && dimBtn.addEventListener('click', function () { mode3d = !mode3d; dimBtn.textContent = mode3d ? '2D' : '3D'; swapDim(); if (!figureEl.classList.contains('hidden')) renderFigure(); });
+    // 2D/3D toggle — same active/inactive pill pattern as the gender picker below, so
+    // the highlighted button always shows which mode you're actually in.
+    function syncDimBtns() {
+      dimGroup && dimGroup.querySelectorAll('.phys-gbtn').forEach(function (b) {
+        b.classList.toggle('gbtn-active', (b.getAttribute('data-dim') === '3d') === mode3d);
+      });
+    }
+    if (dimGroup) {
+      dimGroup.querySelectorAll('.phys-gbtn').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var want3d = b.getAttribute('data-dim') === '3d';
+          if (want3d === mode3d) return;                  // already in that mode
+          mode3d = want3d;
+          syncDimBtns(); swapDim();
+          if (!figureEl.classList.contains('hidden')) renderFigure();
+        });
+      });
+      syncDimBtns();
+    }
 
     // Male/Female toggle for the 3D body (no profile gender field yet → manual pick, remembered).
     var genderWrap = document.getElementById('physGender');
@@ -357,7 +363,7 @@
         await setPoseMode('VIDEO');
         camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
         camVideo.srcObject = camStream; await camVideo.play();
-        camStatus.textContent = 'Stand back, arms a little out, feet apart — once your whole body fits it measures itself.'; loop();
+        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself.'; loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
@@ -390,7 +396,7 @@
           } else {
             closeMask(res);                           // not counting down → don't leak the mask
             if (autoStart && now - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
-            camStatus.textContent = 'Fit your WHOLE body in frame — arms a little out, feet apart — it measures itself.';
+            camStatus.textContent = 'Fit your WHOLE body in frame — arms angled OUT, feet apart — it measures itself.';
           }
         } else {
           closeMask(res);
@@ -409,9 +415,12 @@
       var cmPerPx = hCm / (bodyPx / 0.88);            // nose→ankle ≈ 88% of standing height
       var shW = dist(lm[11], lm[12], vw, vh) * cmPerPx, hipW = dist(lm[23], lm[24], vw, vh) * cmPerPx;
       // Factors map JOINT-to-JOINT distances (much narrower than the silhouette — hip
-      // joints are ~18cm apart on a ~35cm-wide body) to girths. Calibrated against real
-      // tape measurements 2026-07: chest 83 / waist 78 / hips 89 came out 71/41/48 with
-      // the old guesses (2.2/2.3/2.7).
+      // joints are ~18cm apart on a ~35cm-wide body) to girths. Calibrated against the
+      // FIRST tape test only (chest 83/waist 78/hips 89) — this is the FALLBACK used only
+      // when the segmentation mask isn't available (see segEst above, the primary path,
+      // which has since been retuned against a fuller tape set — this one hasn't, because
+      // no fresh test has exercised this fallback path since). Known stale; revisit if
+      // this path turns out to be firing in practice.
       return { shoulders: shW * 2.9, chest: shW * 2.6, waist: hipW * 4.4, hips: hipW * 5.0 };
     }
 
@@ -420,8 +429,19 @@
     //    limb thickness; the silhouette can, so this fills arm/thigh/calf/neck too. ──
     // width(cm) → circumference(cm). Torso is elliptical (~3×), limbs ~round (~π). These
     // are the CALIBRATION knobs — tune against a tape measure. (2026-07: pre-calibration.)
-    var FAC = { neck: 2.6, shoulders: 2.35, chest: 3.05, waist: 3.0, hips: 3.0,
-                arm: 3.05, thigh: 3.0, calf: 3.05 };
+    // Retuned 2026-07 from real tape tests. waist/hips/thigh/calf now land within ~5% of
+    // tape — trust these. chest/arm are STILL WRONG (not a calibration issue): at
+    // armpit height the arm sits directly against the torso with no real gap even when
+    // held "a little out", so the silhouette sweep can't separate them — needs a wider
+    // arm angle in the pose (~30-40°), not a bigger/smaller factor. Left un-retuned
+    // until a clean (wide-arm) re-test comes in.
+    // ⚠️ SINGLE-SUBJECT CALIBRATION: every number below is fit to ONE body (168cm/53kg).
+    // The width→circumference ratio genuinely varies with body composition (rounder vs.
+    // flatter cross-section), so accuracy for very different builds is unverified — this
+    // is a starting baseline, not a validated population model. Re-tune with tape data
+    // from a few different body types before trusting this cross-population.
+    var FAC = { neck: 3.3, shoulders: 2.45, chest: 3.05, waist: 2.34, hips: 2.51,
+                arm: 3.05, thigh: 2.89, calf: 2.96 };
     function readMask(res) {                          // float32 person-mask (0..1 per px) + dims; frees the GPU mask
       if (!res || !res.segmentationMasks || !res.segmentationMasks[0]) return null;
       var m = res.segmentationMasks[0], out = null;
@@ -435,20 +455,51 @@
       if (x < 0 || x >= mW || y < 0 || y >= mH) return false;
       return mask[y * mW + x] > 0.5;
     }
-    function runWidthPx(mask, mW, mH, cxN, yN) {      // width (px) of the body run containing (cxN,yN)
+    // width (px) of the body run containing (cxN,yN), horizontally. loL/hiL (px, optional)
+    // cap how far the sweep may travel in each direction — without this, a torso sweep
+    // can bridge a small gap to an arm held slightly out and report shoulder-to-shoulder
+    // (or hand-to-hand) width instead of chest width. We cap at the elbow position, since
+    // a real torso edge always sits between center and the elbow.
+    function runWidthPx(mask, mW, mH, cxN, yN, loL, hiL) {
       var y = Math.round(yN * mH), cx = Math.round(cxN * mW);
+      loL = (loL == null) ? -Infinity : loL; hiL = (hiL == null) ? Infinity : hiL;
       if (!isBody(mask, mW, mH, cx, y)) {             // landmark may sit just off the silhouette → snap onto it
         var found = -1, lim = Math.round(mW * 0.15);
         for (var d = 1; d < lim; d++) {
-          if (isBody(mask, mW, mH, cx - d, y)) { found = cx - d; break; }
-          if (isBody(mask, mW, mH, cx + d, y)) { found = cx + d; break; }
+          if (cx - d >= loL && isBody(mask, mW, mH, cx - d, y)) { found = cx - d; break; }
+          if (cx + d <= hiL && isBody(mask, mW, mH, cx + d, y)) { found = cx + d; break; }
         }
         if (found < 0) return 0; cx = found;
       }
       var l = cx, r = cx;
-      while (isBody(mask, mW, mH, l - 1, y)) l--;
-      while (isBody(mask, mW, mH, r + 1, y)) r++;
+      while (l - 1 >= loL && isBody(mask, mW, mH, l - 1, y)) l--;
+      while (r + 1 <= hiL && isBody(mask, mW, mH, r + 1, y)) r++;
       return r - l + 1;
+    }
+    // Limb thickness measured PERPENDICULAR to the bone's own direction (shoulder→elbow,
+    // hip→knee, knee→ankle), not a horizontal slice — a horizontal slice overstates a
+    // slanted limb (the same fix already used for the 3D mannequin's arm calibration).
+    // Also avoids snapping onto the torso when the limb sits close to it.
+    function limbWidthPx(mask, mW, mH, aXn, aYn, bXn, bYn) {
+      var midXn = (aXn + bXn) / 2, midYn = (aYn + bYn) / 2;
+      var dx = (bXn - aXn) * mW, dy = (bYn - aYn) * mH;
+      var len = Math.sqrt(dx * dx + dy * dy);
+      if (len < 1) return 0;
+      var pX = -dy / len, pY = dx / len;              // unit vector perpendicular to the bone
+      var cx = midXn * mW, cy = midYn * mH;
+      if (!isBody(mask, mW, mH, cx, cy)) {             // tight snap only — don't risk jumping to the torso
+        var found = false, tight = 8;
+        for (var d = 1; d <= tight && !found; d++) {
+          if (isBody(mask, mW, mH, cx + pX * d, cy + pY * d)) { cx += pX * d; cy += pY * d; found = true; }
+          else if (isBody(mask, mW, mH, cx - pX * d, cy - pY * d)) { cx -= pX * d; cy -= pY * d; found = true; }
+        }
+        if (!found) return 0;
+      }
+      var cap = Math.min(mW, mH) * 0.22;               // sane ceiling — a limb can't be torso-wide
+      var a = 0, b = 0;
+      while (a + 1 <= cap && isBody(mask, mW, mH, cx + pX * (a + 1), cy + pY * (a + 1))) a++;
+      while (b + 1 <= cap && isBody(mask, mW, mH, cx - pX * (b + 1), cy - pY * (b + 1))) b++;
+      return a + b + 1;
     }
     function segEst(lm, mask, mW, mH) {
       var hCm = heightVal();
@@ -456,7 +507,18 @@
       var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * mH;
       if (bodyPx < 20) return null;
       var cmPerPx = hCm / (bodyPx / 0.88);
-      function girth(cxN, yN, fac) { var w = runWidthPx(mask, mW, mH, cxN, yN) * cmPerPx; return (w > 0 && w < 120) ? w * fac : null; }
+      // Torso sweeps must stop at the elbow — a real torso edge always sits between
+      // center and the elbow, so this is a hard boundary against bridging a small
+      // arms-slightly-out gap and reporting shoulder-to-shoulder (or wider) by mistake.
+      var elbowLx = Math.min(lm[13].x, lm[14].x) * mW, elbowRx = Math.max(lm[13].x, lm[14].x) * mW;
+      function girth(cxN, yN, fac) {
+        var w = runWidthPx(mask, mW, mH, cxN, yN, elbowLx, elbowRx) * cmPerPx;
+        return (w > 0 && w < 120) ? w * fac : null;
+      }
+      function limbGirth(a, b, fac) {
+        var w = limbWidthPx(mask, mW, mH, lm[a].x, lm[a].y, lm[b].x, lm[b].y) * cmPerPx;
+        return (w > 0 && w < 90) ? w * fac : null;
+      }
       var shX = (lm[11].x + lm[12].x) / 2, shY = (lm[11].y + lm[12].y) / 2;
       var hpX = (lm[23].x + lm[24].x) / 2, hpY = (lm[23].y + lm[24].y) / 2;
       var span = hpY - shY, mid = (shX + hpX) / 2, out = {}, v;
@@ -465,9 +527,9 @@
       if ((v = girth(mid, shY + span * 0.22,          FAC.chest)))   out.chest = v;
       if ((v = girth(mid, shY + span * 0.72,          FAC.waist)))   out.waist = v;
       if ((v = girth(hpX, hpY + span * 0.08,          FAC.hips)))    out.hips = v;
-      if ((v = girth((lm[12].x + lm[14].x) / 2, (lm[12].y + lm[14].y) / 2, FAC.arm)))   out.arm = v;
-      if ((v = girth((lm[24].x + lm[26].x) / 2, (lm[24].y + lm[26].y) / 2, FAC.thigh))) out.thigh = v;
-      if ((v = girth((lm[26].x + lm[28].x) / 2, (lm[26].y + lm[28].y) / 2, FAC.calf)))  out.calf = v;
+      if ((v = limbGirth(12, 14, FAC.arm)))   out.arm = v;    // shoulder → elbow
+      if ((v = limbGirth(24, 26, FAC.thigh))) out.thigh = v;  // hip → knee
+      if ((v = limbGirth(26, 28, FAC.calf)))  out.calf = v;   // knee → ankle
       return out;
     }
     function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
@@ -547,6 +609,12 @@
     });
     camMeasure && camMeasure.addEventListener('click', measureFromPose);
     camClose && camClose.addEventListener('click', closeCam);
+
+    // "How to measure" guide — plain reference, no camera/state involved.
+    var howBtn = document.getElementById('physHowBtn'), howOverlay = document.getElementById('physHowOverlay'),
+        howClose = document.getElementById('physHowClose');
+    howBtn && howBtn.addEventListener('click', function () { howOverlay && howOverlay.classList.remove('hidden'); });
+    howClose && howClose.addEventListener('click', function () { howOverlay && howOverlay.classList.add('hidden'); });
 
     document.addEventListener('veyra:navigate', function (e) { if (e.detail && e.detail.route === 'physique') load(); });
     load();

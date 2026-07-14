@@ -7868,6 +7868,18 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-cam-hint { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
 .phys-cam-actions { display: flex; justify-content: center; }
 
+/* "How to measure" link (above the field grid) + guide modal */
+.phys-fields-head { display: flex; justify-content: flex-end; margin-bottom: 4px; }
+.phys-how-link { background: none; border: none; color: var(--accent); font-size: 0.74rem;
+  cursor: pointer; padding: 2px 4px; opacity: 0.85; }
+.phys-how-link:hover { opacity: 1; text-decoration: underline; }
+.phys-how-modal { max-height: 82vh; overflow-y: auto; }
+.phys-how-body { display: flex; flex-direction: column; gap: 10px; }
+.phys-how-lead { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
+.phys-how-list { font-size: 0.8rem; color: var(--text); line-height: 1.6; padding-left: 18px; margin: 0; }
+.phys-how-list li { margin-bottom: 4px; }
+.phys-how-list b { color: var(--accent); }
+
 /* Physique title-bar danger button + "coming soon" toast */
 .phys-toolbtn-danger:hover { color: #e87a5a !important; border-color: #e87a5a !important; }
 .veyra-soon-toast {
