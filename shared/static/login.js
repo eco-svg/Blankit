@@ -15,8 +15,9 @@ const DISTROS = {
                    '<li>BlinkBot — just talk to it, it logs for you</li>' +
                    '<li>Skills &amp; stats — track progress, get verified ranks</li>' +
                    '<li>Community &amp; DMs — post, chat, connect with others</li>' +
-                   '<li>Physique — measure yourself, watch your body change</li>' +
+                   '<li>Eyes — earn, spend, and trade in-app</li>' +
                    '<li>Calendar — see what’s next, never miss a day</li>' +
+                   '<li>Physique — measure yourself, watch your body change <i>(coming soon)</i></li>' +
                  '</ul>' },
 };
 const DISTRO_KEYS = ['Eco-Svg', 'CatalystCrew', 'Ocellus'];
