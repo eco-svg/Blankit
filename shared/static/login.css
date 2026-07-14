@@ -371,6 +371,11 @@ body::after {
 .info-active { color: var(--accent); transition: color 0.4s; }
 .info-muted  { color: var(--text3); font-style: italic; }
 
+/* Feature list inside the "about" info line — plain, minimal-word bullets, not italic. */
+.info-list { list-style: none; margin: 0; padding: 0; font-style: normal; display: flex; flex-direction: column; gap: 3px; }
+.info-list li { padding-left: 11px; position: relative; }
+.info-list li::before { content: '·'; position: absolute; left: 0; top: -2px; color: var(--accent); font-size: 1rem; line-height: 1; }
+
 /* ══════════════════════════════
    AUTH CARD
    ══════════════════════════════ */

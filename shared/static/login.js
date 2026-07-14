@@ -10,7 +10,13 @@ const DISTROS = {
   'CatalystCrew': { maintainer: 'CatalystCrew', focus: '— to be filled —',             status: '● active', about: '— to be filled —' },
   'Ocellus':   { maintainer: 'Ocellus',   focus: 'habits, AI companion & community',
                  status: '● active',
-                 about: 'Track habits and goals with real streaks and a calendar that celebrates your consistency. BlinkBot, an on-device AI companion, logs your progress automatically. Build a skill record that’s actually verified — not just claimed. Connect through a community feed to post, chat, and grow together. And Eyes, an in-app currency, powers the marketplace where your skills can be hired, bought, or traded.' },
+                 about: '<ul class="info-list">' +
+                   '<li>Habits &amp; goals — build streaks, stay consistent</li>' +
+                   '<li>BlinkBot — an AI that logs your progress for you</li>' +
+                   '<li>Skills — get ranked, verified, not just claimed</li>' +
+                   '<li>Community — post, chat, grow with others</li>' +
+                   '<li>Eyes — earn, spend, and trade in-app</li>' +
+                 '</ul>' },
 };
 const DISTRO_KEYS = ['Eco-Svg', 'CatalystCrew', 'Ocellus'];
 const BG_IDS      = { 'Eco-Svg': 'bg-Eco-Svg', 'CatalystCrew': 'bg-CatalystCrew', 'Ocellus': 'bg-Ocellus' };
@@ -143,7 +149,7 @@ function updateDistroInfo(distro) {
   document.getElementById('infoMaintainer').textContent = d.maintainer;
   document.getElementById('infoFocus').textContent      = d.focus;
   document.getElementById('infoStatus').textContent     = d.status;
-  document.getElementById('infoAbout').textContent      = d.about;
+  document.getElementById('infoAbout').innerHTML        = d.about;   // developer-authored only, never user input
 }
 
 function updateDistroLabels(distro) {
