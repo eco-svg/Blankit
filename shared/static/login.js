@@ -11,11 +11,12 @@ const DISTROS = {
   'Ocellus':   { maintainer: 'Ocellus',   focus: 'habits, AI companion & community',
                  status: '● active',
                  about: '<ul class="info-list">' +
-                   '<li>Habits &amp; goals — build streaks, stay consistent</li>' +
-                   '<li>BlinkBot — an AI that logs your progress for you</li>' +
-                   '<li>Skills — get ranked, verified, not just claimed</li>' +
-                   '<li>Community — post, chat, grow with others</li>' +
-                   '<li>Eyes — earn, spend, and trade in-app</li>' +
+                   '<li>Habits &amp; notes — log habits, jot notes, build streaks</li>' +
+                   '<li>BlinkBot — just talk to it, it logs for you</li>' +
+                   '<li>Skills &amp; stats — track progress, get verified ranks</li>' +
+                   '<li>Community &amp; DMs — post, chat, connect with others</li>' +
+                   '<li>Physique — measure yourself, watch your body change</li>' +
+                   '<li>Calendar — see what’s next, never miss a day</li>' +
                  '</ul>' },
 };
 const DISTRO_KEYS = ['Eco-Svg', 'CatalystCrew', 'Ocellus'];
