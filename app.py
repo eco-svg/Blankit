@@ -412,6 +412,17 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50 MB upload cap
+    if db_url.startswith('postgresql'):
+        # Pool sized for --threads 8 per gunicorn worker (Dockerfile CMD): each thread can
+        # briefly hold a connection, so pool_size+max_overflow should cover the thread count
+        # per worker. pool_pre_ping avoids errors from connections Supabase/a proxy dropped
+        # while idle; pool_recycle keeps us under any such idle timeout.
+        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+            'pool_size': 10,
+            'max_overflow': 5,
+            'pool_recycle': 280,
+            'pool_pre_ping': True,
+        }
 
     db.init_app(app)
     mail.init_app(app)
