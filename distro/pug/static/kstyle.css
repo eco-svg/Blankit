@@ -7868,6 +7868,8 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-cam-stage { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: 10px; overflow: hidden; }
 .phys-cam-stage video, .phys-cam-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .phys-cam-status { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.1em; }
+.phys-cam-mic { font-size: 0.7rem; color: var(--text-dim); text-align: center; font-family: monospace; }
+.phys-cam-mic.hidden { display: none; }
 .phys-cam-hint { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
 .phys-cam-actions { display: flex; justify-content: center; }
 

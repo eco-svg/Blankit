@@ -297,7 +297,7 @@
     var camOverlay = document.getElementById('physCamOverlay'), camVideo = document.getElementById('physCamVideo'),
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
         camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose'),
-        camDevice = document.getElementById('physCamDevice');
+        camDevice = document.getElementById('physCamDevice'), camMic = document.getElementById('physCamMic');
     var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
     var DEVICE_KEY = 'veyra_phys_camera_device_id';   // remembered across sessions — e.g. a phone used as a webcam
@@ -440,6 +440,7 @@
     // anywhere) — real word recognition would need a cloud speech API, which Brave mostly
     // doesn't even wire up, and would break the "nothing leaves your device" guarantee.
     var clapAnalyser = null, clapData = null, lastClapAt = 0;
+    var CLAP_THRESHOLD = 55;                          // tune against the live meter — was 100, too strict for a shout from distance
     function startClapDetect(stream) {
       clapAnalyser = null; clapData = null;
       try {
@@ -453,12 +454,14 @@
       } catch (e) { clapAnalyser = null; clapData = null; }
     }
     function checkClap() {
-      if (!clapAnalyser || !clapData || camMeasure.disabled || showDone) return;
+      if (!clapAnalyser || !clapData) { if (camMic) camMic.classList.add('hidden'); return; }
       clapAnalyser.getByteTimeDomainData(clapData);
       var peak = 0;
       for (var i = 0; i < clapData.length; i++) { var v = Math.abs(clapData[i] - 128); if (v > peak) peak = v; }
+      if (camMic) { camMic.classList.remove('hidden'); camMic.textContent = 'mic level: ' + peak + ' / trigger: ' + CLAP_THRESHOLD; }
+      if (camMeasure.disabled || showDone) return;
       var now = performance.now();
-      if (peak > 100 && now - lastClapAt > 2000) { lastClapAt = now; beep(); measureFromPose(); }
+      if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) { lastClapAt = now; beep(); measureFromPose(); }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
     function loop() {
