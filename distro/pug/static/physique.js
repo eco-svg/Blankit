@@ -296,9 +296,31 @@
     // ── Live camera measure (on-device MediaPipe pose; nothing stored) ──
     var camOverlay = document.getElementById('physCamOverlay'), camVideo = document.getElementById('physCamVideo'),
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
-        camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose');
+        camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose'),
+        camDevice = document.getElementById('physCamDevice');
     var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
+    var DEVICE_KEY = 'veyra_phys_camera_device_id';   // remembered across sessions — e.g. a phone used as a webcam
+    async function refreshCamDevices() {              // populate the picker; only shown when there's a real choice
+      if (!camDevice || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      var list = [];
+      try { list = (await navigator.mediaDevices.enumerateDevices()).filter(function (d) { return d.kind === 'videoinput'; }); } catch (e) { return; }
+      if (list.length < 2) { camDevice.classList.add('hidden'); return; }
+      var want = localStorage.getItem(DEVICE_KEY) || camDevice.value;
+      camDevice.innerHTML = '';
+      list.forEach(function (d, i) {
+        var o = document.createElement('option');
+        o.value = d.deviceId; o.textContent = d.label || ('Camera ' + (i + 1));
+        camDevice.appendChild(o);
+      });
+      camDevice.value = list.some(function (d) { return d.deviceId === want; }) ? want : list[0].deviceId;
+      camDevice.classList.remove('hidden');
+    }
+    if (navigator.mediaDevices) navigator.mediaDevices.ondevicechange = refreshCamDevices;
+    camDevice && camDevice.addEventListener('change', function () {
+      localStorage.setItem(DEVICE_KEY, camDevice.value);
+      if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; openCam(); }
+    });
     var poseMode = 'VIDEO';                           // the one landmarker serves both live scan and photos
     // Auto-capture: you can't reach the button from 2m away, so once the WHOLE body is
     // in frame we count down on-screen and measure automatically (median of the frames).
@@ -396,8 +418,12 @@
       autoStart = 0; lastGood = 0; samples = []; pendingEst = null; camVideo.style.display = '';
       try {
         await setPoseMode('VIDEO');
-        camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 }, audio: false });
+        await refreshCamDevices();                     // labels are blank pre-permission on first-ever run, that's fine
+        var chosen = camDevice && !camDevice.classList.contains('hidden') ? camDevice.value : '';
+        var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: 640, height: 480 } : { facingMode: 'user', width: 640, height: 480 };
+        camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
         camVideo.srcObject = camStream; await camVideo.play();
+        refreshCamDevices();                           // re-run now that permission is granted → real device labels
         camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself.'; loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
     }
