@@ -305,6 +305,7 @@
     var AUTO_MS = 3000, GRACE_MS = 700;              // countdown length; allowed detection dropout
     var autoStart = 0, lastGood = 0, samples = [];
     var pendingEst = null;                           // single estimate from a photo (no countdown)
+    var showDone = false;                            // true while the "✓ done" frame is being held on screen
     var audioCtx = null;
     function beep() {                                 // audible "captured" cue — you're far from the screen
       try {
@@ -313,6 +314,27 @@
         o.frequency.value = 880; g.gain.value = 0.08;
         o.connect(g); g.connect(audioCtx.destination);
         o.start(); o.stop(audioCtx.currentTime + 0.18);
+      } catch (e) {}
+    }
+    function beepOk() {                               // distinct two-tone "all done" cue, separate from the capture beep
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        [660, 990].forEach(function (freq, i) {
+          var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+          o.frequency.value = freq; g.gain.value = 0.08;
+          o.connect(g); g.connect(audioCtx.destination);
+          var t = audioCtx.currentTime + i * 0.14;
+          o.start(t); o.stop(t + 0.16);
+        });
+      } catch (e) {}
+    }
+    function speakDone() {                            // spoken "done" — you don't need to see the screen at all
+      try {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();               // don't queue up behind a stale utterance
+        var u = new SpeechSynthesisUtterance('Done measuring');
+        u.rate = 1; u.volume = 1;
+        setTimeout(function () { window.speechSynthesis.speak(u); }, 300);  // let the beep finish first
       } catch (e) {}
     }
     function fullBody(lm, vh) {                       // nose + shoulders + hips + ankles all visible, in frame, big enough
@@ -330,6 +352,19 @@
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(String(n), vw / 2, vh / 2 + 6);
     }
+    function drawDone(ctx, vw, vh) {                  // big green ✓ — the unmistakable "you're done" signal
+      ctx.clearRect(0, 0, vw, vh);
+      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(0, 0, vw, vh);
+      ctx.fillStyle = 'rgba(46,207,114,0.95)';
+      ctx.beginPath(); ctx.arc(vw / 2, vh / 2, 90, 0, 7); ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(vw / 2 - 42, vh / 2 + 2); ctx.lineTo(vw / 2 - 12, vh / 2 + 32); ctx.lineTo(vw / 2 + 46, vh / 2 - 34);
+      ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 34px system-ui,sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('Done!', vw / 2, vh / 2 + 130);
+    }
     function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
     async function ensurePose() {
       if (poseLm) return poseLm;
@@ -345,7 +380,7 @@
       poseMode = 'VIDEO';
       return poseLm;
     }
-    async function setPoseMode(mode) {               // 'VIDEO' for the live scan, 'IMAGE' for photos
+    async function setPoseMode(mode) {               // both live scan and photos stay in 'VIDEO' mode now
       await ensurePose();
       if (poseMode !== mode) { await poseLm.setOptions({ runningMode: mode }); poseMode = mode; }
     }
@@ -368,7 +403,7 @@
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
     function loop() {
-      if (!camStream) return;
+      if (!camStream || showDone) return;               // hold the "✓ Done" frame on screen, don't paint over it
       var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
       if (vw && vh) {
         camCanvas.width = vw; camCanvas.height = vh;
@@ -552,7 +587,13 @@
       if (!est || !Object.keys(est).length) { msg('No full body detected — try again.'); return; }
       showEditor();
       inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
-      closeCam(); msg('Measured — adjust any number, then Save.');
+      // Hold a big ✓ + "Done!" on screen for a beat before closing — a text status line
+      // is easy to miss if you're standing away from the screen; this isn't.
+      if (camCanvas && camCanvas.width) drawDone(camCanvas.getContext('2d'), camCanvas.width, camCanvas.height);
+      showDone = true; camMeasure.disabled = true;
+      camStatus.textContent = '✓ Done — measurements captured.';
+      beepOk(); speakDone();
+      setTimeout(function () { closeCam(); msg('Measured — adjust any number, then Save.'); }, 1400);
     }
     // Measure from an uploaded photo — for when the webcam can't frame your whole body
     // (laptop on a table). The file is read + analyzed HERE in the browser and discarded:
@@ -566,7 +607,11 @@
       camStatus.textContent = 'Analyzing photo…';
       var url = URL.createObjectURL(file);
       try {
-        await setPoseMode('IMAGE');
+        // Stay in VIDEO mode + detectForVideo() even for a still photo (one frame) — the
+        // IMAGE-mode + segmentation-mask combo can hard-crash the MediaPipe WASM runtime
+        // (native abort, not a catchable JS error) on some inputs. VIDEO mode is the same
+        // path the live scan already uses successfully, so photos ride the proven route.
+        await setPoseMode('VIDEO');
         var img = new Image();
         await new Promise(function (ok, bad) { img.onload = ok; img.onerror = bad; img.src = url; });
         var scale = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));  // phone photos are huge
@@ -574,7 +619,7 @@
         camCanvas.width = vw; camCanvas.height = vh;
         var ctx = camCanvas.getContext('2d');
         ctx.drawImage(img, 0, 0, vw, vh);
-        var res = poseLm.detect(camCanvas);
+        var res = poseLm.detectForVideo(camCanvas, performance.now());
         if (res && res.landmarks && res.landmarks[0]) {
           lastLm = res.landmarks[0];
           drawSkeleton(ctx, lastLm, vw, vh);
@@ -596,7 +641,7 @@
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
-      autoStart = 0; lastGood = 0; samples = []; pendingEst = null;
+      autoStart = 0; lastGood = 0; samples = []; pendingEst = null; showDone = false;
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
