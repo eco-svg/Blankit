@@ -424,15 +424,47 @@
         await refreshCamDevices();                     // labels are blank pre-permission on first-ever run, that's fine
         var chosen = camDevice && !camDevice.classList.contains('hidden') ? camDevice.value : '';
         var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: 640, height: 480 } : { facingMode: 'user', width: 640, height: 480 };
-        camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+        try {                                           // mic is optional — clap-to-measure only, never recorded/sent anywhere
+          camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
+        } catch (e) {
+          camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+        }
         camVideo.srcObject = camStream; await camVideo.play();
         refreshCamDevices();                           // re-run now that permission is granted → real device labels
-        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself.'; loop();
+        startClapDetect(camStream);
+        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself, or clap/shout to measure right now.'; loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
+    }
+    // Clap/loud-sound → measure now, for when you're too far to reach the button. Pure
+    // on-device volume-peak detection (no speech-to-text, no audio ever recorded or sent
+    // anywhere) — real word recognition would need a cloud speech API, which Brave mostly
+    // doesn't even wire up, and would break the "nothing leaves your device" guarantee.
+    var clapAnalyser = null, clapData = null, lastClapAt = 0;
+    function startClapDetect(stream) {
+      clapAnalyser = null; clapData = null;
+      try {
+        if (!stream.getAudioTracks().length) return;
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        var src = audioCtx.createMediaStreamSource(stream);
+        clapAnalyser = audioCtx.createAnalyser();
+        clapAnalyser.fftSize = 512;
+        clapData = new Uint8Array(clapAnalyser.frequencyBinCount);
+        src.connect(clapAnalyser);
+      } catch (e) { clapAnalyser = null; clapData = null; }
+    }
+    function checkClap() {
+      if (!clapAnalyser || !clapData || camMeasure.disabled || showDone) return;
+      clapAnalyser.getByteTimeDomainData(clapData);
+      var peak = 0;
+      for (var i = 0; i < clapData.length; i++) { var v = Math.abs(clapData[i] - 128); if (v > peak) peak = v; }
+      var now = performance.now();
+      if (peak > 100 && now - lastClapAt > 2000) { lastClapAt = now; beep(); measureFromPose(); }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
     function loop() {
       if (!camStream || showDone) return;               // hold the "✓ Done" frame on screen, don't paint over it
+      checkClap();
+      if (showDone) return;                             // clap just fired this tick — don't paint over the ✓
       var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
       if (vw && vh) {
         camCanvas.width = vw; camCanvas.height = vh;
@@ -671,6 +703,7 @@
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
       autoStart = 0; lastGood = 0; samples = []; pendingEst = null; showDone = false;
+      clapAnalyser = null; clapData = null;
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
