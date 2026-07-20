@@ -324,7 +324,10 @@
     var poseMode = 'VIDEO';                           // the one landmarker serves both live scan and photos
     // Auto-capture: you can't reach the button from 2m away, so once the WHOLE body is
     // in frame we count down on-screen and measure automatically (median of the frames).
-    var AUTO_MS = 3000, GRACE_MS = 700;              // countdown length; allowed detection dropout
+    var AUTO_MS = 3000, GRACE_MS = 2000;             // countdown length; allowed detection dropout
+                                                       // (bumped from 700 — a relayed/bridged camera feed,
+                                                       // e.g. phone-over-USB, stutters more than a native
+                                                       // webcam and was resetting the countdown constantly)
     var autoStart = 0, lastGood = 0, samples = [];
     var pendingEst = null;                           // single estimate from a photo (no countdown)
     var showDone = false;                            // true while the "✓ done" frame is being held on screen
