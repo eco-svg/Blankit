@@ -391,13 +391,31 @@
     // countdown, or manual Measure tap) — the live loop stops right after this runs, so
     // whatever's drawn here is what you get to review. Same privacy guarantee as always:
     // it's a transient canvas frame, discarded on close/retake, never sent or saved.
+    // Runs a FRESH, synchronous pose + segmentation read on the exact frame being captured,
+    // instead of trusting whatever `lastLm` happens to be from a prior loop tick. On a
+    // relayed/stuttery feed (phone-over-USB) the last detection can be a frame or two stale
+    // by the time a clap/countdown/manual trigger actually fires, so the skeleton drawn from
+    // it visibly drifts off the body — this re-detects right now so the overlay matches what
+    // was actually shot. It also fills `pendingEst` via the accurate silhouette-based segEst()
+    // (same method the 3s auto-countdown uses), instead of measureFromPose() falling back to
+    // the cruder joint-distance frameEst() — which only ever computes shoulders/chest/waist/
+    // hips and leaves neck/arm/thigh/calf blank — for every clap/manual capture.
     function snapshotFrame() {
       var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
       if (!vw || !vh) return;
       camCanvas.width = vw; camCanvas.height = vh;
       var ctx = camCanvas.getContext('2d');
       ctx.drawImage(camVideo, 0, 0, vw, vh);
-      if (lastLm) drawSkeleton(ctx, lastLm, vw, vh);
+      var res = null; try { res = poseLm.detectForVideo(camVideo, performance.now()); } catch (e) {}
+      if (res && res.landmarks && res.landmarks[0]) {
+        lastLm = res.landmarks[0];
+        drawSkeleton(ctx, lastLm, vw, vh);
+        var mask = readMask(res);
+        pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
+      } else {
+        closeMask(res);
+        if (lastLm) drawSkeleton(ctx, lastLm, vw, vh);  // no fresh detection this instant — draw the last known pose
+      }
       camVideo.style.display = 'none';                 // show the frozen canvas frame, not the still-live video
     }
     function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
