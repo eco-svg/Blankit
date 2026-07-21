@@ -434,12 +434,15 @@
         await refreshCamDevices();                     // labels are blank pre-permission on first-ever run, that's fine
         var chosen = camDevice && !camDevice.classList.contains('hidden') ? camDevice.value : '';
         var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: 640, height: 480 } : { facingMode: 'user', width: 640, height: 480 };
-        try {                                           // mic is optional — clap-to-measure only, never recorded/sent anywhere
-          camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true });
-        } catch (e) {
-          camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
-        }
-        camVideo.srcObject = camStream; await camVideo.play();
+        camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });   // camera first — must succeed
+        micUnavailableReason = '';
+        try {                                           // mic is separate + optional — clap-to-measure only, never
+          var aStream = await navigator.mediaDevices.getUserMedia({ audio: true });           // recorded/sent anywhere.
+          aStream.getAudioTracks().forEach(function (t) { camStream.addTrack(t); });          // Requested on its own so a
+        } catch (e) {                                                                          // mic-only failure (denied,
+          micUnavailableReason = (e && e.name) || 'unavailable';                               // busy, no device) can't
+        }                                                                                       // silently take the camera
+        camVideo.srcObject = camStream; await camVideo.play();                                 // down with it.
         refreshCamDevices();                           // re-run now that permission is granted → real device labels
         startClapDetect(camStream);
         camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself, or clap/shout to measure right now.'; loop();
@@ -449,7 +452,7 @@
     // on-device volume-peak detection (no speech-to-text, no audio ever recorded or sent
     // anywhere) — real word recognition would need a cloud speech API, which Brave mostly
     // doesn't even wire up, and would break the "nothing leaves your device" guarantee.
-    var clapAnalyser = null, clapData = null, lastClapAt = 0;
+    var clapAnalyser = null, clapData = null, lastClapAt = 0, micUnavailableReason = '';
     var CLAP_THRESHOLD = 55;                          // tune against the live meter — was 100, too strict for a shout from distance
     function startClapDetect(stream) {
       clapAnalyser = null; clapData = null;
@@ -464,7 +467,10 @@
       } catch (e) { clapAnalyser = null; clapData = null; }
     }
     function checkClap() {
-      if (!clapAnalyser || !clapData) { if (camMic) camMic.classList.add('hidden'); return; }
+      if (!clapAnalyser || !clapData) {                 // no live meter to show, but say WHY instead of just hiding it
+        if (camMic) { camMic.classList.remove('hidden'); camMic.textContent = 'mic: ' + (micUnavailableReason || 'no audio track') + ' — clap/shout trigger off'; }
+        return;
+      }
       clapAnalyser.getByteTimeDomainData(clapData);
       var peak = 0;
       for (var i = 0; i < clapData.length; i++) { var v = Math.abs(clapData[i] - 128); if (v > peak) peak = v; }
