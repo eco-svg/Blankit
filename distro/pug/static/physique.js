@@ -297,7 +297,8 @@
     var camOverlay = document.getElementById('physCamOverlay'), camVideo = document.getElementById('physCamVideo'),
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
         camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose'),
-        camDevice = document.getElementById('physCamDevice'), camMic = document.getElementById('physCamMic');
+        camDevice = document.getElementById('physCamDevice'), camMic = document.getElementById('physCamMic'),
+        camRetake = document.getElementById('physCamRetake'), camConfirm = document.getElementById('physCamConfirm');
     var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
     var DEVICE_KEY = 'veyra_phys_camera_device_id';   // remembered across sessions — e.g. a phone used as a webcam
@@ -377,18 +378,27 @@
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(String(n), vw / 2, vh / 2 + 6);
     }
-    function drawDone(ctx, vw, vh) {                  // big green ✓ — the unmistakable "you're done" signal
-      ctx.clearRect(0, 0, vw, vh);
-      ctx.fillStyle = 'rgba(0,0,0,0.4)'; ctx.fillRect(0, 0, vw, vh);
-      ctx.fillStyle = 'rgba(46,207,114,0.95)';
-      ctx.beginPath(); ctx.arc(vw / 2, vh / 2, 90, 0, 7); ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 14; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    function drawDone(ctx, vw, vh) {                  // small green ✓ badge in the corner — deliberately does NOT
+      var r = Math.max(18, Math.min(34, vw * 0.06)), cx = vw - r - 14, cy = r + 14;   // cover the frame, so the
+      ctx.fillStyle = 'rgba(46,207,114,0.95)';                                          // captured shot underneath
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();                            // stays reviewable
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(3, r * 0.16); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
       ctx.beginPath();
-      ctx.moveTo(vw / 2 - 42, vh / 2 + 2); ctx.lineTo(vw / 2 - 12, vh / 2 + 32); ctx.lineTo(vw / 2 + 46, vh / 2 - 34);
+      ctx.moveTo(cx - r * 0.45, cy + r * 0.02); ctx.lineTo(cx - r * 0.1, cy + r * 0.38); ctx.lineTo(cx + r * 0.5, cy - r * 0.4);
       ctx.stroke();
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 34px system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('Done!', vw / 2, vh / 2 + 130);
+    }
+    // Freeze the actual camera pixels onto the canvas at the moment of capture (clap,
+    // countdown, or manual Measure tap) — the live loop stops right after this runs, so
+    // whatever's drawn here is what you get to review. Same privacy guarantee as always:
+    // it's a transient canvas frame, discarded on close/retake, never sent or saved.
+    function snapshotFrame() {
+      var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+      if (!vw || !vh) return;
+      camCanvas.width = vw; camCanvas.height = vh;
+      var ctx = camCanvas.getContext('2d');
+      ctx.drawImage(camVideo, 0, 0, vw, vh);
+      if (lastLm) drawSkeleton(ctx, lastLm, vw, vh);
+      camVideo.style.display = 'none';                 // show the frozen canvas frame, not the still-live video
     }
     function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
     async function ensurePose() {
@@ -461,7 +471,7 @@
       if (camMic) { camMic.classList.remove('hidden'); camMic.textContent = 'mic level: ' + peak + ' / trigger: ' + CLAP_THRESHOLD; }
       if (camMeasure.disabled || showDone) return;
       var now = performance.now();
-      if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) { lastClapAt = now; beep(); measureFromPose(); }
+      if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) { lastClapAt = now; snapshotFrame(); beep(); measureFromPose(); }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
     function loop() {
@@ -485,9 +495,8 @@
             var est = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
             if (est) samples.push(est);
             if (now - autoStart >= AUTO_MS) {
-              beep(); measureFromPose();
-              if (camStream) rafId = requestAnimationFrame(loop);
-              return;
+              snapshotFrame(); beep(); measureFromPose();
+              return;                                   // frame is frozen now — no more loop ticks until Retake
             }
             var left = Math.ceil((AUTO_MS - (now - autoStart)) / 1000);
             drawCount(ctx, vw, vh, left);
@@ -651,14 +660,37 @@
       if (!est || !Object.keys(est).length) { msg('No full body detected — try again.'); return; }
       showEditor();
       inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
-      // Hold a big ✓ + "Done!" on screen for a beat before closing — a text status line
-      // is easy to miss if you're standing away from the screen; this isn't.
       if (camCanvas && camCanvas.width) drawDone(camCanvas.getContext('2d'), camCanvas.width, camCanvas.height);
       showDone = true; camMeasure.disabled = true;
-      camStatus.textContent = '✓ Done — measurements captured.';
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }   // stop scanning — reviewing the frozen frame now
+      // Don't auto-close: hold the modal open on the captured frame so you can actually SEE
+      // what got shot (blurry? not full body? bad angle?) before it's used. Retake discards
+      // it and resumes scanning; Confirm accepts it. Either way nothing is ever saved/sent —
+      // the frame just stops being shown once the modal closes.
+      camStatus.textContent = 'Captured — check the picture: full body, in focus? Retake if not.';
+      showReview(true);
       beepOk(); speakDone();
-      setTimeout(function () { closeCam(); msg('Measured — adjust any number, then Save.'); }, 1400);
     }
+    function showReview(on) {
+      if (camMeasure) camMeasure.classList.toggle('hidden', on);
+      if (camRetake) camRetake.classList.toggle('hidden', !on);
+      if (camConfirm) camConfirm.classList.toggle('hidden', !on);
+      if (camMic && on) camMic.classList.add('hidden');
+    }
+    function retakeMeasurement() {
+      showDone = false; showReview(false); camMeasure.disabled = true;
+      if (camStream) {                                  // camera's still attached — just resume scanning
+        camVideo.style.display = '';
+        camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
+        autoStart = 0; lastGood = 0; samples = []; pendingEst = null; lastLm = null;
+        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself, or clap/shout to measure right now.';
+        loop();
+      } else {                                          // photo mode — go straight back to the file picker
+        closeCam();
+        photoInput && photoInput.click();
+      }
+    }
+    function confirmMeasurement() { closeCam(); msg('Measured — adjust any number, then Save.'); }
     // Measure from an uploaded photo — for when the webcam can't frame your whole body
     // (laptop on a table). The file is read + analyzed HERE in the browser and discarded:
     // it is never uploaded to the server or saved anywhere.
@@ -707,6 +739,7 @@
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
       autoStart = 0; lastGood = 0; samples = []; pendingEst = null; showDone = false;
       clapAnalyser = null; clapData = null;
+      showReview(false);
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
@@ -717,8 +750,10 @@
       openPhoto(photoInput.files && photoInput.files[0]);
       photoInput.value = '';                          // so re-picking the same file re-fires change
     });
-    camMeasure && camMeasure.addEventListener('click', measureFromPose);
+    camMeasure && camMeasure.addEventListener('click', function () { if (camStream) snapshotFrame(); measureFromPose(); });
     camClose && camClose.addEventListener('click', closeCam);
+    camRetake && camRetake.addEventListener('click', retakeMeasurement);
+    camConfirm && camConfirm.addEventListener('click', confirmMeasurement);
 
     // "How to measure" guide — plain reference, no camera/state involved.
     var howBtn = document.getElementById('physHowBtn'), howOverlay = document.getElementById('physHowOverlay'),
