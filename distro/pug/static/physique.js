@@ -24,8 +24,11 @@
     var mannequin3d = document.getElementById('physMannequin3d');
     var cap       = document.getElementById('physMannequinCap');
     var editorEl  = document.getElementById('physEditor');
+    var editorTitleEl = document.getElementById('physEditorTitle');
     var figureEl  = document.getElementById('physFigure');
     var updateBtn = document.getElementById('physUpdateBtn');
+    var goalBtn   = document.getElementById('physGoalBtn');
+    var goalSectionEl = document.getElementById('physGoalSection');
     var dimGroup  = document.getElementById('physDimGroup');
 
     var FIELDS = [
@@ -34,6 +37,8 @@
       ['hips','Hips','cm'], ['arm','Arm','cm'], ['thigh','Thigh','cm'], ['calf','Calf','cm']
     ];
     var logs = [];          // [{id, date, m}]
+    var goal = null;        // {id, date, m} | null — the one active goal physique
+    var editorMode = 'log'; // 'log' | 'goal' — which thing the shared field-grid editor is entering
     var mode3d = false;     // 2D by default
     var gender = localStorage.getItem('veyra_phys_gender') || 'female';  // which 3D body to load
 
@@ -92,6 +97,65 @@
         }).join('');
       }
       renderPosture();
+      renderGoal();
+    }
+
+    // ── Goal physique: a target measurement set + a curated (not AI-generated — see
+    // physique-memory notes on why) exercise plan for whatever fields aren't there yet.
+    // Fat/size REDUCTION mostly isn't spot-targetable by exercise (you can't "waist-down"
+    // your way there with crunches) — that's stated honestly below rather than pretending
+    // a targeted exercise list would do it; those directions point at general fat loss.
+    var EXERCISE_TABLE = {
+      neck:      { up: ['Neck curls / neck extensions (light, controlled)', 'Shrugs', 'Farmer’s carries'] },
+      shoulders: { up: ['Overhead press', 'Lateral raises', 'Upright rows'] },
+      chest:     { up: ['Push-ups', 'Bench press', 'Chest dips'] },
+      waist:     { down: ['Planks / core work', 'Cardio + a calorie deficit'] },
+      hips:      { up: ['Hip thrusts', 'Squats', 'Lunges'], down: ['Cardio + a calorie deficit', 'Core work'] },
+      arm:       { up: ['Bicep curls', 'Tricep dips / extensions', 'Push-ups'], down: ['Higher-rep arm work', 'Cardio + a calorie deficit'] },
+      thigh:     { up: ['Squats', 'Lunges', 'Leg press'], down: ['Cardio + a calorie deficit', 'Lighter high-rep leg work'] },
+      calf:      { up: ['Standing calf raises', 'Seated calf raises'] },
+      weight:    { up: ['Calorie surplus + progressive strength training'], down: ['Calorie deficit + cardio'] }
+    };
+    var GENERIC_FALLBACK = 'Mostly follows overall body fat / genetics, not a single targeted exercise — general fat loss (diet + cardio) is the realistic lever.';
+    function goalTolerance(goalVal) { return Math.max(1, goalVal * 0.02); }  // within 2% (min 1cm/kg) counts as "achieved"
+    function renderGoal() {
+      if (!goalSectionEl) return;
+      var cur = latest();
+      if (!goal || !goal.m || !Object.keys(goal.m).length) {
+        goalSectionEl.innerHTML = '<div class="phys-section-label" style="margin-top:18px;">Goal physique</div>' +
+          '<div class="phys-msg">No goal set. Tap 🎯 Goal to enter a target physique.</div>';
+        return;
+      }
+      var nowM = cur ? cur.m : {};
+      var rows = [], planLines = [], anyRemaining = false;
+      FIELDS.filter(function (f) { return f[0] !== 'height' && goal.m[f[0]] != null; }).forEach(function (f) {
+        var k = f[0], goalVal = goal.m[k], nowVal = nowM[k];
+        if (nowVal == null) {
+          rows.push('<div class="phys-goal-row"><span>' + f[1] + '</span><span>target ' + goalVal + ' ' + f[2] + ' — no current reading</span></div>');
+          return;
+        }
+        var delta = Math.round((goalVal - nowVal) * 10) / 10;
+        var achieved = Math.abs(delta) <= goalTolerance(goalVal);
+        if (achieved) {
+          rows.push('<div class="phys-goal-row done"><span><span class="goal-check">✓</span>' + f[1] + '</span><span>' + nowVal + ' ' + f[2] + ' (target ' + goalVal + ')</span></div>');
+        } else {
+          anyRemaining = true;
+          var dir = delta > 0 ? 'up' : 'down', sign = delta > 0 ? '+' : '';
+          rows.push('<div class="phys-goal-row"><span>' + f[1] + '</span><span>' + nowVal + ' → ' + goalVal + ' ' + f[2] + ' (' + sign + delta + ')</span></div>');
+          var ex = (EXERCISE_TABLE[k] && EXERCISE_TABLE[k][dir]) || null;
+          planLines.push('<div><b>' + f[1] + '</b> (' + (dir === 'up' ? 'increase' : 'decrease') + '): ' + (ex ? ex.join(', ') : GENERIC_FALLBACK) + '</div>');
+        }
+      });
+      goalSectionEl.innerHTML = '<div class="phys-section-label" style="margin-top:18px;">Goal physique <span style="opacity:.55;font-weight:400;">— set ' + fmtDate(goal.date) + '</span></div>' +
+        rows.join('') +
+        (planLines.length ? '<div class="phys-goal-plan"><b>Your plan</b><br>' + planLines.join('') + '</div>' : (anyRemaining ? '' : '<div class="phys-how-lead" style="margin-top:6px;">🎉 All tracked fields are within range of your goal.</div>')) +
+        '<div class="phys-how-lead" style="margin-top:6px;">General guidance, not a personalized program — see a professional for anything serious.</div>' +
+        '<button type="button" class="phys-goal-clear" id="physGoalClear">Clear goal</button>';
+      var clearGoalBtn = document.getElementById('physGoalClear');
+      clearGoalBtn && clearGoalBtn.addEventListener('click', function () {
+        if (!confirm('Clear your goal physique?')) return;
+        fetch('/pug/api/physique/goal', { method: 'DELETE' }).then(function () { goal = null; renderGoal(); msg('Goal cleared.'); });
+      });
     }
 
     // ── 3D mannequin (Three.js + GLB, lazy-loaded) ──
@@ -260,15 +324,24 @@
     function load() {
       fetch('/pug/api/physique').then(function (r) { return r.json(); }).then(function (d) { logs = Array.isArray(d) ? d : []; refreshView(); }).catch(function () {});
     }
+    function loadGoal() {
+      fetch('/pug/api/physique/goal').then(function (r) { return r.json(); }).then(function (d) { goal = d || null; renderGoal(); }).catch(function () {});
+    }
+    // editorMode picks which of the two save endpoints the shared field-grid feeds.
+    function enterLogMode() { editorMode = 'log'; if (editorTitleEl) editorTitleEl.classList.add('hidden'); if (saveBtn) saveBtn.textContent = 'Save measurements'; }
+    function enterGoalMode() { editorMode = 'goal'; if (editorTitleEl) editorTitleEl.classList.remove('hidden'); if (saveBtn) saveBtn.textContent = 'Save goal'; }
     saveBtn && saveBtn.addEventListener('click', function () {
       var m = readInputs();
-      if (!Object.keys(m).length) { msg('Enter at least one measurement.'); return; }
+      if (editorMode === 'goal') delete m.height;        // not a valid goal target — silently drop, don't error on it
+      if (!Object.keys(m).length) { msg(editorMode === 'goal' ? 'Enter at least one target value.' : 'Enter at least one measurement.'); return; }
+      var url = editorMode === 'goal' ? '/pug/api/physique/goal' : '/pug/api/physique';
       saveBtn.disabled = true;
-      fetch('/pug/api/physique', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(m) })
+      fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(m) })
         .then(function (r) { return r.json(); }).then(function (res) {
           saveBtn.disabled = false;
           if (res && res.error) { msg(res.error); return; }
-          load();
+          if (editorMode === 'goal') { enterLogMode(); loadGoal(); msg('Goal saved.'); load(); }
+          else load();
         }).catch(function () { saveBtn.disabled = false; msg('Save failed.'); });
     });
     var clearBtn = document.getElementById('physClearBtn');
@@ -280,7 +353,8 @@
         .then(function (res) { if (res && res.ok) { logs = []; fillInputs({}); showEditor(); refreshView(); msg('All measurements cleared.'); } else msg('Clear failed.'); })
         .catch(function () { msg('Clear failed.'); });
     });
-    updateBtn && updateBtn.addEventListener('click', function () { var cur = latest(); fillInputs(cur ? cur.m : {}); showEditor(); });
+    updateBtn && updateBtn.addEventListener('click', function () { enterLogMode(); var cur = latest(); fillInputs(cur ? cur.m : {}); showEditor(); });
+    goalBtn && goalBtn.addEventListener('click', function () { enterGoalMode(); fillInputs(goal ? goal.m : {}); showEditor(); });
     // 2D/3D toggle — same active/inactive pill pattern as the gender picker below, so
     // the highlighted button always shows which mode you're actually in.
     function syncDimBtns() {
@@ -792,7 +866,8 @@
     howBtn && howBtn.addEventListener('click', function () { howOverlay && howOverlay.classList.remove('hidden'); });
     howClose && howClose.addEventListener('click', function () { howOverlay && howOverlay.classList.add('hidden'); });
 
-    document.addEventListener('veyra:navigate', function (e) { if (e.detail && e.detail.route === 'physique') load(); });
+    document.addEventListener('veyra:navigate', function (e) { if (e.detail && e.detail.route === 'physique') { load(); loadGoal(); } });
     load();
+    loadGoal();
   });
 })();

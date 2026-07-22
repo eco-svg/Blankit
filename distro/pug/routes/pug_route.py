@@ -1836,6 +1836,62 @@ def del_physique(pid):
     return jsonify({'ok': True})
 
 
+# ── Goal physique: ONE target measurement set the user is training toward. Same storage
+# pattern as physique itself (encrypted Note.body), separate entry_type so it never mixes
+# into the trend log. Height isn't a valid goal target (not something training changes).
+@pug_bp.route('/pug/api/physique/goal', methods=['GET'])
+def get_physique_goal():
+    err = login_required_api()
+    if err: return err
+    n = Note.query.filter_by(user_id=session['user_id'], entry_type='physique_goal',
+                             is_deleted=False).order_by(Note.created_at.desc()).first()
+    if not n:
+        return jsonify(None)
+    try: m = json.loads(n.body or '{}')
+    except Exception: m = {}
+    return jsonify({'id': n.id, 'date': n.created_at.isoformat() if n.created_at else None, 'm': m})
+
+
+@pug_bp.route('/pug/api/physique/goal', methods=['POST'])
+def set_physique_goal():
+    """Set (replace) the user's goal physique. Body: any of _PHYSIQUE_FIELDS except height."""
+    err = login_required_api()
+    if err: return err
+    data = request.get_json(silent=True) or {}
+    m = {}
+    for f in _PHYSIQUE_FIELDS:
+        if f == 'height':
+            continue
+        v = data.get(f)
+        if v in (None, ''):
+            continue
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            continue
+        if 0 < fv < 1000:
+            m[f] = round(fv, 1)
+    if not m:
+        return jsonify({'error': 'no goal values'}), 400
+    Note.query.filter_by(user_id=session['user_id'], entry_type='physique_goal',
+                         is_deleted=False).update({'is_deleted': True})
+    n = Note(user_id=session['user_id'], entry_type='physique_goal')
+    n.body = json.dumps(m)
+    db.session.add(n)
+    db.session.commit()
+    return jsonify({'id': n.id, 'date': n.created_at.isoformat() if n.created_at else None, 'm': m}), 201
+
+
+@pug_bp.route('/pug/api/physique/goal', methods=['DELETE'])
+def clear_physique_goal():
+    err = login_required_api()
+    if err: return err
+    Note.query.filter_by(user_id=session['user_id'], entry_type='physique_goal',
+                         is_deleted=False).update({'is_deleted': True})
+    db.session.commit()
+    return jsonify({'ok': True})
+
+
 _holidays_cache = {}  # (country, year) -> [{date, name}] — in-memory per process
 
 

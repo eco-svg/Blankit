@@ -9,6 +9,7 @@
       <h2 class="card-title">Physique</h2>
       <span class="phys-privacy-note">Private · no photos stored</span>
       <button id="physUpdateBtn" type="button" class="phys-toolbtn">✎ Update</button>
+      <button id="physGoalBtn" type="button" class="phys-toolbtn" title="Set a target physique to train toward">🎯 Goal</button>
       <!-- Same model in both modes — 2D = held still, front-on; 3D = free to turn. The
            ACTIVE mode is highlighted (not a single button whose label flips to the OTHER
            mode, which read as "which one am I in?" confusing). -->
@@ -31,6 +32,7 @@
         <div class="phys-section-label">Your stats</div>
         <div id="physStats" class="phys-stats"></div>
         <div id="physPostureStats"></div>
+        <div id="physGoalSection"></div>
         <div class="phys-section-label" style="margin-top:18px;">Compare with</div>
         <select id="physCompareSelect" class="phys-compare"></select>
         <div id="physDeltas" class="phys-deltas"></div>
@@ -40,6 +42,7 @@
       <div class="physique-right">
         <!-- editor: the measurement form -->
         <div id="physEditor" class="phys-editor">
+          <div id="physEditorTitle" class="phys-editor-title hidden">🎯 Setting your goal physique — Height isn't included (training doesn't change it).</div>
           <div class="phys-fields-head">
             <button id="physHowBtn" type="button" class="phys-how-link">📏 How to measure each field</button>
           </div>

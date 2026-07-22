@@ -7763,6 +7763,18 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 }
 .physique-body { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 8px; }
 @media (max-width: 900px) { .physique-body { grid-template-columns: 1fr; } }
+.phys-editor-title {
+  font-size: 0.78rem; color: var(--accent); margin-bottom: 10px;
+}
+.phys-editor-title.hidden { display: none; }
+
+/* Goal physique — progress rows + curated exercise plan */
+.phys-goal-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 3px 0; }
+.phys-goal-row.done { color: var(--text-dim); }
+.phys-goal-row .goal-check { color: #2ecf72; margin-right: 4px; }
+.phys-goal-plan { margin-top: 8px; font-size: 0.78rem; line-height: 1.5; }
+.phys-goal-plan b { color: var(--accent); }
+.phys-goal-clear { background: none; border: none; color: var(--text-dim); font-size: 0.7rem; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 6px; }
 
 .phys-section-label {
   font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.1em;
