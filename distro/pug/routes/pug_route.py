@@ -1728,6 +1728,38 @@ def delete_event(event_id):
 _PHYSIQUE_FIELDS = ['height', 'weight', 'neck', 'shoulders', 'chest',
                     'waist', 'hips', 'arm', 'thigh', 'calf']
 
+# Posture check (front + side camera capture, computed client-side from pose landmark
+# angles — see physique.js). Numeric fields are angles/ratios, not cm; flags are a small
+# closed vocabulary computed by the client from those numbers.
+_POSTURE_NUM = {'shoulderTiltDeg': (-90, 90), 'earTiltDeg': (-90, 90),
+                'kneeRatio': (0, 5), 'hunchAngleDeg': (0, 90)}
+_POSTURE_FLAG = {'kneeFlag': {'normal', 'knock_kneed', 'bow_legged', 'unknown'},
+                  'hunchFlag': {'normal', 'mild_forward_head', 'noticeable_forward_head', 'unknown'}}
+_POSTURE_SIDE = {'left', 'right'}
+
+
+def _sanitize_posture(p):
+    if not isinstance(p, dict):
+        return None
+    out = {}
+    for f, (lo, hi) in _POSTURE_NUM.items():
+        v = p.get(f)
+        if v is None:
+            continue
+        try:
+            fv = float(v)
+        except (TypeError, ValueError):
+            continue
+        if lo <= fv <= hi:
+            out[f] = round(fv, 2)
+    for f, allowed in _POSTURE_FLAG.items():
+        v = p.get(f)
+        if v in allowed:
+            out[f] = v
+    if p.get('side') in _POSTURE_SIDE:
+        out['side'] = p['side']
+    return out or None
+
 
 @pug_bp.route('/pug/api/physique', methods=['GET'])
 def get_physique():
@@ -1749,7 +1781,8 @@ def get_physique():
 
 @pug_bp.route('/pug/api/physique', methods=['POST'])
 def add_physique():
-    """Save a measurement set. Body: any of _PHYSIQUE_FIELDS (cm / kg, numbers)."""
+    """Save a measurement set. Body: any of _PHYSIQUE_FIELDS (cm / kg, numbers), and/or
+    a 'posture' object (from the camera posture check — see _sanitize_posture)."""
     err = login_required_api()
     if err: return err
     data = request.get_json(silent=True) or {}
@@ -1764,6 +1797,9 @@ def add_physique():
             continue
         if 0 < fv < 1000:
             m[f] = round(fv, 1)
+    posture = _sanitize_posture(data.get('posture'))
+    if posture:
+        m['posture'] = posture
     if not m:
         return jsonify({'error': 'no measurements'}), 400
     n = Note(user_id=session['user_id'], entry_type='physique')

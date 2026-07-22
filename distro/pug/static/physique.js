@@ -1,9 +1,13 @@
 /**
  * physique.js — Physique tab. Log body measurements over time → a digital mannequin
  * (2D SVG, or 3D via Three.js) built from the numbers; compare against an earlier date.
- * Live on-device camera measurement (MediaPipe pose) fills the numbers. NO photos are
- * ever stored — frames are processed live and discarded; only numbers persist.
- * Backend: /pug/api/physique (GET/POST/DELETE).
+ * Measurements are entered manually (tape). The camera is used for a separate on-device
+ * MediaPipe POSTURE CHECK (shoulder/neck tilt, knee alignment, forward-head/hunch) —
+ * this replaced an earlier camera measurement-scan feature that hit an unfixable
+ * silhouette-segmentation ceiling on chest/neck/arm (2026-07-21). Posture reads joint
+ * ANGLES, not silhouette widths, so it doesn't hit that same failure mode.
+ * NO photos are ever stored — frames are processed live and discarded; only the
+ * computed numbers persist. Backend: /pug/api/physique (GET/POST/DELETE).
  */
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
@@ -15,6 +19,7 @@
     var compareEl = document.getElementById('physCompareSelect');
     var deltasEl  = document.getElementById('physDeltas');
     var statsEl   = document.getElementById('physStats');
+    var postureStatsEl = document.getElementById('physPostureStats');
     var mannequin = document.getElementById('physMannequin');
     var mannequin3d = document.getElementById('physMannequin3d');
     var cap       = document.getElementById('physMannequinCap');
@@ -59,11 +64,34 @@
     function showFigure() { editorEl.classList.add('hidden'); figureEl.classList.remove('hidden'); swapDim(); renderFigure(); }
 
     // ── stats (left) ──
+    var KNEE_LABEL = { normal: 'Normal', knock_kneed: 'Knock-kneed (knees in)', bow_legged: 'Bow-legged (knees out)', unknown: 'Not detected clearly' };
+    var HUNCH_LABEL = { normal: 'Normal', mild_forward_head: 'Mild forward head / rounded shoulders', noticeable_forward_head: 'Noticeable forward head / rounded shoulders', unknown: 'Not detected clearly' };
+    function findLatestPosture() {                     // most recent log that actually has a posture reading
+      for (var i = logs.length - 1; i >= 0; i--) if (logs[i].m && logs[i].m.posture) return logs[i];
+      return null;
+    }
+    function renderPosture() {
+      var l = findLatestPosture();
+      if (!postureStatsEl) return;
+      if (!l) { postureStatsEl.innerHTML = ''; return; }
+      var p = l.m.posture;
+      var rows = [];
+      if (p.shoulderTiltDeg != null) rows.push('<div class="phys-stat-row"><span>Shoulder tilt</span><span>' + Math.abs(p.shoulderTiltDeg) + '°</span></div>');
+      if (p.earTiltDeg != null) rows.push('<div class="phys-stat-row"><span>Neck tilt</span><span>' + Math.abs(p.earTiltDeg) + '°</span></div>');
+      if (p.kneeFlag) rows.push('<div class="phys-stat-row"><span>Knees</span><span>' + (KNEE_LABEL[p.kneeFlag] || p.kneeFlag) + '</span></div>');
+      if (p.hunchFlag) rows.push('<div class="phys-stat-row"><span>Posture (side view)</span><span>' + (HUNCH_LABEL[p.hunchFlag] || p.hunchFlag) + (p.hunchAngleDeg != null ? ' · ' + p.hunchAngleDeg + '°' : '') + '</span></div>');
+      postureStatsEl.innerHTML = '<div class="phys-section-label" style="margin-top:18px;">Posture check <span style="opacity:.55;font-weight:400;">— ' + fmtDate(l.date) + '</span></div>' +
+        rows.join('') +
+        '<div class="phys-how-lead" style="margin-top:6px;">Not a medical diagnosis — a rough on-device estimate. See a professional about anything persistent.</div>';
+    }
     function renderStats(m) {
-      if (!m || !Object.keys(m).length) { statsEl.innerHTML = '<div class="phys-msg">No measurements yet.</div>'; return; }
-      statsEl.innerHTML = FIELDS.filter(function (f) { return m[f[0]] != null; }).map(function (f) {
-        return '<div class="phys-stat-row"><span>' + f[1] + '</span><span>' + m[f[0]] + ' ' + f[2] + '</span></div>';
-      }).join('');
+      if (!m || !Object.keys(m).length) { statsEl.innerHTML = '<div class="phys-msg">No measurements yet.</div>'; }
+      else {
+        statsEl.innerHTML = FIELDS.filter(function (f) { return m[f[0]] != null; }).map(function (f) {
+          return '<div class="phys-stat-row"><span>' + f[1] + '</span><span>' + m[f[0]] + ' ' + f[2] + '</span></div>';
+        }).join('');
+      }
+      renderPosture();
     }
 
     // ── 3D mannequin (Three.js + GLB, lazy-loaded) ──
@@ -293,13 +321,20 @@
     }
     compareEl && compareEl.addEventListener('change', function () { var cur = latest(); var ghost = compareEl.value ? logById(compareEl.value) : null; renderDeltas(ghost ? ghost.m : null, cur ? cur.m : {}); if (!figureEl.classList.contains('hidden')) renderFigure(); });
 
-    // ── Live camera measure (on-device MediaPipe pose; nothing stored) ──
+    // ── Posture check (on-device MediaPipe pose; nothing stored) — TWO steps: a front-on
+    // shot (shoulder tilt, neck tilt, knee alignment) then a side-profile shot (forward-
+    // head / rounded-shoulders "hunch"). This REPLACED the earlier camera measurement-scan
+    // (see file header) — posture reads joint ANGLES off the landmarks directly, not
+    // silhouette widths, so it doesn't hit the segmentation ceiling that made chest/neck/
+    // arm unfixable there, and doesn't need a height calibration first.
+    // Left/right anatomical labeling is intentionally NOT shown for tilt — the video feed
+    // isn't mirrored, so which landmark maps to image-left vs the subject's-own-left is
+    // unverified; showing a wrong side would be worse than showing a magnitude only.
     var camOverlay = document.getElementById('physCamOverlay'), camVideo = document.getElementById('physCamVideo'),
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
         camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose'),
         camDevice = document.getElementById('physCamDevice'), camMic = document.getElementById('physCamMic'),
-        camRetake = document.getElementById('physCamRetake'), camConfirm = document.getElementById('physCamConfirm'),
-        camManual = document.getElementById('physCamManual'), manualLayer = document.getElementById('physCamManualLayer');
+        camRetake = document.getElementById('physCamRetake'), camConfirm = document.getElementById('physCamConfirm');
     var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
     var DEVICE_KEY = 'veyra_phys_camera_device_id';   // remembered across sessions — e.g. a phone used as a webcam
@@ -323,16 +358,16 @@
       localStorage.setItem(DEVICE_KEY, camDevice.value);
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; openCam(); }
     });
-    var poseMode = 'VIDEO';                           // the one landmarker serves both live scan and photos
-    // Auto-capture: you can't reach the button from 2m away, so once the WHOLE body is
-    // in frame we count down on-screen and measure automatically (median of the frames).
-    var AUTO_MS = 3000, GRACE_MS = 2000;             // countdown length; allowed detection dropout
-                                                       // (bumped from 700 — a relayed/bridged camera feed,
-                                                       // e.g. phone-over-USB, stutters more than a native
-                                                       // webcam and was resetting the countdown constantly)
+    var poseMode = 'VIDEO';
+    // Auto-capture: you can't reach the button from 2m away, so once the current step's
+    // pose gate passes we count down on-screen and capture automatically (median of frames).
+    var AUTO_MS = 3000, GRACE_MS = 2000;
     var autoStart = 0, lastGood = 0, samples = [];
-    var pendingEst = null;                           // single estimate from a photo (no countdown)
-    var showDone = false;                            // true while the "✓ done" frame is being held on screen
+    var pendingPosture = null;                        // this step's reading, awaiting Retake/Confirm
+    var postureStep = null;                           // 'front' | 'side' | null (modal closed)
+    var postureData = {};                             // { front:{...}, side:{...} } accumulated across the 2 steps
+    var captureSource = 'live';                        // 'live' | 'photo' — which path drove the current step
+    var showDone = false;
     var audioCtx = null;
     function beep() {                                 // audible "captured" cue — you're far from the screen
       try {
@@ -343,7 +378,7 @@
         o.start(); o.stop(audioCtx.currentTime + 0.18);
       } catch (e) {}
     }
-    function beepOk() {                               // distinct two-tone "all done" cue, separate from the capture beep
+    function beepOk() {                               // distinct two-tone "captured" cue
       try {
         audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
         [660, 990].forEach(function (freq, i) {
@@ -355,22 +390,35 @@
         });
       } catch (e) {}
     }
-    function speakDone() {                            // spoken "done" — you don't need to see the screen at all
+    function speakDone(text) {                        // spoken cue — you don't need to see the screen at all
       try {
         if (!window.speechSynthesis) return;
         window.speechSynthesis.cancel();               // don't queue up behind a stale utterance
-        var u = new SpeechSynthesisUtterance('Done measuring');
+        var u = new SpeechSynthesisUtterance(text || 'Captured');
         u.rate = 1; u.volume = 1;
         setTimeout(function () { window.speechSynthesis.speak(u); }, 300);  // let the beep finish first
       } catch (e) {}
     }
-    function fullBody(lm, vh) {                       // nose + shoulders + hips + ankles all visible, in frame, big enough
+    function fullBody(lm, vh) {                       // front-view gate: nose+shoulders+hips+ankles visible, in frame, big enough
       var need = [0, 11, 12, 23, 24, 27, 28];
       for (var i = 0; i < need.length; i++) {
         var p = lm[need[i]];
         if (!p || (p.visibility != null && p.visibility < 0.5) || p.y < -0.02 || p.y > 1.02) return false;
       }
       return Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * vh > vh * 0.45;
+    }
+    // Side-view gate: a true profile shot self-occludes the far side, so this only
+    // requires ONE side's ear/shoulder/hip/ankle (whichever ear reads more visible).
+    function sideOk(lm, vh) {
+      var side = (lm[7] && lm[7].visibility != null ? lm[7].visibility : 1) >=
+                 (lm[8] && lm[8].visibility != null ? lm[8].visibility : 1) ? 'left' : 'right';
+      var need = side === 'left' ? [7, 11, 23, 27] : [8, 12, 24, 28];
+      for (var i = 0; i < need.length; i++) {
+        var p = lm[need[i]];
+        if (!p || (p.visibility != null && p.visibility < 0.5) || p.y < -0.02 || p.y > 1.02) return false;
+      }
+      var earIdx = side === 'left' ? 7 : 8, ankIdx = side === 'left' ? 27 : 28;
+      return Math.abs(lm[ankIdx].y - lm[earIdx].y) * vh > vh * 0.45;
     }
     function drawCount(ctx, vw, vh, n) {              // big enough to read from across the room
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -388,26 +436,90 @@
       ctx.moveTo(cx - r * 0.45, cy + r * 0.02); ctx.lineTo(cx - r * 0.1, cy + r * 0.38); ctx.lineTo(cx + r * 0.5, cy - r * 0.4);
       ctx.stroke();
     }
+    function round1(v) { return Math.round(v * 10) / 10; }
+    function round2(v) { return Math.round(v * 100) / 100; }
+    function angleDeg(dx, dy) { return Math.atan2(dy, dx) * 180 / Math.PI; }
+    // Heuristic first-pass thresholds — this is a brand-new feature with no tape/photo
+    // ground truth yet (unlike the measurement scan's FAC table, which was retuned against
+    // real tape tests). Revisit once real posture reads come back against how a person
+    // actually looks, the same way the old scan's calibration was tuned from real data.
+    function classifyKnee(ratio) {
+      if (ratio == null) return 'unknown';
+      if (ratio < 0.5) return 'knock_kneed';
+      if (ratio > 1.8) return 'bow_legged';
+      return 'normal';
+    }
+    function classifyHunch(angle) {
+      if (angle == null) return 'unknown';
+      if (angle >= 70) return 'normal';
+      if (angle >= 55) return 'mild_forward_head';
+      return 'noticeable_forward_head';
+    }
+    // Front view: feet together, facing the camera. Shoulder/ear tilt = angle of the L-R
+    // line off horizontal (magnitude only, see the note above on left/right labeling).
+    // Knee alignment: with feet together, compare the knee-to-knee gap to the ankle-to-
+    // ankle gap — much closer knees than ankles reads as knock-kneed, much wider as bow-legged.
+    function frontPosture(lm) {
+      var shoulderTiltDeg = null, earTiltDeg = null, kneeRatio = null;
+      if (lm[11] && lm[12]) shoulderTiltDeg = angleDeg(lm[12].x - lm[11].x, lm[12].y - lm[11].y);
+      if (lm[7] && lm[8] && (lm[7].visibility == null || lm[7].visibility > 0.4) && (lm[8].visibility == null || lm[8].visibility > 0.4)) {
+        earTiltDeg = angleDeg(lm[8].x - lm[7].x, lm[8].y - lm[7].y);
+      }
+      if (lm[25] && lm[26] && lm[27] && lm[28] &&
+          (lm[25].visibility == null || lm[25].visibility > 0.5) && (lm[26].visibility == null || lm[26].visibility > 0.5)) {
+        var kneeGap = Math.abs(lm[26].x - lm[25].x), ankleGap = Math.abs(lm[28].x - lm[27].x);
+        if (ankleGap > 0.01) kneeRatio = kneeGap / ankleGap;
+      }
+      return { shoulderTiltDeg: shoulderTiltDeg, earTiltDeg: earTiltDeg, kneeRatio: kneeRatio };
+    }
+    // Side view: the "plumb line" proxy used by most photo-based posture checks — angle
+    // of the shoulder→ear line off horizontal. Near-vertical (~90°) = head stacked over
+    // the shoulder (good); the more the line lies toward horizontal, the further the head
+    // juts forward (forward-head / rounded-shoulders, the visible sign of a hunch).
+    function sidePosture(lm) {
+      var side = (lm[7] && lm[7].visibility != null ? lm[7].visibility : 1) >=
+                 (lm[8] && lm[8].visibility != null ? lm[8].visibility : 1) ? 'left' : 'right';
+      var ear = lm[side === 'left' ? 7 : 8], sh = lm[side === 'left' ? 11 : 12];
+      if (!ear || !sh) return null;
+      var dx = Math.abs(ear.x - sh.x), dy = sh.y - ear.y;   // dy > 0: ear sits above the shoulder, as expected
+      return { hunchAngleDeg: Math.max(0, Math.min(90, angleDeg(dy, dx))), side: side };
+    }
+    function mode(arr) {
+      var counts = {}, best = null, bestN = 0;
+      arr.forEach(function (v) { counts[v] = (counts[v] || 0) + 1; if (counts[v] > bestN) { bestN = counts[v]; best = v; } });
+      return best;
+    }
+    function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
+    function medianField(list, key) {
+      var vals = list.map(function (s) { return s[key]; }).filter(function (v) { return v != null && !isNaN(v); });
+      return vals.length ? median(vals) : null;
+    }
+    function combineFront(list) {
+      var shoulderTiltDeg = medianField(list, 'shoulderTiltDeg'), earTiltDeg = medianField(list, 'earTiltDeg'), kneeRatio = medianField(list, 'kneeRatio');
+      return {
+        shoulderTiltDeg: shoulderTiltDeg != null ? round1(shoulderTiltDeg) : null,
+        earTiltDeg: earTiltDeg != null ? round1(earTiltDeg) : null,
+        kneeRatio: kneeRatio != null ? round2(kneeRatio) : null,
+        kneeFlag: classifyKnee(kneeRatio)
+      };
+    }
+    function combineSide(list) {
+      var hunchAngleDeg = medianField(list, 'hunchAngleDeg');
+      var sides = list.map(function (s) { return s.side; }).filter(Boolean);
+      return { hunchAngleDeg: hunchAngleDeg != null ? round1(hunchAngleDeg) : null, hunchFlag: classifyHunch(hunchAngleDeg), side: sides.length ? mode(sides) : null };
+    }
+    function stepGateOk(lm, vh) { return postureStep === 'side' ? sideOk(lm, vh) : fullBody(lm, vh); }
+    function stepSample(lm) { return postureStep === 'side' ? sidePosture(lm) : frontPosture(lm); }
+    function stepInstructions() {
+      return postureStep === 'side'
+        ? 'Step 2/2 — Turn 90° so the camera sees your SIDE profile. Stand naturally, arms relaxed — it captures itself once locked on, or clap/shout.'
+        : 'Step 1/2 — Face the camera, feet together, arms relaxed at your sides — it captures itself once your whole body is in frame, or clap/shout.';
+    }
     // Freeze the actual camera pixels onto the canvas at the moment of capture (clap,
-    // countdown, or manual Measure tap) — the live loop stops right after this runs, so
-    // whatever's drawn here is what you get to review. Same privacy guarantee as always:
-    // it's a transient canvas frame, discarded on close/retake, never sent or saved.
-    // Runs a FRESH, synchronous pose + segmentation read on the exact frame being captured,
-    // instead of trusting whatever `lastLm` happens to be from a prior loop tick. On a
-    // relayed/stuttery feed (phone-over-USB) the last detection can be a frame or two stale
-    // by the time a clap/countdown/manual trigger actually fires, so the skeleton drawn from
-    // it visibly drifts off the body — this re-detects right now so the overlay matches what
-    // was actually shot. It also fills `pendingEst` via the accurate silhouette-based segEst()
-    // (same method the 3s auto-countdown uses), instead of measureFromPose() falling back to
-    // the cruder joint-distance frameEst() — which only ever computes shoulders/chest/waist/
-    // hips and leaves neck/arm/thigh/calf blank — for every clap/manual capture.
-    // Returns true on a genuinely usable capture, false if it should be rejected. MediaPipe's
-    // PoseLandmarker always returns SOME "best guess" landmarks even when nothing person-
-    // shaped is actually there — a busy background (shelves, cabinet doors) can score higher
-    // than a partially-visible person, and without a quality gate that garbage silently drove
-    // the skeleton + the measured numbers. fullBody() (the same check that gates the auto-
-    // countdown) is now required here too, so a bad single-frame read gets rejected instead
-    // of accepted.
+    // countdown, or manual tap) — same privacy guarantee as always: a transient canvas
+    // frame, discarded on close/retake, never sent or saved. Runs a FRESH, synchronous
+    // pose read on the exact frame being captured (not whatever `lastLm` happens to be
+    // from a prior loop tick, which can be stale on a stuttery relayed feed).
     function snapshotFrame() {
       var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
       if (!vw || !vh) return false;
@@ -416,14 +528,12 @@
       ctx.drawImage(camVideo, 0, 0, vw, vh);
       var res = null; try { res = poseLm.detectForVideo(camVideo, performance.now()); } catch (e) {}
       var lm = res && res.landmarks && res.landmarks[0];
-      if (!lm || !fullBody(lm, vh)) { closeMask(res); return false; }
+      if (!lm || !stepGateOk(lm, vh)) return false;
       lastLm = lm;
       drawSkeleton(ctx, lastLm, vw, vh);
-      var mask = readMask(res);
-      pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
+      pendingPosture = stepSample(lastLm);
       return true;
     }
-    function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
     async function ensurePose() {
       if (poseLm) return poseLm;
       camStatus.textContent = 'Loading model…';
@@ -432,13 +542,13 @@
       var fileset = await vision.FilesetResolver.forVisionTasks(V + '/wasm');
       poseLm = await vision.PoseLandmarker.createFromOptions(fileset, {
         baseOptions: { modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task' },
-        runningMode: 'VIDEO', numPoses: 1,
-        outputSegmentationMasks: true   // body silhouette → measure real widths (arm/thigh/calf too)
+        runningMode: 'VIDEO', numPoses: 1
+        // no segmentation mask needed — posture reads joint ANGLES, not silhouette widths
       });
       poseMode = 'VIDEO';
       return poseLm;
     }
-    async function setPoseMode(mode) {               // both live scan and photos stay in 'VIDEO' mode now
+    async function setPoseMode(mode) {
       await ensurePose();
       if (poseMode !== mode) { await poseLm.setOptions({ runningMode: mode }); poseMode = mode; }
     }
@@ -449,22 +559,17 @@
     }
     async function openCam() {
       if (!camOverlay) return;
-      if (!heightVal()) { msg('Enter your Height first — it calibrates the measurements.'); var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus(); return; }
+      postureStep = 'front'; postureData = {}; captureSource = 'live';
       camOverlay.classList.remove('hidden'); camStatus.textContent = 'Starting…'; camMeasure.disabled = true; lastLm = null;
-      autoStart = 0; lastGood = 0; samples = []; pendingEst = null; camVideo.style.display = '';
+      autoStart = 0; lastGood = 0; samples = []; pendingPosture = null; camVideo.style.display = '';
       try {
         await setPoseMode('VIDEO');
         await refreshCamDevices();                     // labels are blank pre-permission on first-ever run, that's fine
         var chosen = camDevice && !camDevice.classList.contains('hidden') ? camDevice.value : '';
-        // Reverted 2026-07-21: the wider 16:9/1280x720 request brought MORE of the room into
-        // frame — including background clutter (e.g. a hanging bag/coat) that the pose model
-        // then misdetected as a body. Back to the narrower 640x480/4:3 crop; the misdetection
-        // risk is better addressed by tightening the detection-quality gate than by widening
-        // the frame and hoping nothing distracting is in view.
         var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: 640, height: 480 } : { facingMode: 'user', width: 640, height: 480 };
         camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });   // camera first — must succeed
         micUnavailableReason = '';
-        try {                                           // mic is separate + optional — clap-to-measure only, never
+        try {                                           // mic is separate + optional — clap-to-capture only, never
           var aStream = await navigator.mediaDevices.getUserMedia({ audio: true });           // recorded/sent anywhere.
           aStream.getAudioTracks().forEach(function (t) { camStream.addTrack(t); });          // Requested on its own so a
         } catch (e) {                                                                          // mic-only failure (denied,
@@ -473,15 +578,15 @@
         camVideo.srcObject = camStream; await camVideo.play();                                 // down with it.
         refreshCamDevices();                           // re-run now that permission is granted → real device labels
         startClapDetect(camStream);
-        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself, or clap/shout to measure right now.'; loop();
+        camStatus.textContent = stepInstructions(); loop();
       } catch (e) { camStatus.textContent = 'Couldn’t start: ' + ((e && e.message) || 'camera/model unavailable') + '.'; }
     }
-    // Clap/loud-sound → measure now, for when you're too far to reach the button. Pure
+    // Clap/loud-sound → capture now, for when you're too far to reach the button. Pure
     // on-device volume-peak detection (no speech-to-text, no audio ever recorded or sent
     // anywhere) — real word recognition would need a cloud speech API, which Brave mostly
     // doesn't even wire up, and would break the "nothing leaves your device" guarantee.
     var clapAnalyser = null, clapData = null, lastClapAt = 0, micUnavailableReason = '';
-    var CLAP_THRESHOLD = 55;                          // tune against the live meter — was 100, too strict for a shout from distance
+    var CLAP_THRESHOLD = 55;                          // tune against the live meter
     function startClapDetect(stream) {
       clapAnalyser = null; clapData = null;
       try {
@@ -507,8 +612,8 @@
       var now = performance.now();
       if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) {
         lastClapAt = now; beep();
-        if (snapshotFrame()) measureFromPose();
-        else camStatus.textContent = 'Heard you, but couldn’t get a clean lock on your body — stay in frame and try again.';
+        if (snapshotFrame()) onCaptured();
+        else camStatus.textContent = 'Heard you, but couldn’t get a clean lock — stay in frame and try again.';
       }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
@@ -526,340 +631,111 @@
           drawSkeleton(ctx, lastLm, vw, vh);
           camMeasure.disabled = false;
           var now = performance.now();
-          if (fullBody(lastLm, vh)) {
+          if (stepGateOk(lastLm, vh)) {
             lastGood = now;
             if (!autoStart) { autoStart = now; samples = []; }
-            var mask = readMask(res);                 // reads + frees the mask
-            var est = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
+            var est = stepSample(lastLm);
             if (est) samples.push(est);
             if (now - autoStart >= AUTO_MS) {
-              snapshotFrame(); beep(); measureFromPose();
+              snapshotFrame(); beep(); onCaptured();
               return;                                   // frame is frozen now — no more loop ticks until Retake
             }
             var left = Math.ceil((AUTO_MS - (now - autoStart)) / 1000);
             drawCount(ctx, vw, vh, left);
-            camStatus.textContent = 'Hold still — measuring in ' + left + '…';
+            camStatus.textContent = 'Hold still — capturing in ' + left + '…';
           } else {
-            closeMask(res);                           // not counting down → don't leak the mask
             if (autoStart && now - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
-            camStatus.textContent = 'Fit your WHOLE body in frame — arms angled OUT, feet apart — it measures itself.';
+            camStatus.textContent = stepInstructions();
           }
         } else {
-          closeMask(res);
           camMeasure.disabled = true;
           if (autoStart && performance.now() - lastGood > GRACE_MS) { autoStart = 0; samples = []; }
         }
       }
       rafId = requestAnimationFrame(loop);
     }
-    function dist(a, b, vw, vh) { var dx = (a.x - b.x) * vw, dy = (a.y - b.y) * vh; return Math.sqrt(dx * dx + dy * dy); }
-    function frameEst(lm, vw, vh) {                   // one frame -> cm estimates (nose→ankle pixels calibrate the scale)
-      var hCm = heightVal();
-      if (!lm || !hCm) return null;
-      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * vh;
-      if (bodyPx < 20) return null;
-      var cmPerPx = hCm / (bodyPx / 0.88);            // nose→ankle ≈ 88% of standing height
-      var shW = dist(lm[11], lm[12], vw, vh) * cmPerPx, hipW = dist(lm[23], lm[24], vw, vh) * cmPerPx;
-      // Factors map JOINT-to-JOINT distances (much narrower than the silhouette — hip
-      // joints are ~18cm apart on a ~35cm-wide body) to girths. Calibrated against the
-      // FIRST tape test only (chest 83/waist 78/hips 89) — this is the FALLBACK used only
-      // when the segmentation mask isn't available (see segEst above, the primary path,
-      // which has since been retuned against a fuller tape set — this one hasn't, because
-      // no fresh test has exercised this fallback path since). Known stale; revisit if
-      // this path turns out to be firing in practice.
-      return { shoulders: shW * 2.9, chest: shW * 2.6, waist: hipW * 4.4, hips: hipW * 5.0 };
-    }
-
-    // ── Segmentation measure: read the body SILHOUETTE and measure real outline widths
-    //    at each landmark height, then convert width → girth. Joint distances can't give
-    //    limb thickness; the silhouette can, so this fills arm/thigh/calf/neck too. ──
-    // width(cm) → circumference(cm). Torso is elliptical (~3×), limbs ~round (~π). These
-    // are the CALIBRATION knobs — tune against a tape measure. (2026-07: pre-calibration.)
-    // Retuned 2026-07 from real tape tests. waist/hips/thigh/calf now land within ~5% of
-    // tape — trust these. chest/arm are STILL WRONG (not a calibration issue): at
-    // armpit height the arm sits directly against the torso with no real gap even when
-    // held "a little out", so the silhouette sweep can't separate them — needs a wider
-    // arm angle in the pose (~30-40°), not a bigger/smaller factor. Left un-retuned
-    // until a clean (wide-arm) re-test comes in.
-    // ⚠️ SINGLE-SUBJECT CALIBRATION: every number below is fit to ONE body (168cm/53kg).
-    // The width→circumference ratio genuinely varies with body composition (rounder vs.
-    // flatter cross-section), so accuracy for very different builds is unverified — this
-    // is a starting baseline, not a validated population model. Re-tune with tape data
-    // from a few different body types before trusting this cross-population.
-    var FAC = { neck: 3.3, shoulders: 2.45, chest: 3.05, waist: 2.34, hips: 2.51,
-                arm: 3.05, thigh: 2.89, calf: 2.96 };
-    function readMask(res) {                          // float32 person-mask (0..1 per px) + dims; frees the GPU mask
-      if (!res || !res.segmentationMasks || !res.segmentationMasks[0]) return null;
-      var m = res.segmentationMasks[0], out = null;
-      try { out = { arr: m.getAsFloat32Array(), w: m.width, h: m.height }; } catch (e) {}
-      try { m.close(); } catch (e) {}
-      return out;
-    }
-    function closeMask(res) { if (res && res.segmentationMasks && res.segmentationMasks[0]) { try { res.segmentationMasks[0].close(); } catch (e) {} } }
-    function isBody(mask, mW, mH, x, y) {
-      x = Math.round(x); y = Math.round(y);
-      if (x < 0 || x >= mW || y < 0 || y >= mH) return false;
-      return mask[y * mW + x] > 0.5;
-    }
-    // width (px) of the body run containing (cxN,yN), horizontally. loL/hiL (px, optional)
-    // cap how far the sweep may travel in each direction — without this, a torso sweep
-    // can bridge a small gap to an arm held slightly out and report shoulder-to-shoulder
-    // (or hand-to-hand) width instead of chest width. We cap at the elbow position, since
-    // a real torso edge always sits between center and the elbow.
-    // Returns null on failure, otherwise { px, unreliable }. `unreliable` is true when the
-    // sweep only stopped because it hit the loL/hiL bound (e.g. the elbow-x cap) while STILL
-    // inside the body mask on that side — meaning it never actually found the torso's real
-    // edge, just got truncated by the artificial cap. Previously this case was silently
-    // treated as a valid measurement, which is exactly how "chest" ended up reading as
-    // shoulder-to-nearly-elbow width whenever the arm's silhouette stayed merged with the
-    // torso's at that height (confirmed via real tape-vs-scan data: arm/thigh/calf/hips all
-    // came back accurate once clothing bulk was removed, but chest got WORSE — the elbow-
-    // bounded sweeps for chest/neck/waist/hips/shoulders were still being clipped, not the
-    // clothing).
-    function runWidthPx(mask, mW, mH, cxN, yN, loL, hiL) {
-      var y = Math.round(yN * mH), cx = Math.round(cxN * mW);
-      loL = (loL == null) ? -Infinity : loL; hiL = (hiL == null) ? Infinity : hiL;
-      if (!isBody(mask, mW, mH, cx, y)) {             // landmark may sit just off the silhouette → snap onto it
-        var found = -1, lim = Math.round(mW * 0.15);
-        for (var d = 1; d < lim; d++) {
-          if (cx - d >= loL && isBody(mask, mW, mH, cx - d, y)) { found = cx - d; break; }
-          if (cx + d <= hiL && isBody(mask, mW, mH, cx + d, y)) { found = cx + d; break; }
-        }
-        if (found < 0) return null; cx = found;
-      }
-      var l = cx, r = cx;
-      while (l - 1 >= loL && isBody(mask, mW, mH, l - 1, y)) l--;
-      while (r + 1 <= hiL && isBody(mask, mW, mH, r + 1, y)) r++;
-      var clippedL = l <= loL && isBody(mask, mW, mH, l - 1, y);
-      var clippedR = r >= hiL && isBody(mask, mW, mH, r + 1, y);
-      return { px: r - l + 1, unreliable: clippedL || clippedR };
-    }
-    // Limb thickness measured PERPENDICULAR to the bone's own direction (shoulder→elbow,
-    // hip→knee, knee→ankle), not a horizontal slice — a horizontal slice overstates a
-    // slanted limb (the same fix already used for the 3D mannequin's arm calibration).
-    // Also avoids snapping onto the torso when the limb sits close to it.
-    // Returns null on failure, otherwise { px, unreliable }. Same fix as runWidthPx() above:
-    // `cap` is only a sanity ceiling ("a limb can't be torso-wide"), not a real edge — if the
-    // sweep runs all the way to it while STILL inside the body mask, the limb's silhouette is
-    // still merged with the torso (or another limb) at this point, and the old code silently
-    // accepted that inflated width as if it were the limb's real thickness. Confirmed via a
-    // real arm reading that regressed to a torso-scale number (119cm) even in a NUDE retest
-    // that otherwise fixed thigh/calf/hips — same bug, different function.
-    function limbWidthPx(mask, mW, mH, aXn, aYn, bXn, bYn) {
-      var midXn = (aXn + bXn) / 2, midYn = (aYn + bYn) / 2;
-      var dx = (bXn - aXn) * mW, dy = (bYn - aYn) * mH;
-      var len = Math.sqrt(dx * dx + dy * dy);
-      if (len < 1) return null;
-      var pX = -dy / len, pY = dx / len;              // unit vector perpendicular to the bone
-      var cx = midXn * mW, cy = midYn * mH;
-      if (!isBody(mask, mW, mH, cx, cy)) {             // tight snap only — don't risk jumping to the torso
-        var found = false, tight = 8;
-        for (var d = 1; d <= tight && !found; d++) {
-          if (isBody(mask, mW, mH, cx + pX * d, cy + pY * d)) { cx += pX * d; cy += pY * d; found = true; }
-          else if (isBody(mask, mW, mH, cx - pX * d, cy - pY * d)) { cx -= pX * d; cy -= pY * d; found = true; }
-        }
-        if (!found) return null;
-      }
-      var cap = Math.min(mW, mH) * 0.22;               // sane ceiling — a limb can't be torso-wide
-      var a = 0, b = 0;
-      while (a + 1 <= cap && isBody(mask, mW, mH, cx + pX * (a + 1), cy + pY * (a + 1))) a++;
-      while (b + 1 <= cap && isBody(mask, mW, mH, cx - pX * (b + 1), cy - pY * (b + 1))) b++;
-      var clippedA = a >= cap && isBody(mask, mW, mH, cx + pX * (a + 1), cy + pY * (a + 1));
-      var clippedB = b >= cap && isBody(mask, mW, mH, cx - pX * (b + 1), cy - pY * (b + 1));
-      return { px: a + b + 1, unreliable: clippedA || clippedB };
-    }
-    function segEst(lm, mask, mW, mH) {
-      var hCm = heightVal();
-      if (!lm || !hCm || !mask) return null;
-      var bodyPx = Math.abs(((lm[27].y + lm[28].y) / 2) - lm[0].y) * mH;
-      if (bodyPx < 20) return null;
-      var cmPerPx = hCm / (bodyPx / 0.88);
-      // Torso sweeps must stop at the elbow — a real torso edge always sits between
-      // center and the elbow, so this is a hard boundary against bridging a small
-      // arms-slightly-out gap and reporting shoulder-to-shoulder (or wider) by mistake.
-      var elbowLx = Math.min(lm[13].x, lm[14].x) * mW, elbowRx = Math.max(lm[13].x, lm[14].x) * mW;
-      function girth(cxN, yN, fac) {
-        var res = runWidthPx(mask, mW, mH, cxN, yN, elbowLx, elbowRx);
-        if (!res || res.unreliable) return null;      // clipped by the elbow bound, not a real edge — don't guess
-        var w = res.px * cmPerPx;
-        return (w > 0 && w < 120) ? w * fac : null;
-      }
-      function limbGirth(a, b, fac) {
-        var res = limbWidthPx(mask, mW, mH, lm[a].x, lm[a].y, lm[b].x, lm[b].y);
-        if (!res || res.unreliable) return null;      // still merged with the torso/another limb — don't guess
-        var w = res.px * cmPerPx;
-        return (w > 0 && w < 90) ? w * fac : null;
-      }
-      var shX = (lm[11].x + lm[12].x) / 2, shY = (lm[11].y + lm[12].y) / 2;
-      var hpX = (lm[23].x + lm[24].x) / 2, hpY = (lm[23].y + lm[24].y) / 2;
-      var span = hpY - shY, mid = (shX + hpX) / 2, out = {}, v;
-      if ((v = girth(shX, shY - (shY - lm[0].y) * 0.40, FAC.neck)))  out.neck = v;
-      if ((v = girth(mid, shY,                        FAC.shoulders))) out.shoulders = v;
-      if ((v = girth(mid, shY + span * 0.22,          FAC.chest)))   out.chest = v;
-      if ((v = girth(mid, shY + span * 0.72,          FAC.waist)))   out.waist = v;
-      if ((v = girth(hpX, hpY + span * 0.08,          FAC.hips)))    out.hips = v;
-      if ((v = limbGirth(12, 14, FAC.arm)))   out.arm = v;    // shoulder → elbow
-      if ((v = limbGirth(24, 26, FAC.thigh))) out.thigh = v;  // hip → knee
-      if ((v = limbGirth(26, 28, FAC.calf)))  out.calf = v;   // knee → ankle
-      return out;
-    }
-    function median(a) { var s = a.slice().sort(function (x, y) { return x - y; }); return s[Math.floor(s.length / 2)]; }
-    function measureFromPose() {
-      var est;
-      if (samples.length >= 5) {                      // countdown ran: median each field over the frames
-        est = {};
-        var keys = {};
-        samples.forEach(function (s) { for (var k in s) keys[k] = 1; });
-        Object.keys(keys).forEach(function (k) {
-          var vals = samples.map(function (s) { return s[k]; }).filter(function (x) { return x != null; });
-          if (vals.length) est[k] = median(vals);
-        });
-      } else if (pendingEst) {                        // a photo was analyzed → use its estimate
-        est = pendingEst;
-      } else {                                        // manual Measure tap with no samples → current frame
-        est = frameEst(lastLm, camCanvas.width, camCanvas.height);
-      }
+    // Combine the countdown samples (if auto-capture ran) or the single frozen-frame
+    // reading (clap/manual tap/photo) into this step's posture result, then show the
+    // review UI (Retake/Confirm) — same "don't auto-close" pattern as the old measurement
+    // scan: you get to see the frame before it's used.
+    function onCaptured() {
+      var reading;
+      if (samples.length >= 5) reading = postureStep === 'side' ? combineSide(samples) : combineFront(samples);
+      else if (pendingPosture) reading = postureStep === 'side' ? combineSide([pendingPosture]) : combineFront([pendingPosture]);
+      else reading = null;
       autoStart = 0; samples = [];
-      if (!est || !Object.keys(est).length) { msg('No full body detected — try again.'); return; }
-      showEditor();
-      inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
+      if (!reading) { msg('No clean pose detected — try again.'); return; }
+      pendingPosture = reading;
       if (camCanvas && camCanvas.width) drawDone(camCanvas.getContext('2d'), camCanvas.width, camCanvas.height);
       camVideo.style.display = 'none';                 // show the frozen canvas frame, not the still-live video
       showDone = true; camMeasure.disabled = true;
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }   // stop scanning — reviewing the frozen frame now
-      // Don't auto-close: hold the modal open on the captured frame so you can actually SEE
-      // what got shot (blurry? not full body? bad angle?) before it's used. Retake discards
-      // it and resumes scanning; Confirm accepts it. Either way nothing is ever saved/sent —
-      // the frame just stops being shown once the modal closes.
-      camStatus.textContent = 'Captured — check the picture: full body, in focus? Retake if not.';
+      camStatus.textContent = 'Captured — check the picture, then Retake or Confirm.';
       showReview(true);
-      beepOk(); speakDone();
+      beepOk(); speakDone('Captured');
     }
     function showReview(on) {
       if (camMeasure) camMeasure.classList.toggle('hidden', on);
-      if (camManual) camManual.classList.toggle('hidden', on);
       if (camRetake) camRetake.classList.toggle('hidden', !on);
       if (camConfirm) camConfirm.classList.toggle('hidden', !on);
+      if (camConfirm) camConfirm.textContent = (on && postureStep === 'front') ? 'Next: side view →' : '✓ Save posture check';
       if (camMic && on) camMic.classList.add('hidden');
     }
-    function retakeMeasurement() {
-      showDone = false; showReview(false); camMeasure.disabled = true;
-      manualEnd();
-      if (camStream) {                                  // camera's still attached — just resume scanning
+    function retakeCapture() {
+      showDone = false; showReview(false); camMeasure.disabled = true; pendingPosture = null;
+      if (captureSource === 'live' && camStream) {      // camera's still attached — just resume scanning
         camVideo.style.display = '';
         camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
-        autoStart = 0; lastGood = 0; samples = []; pendingEst = null; lastLm = null;
-        camStatus.textContent = 'Stand back, arms angled OUT from your body (elbows away from your ribs), feet apart — once your whole body fits it measures itself, or clap/shout to measure right now.';
+        autoStart = 0; lastGood = 0; samples = []; lastLm = null;
+        camStatus.textContent = stepInstructions();
         loop();
       } else {                                          // photo mode — go straight back to the file picker
-        closeCam();
         photoInput && photoInput.click();
       }
     }
-    function confirmMeasurement() { closeCam(); msg('Measured — adjust any number, then Save.'); }
-
-    // ── Manual point placement — skip AI detection entirely; the user drags 7 dots onto
-    // themselves on the frozen frame (live or an uploaded photo). Reuses frameEst(), the
-    // SAME joint-distance math the AI path falls back to, just fed hand-placed coordinates
-    // instead of guessed ones — so it only ever fills shoulders/chest/waist/hips (girths
-    // need a silhouette mask, which can't be hand-edited); neck/arm/thigh/calf still need a
-    // tape measure either way. Dots are plain DOM elements (not canvas-drawn) so dragging —
-    // including touch — is native and reliable; the connecting lines redraw on the canvas
-    // from a saved base-frame ImageData each time a dot moves.
-    var MANUAL_POINTS = [
-      { idx: 0,  label: 'Head (nose level)',         x: 0.50, y: 0.10 },
-      { idx: 11, label: 'Shoulder (left of photo)',  x: 0.36, y: 0.22 },
-      { idx: 12, label: 'Shoulder (right of photo)', x: 0.64, y: 0.22 },
-      { idx: 23, label: 'Hip (left of photo)',       x: 0.40, y: 0.52 },
-      { idx: 24, label: 'Hip (right of photo)',      x: 0.60, y: 0.52 },
-      { idx: 27, label: 'Ankle (left of photo)',     x: 0.42, y: 0.93 },
-      { idx: 28, label: 'Ankle (right of photo)',    x: 0.58, y: 0.93 }
-    ];
-    var manualActive = false, manualPos = null, manualBaseImg = null, manualDragIdx = null;
-    var MANUAL_LINES = [[11, 12], [11, 23], [12, 24], [23, 24], [23, 27], [24, 28]];
-    function manualRedraw() {
-      if (!manualBaseImg || !manualPos) return;
-      var ctx = camCanvas.getContext('2d'), vw = camCanvas.width, vh = camCanvas.height;
-      ctx.putImageData(manualBaseImg, 0, 0);
-      ctx.strokeStyle = 'rgba(212,165,116,0.9)'; ctx.lineWidth = 3;
-      MANUAL_LINES.forEach(function (c) {
-        var a = manualPos[c[0]], b = manualPos[c[1]]; if (!a || !b) return;
-        ctx.beginPath(); ctx.moveTo(a.x * vw, a.y * vh); ctx.lineTo(b.x * vw, b.y * vh); ctx.stroke();
-      });
+    function savePosture() {
+      var payload = {}, k;
+      for (k in postureData.front) payload[k] = postureData.front[k];
+      for (k in postureData.side) payload[k] = postureData.side[k];
+      fetch('/pug/api/physique', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ posture: payload }) })
+        .then(function (r) { return r.json(); }).then(function (res) {
+          if (res && res.error) { msg(res.error); return; }
+          load(); msg('Posture check saved.');
+        }).catch(function () { msg('Save failed.'); });
     }
-    function manualStart() {
-      var vw = camCanvas.width, vh = camCanvas.height;
-      if (!vw || !vh) { msg('Nothing to place points on yet — start the camera or pick a photo first.'); return; }
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }   // stop any live scanning underneath
-      autoStart = 0; lastGood = 0; samples = [];
-      manualActive = true;
-      manualPos = {};
-      MANUAL_POINTS.forEach(function (p) { manualPos[p.idx] = { x: p.x, y: p.y }; });
-      manualBaseImg = camCanvas.getContext('2d').getImageData(0, 0, vw, vh);
-      manualRedraw();
-      if (manualLayer) {
-        manualLayer.innerHTML = '';
-        MANUAL_POINTS.forEach(function (p) {
-          var el = document.createElement('div');
-          el.className = 'phys-manual-dot'; el.title = p.label; el.dataset.idx = p.idx;
-          el.style.left = (manualPos[p.idx].x * 100) + '%'; el.style.top = (manualPos[p.idx].y * 100) + '%';
-          manualLayer.appendChild(el);
-        });
-        manualLayer.classList.remove('hidden');
+    function confirmCapture() {
+      if (postureStep === 'front') {
+        postureData.front = pendingPosture;
+        postureStep = 'side'; pendingPosture = null; showDone = false; showReview(false); camMeasure.disabled = true;
+        if (captureSource === 'live' && camStream) {
+          camVideo.style.display = '';
+          camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
+          autoStart = 0; lastGood = 0; samples = []; lastLm = null;
+          camStatus.textContent = stepInstructions();
+          loop();
+        } else {
+          camStatus.textContent = stepInstructions();
+          photoInput && photoInput.click();
+        }
+      } else {
+        postureData.side = pendingPosture;
+        closeCam();
+        savePosture();
       }
-      camStatus.textContent = 'Drag each dot onto the matching spot on your body, then tap ✓ Use these.';
-      showReview(true);
     }
-    function manualEnd() {
-      manualActive = false; manualPos = null; manualBaseImg = null; manualDragIdx = null;
-      if (manualLayer) { manualLayer.innerHTML = ''; manualLayer.classList.add('hidden'); }
-    }
-    function manualPointerDown(e) {
-      var idx = e.target && e.target.dataset ? parseInt(e.target.dataset.idx, 10) : NaN;
-      if (isNaN(idx)) return;
-      manualDragIdx = idx; e.preventDefault();
-    }
-    function manualPointerMove(e) {
-      if (manualDragIdx == null || !manualPos || !manualLayer) return;
-      var rect = manualLayer.getBoundingClientRect();
-      var pt = e.touches ? e.touches[0] : e;
-      var x = Math.max(0, Math.min(1, (pt.clientX - rect.left) / rect.width));
-      var y = Math.max(0, Math.min(1, (pt.clientY - rect.top) / rect.height));
-      manualPos[manualDragIdx] = { x: x, y: y };
-      var el = manualLayer.querySelector('[data-idx="' + manualDragIdx + '"]');
-      if (el) { el.style.left = (x * 100) + '%'; el.style.top = (y * 100) + '%'; }
-      manualRedraw();
-    }
-    function manualPointerUp() { manualDragIdx = null; }
-    if (manualLayer) {
-      manualLayer.addEventListener('pointerdown', manualPointerDown);
-      document.addEventListener('pointermove', manualPointerMove);
-      document.addEventListener('pointerup', manualPointerUp);
-    }
-    function manualConfirm() {
-      var lm = {};
-      MANUAL_POINTS.forEach(function (p) { lm[p.idx] = manualPos[p.idx]; });
-      pendingEst = frameEst(lm, camCanvas.width, camCanvas.height);
-      manualEnd();
-      measureFromPose();
-    }
-    // Measure from an uploaded photo — for when the webcam can't frame your whole body
-    // (laptop on a table). The file is read + analyzed HERE in the browser and discarded:
-    // it is never uploaded to the server or saved anywhere.
+    // Analyze an uploaded photo for the CURRENT step — for when the webcam can't frame the
+    // shot cleanly (laptop on a table, or need distance for a side profile). Read HERE in
+    // the browser and discarded: never uploaded to the server or saved anywhere.
     async function openPhoto(file) {
       if (!camOverlay || !file) return;
-      if (!heightVal()) { msg('Enter your Height first — it calibrates the measurements.'); var hi = fieldsEl.querySelector('input[data-k="height"]'); if (hi) hi.focus(); return; }
-      closeCam();                                     // in case the live scan was open
+      captureSource = 'photo';
+      if (postureStep == null) { postureStep = 'front'; postureData = {}; }
       camOverlay.classList.remove('hidden'); camMeasure.disabled = true;
       camVideo.style.display = 'none';                // canvas shows the photo instead
       camStatus.textContent = 'Analyzing photo…';
       var url = URL.createObjectURL(file);
       try {
-        // Stay in VIDEO mode + detectForVideo() even for a still photo (one frame) — the
-        // IMAGE-mode + segmentation-mask combo can hard-crash the MediaPipe WASM runtime
-        // (native abort, not a catchable JS error) on some inputs. VIDEO mode is the same
-        // path the live scan already uses successfully, so photos ride the proven route.
-        await setPoseMode('VIDEO');
+        await setPoseMode('VIDEO');                     // same detectForVideo() path the live capture uses
         var img = new Image();
         await new Promise(function (ok, bad) { img.onload = ok; img.onerror = bad; img.src = url; });
         var scale = Math.min(1, 1280 / Math.max(img.naturalWidth, img.naturalHeight));  // phone photos are huge
@@ -871,15 +747,11 @@
         if (res && res.landmarks && res.landmarks[0]) {
           lastLm = res.landmarks[0];
           drawSkeleton(ctx, lastLm, vw, vh);
-          var mask = readMask(res);                    // silhouette from the photo
-          pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
-          camMeasure.disabled = !(pendingEst && Object.keys(pendingEst).length);
-          camStatus.textContent = fullBody(lastLm, vh)
-            ? 'Body found — tap Measure.'
-            : 'Found a body, but maybe not all of it — Measure anyway, or try a photo showing head to feet.';
+          if (stepGateOk(lastLm, vh)) { pendingPosture = stepSample(lastLm); onCaptured(); }
+          else camStatus.textContent = 'Found a body, but not clearly enough for this step — try a photo showing ' +
+            (postureStep === 'side' ? 'your full side profile' : 'your full front, head to feet') + '.';
         } else {
-          closeMask(res);
-          camStatus.textContent = 'No body found in that photo — try one with your whole body, front-on.';
+          camStatus.textContent = 'No body found in that photo — try a different one.';
         }
       } catch (e) {
         camStatus.textContent = 'Couldn’t read that photo — try a different one.';
@@ -889,41 +761,30 @@
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
-      autoStart = 0; lastGood = 0; samples = []; pendingEst = null; showDone = false;
+      autoStart = 0; lastGood = 0; samples = []; pendingPosture = null; showDone = false;
       clapAnalyser = null; clapData = null;
-      manualEnd();
+      postureStep = null; postureData = {};
       showReview(false);
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
       if (camOverlay) camOverlay.classList.add('hidden');
     }
     scanBtn && scanBtn.addEventListener('click', openCam);
-    photoBtn && photoBtn.addEventListener('click', function () { photoInput && photoInput.click(); });
+    photoBtn && photoBtn.addEventListener('click', function () {
+      postureStep = 'front'; postureData = {}; captureSource = 'photo';
+      photoInput && photoInput.click();
+    });
     photoInput && photoInput.addEventListener('change', function () {
       openPhoto(photoInput.files && photoInput.files[0]);
       photoInput.value = '';                          // so re-picking the same file re-fires change
     });
     camMeasure && camMeasure.addEventListener('click', function () {
-      if (camStream && !snapshotFrame()) { msg('Couldn’t get a clean lock on your body — reposition and try again.'); return; }
-      measureFromPose();
+      if (camStream && !snapshotFrame()) { msg('Couldn’t get a clean lock — reposition and try again.'); return; }
+      onCaptured();
     });
     camClose && camClose.addEventListener('click', closeCam);
-    camRetake && camRetake.addEventListener('click', retakeMeasurement);
-    camConfirm && camConfirm.addEventListener('click', function () { if (manualActive) manualConfirm(); else confirmMeasurement(); });
-    camManual && camManual.addEventListener('click', function () {
-      // freeze the current live frame first (no AI) if we're still looking at live video —
-      // if a photo's already frozen on the canvas (upload flow, or AI capture under review),
-      // manualStart() just uses whatever's already there.
-      if (camStream && camVideo && camVideo.style.display !== 'none') {
-        var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
-        if (vw && vh) {
-          camCanvas.width = vw; camCanvas.height = vh;
-          camCanvas.getContext('2d').drawImage(camVideo, 0, 0, vw, vh);
-          camVideo.style.display = 'none';
-        }
-      }
-      manualStart();
-    });
+    camRetake && camRetake.addEventListener('click', retakeCapture);
+    camConfirm && camConfirm.addEventListener('click', confirmCapture);
 
     // "How to measure" guide — plain reference, no camera/state involved.
     var howBtn = document.getElementById('physHowBtn'), howOverlay = document.getElementById('physHowOverlay'),

@@ -30,6 +30,7 @@
       <div class="physique-left">
         <div class="phys-section-label">Your stats</div>
         <div id="physStats" class="phys-stats"></div>
+        <div id="physPostureStats"></div>
         <div class="phys-section-label" style="margin-top:18px;">Compare with</div>
         <select id="physCompareSelect" class="phys-compare"></select>
         <div id="physDeltas" class="phys-deltas"></div>
@@ -45,10 +46,11 @@
           <div class="phys-fields" id="physFields"></div>
           <div class="phys-actions">
             <button id="physSaveBtn" type="button" class="phys-save">Save measurements</button>
-            <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device camera measure — nothing is recorded or stored.">📷 Scan with camera</button>
-            <!-- Photo is analyzed ON-DEVICE (same pose model) and discarded — never uploaded
-                 or saved. For when the webcam can't see your whole body (laptop on a table). -->
-            <button id="physPhotoBtn" type="button" class="phys-scan" title="Measure from a photo — analyzed on your device, never uploaded or saved.">🖼 From a photo</button>
+            <button id="physScanBtn" type="button" class="phys-scan" title="Live on-device posture check (front + side view) — nothing is recorded or stored.">🧍 Posture check</button>
+            <!-- Photos are analyzed ON-DEVICE (same pose model) and discarded — never uploaded
+                 or saved. For when the webcam can't frame a clean shot (laptop on a table,
+                 or distance needed for the side-profile step). -->
+            <button id="physPhotoBtn" type="button" class="phys-scan" title="Posture check from photos — analyzed on your device, never uploaded or saved.">🖼 From photos</button>
             <input type="file" id="physPhotoInput" accept="image/*" hidden>
           </div>
           <div id="physMsg" class="phys-msg"></div>
@@ -90,36 +92,33 @@
         <li><b>Thigh</b> — around the upper thigh, just below the glute fold.</li>
         <li><b>Calf</b> — around the widest point of the calf muscle, leg straight (not flexed or on tiptoes).</li>
       </ul>
-      <p class="phys-how-lead">Using <b>Scan</b> or <b>From a photo</b>? You never need a tape at all — just enter your height once. For the best read: full body in frame, <b>arms angled clearly out from your body</b> (elbows away from your ribs, like starting a jumping jack — a small lift isn't enough to separate your arm from your torso in the image) and feet apart, phone roughly at chest height and level (not tilted up/down), fitted clothing.</p>
+      <p class="phys-how-lead">All the fields above are entered manually with a tape/scale — the camera doesn't fill them in. <b>🧍 Posture check</b> is separate: it's a two-step camera read (front view, then side profile) for shoulder/neck tilt, knee alignment, and forward-head/rounded-shoulders — not a body-shape diagnosis, just a rough on-device estimate.</p>
     </div>
   </div>
 </div>
 
-<!-- Live camera measure overlay — on-device pose only; nothing is recorded or stored. -->
+<!-- Posture check overlay — on-device pose only; nothing is recorded or stored.
+     Two steps: front view, then side profile (physique.js drives the step text). -->
 <div id="physCamOverlay" class="phys-cam-overlay hidden">
   <div class="phys-cam-modal">
     <div class="phys-cam-head">
-      <span>📷 Measure — <b>nothing is recorded or stored</b></span>
+      <span>🧍 Posture check — <b>nothing is recorded or stored</b></span>
       <button id="physCamClose" type="button" class="phys-cam-close" aria-label="Close">✕</button>
     </div>
     <select id="physCamDevice" class="phys-cam-device hidden"></select>
     <div class="phys-cam-stage">
       <video id="physCamVideo" autoplay muted playsinline></video>
       <canvas id="physCamCanvas"></canvas>
-      <!-- Manual point-placement overlay — DOM dots (not canvas) so dragging/touch is
-           native and reliable. Hidden unless manual mode is active. -->
-      <div id="physCamManualLayer" class="phys-manual-layer hidden"></div>
     </div>
     <div class="phys-cam-status" id="physCamStatus">Starting…</div>
     <div class="phys-cam-mic hidden" id="physCamMic"></div>
-    <div class="phys-cam-hint">Fit your whole body in view, <b>arms angled clearly out</b> (elbows away from your ribs) and feet apart, in fitted clothing — that lets it read your outline cleanly (arms, thighs, calves too). The live scan measures by itself, or <b>clap / make a loud sound</b> to measure immediately from a distance — audio is analyzed on this device only, same as the camera: never recorded, uploaded, or saved. Auto-detect not cooperating? Tap <b>Place points myself</b> to skip it and drag the 7 dots onto yourself directly (measures shoulders/chest/waist/hips only — enter neck/arm/thigh/calf with a tape).</div>
+    <div class="phys-cam-hint">Two quick shots: first facing the camera (feet together, arms relaxed), then turned to your side. Each captures itself once it locks on, or <b>clap / make a loud sound</b> to capture immediately from a distance — audio is analyzed on this device only, same as the camera: never recorded, uploaded, or saved. This is a rough estimate, not a medical diagnosis.</div>
     <div class="phys-cam-actions">
-      <button id="physCamMeasure" type="button" class="phys-save" disabled>Measure</button>
-      <button id="physCamManual" type="button" class="phys-toolbtn" title="Skip auto-detect — place the 7 points on yourself by hand">✏️ Place points myself</button>
-      <!-- Shown only after a capture, in place of Measure — lets you actually see the
-           frozen frame first (blurry? not full body?) instead of it auto-closing. -->
+      <button id="physCamMeasure" type="button" class="phys-save" disabled>Capture</button>
+      <!-- Shown only after a capture, in place of Capture — lets you actually see the
+           frozen frame first (blurry? right pose?) instead of it auto-closing. -->
       <button id="physCamRetake" type="button" class="phys-toolbtn hidden">↺ Retake</button>
-      <button id="physCamConfirm" type="button" class="phys-save hidden">✓ Use these</button>
+      <button id="physCamConfirm" type="button" class="phys-save hidden">Next: side view →</button>
     </div>
   </div>
 </div>
