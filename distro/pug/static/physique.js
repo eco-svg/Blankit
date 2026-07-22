@@ -298,7 +298,8 @@
         camCanvas = document.getElementById('physCamCanvas'), camStatus = document.getElementById('physCamStatus'),
         camMeasure = document.getElementById('physCamMeasure'), camClose = document.getElementById('physCamClose'),
         camDevice = document.getElementById('physCamDevice'), camMic = document.getElementById('physCamMic'),
-        camRetake = document.getElementById('physCamRetake'), camConfirm = document.getElementById('physCamConfirm');
+        camRetake = document.getElementById('physCamRetake'), camConfirm = document.getElementById('physCamConfirm'),
+        camManual = document.getElementById('physCamManual'), manualLayer = document.getElementById('physCamManualLayer');
     var photoBtn = document.getElementById('physPhotoBtn'), photoInput = document.getElementById('physPhotoInput');
     var poseLm = null, camStream = null, rafId = null, lastLm = null;
     var DEVICE_KEY = 'veyra_phys_camera_device_id';   // remembered across sessions — e.g. a phone used as a webcam
@@ -711,12 +712,14 @@
     }
     function showReview(on) {
       if (camMeasure) camMeasure.classList.toggle('hidden', on);
+      if (camManual) camManual.classList.toggle('hidden', on);
       if (camRetake) camRetake.classList.toggle('hidden', !on);
       if (camConfirm) camConfirm.classList.toggle('hidden', !on);
       if (camMic && on) camMic.classList.add('hidden');
     }
     function retakeMeasurement() {
       showDone = false; showReview(false); camMeasure.disabled = true;
+      manualEnd();
       if (camStream) {                                  // camera's still attached — just resume scanning
         camVideo.style.display = '';
         camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
@@ -729,6 +732,92 @@
       }
     }
     function confirmMeasurement() { closeCam(); msg('Measured — adjust any number, then Save.'); }
+
+    // ── Manual point placement — skip AI detection entirely; the user drags 7 dots onto
+    // themselves on the frozen frame (live or an uploaded photo). Reuses frameEst(), the
+    // SAME joint-distance math the AI path falls back to, just fed hand-placed coordinates
+    // instead of guessed ones — so it only ever fills shoulders/chest/waist/hips (girths
+    // need a silhouette mask, which can't be hand-edited); neck/arm/thigh/calf still need a
+    // tape measure either way. Dots are plain DOM elements (not canvas-drawn) so dragging —
+    // including touch — is native and reliable; the connecting lines redraw on the canvas
+    // from a saved base-frame ImageData each time a dot moves.
+    var MANUAL_POINTS = [
+      { idx: 0,  label: 'Head (nose level)',         x: 0.50, y: 0.10 },
+      { idx: 11, label: 'Shoulder (left of photo)',  x: 0.36, y: 0.22 },
+      { idx: 12, label: 'Shoulder (right of photo)', x: 0.64, y: 0.22 },
+      { idx: 23, label: 'Hip (left of photo)',       x: 0.40, y: 0.52 },
+      { idx: 24, label: 'Hip (right of photo)',      x: 0.60, y: 0.52 },
+      { idx: 27, label: 'Ankle (left of photo)',     x: 0.42, y: 0.93 },
+      { idx: 28, label: 'Ankle (right of photo)',    x: 0.58, y: 0.93 }
+    ];
+    var manualActive = false, manualPos = null, manualBaseImg = null, manualDragIdx = null;
+    var MANUAL_LINES = [[11, 12], [11, 23], [12, 24], [23, 24], [23, 27], [24, 28]];
+    function manualRedraw() {
+      if (!manualBaseImg || !manualPos) return;
+      var ctx = camCanvas.getContext('2d'), vw = camCanvas.width, vh = camCanvas.height;
+      ctx.putImageData(manualBaseImg, 0, 0);
+      ctx.strokeStyle = 'rgba(212,165,116,0.9)'; ctx.lineWidth = 3;
+      MANUAL_LINES.forEach(function (c) {
+        var a = manualPos[c[0]], b = manualPos[c[1]]; if (!a || !b) return;
+        ctx.beginPath(); ctx.moveTo(a.x * vw, a.y * vh); ctx.lineTo(b.x * vw, b.y * vh); ctx.stroke();
+      });
+    }
+    function manualStart() {
+      var vw = camCanvas.width, vh = camCanvas.height;
+      if (!vw || !vh) { msg('Nothing to place points on yet — start the camera or pick a photo first.'); return; }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }   // stop any live scanning underneath
+      autoStart = 0; lastGood = 0; samples = [];
+      manualActive = true;
+      manualPos = {};
+      MANUAL_POINTS.forEach(function (p) { manualPos[p.idx] = { x: p.x, y: p.y }; });
+      manualBaseImg = camCanvas.getContext('2d').getImageData(0, 0, vw, vh);
+      manualRedraw();
+      if (manualLayer) {
+        manualLayer.innerHTML = '';
+        MANUAL_POINTS.forEach(function (p) {
+          var el = document.createElement('div');
+          el.className = 'phys-manual-dot'; el.title = p.label; el.dataset.idx = p.idx;
+          el.style.left = (manualPos[p.idx].x * 100) + '%'; el.style.top = (manualPos[p.idx].y * 100) + '%';
+          manualLayer.appendChild(el);
+        });
+        manualLayer.classList.remove('hidden');
+      }
+      camStatus.textContent = 'Drag each dot onto the matching spot on your body, then tap ✓ Use these.';
+      showReview(true);
+    }
+    function manualEnd() {
+      manualActive = false; manualPos = null; manualBaseImg = null; manualDragIdx = null;
+      if (manualLayer) { manualLayer.innerHTML = ''; manualLayer.classList.add('hidden'); }
+    }
+    function manualPointerDown(e) {
+      var idx = e.target && e.target.dataset ? parseInt(e.target.dataset.idx, 10) : NaN;
+      if (isNaN(idx)) return;
+      manualDragIdx = idx; e.preventDefault();
+    }
+    function manualPointerMove(e) {
+      if (manualDragIdx == null || !manualPos || !manualLayer) return;
+      var rect = manualLayer.getBoundingClientRect();
+      var pt = e.touches ? e.touches[0] : e;
+      var x = Math.max(0, Math.min(1, (pt.clientX - rect.left) / rect.width));
+      var y = Math.max(0, Math.min(1, (pt.clientY - rect.top) / rect.height));
+      manualPos[manualDragIdx] = { x: x, y: y };
+      var el = manualLayer.querySelector('[data-idx="' + manualDragIdx + '"]');
+      if (el) { el.style.left = (x * 100) + '%'; el.style.top = (y * 100) + '%'; }
+      manualRedraw();
+    }
+    function manualPointerUp() { manualDragIdx = null; }
+    if (manualLayer) {
+      manualLayer.addEventListener('pointerdown', manualPointerDown);
+      document.addEventListener('pointermove', manualPointerMove);
+      document.addEventListener('pointerup', manualPointerUp);
+    }
+    function manualConfirm() {
+      var lm = {};
+      MANUAL_POINTS.forEach(function (p) { lm[p.idx] = manualPos[p.idx]; });
+      pendingEst = frameEst(lm, camCanvas.width, camCanvas.height);
+      manualEnd();
+      measureFromPose();
+    }
     // Measure from an uploaded photo — for when the webcam can't frame your whole body
     // (laptop on a table). The file is read + analyzed HERE in the browser and discarded:
     // it is never uploaded to the server or saved anywhere.
@@ -777,6 +866,7 @@
       if (camVideo) { camVideo.srcObject = null; camVideo.style.display = ''; } lastLm = null;
       autoStart = 0; lastGood = 0; samples = []; pendingEst = null; showDone = false;
       clapAnalyser = null; clapData = null;
+      manualEnd();
       showReview(false);
       // wipe any uploaded photo off the canvas — nothing lingers behind the hidden overlay
       if (camCanvas && camCanvas.width) camCanvas.getContext('2d').clearRect(0, 0, camCanvas.width, camCanvas.height);
@@ -794,7 +884,21 @@
     });
     camClose && camClose.addEventListener('click', closeCam);
     camRetake && camRetake.addEventListener('click', retakeMeasurement);
-    camConfirm && camConfirm.addEventListener('click', confirmMeasurement);
+    camConfirm && camConfirm.addEventListener('click', function () { if (manualActive) manualConfirm(); else confirmMeasurement(); });
+    camManual && camManual.addEventListener('click', function () {
+      // freeze the current live frame first (no AI) if we're still looking at live video —
+      // if a photo's already frozen on the canvas (upload flow, or AI capture under review),
+      // manualStart() just uses whatever's already there.
+      if (camStream && camVideo && camVideo.style.display !== 'none') {
+        var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+        if (vw && vh) {
+          camCanvas.width = vw; camCanvas.height = vh;
+          camCanvas.getContext('2d').drawImage(camVideo, 0, 0, vw, vh);
+          camVideo.style.display = 'none';
+        }
+      }
+      manualStart();
+    });
 
     // "How to measure" guide — plain reference, no camera/state involved.
     var howBtn = document.getElementById('physHowBtn'), howOverlay = document.getElementById('physHowOverlay'),

@@ -7871,7 +7871,16 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-cam-mic { font-size: 0.7rem; color: var(--text-dim); text-align: center; font-family: monospace; }
 .phys-cam-mic.hidden { display: none; }
 .phys-cam-hint { font-size: 0.72rem; color: var(--text-dim); text-align: center; line-height: 1.4; }
-.phys-cam-actions { display: flex; justify-content: center; gap: 10px; }
+.phys-cam-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+/* Manual point-placement — draggable dots over the frozen frame */
+.phys-manual-layer { position: absolute; inset: 0; }
+.phys-manual-layer.hidden { display: none; }
+.phys-manual-dot {
+  position: absolute; width: 22px; height: 22px; margin-left: -11px; margin-top: -11px;
+  border-radius: 50%; background: rgba(212,165,116,0.92); border: 2px solid #fff;
+  cursor: grab; touch-action: none; box-shadow: 0 2px 6px rgba(0,0,0,0.5); z-index: 2;
+}
+.phys-manual-dot:active { cursor: grabbing; background: rgba(230,190,140,1); transform: scale(1.15); }
 
 /* "How to measure" link (above the field grid) + guide modal */
 .phys-fields-head { display: flex; justify-content: flex-end; margin-bottom: 4px; }
