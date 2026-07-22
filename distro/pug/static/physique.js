@@ -455,12 +455,12 @@
         await setPoseMode('VIDEO');
         await refreshCamDevices();                     // labels are blank pre-permission on first-ever run, that's fine
         var chosen = camDevice && !camDevice.classList.contains('hidden') ? camDevice.value : '';
-        // Ideal size, not exact — was 640x480 (4:3), which forced a crop/zoom out of a 16:9
-        // source (e.g. a phone-as-webcam feed relayed at 1280x720 via scrcpy+v4l2loopback,
-        // which can't really "negotiate" resolutions the way a real webcam does). Matching
-        // the native 16:9 shape here keeps the full field of view — more of you in frame,
-        // not zoomed in — instead of Chromium cropping to force a mismatched aspect ratio.
-        var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: { ideal: 1280 }, height: { ideal: 720 } } : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } };
+        // Reverted 2026-07-21: the wider 16:9/1280x720 request brought MORE of the room into
+        // frame — including background clutter (e.g. a hanging bag/coat) that the pose model
+        // then misdetected as a body. Back to the narrower 640x480/4:3 crop; the misdetection
+        // risk is better addressed by tightening the detection-quality gate than by widening
+        // the frame and hoping nothing distracting is in view.
+        var videoConstraints = chosen ? { deviceId: { exact: chosen }, width: 640, height: 480 } : { facingMode: 'user', width: 640, height: 480 };
         camStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });   // camera first — must succeed
         micUnavailableReason = '';
         try {                                           // mic is separate + optional — clap-to-measure only, never

@@ -7865,7 +7865,7 @@ body.has-guest-banner .playground { padding-bottom: 56px; }
 .phys-cam-device { width: 100%; background: var(--surface2, var(--surface)); color: var(--text); border: 1px solid var(--border);
   border-radius: 8px; padding: 6px 8px; font-size: 0.78rem; }
 .phys-cam-device.hidden { display: none; }
-.phys-cam-stage { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 10px; overflow: hidden; }
+.phys-cam-stage { position: relative; width: 100%; aspect-ratio: 4 / 3; background: #000; border-radius: 10px; overflow: hidden; }
 .phys-cam-stage video, .phys-cam-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
 .phys-cam-status { font-size: 0.8rem; color: var(--accent); text-align: center; min-height: 1.1em; }
 .phys-cam-mic { font-size: 0.7rem; color: var(--text-dim); text-align: center; font-family: monospace; }
