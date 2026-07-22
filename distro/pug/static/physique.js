@@ -606,6 +606,16 @@
     // can bridge a small gap to an arm held slightly out and report shoulder-to-shoulder
     // (or hand-to-hand) width instead of chest width. We cap at the elbow position, since
     // a real torso edge always sits between center and the elbow.
+    // Returns null on failure, otherwise { px, unreliable }. `unreliable` is true when the
+    // sweep only stopped because it hit the loL/hiL bound (e.g. the elbow-x cap) while STILL
+    // inside the body mask on that side — meaning it never actually found the torso's real
+    // edge, just got truncated by the artificial cap. Previously this case was silently
+    // treated as a valid measurement, which is exactly how "chest" ended up reading as
+    // shoulder-to-nearly-elbow width whenever the arm's silhouette stayed merged with the
+    // torso's at that height (confirmed via real tape-vs-scan data: arm/thigh/calf/hips all
+    // came back accurate once clothing bulk was removed, but chest got WORSE — the elbow-
+    // bounded sweeps for chest/neck/waist/hips/shoulders were still being clipped, not the
+    // clothing).
     function runWidthPx(mask, mW, mH, cxN, yN, loL, hiL) {
       var y = Math.round(yN * mH), cx = Math.round(cxN * mW);
       loL = (loL == null) ? -Infinity : loL; hiL = (hiL == null) ? Infinity : hiL;
@@ -615,12 +625,14 @@
           if (cx - d >= loL && isBody(mask, mW, mH, cx - d, y)) { found = cx - d; break; }
           if (cx + d <= hiL && isBody(mask, mW, mH, cx + d, y)) { found = cx + d; break; }
         }
-        if (found < 0) return 0; cx = found;
+        if (found < 0) return null; cx = found;
       }
       var l = cx, r = cx;
       while (l - 1 >= loL && isBody(mask, mW, mH, l - 1, y)) l--;
       while (r + 1 <= hiL && isBody(mask, mW, mH, r + 1, y)) r++;
-      return r - l + 1;
+      var clippedL = l <= loL && isBody(mask, mW, mH, l - 1, y);
+      var clippedR = r >= hiL && isBody(mask, mW, mH, r + 1, y);
+      return { px: r - l + 1, unreliable: clippedL || clippedR };
     }
     // Limb thickness measured PERPENDICULAR to the bone's own direction (shoulder→elbow,
     // hip→knee, knee→ankle), not a horizontal slice — a horizontal slice overstates a
@@ -658,7 +670,9 @@
       // arms-slightly-out gap and reporting shoulder-to-shoulder (or wider) by mistake.
       var elbowLx = Math.min(lm[13].x, lm[14].x) * mW, elbowRx = Math.max(lm[13].x, lm[14].x) * mW;
       function girth(cxN, yN, fac) {
-        var w = runWidthPx(mask, mW, mH, cxN, yN, elbowLx, elbowRx) * cmPerPx;
+        var res = runWidthPx(mask, mW, mH, cxN, yN, elbowLx, elbowRx);
+        if (!res || res.unreliable) return null;      // clipped by the elbow bound, not a real edge — don't guess
+        var w = res.px * cmPerPx;
         return (w > 0 && w < 120) ? w * fac : null;
       }
       function limbGirth(a, b, fac) {
