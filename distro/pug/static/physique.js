@@ -638,11 +638,18 @@
     // hip→knee, knee→ankle), not a horizontal slice — a horizontal slice overstates a
     // slanted limb (the same fix already used for the 3D mannequin's arm calibration).
     // Also avoids snapping onto the torso when the limb sits close to it.
+    // Returns null on failure, otherwise { px, unreliable }. Same fix as runWidthPx() above:
+    // `cap` is only a sanity ceiling ("a limb can't be torso-wide"), not a real edge — if the
+    // sweep runs all the way to it while STILL inside the body mask, the limb's silhouette is
+    // still merged with the torso (or another limb) at this point, and the old code silently
+    // accepted that inflated width as if it were the limb's real thickness. Confirmed via a
+    // real arm reading that regressed to a torso-scale number (119cm) even in a NUDE retest
+    // that otherwise fixed thigh/calf/hips — same bug, different function.
     function limbWidthPx(mask, mW, mH, aXn, aYn, bXn, bYn) {
       var midXn = (aXn + bXn) / 2, midYn = (aYn + bYn) / 2;
       var dx = (bXn - aXn) * mW, dy = (bYn - aYn) * mH;
       var len = Math.sqrt(dx * dx + dy * dy);
-      if (len < 1) return 0;
+      if (len < 1) return null;
       var pX = -dy / len, pY = dx / len;              // unit vector perpendicular to the bone
       var cx = midXn * mW, cy = midYn * mH;
       if (!isBody(mask, mW, mH, cx, cy)) {             // tight snap only — don't risk jumping to the torso
@@ -651,13 +658,15 @@
           if (isBody(mask, mW, mH, cx + pX * d, cy + pY * d)) { cx += pX * d; cy += pY * d; found = true; }
           else if (isBody(mask, mW, mH, cx - pX * d, cy - pY * d)) { cx -= pX * d; cy -= pY * d; found = true; }
         }
-        if (!found) return 0;
+        if (!found) return null;
       }
       var cap = Math.min(mW, mH) * 0.22;               // sane ceiling — a limb can't be torso-wide
       var a = 0, b = 0;
       while (a + 1 <= cap && isBody(mask, mW, mH, cx + pX * (a + 1), cy + pY * (a + 1))) a++;
       while (b + 1 <= cap && isBody(mask, mW, mH, cx - pX * (b + 1), cy - pY * (b + 1))) b++;
-      return a + b + 1;
+      var clippedA = a >= cap && isBody(mask, mW, mH, cx + pX * (a + 1), cy + pY * (a + 1));
+      var clippedB = b >= cap && isBody(mask, mW, mH, cx - pX * (b + 1), cy - pY * (b + 1));
+      return { px: a + b + 1, unreliable: clippedA || clippedB };
     }
     function segEst(lm, mask, mW, mH) {
       var hCm = heightVal();
@@ -676,7 +685,9 @@
         return (w > 0 && w < 120) ? w * fac : null;
       }
       function limbGirth(a, b, fac) {
-        var w = limbWidthPx(mask, mW, mH, lm[a].x, lm[a].y, lm[b].x, lm[b].y) * cmPerPx;
+        var res = limbWidthPx(mask, mW, mH, lm[a].x, lm[a].y, lm[b].x, lm[b].y);
+        if (!res || res.unreliable) return null;      // still merged with the torso/another limb — don't guess
+        var w = res.px * cmPerPx;
         return (w > 0 && w < 90) ? w * fac : null;
       }
       var shX = (lm[11].x + lm[12].x) / 2, shY = (lm[11].y + lm[12].y) / 2;
