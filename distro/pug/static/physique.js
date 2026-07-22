@@ -400,23 +400,27 @@
     // (same method the 3s auto-countdown uses), instead of measureFromPose() falling back to
     // the cruder joint-distance frameEst() — which only ever computes shoulders/chest/waist/
     // hips and leaves neck/arm/thigh/calf blank — for every clap/manual capture.
+    // Returns true on a genuinely usable capture, false if it should be rejected. MediaPipe's
+    // PoseLandmarker always returns SOME "best guess" landmarks even when nothing person-
+    // shaped is actually there — a busy background (shelves, cabinet doors) can score higher
+    // than a partially-visible person, and without a quality gate that garbage silently drove
+    // the skeleton + the measured numbers. fullBody() (the same check that gates the auto-
+    // countdown) is now required here too, so a bad single-frame read gets rejected instead
+    // of accepted.
     function snapshotFrame() {
       var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
-      if (!vw || !vh) return;
+      if (!vw || !vh) return false;
       camCanvas.width = vw; camCanvas.height = vh;
       var ctx = camCanvas.getContext('2d');
       ctx.drawImage(camVideo, 0, 0, vw, vh);
       var res = null; try { res = poseLm.detectForVideo(camVideo, performance.now()); } catch (e) {}
-      if (res && res.landmarks && res.landmarks[0]) {
-        lastLm = res.landmarks[0];
-        drawSkeleton(ctx, lastLm, vw, vh);
-        var mask = readMask(res);
-        pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
-      } else {
-        closeMask(res);
-        if (lastLm) drawSkeleton(ctx, lastLm, vw, vh);  // no fresh detection this instant — draw the last known pose
-      }
-      camVideo.style.display = 'none';                 // show the frozen canvas frame, not the still-live video
+      var lm = res && res.landmarks && res.landmarks[0];
+      if (!lm || !fullBody(lm, vh)) { closeMask(res); return false; }
+      lastLm = lm;
+      drawSkeleton(ctx, lastLm, vw, vh);
+      var mask = readMask(res);
+      pendingEst = (mask && segEst(lastLm, mask.arr, mask.w, mask.h)) || frameEst(lastLm, vw, vh);
+      return true;
     }
     function heightVal() { var h = null; inputs().forEach(function (i) { if (i.dataset.k === 'height') h = parseFloat(i.value); }); return (h && h > 50 && h < 260) ? h : null; }
     async function ensurePose() {
@@ -495,7 +499,11 @@
       if (camMic) { camMic.classList.remove('hidden'); camMic.textContent = 'mic level: ' + peak + ' / trigger: ' + CLAP_THRESHOLD; }
       if (camMeasure.disabled || showDone) return;
       var now = performance.now();
-      if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) { lastClapAt = now; snapshotFrame(); beep(); measureFromPose(); }
+      if (peak > CLAP_THRESHOLD && now - lastClapAt > 2000) {
+        lastClapAt = now; beep();
+        if (snapshotFrame()) measureFromPose();
+        else camStatus.textContent = 'Heard you, but couldn’t get a clean lock on your body — stay in frame and try again.';
+      }
     }
     var CONNECT = [[11,12],[11,23],[12,24],[23,24],[11,13],[13,15],[12,14],[14,16],[23,25],[25,27],[24,26],[26,28]];
     function loop() {
@@ -685,6 +693,7 @@
       showEditor();
       inputs().forEach(function (i) { if (est[i.dataset.k] != null) i.value = Math.round(est[i.dataset.k]); });
       if (camCanvas && camCanvas.width) drawDone(camCanvas.getContext('2d'), camCanvas.width, camCanvas.height);
+      camVideo.style.display = 'none';                 // show the frozen canvas frame, not the still-live video
       showDone = true; camMeasure.disabled = true;
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }   // stop scanning — reviewing the frozen frame now
       // Don't auto-close: hold the modal open on the captured frame so you can actually SEE
@@ -774,7 +783,10 @@
       openPhoto(photoInput.files && photoInput.files[0]);
       photoInput.value = '';                          // so re-picking the same file re-fires change
     });
-    camMeasure && camMeasure.addEventListener('click', function () { if (camStream) snapshotFrame(); measureFromPose(); });
+    camMeasure && camMeasure.addEventListener('click', function () {
+      if (camStream && !snapshotFrame()) { msg('Couldn’t get a clean lock on your body — reposition and try again.'); return; }
+      measureFromPose();
+    });
     camClose && camClose.addEventListener('click', closeCam);
     camRetake && camRetake.addEventListener('click', retakeMeasurement);
     camConfirm && camConfirm.addEventListener('click', confirmMeasurement);
